@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#231c14">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%228%22 fill=%22%23a8763e%22/%3E%3C/svg%3E">
+<title>너구리 만물상</title>
+<style>
+/* 조선시대 만물상 — 한지색 바탕에 먹색. 아트가 아니라 자리만 잡아둔 것. */
+:root{
+  --paper:#e8ddc8; --paper2:#ddd0b6; --line:#c4b291;
+  --ink:#2b241b; --ink2:#5a4e3d; --ink3:#8a7a63;
+  --gold:#a8763e; --jade:#4a7c59; --red:#a34a3a;
+  color-scheme:light;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;
+  font-family:'Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+  background:#1a150f;color:var(--ink)}
+#app{max-width:480px;margin:0 auto;height:100%;display:flex;flex-direction:column;
+  background:var(--paper);
+  background-image:repeating-linear-gradient(0deg,rgba(0,0,0,.012) 0 1px,transparent 1px 3px);
+  box-shadow:0 0 60px rgba(0,0,0,.6)}
+
+/* 상단 */
+header{padding:10px 14px 8px;border-bottom:1.5px solid var(--line);flex-shrink:0}
+.title{font-size:13px;font-weight:800;letter-spacing:.5px;color:var(--gold)}
+.money{font-size:27px;font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums;
+  line-height:1.15;transition:transform .12s}
+.money.pop{transform:scale(1.09)}
+.sub{font-size:11.5px;color:var(--ink3);display:flex;gap:12px;margin-top:1px}
+
+/* 손님 말풍선 */
+#guest{padding:9px 14px;background:var(--paper2);border-bottom:1.5px solid var(--line);
+  font-size:13px;min-height:38px;display:flex;align-items:center;gap:8px;flex-shrink:0}
+#guest .face{font-size:19px}
+#guest .say{color:var(--ink2)} #guest .say b{color:var(--ink)}
+#guest.ask{background:#f2e4bd;animation:blink 1.4s ease}
+@keyframes blink{0%{background:#ffe89a}100%{background:#f2e4bd}}
+
+/* 탭 */
+nav{display:flex;gap:5px;padding:8px 10px 0;overflow-x:auto;flex-shrink:0;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav button{flex-shrink:0;border:1.5px solid var(--line);border-bottom:none;
+  background:var(--paper2);color:var(--ink2);border-radius:8px 8px 0 0;
+  padding:7px 13px;font:700 12.5px inherit;cursor:pointer;white-space:nowrap}
+nav button.on{background:var(--paper);color:var(--ink);border-color:var(--gold);
+  box-shadow:inset 0 2.5px 0 var(--gold)}
+nav button.locked{opacity:.5}
+
+/* 본문 */
+main{flex:1;overflow-y:auto;padding:10px 12px 16px;border-top:1.5px solid var(--line);
+  margin-top:-1.5px}
+.shopnote{font-size:11.5px;color:var(--ink3);margin:2px 2px 10px}
+
+.item{background:var(--paper2);border:1.5px solid var(--line);border-radius:10px;
+  padding:10px 12px;margin-bottom:8px;position:relative;overflow:hidden}
+.item .bar{position:absolute;left:0;top:0;bottom:0;background:rgba(168,118,62,.16);
+  width:0;transition:width .1s linear}
+.item .row{position:relative;display:flex;align-items:center;gap:10px}
+.item .nm{font-weight:800;font-size:15px}
+.item .lv{font-size:11px;color:var(--ink3);font-weight:600}
+.item .stat{margin-left:auto;text-align:right;font-size:11.5px;color:var(--ink2);
+  font-variant-numeric:tabular-nums;line-height:1.45}
+.item .stat b{font-size:13px;color:var(--ink)}
+.up{margin-top:8px;position:relative;width:100%;border:0;border-radius:8px;
+  padding:9px;font:800 13px inherit;cursor:pointer;background:var(--gold);color:#fff8ec;
+  transition:filter .12s,transform .06s}
+.up:active{transform:translateY(1px)}
+.up:disabled{background:#c9bb9f;color:#8d8069;cursor:default}
+.up.ms{background:var(--jade)}
+
+.locked-item{background:transparent;border:1.5px dashed var(--line);color:var(--ink3)}
+.locked-item .nm{color:var(--ink2)}
+.open-btn{background:var(--jade)}
+.hint{font-size:11.5px;color:var(--ink3);text-align:center;padding:18px 10px;line-height:1.6}
+
+/* 마을 */
+.village{display:grid;gap:8px}
+.plot{border:1.5px solid var(--line);border-radius:10px;padding:12px;background:var(--paper2);
+  display:flex;align-items:center;gap:11px}
+.plot.ruin{border-style:dashed;background:transparent;opacity:.75}
+.plot .sign{font-size:22px;width:34px;text-align:center;color:var(--gold);font-weight:800}
+.plot.ruin .sign{color:var(--ink3)}
+.plot .nm{font-weight:800;font-size:15px}
+.plot .ds{font-size:11.5px;color:var(--ink3)}
+.plot .act{margin-left:auto}
+.plot button{border:0;background:var(--jade);color:#fff;border-radius:8px;padding:8px 13px;
+  font:800 12.5px inherit;cursor:pointer}
+.plot button:disabled{background:#c9bb9f;color:#8d8069}
+
+#log{font-size:11.5px;color:var(--ink3);padding:10px 2px 0;line-height:1.75}
+#log div{padding:1px 0}
+#log .ask{color:var(--gold);font-weight:700}
+#log .shop{color:var(--jade);font-weight:700}
+#log .milestone{color:var(--red);font-weight:700}
+
+#float{position:fixed;pointer-events:none;inset:0;overflow:hidden;z-index:5}
+.fly{position:absolute;font:800 14px inherit;color:var(--jade);animation:fly 1.1s ease-out forwards}
+@keyframes fly{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-38px)}}
+
+#offline{position:fixed;inset:0;background:rgba(26,21,15,.82);display:flex;align-items:center;
+  justify-content:center;z-index:20;padding:20px}
+#offline .card{background:var(--paper);border:2px solid var(--gold);border-radius:14px;
+  padding:22px;max-width:330px;text-align:center}
+#offline h3{margin:0 0 8px;font-size:17px}
+#offline p{margin:0 0 16px;font-size:13px;color:var(--ink2);line-height:1.6}
+#offline button{width:100%;border:0;background:var(--gold);color:#fff8ec;border-radius:9px;
+  padding:12px;font:800 14px inherit;cursor:pointer}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="title">너구리 만물상</div>
+    <div class="money" id="money">0</div>
+    <div class="sub">
+      <span id="ips">초당 0</span>
+      <span id="shopcount"></span>
+    </div>
+  </header>
+  <div id="guest"><span class="face">🐰</span><span class="say">토끼가 가게를 기웃거린다…</span></div>
+  <nav id="tabs"></nav>
+  <main id="main"></main>
+</div>
+<div id="float"></div>
+
+<script type="module">
+import { Sim, fmt, itemById, shopById } from './sim.js';
+import { SHOPS, GUESTS, STOCK_CAP, MILESTONE_EVERY } from './content.js';
+import { Store } from './core/store.js';
+import { Juice, Sfx } from './core/juice.js';
+
+const $ = (s) => document.querySelector(s);
+const SAVE = 'rs:save';
+
+const saved = Store.get(SAVE);
+const sim = new Sim(saved?.state || null);
+let tab = 'village';
+
+/* 오프라인 수익 — 방치형의 심장 */
+if (saved?.at) {
+  const away = (Date.now() - saved.at) / 1000;
+  const r = sim.offline(away);
+  if (r && r.earned > 0) showOffline(r);
+}
+
+function showOffline(r) {
+  const el = document.createElement('div');
+  el.id = 'offline';
+  const h = Math.floor(r.seconds / 3600), m = Math.round((r.seconds % 3600) / 60);
+  el.innerHTML = `<div class="card">
+    <h3>다녀오신 동안</h3>
+    <p>${h ? h + '시간 ' : ''}${m}분 동안 너구리들이 계속 만들었습니다.<br>
+    ${r.capped ? '<b>(최대 4시간까지만 쌓입니다)</b>' : ''}</p>
+    <div style="font-size:26px;font-weight:800;color:var(--gold);margin-bottom:16px">
+      ${fmt(r.earned)}냥</div>
+    <button id="ok">받기</button></div>`;
+  document.body.appendChild(el);
+  el.querySelector('#ok').onclick = () => { Sfx.coin(); el.remove(); };
+}
+
+/* ── 렌더 ── */
+function renderTabs() {
+  const t = $('#tabs');
+  t.innerHTML = `<button data-t="village" class="${tab === 'village' ? 'on' : ''}">마을</button>` +
+    SHOPS.map((s) => {
+      const open = sim.shops.includes(s.id);
+      return `<button data-t="${s.id}" class="${tab === s.id ? 'on' : ''} ${open ? '' : 'locked'}"
+        ${open ? '' : 'disabled'}>${s.sign} ${s.name}</button>`;
+    }).join('');
+  t.querySelectorAll('button').forEach((b) => b.onclick = () => {
+    Sfx.click(); tab = b.dataset.t; renderTabs(); renderMain();
+  });
+}
+
+function renderMain() {
+  const m = $('#main');
+  if (tab === 'village') { m.innerHTML = villageHTML(); bindVillage(); }
+  else { m.innerHTML = shopHTML(shopById(tab)); bindShop(); }
+}
+
+function villageHTML() {
+  const plots = SHOPS.map((s) => {
+    const open = sim.shops.includes(s.id);
+    if (open) return `<div class="plot"><div class="sign">${s.sign}</div>
+      <div><div class="nm">${s.name}</div><div class="ds">${s.desc}</div></div></div>`;
+    const next = sim.nextShop();
+    const isNext = next && next.id === s.id;
+    return `<div class="plot ruin"><div class="sign">□</div>
+      <div><div class="nm">${isNext ? s.name : '무너진 집'}</div>
+      <div class="ds">${isNext ? s.desc : '아직 손댈 수 없다'}</div></div>
+      <div class="act">${isNext
+        ? `<button data-shop="${s.id}" ${sim.money >= s.cost ? '' : 'disabled'}>${fmt(s.cost)}냥</button>`
+        : ''}</div></div>`;
+  }).join('');
+  const done = sim.shops.length, all = SHOPS.length;
+  return `<div class="shopnote">가게 ${done} / ${all} — ${done === all
+    ? '마을이 완전히 살아났다' : '아직 무너진 집이 남아 있다'}</div>
+    <div class="village">${plots}</div>
+    <div id="log">${sim.events.slice(0, 8)
+      .map((e) => `<div class="${e.kind}">· ${e.msg}</div>`).join('')}</div>`;
+}
+
+function shopHTML(s) {
+  const rows = s.items.map((it) => {
+    if (sim.isOpen(it.id)) {
+      const lv = sim.lv(it.id), st = sim.items[it.id];
+      const cost = sim.levelCost(it.id);
+      const toMs = MILESTONE_EVERY - (lv % MILESTONE_EVERY);
+      const ms = toMs <= 3;
+      return `<div class="item" data-id="${it.id}">
+        <div class="bar"></div>
+        <div class="row">
+          <div><div class="nm">${it.name}</div><div class="lv">Lv.${lv}${
+            ms ? ` · ${toMs}레벨 뒤 생산 2배` : ''}</div></div>
+          <div class="stat"><b>${fmt(sim.price(it.id))}냥</b><br>
+            재고 <span class="stk">${st.stock}</span>/${STOCK_CAP} · ${sim.craftTime(it.id).toFixed(1)}초</div>
+        </div>
+        <button class="up ${ms ? 'ms' : ''}" data-up="${it.id}"
+          ${sim.money >= cost ? '' : 'disabled'}>레벨업 ${fmt(cost)}냥</button>
+      </div>`;
+    }
+    if (sim.asked.includes(it.id)) {
+      return `<div class="item locked-item"><div class="row">
+        <div><div class="nm">${it.name}</div><div class="lv">손님이 찾던 물건</div></div></div>
+        <button class="up open-btn" data-open="${it.id}"
+          ${sim.money >= it.cost ? '' : 'disabled'}>칸 열기 ${fmt(it.cost)}냥</button></div>`;
+    }
+    return `<div class="item locked-item"><div class="row">
+      <div><div class="nm">? ? ?</div><div class="lv">아직 아무도 찾지 않았다</div></div></div></div>`;
+  }).join('');
+  return `<div class="shopnote">${s.desc}</div>${rows}`;
+}
+
+function bindVillage() {
+  document.querySelectorAll('[data-shop]').forEach((b) => b.onclick = () => {
+    if (sim.openShop(b.dataset.shop)) {
+      Sfx.win(); Juice.shake(6);
+      tab = b.dataset.shop; renderTabs(); renderMain();
+    }
+  });
+}
+
+function bindShop() {
+  document.querySelectorAll('[data-up]').forEach((b) => b.onclick = () => {
+    const id = b.dataset.up;
+    const wasMs = Math.floor(sim.lv(id) / MILESTONE_EVERY);
+    if (!sim.levelUp(id)) return;
+    if (Math.floor(sim.lv(id) / MILESTONE_EVERY) > wasMs) { Sfx.win(); Juice.shake(7); }
+    else Sfx.click();
+    renderMain();
+  });
+  document.querySelectorAll('[data-open]').forEach((b) => b.onclick = () => {
+    if (sim.openItem(b.dataset.open)) { Sfx.reward(); Juice.shake(4); renderMain(); }
+  });
+}
+
+/* ── 루프 ── */
+let last = performance.now(), acc = 0, uiAcc = 0;
+function loop(now) {
+  const dt = Math.min((now - last) / 1000, 0.25);
+  last = now;
+
+  const r = sim.tick(dt);
+
+  for (const s of r.sales) {
+    fly(`+${fmt(s.gain)}`);
+    $('#guest').className = '';
+    $('#guest').innerHTML =
+      `<span class="face">${s.guest.face}</span><span class="say">${s.guest.name}가 ` +
+      `<b>${s.item.name}</b> ${s.n}개를 사갔다 · <b>${fmt(s.gain)}냥</b></span>`;
+  }
+  if (r.ask) {
+    Sfx.deny();
+    $('#guest').className = 'ask';
+    $('#guest').innerHTML =
+      `<span class="face">${r.ask.guest.face}</span><span class="say">${r.ask.guest.name}: ` +
+      `"<b>${r.ask.line}</b>" — 없다고 하자 돌아갔다</span>`;
+    if (tab === r.ask.item.shop) renderMain();
+  }
+  if (r.newGuest) { Sfx.reward(); }
+
+  // 화면 갱신은 초당 8회면 충분하다. 매 프레임 DOM을 다시 그리면 폰이 뜨거워진다.
+  uiAcc += dt;
+  if (uiAcc > 0.12) { uiAcc = 0; paint(); }
+
+  acc += dt;
+  if (acc > 5) { acc = 0; Store.set(SAVE, { state: sim.save(), at: Date.now() }); }
+
+  Juice.update(dt);
+  requestAnimationFrame(loop);
+}
+
+let lastMoney = 0;
+function paint() {
+  const m = $('#money');
+  m.textContent = fmt(sim.money) + '냥';
+  if (sim.money !== lastMoney) { m.classList.add('pop'); setTimeout(() => m.classList.remove('pop'), 120); }
+  lastMoney = sim.money;
+  $('#ips').textContent = '초당 ' + fmt(sim.incomePerSec()) + '냥';
+  $('#shopcount').textContent = `가게 ${sim.shops.length}/${SHOPS.length} · 손님 ${sim.guests.length}`;
+
+  if (tab === 'village') {
+    document.querySelectorAll('[data-shop]').forEach((b) => {
+      b.disabled = sim.money < shopById(b.dataset.shop).cost;
+    });
+  } else {
+    for (const el of document.querySelectorAll('.item[data-id]')) {
+      const id = el.dataset.id, st = sim.items[id];
+      if (!st) continue;
+      el.querySelector('.bar').style.width = (st.prog / sim.craftTime(id)) * 100 + '%';
+      const stk = el.querySelector('.stk');
+      if (stk) stk.textContent = st.stock;
+    }
+    document.querySelectorAll('[data-up]').forEach((b) => {
+      b.disabled = sim.money < sim.levelCost(b.dataset.up);
+    });
+    document.querySelectorAll('[data-open]').forEach((b) => {
+      b.disabled = sim.money < itemById(b.dataset.open).cost;
+    });
+  }
+}
+
+function fly(text) {
+  const el = document.createElement('div');
+  el.className = 'fly';
+  el.textContent = text;
+  el.style.left = (30 + Math.random() * 45) + '%';
+  el.style.top = '92px';
+  $('#float').appendChild(el);
+  setTimeout(() => el.remove(), 1100);
+}
+
+// 첫 입력에서 소리 열기 (브라우저 정책)
+addEventListener('pointerdown', () => Sfx.unlock(), { once: true });
+addEventListener('visibilitychange', () => {
+  if (document.hidden) Store.set(SAVE, { state: sim.save(), at: Date.now() });
+});
+
+renderTabs(); renderMain(); paint();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
