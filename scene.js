@@ -201,7 +201,17 @@ export class Village {
 
   /* ── 매 프레임 ── */
   update(dt, pointer, viewH) {
-    if (viewH) this.viewH = viewH;
+    /* 보이는 높이가 바뀌면(폴더블을 펴고 접거나, 화면을 돌리거나, 창 크기를
+     * 바꾸면) 보고 있던 한가운데를 붙잡아 둔다.
+     *
+     * 안 그러면 카메라 값만 그대로 남아 보던 곳이 화면 밖으로 밀려난다.
+     * 폴드를 펴는 순간 마을 어귀와 대장간이 통째로 아래로 사라졌다. */
+    if (viewH && viewH !== this.viewH) {
+      const center = this.cam + this.viewH / 2;
+      this.viewH = viewH;
+      this.cam = center - viewH / 2;
+      this.vel = 0;
+    }
     this.t += dt;
     if (this.bubble) { this.bubble.t -= dt; if (this.bubble.t <= 0) this.bubble = null; }
 
