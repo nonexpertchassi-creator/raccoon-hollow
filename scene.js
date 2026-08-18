@@ -68,7 +68,13 @@ export class Village {
     this.sim = sim;
     this.onShopTap = onShopTap;
     this.walkers = [];
-    this.floats = [];
+    /* 튀어오르는 엽전. 예전엔 "+6,927" 같은 글자를 띄웠는데 손님이 몰리면
+     * 글자끼리 겹쳐 읽을 수가 없었다. 게다가 헤더는 "3002만냥", 글자는
+     * "+6,927"이라 표기까지 달랐다.
+     *
+     * 금액은 헤더가 이미 은행 잔고처럼 보여준다. 여기서는 "팔렸다"만
+     * 알려주면 된다. 조선 동전은 가운데가 네모로 뚫린 상평통보다. */
+    this.coins = [];
     /* 아직 손님이 도착하지 않은 판매량. 품목id → 개수.
      *
      * sim은 손님이 사는 순간 재고를 바로 깎는다. 그런데 화면에서는 그 손님이
@@ -154,8 +160,18 @@ export class Village {
             this.pending[s.id] = Math.max(0, (this.pending[s.id] || 0) - s.n);
             this.flash[s.id] = 0.45;
           }
-          this.floats.push({ x: w.x, y: w.y - 22, text: `+${fmt(w.gain)}`, t: 1.1 });
-          Juice.burst(w.x, w.y - 14, { n: 7, color: ['#e8b64c', '#c9922f'], size: 3, speed: 70, life: 0.5 });
+          // 산 품목 수만큼 엽전이 튄다 — 3종을 사가면 3개
+          const n = Math.min(5, w.sold.length);
+          for (let k = 0; k < n; k++) {
+            this.coins.push({
+              x: w.x + (Math.random() - 0.5) * 14,
+              y: w.y - 16,
+              vx: (Math.random() - 0.5) * 46,
+              vy: -92 - Math.random() * 46,
+              t: 1.05, r: 8.5 + Math.random() * 2.5,
+            });
+          }
+          Juice.burst(w.x, w.y - 14, { n: 4, color: ['#f0d98b'], size: 2, speed: 52, life: 0.34 });
           Sfx.coin();
         }
       } else if (w.state === 'buy') {
@@ -174,8 +190,13 @@ export class Village {
       if (this.flash[id] <= 0) delete this.flash[id];
     }
 
-    for (const f of this.floats) { f.t -= dt; f.y -= 26 * dt; }
-    this.floats = this.floats.filter((f) => f.t > 0);
+    for (const co of this.coins) {
+      co.t -= dt;
+      co.x += co.vx * dt;
+      co.y += co.vy * dt;
+      co.vy += 165 * dt;          // 살짝 떨어지며 사라진다
+    }
+    this.coins = this.coins.filter((co) => co.t > 0);
 
     // 가게를 눌렀나
     if (pointer.justDown) {
@@ -196,11 +217,20 @@ export class Village {
     for (let i = 0; i < SHOPS.length; i++) this._shop(c, i);
     for (const w of this.walkers) this._walker(c, w);
     if (this.bubble) this._bubble(c);
-    for (const f of this.floats) {
-      c.globalAlpha = Math.min(1, f.t);
-      G.text(c, f.text, f.x, f.y, { size: 15, fill: '#b8860b', weight: 800 });
-      c.globalAlpha = 1;
-    }
+    for (const co of this.coins) this._coin(c, co);
+  }
+
+  /** 엽전 — 둥근 몸통에 네모 구멍. 조선 상평통보 모양이다. */
+  _coin(c, co) {
+    const a = Math.min(1, co.t * 2.4);
+    const r = co.r;
+    c.globalAlpha = a;
+    G.circle(c, co.x, co.y, r, '#b8873a');
+    G.circle(c, co.x, co.y, r * 0.84, '#ecc264');
+    c.fillStyle = '#b8873a';
+    const q = r * 0.3;
+    c.fillRect(co.x - q, co.y - q, q * 2, q * 2);
+    c.globalAlpha = 1;
   }
 
   _ground(c) {
@@ -284,10 +314,6 @@ export class Village {
     const bob = Math.sin(this.t * 9 + w.bob) * (w.state === 'buy' ? 0.8 : 2.4);
     G.circle(c, w.x, w.y + 8, 9, 'rgba(0,0,0,.16)');
     G.text(c, w.face, w.x, w.y - 8 + bob, { size: 27, fill: '#000' });
-    if (w.state === 'buy' && w.lines > 1) {
-      G.round(c, w.x + 10, w.y - 30, 30, 15, 6, C.paper);
-      G.text(c, `${w.lines}종`, w.x + 25, w.y - 22, { size: 10, fill: C.ink2, weight: 800 });
-    }
   }
 
   _bubble(c) {
