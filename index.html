@@ -336,11 +336,12 @@ function guestsHTML() {
     return `<div class="grow">
       <span class="gf">${g.face}</span>
       <span class="gn">${g.name}</span>
-      <span class="gr ${lv >= 4 ? 'top' : ''}">${sim.regularName(g.id)}</span>
-      <span class="gl">${left === null ? '최고 등급' : `다음까지 ${fmt(left)}개`}</span>
+      <span class="gr ${lv >= 15 ? 'top' : ''}">${lv + 1}성 ${sim.regularName(g.id)}</span>
+      <span class="gl">${left === null ? '최고 등급' : `다음까지 ${fmt(left)}번`}</span>
       <div class="gsub">${g.desc}</div>
       <div class="gsub gnum">${carry} · ${g.every}초마다 ${g.qty}개 · 값 ×${g.pay}${
-        g.spread === 1 ? ' · 한 종류만' : ''} · 누적 ${fmt(bought)}개</div>
+        g.spread === 1 ? ' · 한 종류만' : ''}${
+        g.wild >= 0.6 ? ' · 언제 올지 모른다' : ''} · 누적 ${fmt(bought)}개 / ${fmt(sim.visits[g.id] || 0)}번</div>
     </div>`;
   }).join('');
   const have = sim.guests.length;

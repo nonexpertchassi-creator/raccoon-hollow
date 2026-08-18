@@ -27,7 +27,8 @@ export class Sim {
     this.items = { pick: { lv: 1, stock: 0, prog: 0 } };  // 열린 품목
     this.asked = [];                     // 손님이 물어본 적 있는(=열 수 있는) 품목
     this.guests = ['rabbit'];
-    this.bought = {};                    // 손님별 누적 구매 개수 → 단골 등급
+    this.bought = {};                    // 손님별 누적 구매 개수 (화면 표시용)
+    this.visits = {};                    // 손님별 누적 방문 횟수 → 단골 등급
     this.sold = 0;
     this.auto = false;                    // 자동 강화를 샀는가
     this.smalls = [];                     // 세워 둔 작은 건물의 번호
@@ -39,10 +40,22 @@ export class Sim {
     this.events = [];                    // 화면에 띄울 최근 사건
 
     this._guestAcc = {};
+    this._guestGap = {};
     this._askAcc = 0;
     for (const g of GUESTS) this._guestAcc[g.id] = 0;
 
     if (save) Object.assign(this, save);
+
+    /* 옛 저장본에는 visits가 없다. 단골 등급을 개수로 세던 시절이라
+     * 그때 사가던 개수로 방문 횟수를 되짚어 준다. 없으면 전원 1성으로
+     * 떨어져 몇 시간치 진행이 사라진다. */
+    if (save && !save.visits) {
+      this.visits = {};
+      for (const g of GUESTS) {
+        const n = this.bought[g.id];
+        if (n) this.visits[g.id] = Math.round(n / (g.qty * 1.8));
+      }
+    }
   }
 
   /* ── 품목 ── */
@@ -53,18 +66,49 @@ export class Sim {
    * 화면에는 오래도록 '생산 2배'라고 적혀 있었지만 생산은 한 번도 안 빨라졌다. */
   milestone(id) { return Math.pow(MILESTONE_MULT, Math.floor(this.lv(id) / MILESTONE_EVERY)); }
 
-  /* ── 단골 ── */
+  /** 이 손님이 다음에 올 때까지의 간격(초).
+   *
+   *  wild가 0이면 every 그대로 — 시계처럼 온다.
+   *  wild가 1이면 '초당 1/every 확률로 온다'와 같은 것(지수분포)이 된다.
+   *  둘 사이는 섞는다. **어느 쪽이든 평균 간격은 every 그대로**라서
+   *  밸런스 표를 다시 잴 필요가 없다. 흔들리기만 한다.
+   */
+  _gap(g, rng = Math.random) {
+    const w = g.wild || 0;
+    if (w <= 0) return g.every;
+    const e = -Math.log(1 - rng() * 0.999);          // 평균 1인 지수분포
+    return Math.max(g.every * 0.15, g.every * (1 - w + w * e));
+  }
+
+  /* ── 단골 20성 ── */
+  /** i성에 오르는 데 필요한 **방문 횟수**.
+   *
+   *  개수로 세면 안 된다. 등급이 오르면 한 번에 사가는 개수가 늘고, 그러면
+   *  다음 등급이 더 빨리 온다 — 눈덩이가 굴러서 두 시간 만에 12성이 됐다.
+   *  실제로 그렇게 만들어 재보니 진열대가 다시 텅 비었다(못채움 28%).
+   *  방문 횟수는 등급이 올라도 안 늘어나므로 눈덩이가 안 생긴다.
+   *
+   *  REGULARS[i].at은 초 단위라 손님의 오는 간격으로 나눈다. 그래서
+   *  **누구든 마을에 온 뒤 같은 시간이 흐르면 같은 성**이 된다 —
+   *  400초마다 오는 호랑이가 영원히 뜨내기로 남지 않는다. */
+  regularNeed(gid, i) {
+    const g = GUESTS.find((x) => x.id === gid);
+    if (!g) return REGULARS[i].at;
+    return Math.max(1, Math.round(REGULARS[i].at / g.every));
+  }
   regularLv(gid) {
-    const n = this.bought[gid] || 0;
+    const n = this.visits[gid] || 0;
     let lv = 0;
-    for (let i = 1; i < REGULARS.length; i++) if (n >= REGULARS[i].at) lv = i;
+    for (let i = 1; i < REGULARS.length; i++) if (n >= this.regularNeed(gid, i)) lv = i;
     return lv;
   }
   regularName(gid) { return REGULARS[this.regularLv(gid)].name; }
-  /** 다음 등급까지 남은 개수 (최고 등급이면 null) */
+  /** 몇 성인가 (1성부터 센다 — 화면에 그대로 보여준다) */
+  regularStar(gid) { return this.regularLv(gid) + 1; }
+  /** 다음 등급까지 남은 방문 횟수 (최고 등급이면 null) */
   regularLeft(gid) {
     const lv = this.regularLv(gid);
-    return lv >= REGULARS.length - 1 ? null : REGULARS[lv + 1].at - (this.bought[gid] || 0);
+    return lv >= REGULARS.length - 1 ? null : this.regularNeed(gid, lv + 1) - (this.visits[gid] || 0);
   }
   /** 모든 손님의 단골 등급 합계. 가게 승급 조건에 쓴다. */
   regularSum() { return this.guests.reduce((a, g) => a + this.regularLv(g), 0); }
@@ -353,8 +397,10 @@ export class Sim {
       if (!this.guests.includes(g.id)) continue;
       // 장이 서면 손님이 그만큼 자주 온다
       this._guestAcc[g.id] += dt * (this.fair > 0 ? FAIR.mult : 1);
-      while (this._guestAcc[g.id] >= g.every) {
-        this._guestAcc[g.id] -= g.every;
+      if (this._guestGap[g.id] == null) this._guestGap[g.id] = this._gap(g, rng);
+      while (this._guestAcc[g.id] >= this._guestGap[g.id]) {
+        this._guestAcc[g.id] -= this._guestGap[g.id];
+        this._guestGap[g.id] = this._gap(g, rng);
         const s = this._buy(g, rng);
         if (s) sales.push(s);
       }
@@ -440,9 +486,10 @@ export class Sim {
     // 단골 등급이 올랐으면 알린다 — 손님이 굳어 있지 않다는 신호다
     const before = this.regularLv(g.id);
     this.bought[g.id] = (this.bought[g.id] || 0) + (qty - left);
+    this.visits[g.id] = (this.visits[g.id] || 0) + 1;
     const after = this.regularLv(g.id);
     if (after > before) {
-      this._ev(`${g.name}이(가) ${REGULARS[after].name} 손님이 되었다`, 'guest');
+      this._ev(`${g.name}이(가) ${after + 1}성 ${REGULARS[after].name}이(가) 되었다`, 'guest');
     }
     return { guest: g, lines, gain, n: qty - left, want: qty };
   }

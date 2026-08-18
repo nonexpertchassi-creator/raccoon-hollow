@@ -747,11 +747,13 @@ export class Village {
     /* 단골은 갓을 쓴다. 등급이 오를수록 갓이 커지고 색이 진해진다.
      * 손님 머리 위에 글자를 얹으면 여럿 몰릴 때 다시 겹치므로 모양으로 알린다. */
     if (w.reg > 0) {
-      const y = w.y - 24 + bob, sw = 9 + w.reg * 2.2;
-      const tone = ['', '#8a7a63', '#6d5236', '#3f3327', '#2b241b'][w.reg];
+      /* 20성을 갓 다섯 단계로 접는다. 성마다 갓이 커지면 정승 갓이 화면을 덮는다. */
+      const tier = Math.min(4, Math.ceil(w.reg / 4));
+      const y = w.y - 24 + bob, sw = 9 + tier * 2.2;
+      const tone = ['', '#8a7a63', '#6d5236', '#3f3327', '#2b241b'][tier];
       G.round(c, w.x - sw, y, sw * 2, 3.5, 2, tone);          // 갓양태
       G.round(c, w.x - sw * 0.42, y - 6.5, sw * 0.84, 8, 3, tone);  // 갓모자
-      if (w.reg >= 4) G.circle(c, w.x, y - 8.5, 2.4, '#e0c073');    // 터줏대감은 금관자
+      if (tier >= 4) G.circle(c, w.x, y - 8.5, 2.4, '#e0c073');    // 16성 어사또부터 금관자
     }
   }
 

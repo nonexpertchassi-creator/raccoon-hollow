@@ -18,7 +18,7 @@ export const SHOPS = [
     desc: '무쇠를 두드려 연장을 만든다',
     color: '#b8622f',
     ranks: ['돌', '쇠', '강철'],
-    promote: [10_000_000_000, 300_000_000_000_000],
+    promote: [10_000_000_000, 1_200_000_000_000_000],
     items: [
       { id: 'pick',   name: '곡괭이', price: 12,     time: 3.0, cost: 0 },
       { id: 'sickle', name: '낫',     price: 34,     time: 3.8, cost: 260 },
@@ -31,7 +31,7 @@ export const SHOPS = [
     desc: '붓과 먹을 다룬다',
     color: '#3f6f4a',
     ranks: ['거친', '고운', '명품'],
-    promote: [60_000_000_000, 1_500_000_000_000_000],
+    promote: [150_000_000_000, 4_000_000_000_000_000],
     items: [
       { id: 'brush',    name: '붓',   price: 700,    time: 4.2, cost: 0 },
       { id: 'ink',      name: '먹',   price: 1_900,  time: 5.0, cost: 60_000 },
@@ -99,51 +99,80 @@ export const GUESTS = [
    *   pay     부르는 값 배수         1보다 작으면 깎는다
    *   spread  훑는 품목 종류 수      1이면 한 종류를 쓸어간다 = 품절
    *   speed   걷는 속도 배수         화면에서만 쓴다
+   *   wild    등장의 들쭉날쭉함      0이면 시계처럼, 1이면 완전히 운
+   *
+   * wild를 넣은 이유: every만 있으면 호랑이도 400초마다 정확히 온다.
+   * 시계처럼 오는 희귀 손님은 희귀하게 느껴지지 않는다. 평균 간격은
+   * 그대로 두고 흔들기만 한다 — 자주 오는 앞 손님(토끼·까치)은 0으로
+   * 둬서 길에 사람이 끊기지 않게 하고, 뒤로 갈수록 운에 맡긴다.
    */
-  { id: 'rabbit',   name: '토끼',   face: '🐰', every: 4.6,  qty: 3,  pay: 1.0,  spread: 3, speed: 1.4,
+  { id: 'rabbit',   name: '토끼',   face: '🐰', every: 4.6,  qty: 3,  pay: 1.0,  spread: 3, speed: 1.4, wild: 0,
     at: 0,             desc: '발이 빠르지만 조금씩만 산다' },
-  { id: 'magpie',   name: '까치',   face: '🐦', every: 3.1,  qty: 2,  pay: 0.85, spread: 2, speed: 1.7,
+  { id: 'magpie',   name: '까치',   face: '🐦', every: 3.1,  qty: 2,  pay: 0.85, spread: 2, speed: 1.7, wild: 0,
     at: 60_000,        desc: '쉴 새 없이 들르는 대신 값을 깎는다' },
-  { id: 'squirrel', name: '다람쥐', face: '🐿️', every: 4.2,  qty: 2,  pay: 1.15, spread: 2, speed: 1.5,
+  { id: 'squirrel', name: '다람쥐', face: '🐿️', every: 4.2,  qty: 2,  pay: 1.15, spread: 2, speed: 1.5, wild: 0.15,
     at: 2_500_000,     desc: '자주 오지만 한두 개면 족하다' },
-  { id: 'badger',   name: '오소리', face: '🦡', every: 17,   qty: 5,  pay: 1.5,  spread: 3, speed: 0.9,
+  { id: 'badger',   name: '오소리', face: '🦡', every: 17,   qty: 5,  pay: 1.5,  spread: 3, speed: 0.9, wild: 0.3,
     at: 400_000_000,   desc: '느긋하게 두루 산다' },
-  { id: 'fox',      name: '여우',   face: '🦊', every: 32,   qty: 8,  pay: 1.2,  spread: 3, speed: 1.35,
+  { id: 'fox',      name: '여우',   face: '🦊', every: 32,   qty: 8,  pay: 1.2,  spread: 3, speed: 1.35, wild: 0.4,
     at: 15_000_000_000, desc: '재빠르지만 값을 깎는 데 능하다' },
-  { id: 'deer',     name: '사슴',   face: '🦌', every: 50,   qty: 9,  pay: 2.8,  spread: 3, speed: 1.2,
+  { id: 'deer',     name: '사슴',   face: '🦌', every: 50,   qty: 9,  pay: 2.8,  spread: 3, speed: 1.2, wild: 0.5,
     at: 500_000_000_000, desc: '값을 후하게 쳐준다' },
-  { id: 'boar',     name: '멧돼지', face: '🐗', every: 80,   qty: 12, pay: 2.2,  spread: 1, speed: 1.1,
+  { id: 'boar',     name: '멧돼지', face: '🐗', every: 80,   qty: 12, pay: 2.2,  spread: 1, speed: 1.1, wild: 0.6,
     at: 1_500_000_000_000, desc: '한 종류를 통째로 쓸어간다' },
-  { id: 'bear',     name: '곰',     face: '🐻', every: 120,  qty: 16, pay: 4.0,  spread: 1, speed: 0.8,
+  { id: 'bear',     name: '곰',     face: '🐻', every: 120,  qty: 16, pay: 4.0,  spread: 1, speed: 0.8, wild: 0.7,
     at: 3_000_000_000_000, desc: '진열대를 품절 내고 간다' },
-  { id: 'turtle',   name: '거북',   face: '🐢', every: 110,  qty: 14, pay: 7.0,  spread: 3, speed: 0.45,
+  { id: 'turtle',   name: '거북',   face: '🐢', every: 110,  qty: 14, pay: 7.0,  spread: 3, speed: 0.45, wild: 0.8,
     at: 8_000_000_000_000, desc: '걸음은 느리나 씀씀이가 크다' },
-  { id: 'crane',    name: '두루미', face: '🦢', every: 145,  qty: 16, pay: 6.0,  spread: 4, speed: 1.1,
+  { id: 'crane',    name: '두루미', face: '🦢', every: 145,  qty: 16, pay: 6.0,  spread: 4, speed: 1.1, wild: 0.8,
     at: 14_000_000_000_000, desc: '이것저것 골고루 챙긴다' },
-  { id: 'ox',       name: '소',     face: '🐂', every: 260,  qty: 26, pay: 5.0,  spread: 3, speed: 0.4,
+  { id: 'ox',       name: '소',     face: '🐂', every: 260,  qty: 26, pay: 5.0,  spread: 3, speed: 0.4, wild: 0.9,
     at: 60_000_000_000_000, desc: '느릿느릿 오지만 수레가 가득 찬다' },
-  { id: 'tiger',    name: '호랑이', face: '🐯', every: 400,  qty: 34, pay: 13.0, spread: 2, speed: 0.95,
+  { id: 'tiger',    name: '호랑이', face: '🐯', every: 400,  qty: 34, pay: 13.0, spread: 2, speed: 0.95, wild: 1.0,
     at: 400_000_000_000_000, desc: '어쩌다 오지만 한 번에 어마어마하게 산다' },
 ];
 
-/* ───────────── 단골 ─────────────
+/* ───────────── 단골 20성 ─────────────
  * 자주 오는 손님은 단골이 된다. 많이 사가고 값도 후하게 쳐준다.
  *
- * 왜 필요한가: 손님은 마을에 온 뒤로 아무 변화가 없었다. 마지막 손님이
- * 4시간 10분에 오고 나면 일곱이 그대로 굳는다. 단골이 있으면 손님마다
- * 다섯 번씩, 서른다섯 번의 작은 사건이 열 시간에 걸쳐 이어진다.
+ * 왜 20단계인가: 5단계 × 12손님 = 작은 사건 60번이었다. 20단계면 240번이다.
+ * 방치형에서 축 하나가 이 정도는 돼야 몇 시간을 버틴다. 호칭이 조선 벼슬로
+ * 올라가다가 20성에서 상감마마가 되는 것이 이 게임식 농담이다.
  *
- * 값이 아니라 **개수**를 주로 올린다. 이 게임은 물건이 남아도는 쪽이
- * 병목이라(진열대가 꽉 찬 시간 16.5%), 수요를 늘려야 쌓인 재고도 같이 빠진다.
+ * ★ at은 개수가 아니라 **그 손님을 상대한 시간(초)**이다.
  *
- * 문턱은 실측으로 잡았다 — 토끼가 10분에 515개, 8시간에 34,000개를 사간다.
+ * 개수로 두면 안 되는 이유: 손님마다 사가는 속도가 8배까지 벌어졌다
+ * (까치 초당 0.65개, 호랑이 0.085개). 같은 개수 문턱을 걸면 까치는
+ * 순식간에 상감마마가 되고 호랑이는 영원히 뜨내기다. sim.regularNeed()가
+ * 이 초를 손님의 기본 속도(qty/every)로 곱해 개수로 바꾼다. 그래서
+ * **누구든 같은 시간에 같은 성**에 오른다.
+ *
+ * 개수와 값을 **같은 폭으로** 올린다(둘 다 20성에 ×2.4). 예전엔 개수를
+ * 세 배로 밀었는데(값은 ×1.35), 그때는 물건이 남아도는 게 병목이라
+ * 수요를 키워야 했다. 손님이 열둘이 된 지금은 정반대다 — 개수를 더 밀면
+ * 진열대가 텅 빈다. 실제로 ×4.2로 잡아 재보니 못 사고 간 손님이 32%였다.
  */
 export const REGULARS = [
-  { at: 0,      name: '뜨내기',   qty: 1,    pay: 1 },
-  { at: 500,    name: '낯익은',   qty: 1.25, pay: 1.05 },
-  { at: 2_500,  name: '단골',     qty: 1.6,  pay: 1.1 },
-  { at: 10_000, name: '귀한',     qty: 2.1,  pay: 1.2 },
-  { at: 30_000, name: '터줏대감', qty: 3,    pay: 1.35 },
+  { at:       0, name: '뜨내기',         qty: 1.00, pay: 1.00 },
+  { at:     120, name: '스치는 손',     qty: 1.05, pay: 1.05 },
+  { at:     300, name: '낯익은',         qty: 1.10, pay: 1.10 },
+  { at:     600, name: '눈인사',         qty: 1.17, pay: 1.17 },
+  { at:   1_000, name: '단골',           qty: 1.23, pay: 1.23 },
+  { at:   1_600, name: '참단골',         qty: 1.30, pay: 1.30 },
+  { at:   2_400, name: '왕단골',         qty: 1.37, pay: 1.37 },
+  { at:   3_400, name: '귀한 손',       qty: 1.44, pay: 1.44 },
+  { at:   4_700, name: '극진한 손',     qty: 1.52, pay: 1.52 },
+  { at:   6_400, name: '터줏대감',       qty: 1.59, pay: 1.59 },
+  { at:   8_600, name: '상터줏대감',     qty: 1.67, pay: 1.67 },
+  { at:  11_500, name: '만물상 지킴이', qty: 1.75, pay: 1.75 },
+  { at:  15_300, name: '은패',           qty: 1.82, pay: 1.82 },
+  { at:  20_200, name: '금패',           qty: 1.91, pay: 1.91 },
+  { at:  26_500, name: '옥패',           qty: 1.99, pay: 1.99 },
+  { at:  34_500, name: '어사또',         qty: 2.07, pay: 2.07 },
+  { at:  45_000, name: '원님',           qty: 2.15, pay: 2.15 },
+  { at:  58_000, name: '판서',           qty: 2.23, pay: 2.23 },
+  { at:  75_000, name: '정승',           qty: 2.32, pay: 2.32 },
+  { at:  96_000, name: '상감마마',       qty: 2.40, pay: 2.40 },
 ];
 
 /** 손님이 "이런 것도 있소?" 하고 물어보는 대사 */
@@ -248,8 +277,8 @@ export const MAX_BULK = 1000;
  */
 export const RANKS = [
   { maxLv: 30,  priceMul: 1,     guests: 0, ips: 0 },
-  { maxLv: 60,  priceMul: 40,    guests: 8,  ips: 1_000_000 },
-  { maxLv: 100, priceMul: 6_000, guests: 18, ips: 10_000_000_000 },
+  { maxLv: 60,  priceMul: 40,    guests: 32,  ips: 1_000_000 },
+  { maxLv: 100, priceMul: 6_000, guests: 135, ips: 10_000_000_000 },
 ];
 
 /** 25레벨마다 그 품목의 **판매가**가 2배가 된다. 24→25가 제일 신나야 한다.
