@@ -417,7 +417,8 @@ export class Sim {
     have.sort((a, b) =>
       (this.items[b].stock >= STOCK_CAP) - (this.items[a].stock >= STOCK_CAP));
 
-    const per = Math.max(1, Math.ceil(qty / BASKET_SPREAD));
+    // 손님마다 훑는 종류 수가 다르다. 곰·멧돼지는 1이라 한 종류를 쓸어간다.
+    const per = Math.max(1, Math.ceil(qty / (g.spread || BASKET_SPREAD)));
     const lines = [];
     let left = qty, gain = 0;
 

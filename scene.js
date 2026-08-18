@@ -210,6 +210,7 @@ export class Village {
     this.walkers.push({
       face: sale.guest.face,
       reg: this.sim.regularLv(sale.guest.id),   // 단골 등급 — 갓으로 보여준다
+      speed: sale.guest.speed || 1,             // 거북은 느리고 까치는 빠르다
       carry: carryOf(sale.guest.qty),
       stops, si: 0,
       lane: (Math.random() - 0.5) * (ROAD_W - 34),
@@ -246,11 +247,11 @@ export class Village {
       if (w.state === 'in' && stop) {
         const sl = slotOf(stop.idx);
         const dy = sl.standY - w.y;
-        w.y += Math.sign(dy) * Math.min(Math.abs(dy), 155 * dt);
+        w.y += Math.sign(dy) * Math.min(Math.abs(dy), 155 * w.speed * dt);
         // 멀리 있을 땐 구부러진 길을 따라가고, 가까워지면 가게 앞으로 꺾는다
         const tx = Math.abs(dy) < 130 ? sl.standX : roadX(w.y) + w.lane;
         const dx = tx - w.x;
-        w.x += Math.sign(dx) * Math.min(Math.abs(dx), 175 * dt);
+        w.x += Math.sign(dx) * Math.min(Math.abs(dx), 175 * w.speed * dt);
         if (Math.abs(dy) < 3 && Math.abs(sl.standX - w.x) < 3) {
           w.state = 'buy'; w.wait = 0.7;
           for (const s of stop.sold) {              // 도착한 지금이 재고가 빠지는 순간
@@ -280,7 +281,7 @@ export class Village {
         w.wait -= dt;
         if (w.wait <= 0) { w.si++; w.state = w.si < w.stops.length ? 'in' : 'out'; }
       } else {
-        w.y += 150 * dt * w.exit;
+        w.y += 150 * w.speed * dt * w.exit;
         const back = roadX(w.y) + w.lane - w.x;
         w.x += Math.sign(back) * Math.min(Math.abs(back), 120 * dt);
       }
@@ -737,7 +738,7 @@ export class Village {
   }
 
   _walker(c, w) {
-    const bob = Math.sin(this.t * 9 + w.bob) * (w.state === 'buy' ? 0.8 : 2.4);
+    const bob = Math.sin(this.t * 9 * w.speed + w.bob) * (w.state === 'buy' ? 0.8 : 2.4);
     c.fillStyle = 'rgba(0,0,0,.17)';
     c.beginPath(); c.ellipse(w.x, w.y + 8, 11, 4.5, 0, 0, 7); c.fill();
     this._carry(c, w, bob);

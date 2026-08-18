@@ -90,13 +90,40 @@ export const SHOPS = [
  * 그 뒤로는 새 얼굴이 없었다. 지금은 전 구간에 펼쳐 놓았다.
  */
 export const GUESTS = [
-  { id: 'rabbit',   name: '토끼',   face: '🐰', every: 3.0,  qty: 3,  pay: 1.0, at: 0 },
-  { id: 'squirrel', name: '다람쥐', face: '🐿️', every: 4.0,  qty: 4,  pay: 1.2, at: 2_500_000 },
-  { id: 'badger',   name: '오소리', face: '🦡', every: 5.5,  qty: 5,  pay: 1.5, at: 400_000_000 },
-  { id: 'fox',      name: '여우',   face: '🦊', every: 7.0,  qty: 7,  pay: 2.0, at: 15_000_000_000 },
-  { id: 'deer',     name: '사슴',   face: '🦌', every: 8.5,  qty: 9,  pay: 2.8, at: 500_000_000_000 },
-  { id: 'bear',     name: '곰',     face: '🐻', every: 10.0, qty: 12, pay: 4.0, at: 3_000_000_000_000 },
-  { id: 'crane',    name: '두루미', face: '🦢', every: 12.0, qty: 16, pay: 6.0, at: 14_000_000_000_000 },
+  /* 손님마다 성격이 있다. 예전엔 every·qty·pay가 뒤로 갈수록 나란히 커져서
+   * 나중 손님이 앞 손님의 상위호환이었다 — 그래서 일곱이든 스물이든
+   * 똑같이 느껴졌다. 이제 각자 잘하는 것과 못하는 것이 갈린다.
+   *
+   *   every   오는 간격(초)          작을수록 자주 온다
+   *   qty     한 번에 사가는 개수
+   *   pay     부르는 값 배수         1보다 작으면 깎는다
+   *   spread  훑는 품목 종류 수      1이면 한 종류를 쓸어간다 = 품절
+   *   speed   걷는 속도 배수         화면에서만 쓴다
+   */
+  { id: 'rabbit',   name: '토끼',   face: '🐰', every: 4.6,  qty: 3,  pay: 1.0,  spread: 3, speed: 1.4,
+    at: 0,             desc: '발이 빠르지만 조금씩만 산다' },
+  { id: 'magpie',   name: '까치',   face: '🐦', every: 3.1,  qty: 2,  pay: 0.85, spread: 2, speed: 1.7,
+    at: 60_000,        desc: '쉴 새 없이 들르는 대신 값을 깎는다' },
+  { id: 'squirrel', name: '다람쥐', face: '🐿️', every: 4.2,  qty: 2,  pay: 1.15, spread: 2, speed: 1.5,
+    at: 2_500_000,     desc: '자주 오지만 한두 개면 족하다' },
+  { id: 'badger',   name: '오소리', face: '🦡', every: 17,   qty: 5,  pay: 1.5,  spread: 3, speed: 0.9,
+    at: 400_000_000,   desc: '느긋하게 두루 산다' },
+  { id: 'fox',      name: '여우',   face: '🦊', every: 32,   qty: 8,  pay: 1.2,  spread: 3, speed: 1.35,
+    at: 15_000_000_000, desc: '재빠르지만 값을 깎는 데 능하다' },
+  { id: 'deer',     name: '사슴',   face: '🦌', every: 50,   qty: 9,  pay: 2.8,  spread: 3, speed: 1.2,
+    at: 500_000_000_000, desc: '값을 후하게 쳐준다' },
+  { id: 'boar',     name: '멧돼지', face: '🐗', every: 80,   qty: 12, pay: 2.2,  spread: 1, speed: 1.1,
+    at: 1_500_000_000_000, desc: '한 종류를 통째로 쓸어간다' },
+  { id: 'bear',     name: '곰',     face: '🐻', every: 120,  qty: 16, pay: 4.0,  spread: 1, speed: 0.8,
+    at: 3_000_000_000_000, desc: '진열대를 품절 내고 간다' },
+  { id: 'turtle',   name: '거북',   face: '🐢', every: 110,  qty: 14, pay: 7.0,  spread: 3, speed: 0.45,
+    at: 8_000_000_000_000, desc: '걸음은 느리나 씀씀이가 크다' },
+  { id: 'crane',    name: '두루미', face: '🦢', every: 145,  qty: 16, pay: 6.0,  spread: 4, speed: 1.1,
+    at: 14_000_000_000_000, desc: '이것저것 골고루 챙긴다' },
+  { id: 'ox',       name: '소',     face: '🐂', every: 260,  qty: 26, pay: 5.0,  spread: 3, speed: 0.4,
+    at: 60_000_000_000_000, desc: '느릿느릿 오지만 수레가 가득 찬다' },
+  { id: 'tiger',    name: '호랑이', face: '🐯', every: 400,  qty: 34, pay: 13.0, spread: 2, speed: 0.95,
+    at: 400_000_000_000_000, desc: '어쩌다 오지만 한 번에 어마어마하게 산다' },
 ];
 
 /* ───────────── 단골 ─────────────
@@ -247,7 +274,7 @@ export const ASK_EVERY = 14;
 /** 진열 가능한 재고 상한. 넘치면 생산이 멈춘다 = 손님이 와야 다시 돈다. */
 export const STOCK_CAP = 40;
 
-/** 손님 한 명이 몇 종류를 집어가는가.
+/** 손님이 몇 종류를 집어가는가의 기본값. 손님마다 spread로 덮어쓴다.
  *
  * 이 게임에서 제일 중요한 숫자다. 예전엔 이 개념이 아예 없었다(=사실상 1) —
  * 손님이 제일 비싼 것 한 종류만 사갔고, 그래서 싼 품목은 재고 상한에 박혀
