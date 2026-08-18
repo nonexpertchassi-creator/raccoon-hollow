@@ -9,7 +9,7 @@
 
 import {
   SHOPS, GUESTS, LEVEL, MILESTONE_EVERY, MILESTONE_MULT, STOCK_CAP, OFFLINE, ASK_LINES,
-  BASKET_SPREAD, MAX_BULK, AUTO_COST, AUTO_PER_TICK, AUTO_SHARE,
+  BASKET_SPREAD, MAX_BULK, AUTO_COST, AUTO_PER_TICK, AUTO_SHARE, ASK_EVERY,
 } from './content.js';
 
 const ALL_ITEMS = SHOPS.flatMap((s) => s.items.map((i) => ({ ...i, shop: s.id })));
@@ -42,7 +42,8 @@ export class Sim {
   isOpen(id) { return !!this.items[id]; }
   lv(id) { return this.items[id]?.lv ?? 0; }
 
-  /** 25레벨마다 2배 */
+  /** 25레벨마다 2배. **판매가**에만 붙는다 — price()에서만 쓰인다.
+   * 화면에는 오래도록 '생산 2배'라고 적혀 있었지만 생산은 한 번도 안 빨라졌다. */
   milestone(id) { return Math.pow(MILESTONE_MULT, Math.floor(this.lv(id) / MILESTONE_EVERY)); }
 
   price(id) {
@@ -108,7 +109,7 @@ export class Sim {
     const before = Math.floor(this.lv(id) / MILESTONE_EVERY);
     this.items[id].lv += n;
     const after = Math.floor(this.lv(id) / MILESTONE_EVERY);
-    if (after > before) this._ev(`${itemById(id).name} ${this.lv(id)}레벨 — 생산 2배!`, 'milestone');
+    if (after > before) this._ev(`${itemById(id).name} ${this.lv(id)}레벨 — 값이 2배!`, 'milestone');
     return n;
   }
 
@@ -167,7 +168,7 @@ export class Sim {
       const before = Math.floor(this.lv(best) / MILESTONE_EVERY);
       this.items[best].lv++;
       if (Math.floor(this.lv(best) / MILESTONE_EVERY) > before) {
-        this._ev(`${itemById(best).name} ${this.lv(best)}레벨 — 생산 2배!`, 'milestone');
+        this._ev(`${itemById(best).name} ${this.lv(best)}레벨 — 값이 2배!`, 'milestone');
       }
       done++;
     }
@@ -223,7 +224,7 @@ export class Sim {
     // 4) 손님이 없는 물건을 물어본다 → 그게 다음 목표가 된다
     let ask = null;
     this._askAcc += dt;
-    if (this._askAcc >= 14) {
+    if (this._askAcc >= ASK_EVERY) {
       this._askAcc = 0;
       ask = this._ask(rng);
     }
