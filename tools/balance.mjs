@@ -31,13 +31,19 @@ function act(s) {
   const ns = s.nextShop();
   if (ns && s.money >= ns.cost) { s.openShop(ns.id); return 'shop'; }
   for (const id of s.asked) if (s.canOpenItem(id)) { s.openItem(id); return 'item'; }
+  if (s.canBuyAuto()) { s.buyAuto(); return 'auto'; }
+  /* 자동 강화를 산 뒤로는 손으로 안 누른다 — 그게 산 이유다.
+   * 그래서 여기 세어지는 'level'은 자동 강화를 사기 전까지의 클릭 수다. */
+  if (s.auto) return null;
   const open = Object.keys(s.items).sort((a, b) => s.levelCost(a) - s.levelCost(b));
-  for (const id of open) if (s.money >= s.levelCost(id)) { s.levelUp(id); return 'level'; }
+  for (const id of open) if (s.money >= s.levelCost(id)) {
+    s.levelUpMany(id, 10); return 'level';
+  }
   return null;
 }
 
 const firstShop = new Map(), firstGuest = new Map(), firstItem = new Map();
-const waits = []; const counts = { shop: 0, item: 0, level: 0 };
+const waits = []; const counts = { shop: 0, item: 0, level: 0, auto: 0 };
 let last = 0, samples = 0, timeline = [];
 
 /* 품목별 성적표. 죽은 품목을 찾아내는 게 이 도구의 존재 이유다. */
@@ -133,7 +139,8 @@ console.log('\n■ 뭔가 할 수 있게 되기까지 기다린 시간');
 if (w.length) {
   console.log(`   총 ${waits.length}회 · 중앙값 ${w[Math.floor(w.length / 2)].toFixed(1)}초 · ` +
     `상위10% ${w[Math.floor(w.length * 0.9)].toFixed(1)}초 · 최장 ${w[w.length - 1].toFixed(1)}초`);
-  console.log(`   가게 ${counts.shop} · 새 품목 ${counts.item} · 레벨업 ${counts.level}`);
+  console.log(`   가게 ${counts.shop} · 새 품목 ${counts.item} · 강화 클릭 ${counts.level}` +
+    (s.auto ? ' (자동 강화 구입 후로는 0)' : ''));
 }
 
 /* ── 콘텐츠 소진 ──

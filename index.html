@@ -70,6 +70,11 @@ main{flex:1;overflow-y:auto;padding:10px 12px 16px;border-top:1.5px solid var(--
 .up:active{transform:translateY(1px)}
 .up:disabled{background:#c9bb9f;color:#8d8069;cursor:default}
 .up.ms{background:var(--jade)}
+/* 묶음 강화. 6시간에 레벨업 클릭이 1945번 나와서 붙였다. */
+.ups{display:flex;gap:6px;margin-top:8px}
+.ups .up{margin-top:0}
+.up.bulk{width:auto;flex:0 0 auto;padding:9px 13px;background:var(--ink2)}
+.up.bulk:disabled{background:#c9bb9f;color:#8d8069}
 
 .locked-item{background:transparent;border:1.5px dashed var(--line);color:var(--ink3)}
 .locked-item .nm{color:var(--ink2)}
@@ -89,6 +94,16 @@ main{flex:1;overflow-y:auto;padding:10px 12px 16px;border-top:1.5px solid var(--
 .plot button{border:0;background:var(--jade);color:#fff;border-radius:8px;padding:8px 13px;
   font:800 12.5px inherit;cursor:pointer}
 .plot button:disabled{background:#c9bb9f;color:#8d8069}
+/* 자동 강화. 손으로 1986번 누르던 걸 없애는 물건이라 마을 화면 맨 위에 둔다. */
+.autobox{border:1.5px solid var(--gold);border-radius:10px;padding:11px 12px;
+  background:var(--paper2);display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.autobox .nm{font-weight:800;font-size:14px}
+.autobox .ds{font-size:11.5px;color:var(--ink3)}
+.autobox button{margin-left:auto;border:0;background:var(--gold);color:#fff8ec;
+  border-radius:8px;padding:8px 13px;font:800 12.5px inherit;cursor:pointer;white-space:nowrap}
+.autobox button:disabled{background:#c9bb9f;color:#8d8069}
+.autobox.on{border-style:solid;border-color:var(--jade);color:var(--jade);
+  font-weight:700;font-size:12.5px;display:block}
 
 #log{font-size:11.5px;color:var(--ink3);padding:10px 2px 0;line-height:1.75}
 #log div{padding:1px 0}
@@ -128,7 +143,7 @@ main{flex:1;overflow-y:auto;padding:10px 12px 16px;border-top:1.5px solid var(--
 
 <script type="module">
 import { Sim, fmt, itemById, shopById } from './sim.js';
-import { SHOPS, GUESTS, STOCK_CAP, MILESTONE_EVERY } from './content.js';
+import { SHOPS, GUESTS, STOCK_CAP, MILESTONE_EVERY, AUTO_COST } from './content.js';
 import { Store } from './core/store.js';
 import { Juice, Sfx } from './core/juice.js';
 
@@ -195,8 +210,13 @@ function villageHTML() {
         ? `<button data-shop="${s.id}" ${sim.money >= s.cost ? '' : 'disabled'}>${fmt(s.cost)}냥</button>`
         : ''}</div></div>`;
   }).join('');
+  const auto = sim.auto
+    ? `<div class="autobox on">✓ 장부를 정리해 두었다 — 버는 돈의 6할로 알아서 강화된다</div>`
+    : `<div class="autobox"><div><div class="nm">장부 정리</div>
+        <div class="ds">버는 돈의 6할로 알아서 강화한다. 나머지는 그대로 쌓인다</div></div>
+        <button data-auto="1" ${sim.money >= AUTO_COST ? '' : 'disabled'}>${fmt(AUTO_COST)}냥</button></div>`;
   const done = sim.shops.length, all = SHOPS.length;
-  return `<div class="shopnote">가게 ${done} / ${all} — ${done === all
+  return auto + `<div class="shopnote">가게 ${done} / ${all} — ${done === all
     ? '마을이 완전히 살아났다' : '아직 무너진 집이 남아 있다'}</div>
     <div class="village">${plots}</div>
     <div id="log">${sim.events.slice(0, 8)
@@ -218,8 +238,14 @@ function shopHTML(s) {
           <div class="stat"><b>${fmt(sim.price(it.id))}냥</b><br>
             재고 <span class="stk">${st.stock}</span>/${STOCK_CAP} · ${sim.craftTime(it.id).toFixed(1)}초</div>
         </div>
-        <button class="up ${ms ? 'ms' : ''}" data-up="${it.id}"
-          ${sim.money >= cost ? '' : 'disabled'}>레벨업 ${fmt(cost)}냥</button>
+        <div class="ups">
+          <button class="up ${ms ? 'ms' : ''}" data-up="${it.id}" data-n="1"
+            ${sim.money >= cost ? '' : 'disabled'}>레벨업 ${fmt(cost)}냥</button>
+          <button class="up bulk" data-up="${it.id}" data-n="10"
+            ${sim.money >= sim.levelCostMany(it.id, 10) ? '' : 'disabled'}>×10</button>
+          <button class="up bulk" data-up="${it.id}" data-n="max"
+            ${sim.money >= cost ? '' : 'disabled'}>최대</button>
+        </div>
       </div>`;
     }
     if (sim.asked.includes(it.id)) {
@@ -235,6 +261,10 @@ function shopHTML(s) {
 }
 
 function bindVillage() {
+  const ab = document.querySelector('[data-auto]');
+  if (ab) ab.onclick = () => {
+    if (sim.buyAuto()) { Sfx.reward(); Juice.shake(5); renderMain(); }
+  };
   document.querySelectorAll('[data-shop]').forEach((b) => b.onclick = () => {
     if (sim.openShop(b.dataset.shop)) {
       Sfx.win(); Juice.shake(6);
@@ -246,8 +276,9 @@ function bindVillage() {
 function bindShop() {
   document.querySelectorAll('[data-up]').forEach((b) => b.onclick = () => {
     const id = b.dataset.up;
+    const want = b.dataset.n === 'max' ? sim.affordableLevels(id) : Number(b.dataset.n);
     const wasMs = Math.floor(sim.lv(id) / MILESTONE_EVERY);
-    if (!sim.levelUp(id)) return;
+    if (!sim.levelUpMany(id, want)) return;
     if (Math.floor(sim.lv(id) / MILESTONE_EVERY) > wasMs) { Sfx.win(); Juice.shake(7); }
     else Sfx.click();
     renderMain();
@@ -307,6 +338,8 @@ function paint() {
     document.querySelectorAll('[data-shop]').forEach((b) => {
       b.disabled = sim.money < shopById(b.dataset.shop).cost;
     });
+    const ab = document.querySelector('[data-auto]');
+    if (ab) ab.disabled = sim.money < AUTO_COST;
   } else {
     for (const el of document.querySelectorAll('.item[data-id]')) {
       const id = el.dataset.id, st = sim.items[id];
@@ -316,7 +349,12 @@ function paint() {
       if (stk) stk.textContent = st.stock;
     }
     document.querySelectorAll('[data-up]').forEach((b) => {
-      b.disabled = sim.money < sim.levelCost(b.dataset.up);
+      const id = b.dataset.up;
+      // "최대"는 한 레벨이라도 살 수 있으면 켠다 — affordableLevels를 초당 8회씩
+      // 품목마다 부르면 최대 1000회 반복이 그대로 낭비된다.
+      b.disabled = b.dataset.n === '10'
+        ? sim.money < sim.levelCostMany(id, 10)
+        : sim.money < sim.levelCost(id);
     });
     document.querySelectorAll('[data-open]').forEach((b) => {
       b.disabled = sim.money < itemById(b.dataset.open).cost;

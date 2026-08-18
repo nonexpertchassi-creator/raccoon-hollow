@@ -9,7 +9,7 @@
 
 import {
   SHOPS, GUESTS, LEVEL, MILESTONE_EVERY, MILESTONE_MULT, STOCK_CAP, OFFLINE, ASK_LINES,
-  BASKET_SPREAD,
+  BASKET_SPREAD, MAX_BULK, AUTO_COST, AUTO_PER_TICK, AUTO_SHARE,
 } from './content.js';
 
 const ALL_ITEMS = SHOPS.flatMap((s) => s.items.map((i) => ({ ...i, shop: s.id })));
@@ -27,6 +27,8 @@ export class Sim {
     this.asked = [];                     // 손님이 물어본 적 있는(=열 수 있는) 품목
     this.guests = ['rabbit'];
     this.sold = 0;
+    this.auto = false;                    // 자동 강화를 샀는가
+    this._purse = 0;                     // 자동 강화가 쓸 수 있는 몫
     this.events = [];                    // 화면에 띄울 최근 사건
 
     this._guestAcc = {};
@@ -62,22 +64,55 @@ export class Sim {
     return s;
   }
 
-  levelCost(id) {
-    const it = itemById(id);
-    const base = Math.max(20, it.price * 4);
-    return Math.floor(base * Math.pow(LEVEL.costGrowth, this.lv(id) - 1));
+  /** lv레벨에서 다음 한 레벨을 올리는 값 */
+  _stepCost(id, lv) {
+    const base = Math.max(20, itemById(id).price * 4);
+    return Math.floor(base * Math.pow(LEVEL.costGrowth, lv - 1));
   }
 
-  levelUp(id) {
-    const c = this.levelCost(id);
-    if (!this.isOpen(id) || this.money < c) return false;
-    this.money -= c;
+  levelCost(id) { return this._stepCost(id, this.lv(id)); }
+
+  /** n레벨을 한 번에 올리는 총액. 한 레벨씩 n번 올릴 때와 **정확히 같다** —
+   * 묶음 버튼은 손가락을 아끼는 편의일 뿐, 할인도 손해도 아니어야 한다. */
+  levelCostMany(id, n) {
+    let sum = 0;
+    const lv = this.lv(id);
+    for (let k = 0; k < n; k++) sum += this._stepCost(id, lv + k);
+    return sum;
+  }
+
+  /** 지금 가진 돈으로 몇 레벨까지 올릴 수 있나 */
+  affordableLevels(id) {
+    if (!this.isOpen(id)) return 0;
+    let left = this.money, n = 0;
+    const lv = this.lv(id);
+    while (n < MAX_BULK) {
+      const c = this._stepCost(id, lv + n);
+      if (c > left) break;
+      left -= c; n++;
+    }
+    return n;
+  }
+
+  /**
+   * n레벨을 한 번에 올린다. 돈이 모자라면 살 수 있는 만큼만 올리고,
+   * 실제로 오른 레벨 수를 돌려준다.
+   *
+   * 이게 필요한 이유: 6시간 플레이에 레벨업 클릭이 1945번 나왔다.
+   * 의미 있는 선택(새 가게·새 품목)은 14번뿐이었다. 나머지는 전부 손가락 노동이다.
+   */
+  levelUpMany(id, want) {
+    const n = Math.min(want, this.affordableLevels(id));
+    if (n <= 0) return 0;
+    this.money -= this.levelCostMany(id, n);
     const before = Math.floor(this.lv(id) / MILESTONE_EVERY);
-    this.items[id].lv++;
+    this.items[id].lv += n;
     const after = Math.floor(this.lv(id) / MILESTONE_EVERY);
     if (after > before) this._ev(`${itemById(id).name} ${this.lv(id)}레벨 — 생산 2배!`, 'milestone');
-    return true;
+    return n;
   }
+
+  levelUp(id) { return this.levelUpMany(id, 1) === 1; }
 
   /** 손님이 물어본 적 있는 품목만 열 수 있다 */
   canOpenItem(id) {
@@ -91,6 +126,52 @@ export class Sim {
     this.items[id] = { lv: 1, stock: 0, prog: 0 };
     this._ev(`${itemById(id).name} 칸을 열었다`, 'open');
     return true;
+  }
+
+  /* ── 자동 강화 ── */
+  canBuyAuto() { return !this.auto && this.money >= AUTO_COST; }
+
+  buyAuto() {
+    if (!this.canBuyAuto()) return false;
+    this.money -= AUTO_COST;
+    this.auto = true;
+    this._ev('장부를 정리했다 — 이제 알아서 강화된다', 'shop');
+    return true;
+  }
+
+  /**
+   * 버는 돈의 일부를 따로 모아, 그 몫으로 제일 싼 품목부터 알아서 강화한다.
+   *
+   * 기준이 '남은 돈'이 아니라 **버는 속도**인 게 핵심이다. 남은 돈을 기준으로
+   * 하면 다음 목표가 비쌀수록 강화가 멈춰버린다 — 실제로 그렇게 만들었다가
+   * 약재상(200억)을 모으는 동안 수입이 몇 시간째 제자리였다.
+   * 지금은 6할이 강화로 나가고 4할은 늘 쌓이므로 저축과 성장이 같이 간다.
+   */
+  _autoLevel() {
+    if (!this.auto) return 0;
+
+    let budget = Math.min(this._purse, this.money);
+    if (budget <= 0) return 0;
+
+    let done = 0;
+    while (done < AUTO_PER_TICK) {
+      let best = null, bestCost = Infinity;
+      for (const id of Object.keys(this.items)) {
+        const c = this.levelCost(id);
+        if (c < bestCost) { bestCost = c; best = id; }
+      }
+      if (!best || bestCost > budget) break;
+      budget -= bestCost;
+      this._purse -= bestCost;
+      this.money -= bestCost;
+      const before = Math.floor(this.lv(best) / MILESTONE_EVERY);
+      this.items[best].lv++;
+      if (Math.floor(this.lv(best) / MILESTONE_EVERY) > before) {
+        this._ev(`${itemById(best).name} ${this.lv(best)}레벨 — 생산 2배!`, 'milestone');
+      }
+      done++;
+    }
+    return done;
   }
 
   /* ── 가게 ── */
@@ -136,7 +217,10 @@ export class Sim {
       }
     }
 
-    // 3) 손님이 없는 물건을 물어본다 → 그게 다음 목표가 된다
+    // 3) 자동 강화 — 다음 목표 값은 남기고 나머지로 알아서 올린다
+    const autoLv = this._autoLevel();
+
+    // 4) 손님이 없는 물건을 물어본다 → 그게 다음 목표가 된다
     let ask = null;
     this._askAcc += dt;
     if (this._askAcc >= 14) {
@@ -144,7 +228,7 @@ export class Sim {
       ask = this._ask(rng);
     }
 
-    // 4) 새 손님이 마을에 온다
+    // 5) 새 손님이 마을에 온다
     let newGuest = null;
     const ng = GUESTS.find((g) => !this.guests.includes(g.id) && this.revenue >= g.at);
     if (ng) {
@@ -153,7 +237,7 @@ export class Sim {
       this._ev(`${ng.name}이(가) 마을에 왔다`, 'guest');
     }
 
-    return { sales, ask, newGuest };
+    return { sales, ask, newGuest, autoLv };
   }
 
   /**
@@ -202,6 +286,7 @@ export class Sim {
 
     this.money += gain;
     this.revenue += gain;
+    if (this.auto) this._purse += gain * AUTO_SHARE;
     return { guest: g, lines, gain, n: g.qty - left };
   }
 
@@ -234,6 +319,7 @@ export class Sim {
     const earned = Math.floor(this.incomePerSec() * real * OFFLINE.efficiency);
     this.money += earned;
     this.revenue += earned;
+    if (this.auto) this._purse += earned * AUTO_SHARE;
     return { earned, seconds: real, capped: seconds > OFFLINE.capHours * 3600 };
   }
 
