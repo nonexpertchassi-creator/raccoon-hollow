@@ -53,9 +53,14 @@ function slotOf(i) {
     ...s,
     cx: s.x + BOX_W / 2,
     cy: s.y + BOX_H / 2,
-    // 손님은 길 쪽 가장자리에 선다
-    standX: s.side < 0 ? ROAD_X - ROAD_W / 2 + 16 : ROAD_X + ROAD_W / 2 - 16,
-    standY: s.y + BOX_H - 26,
+    /* 손님이 서는 자리 = 가게 앞.
+     *
+     * 처음엔 길 가장자리(219 / 261)에 세웠는데, 길이 203~277이라 어느 가게에
+     * 가든 길 위 몇 픽셀 차이였다. 그래서 "필방은 손님이 한 번도 안 온다"처럼
+     * 보였다 — 실제로는 30%가 필방으로 가고 있었는데 자리가 티가 안 났다.
+     * 이제 길에서 벗어나 가게 발치까지 들어온다. */
+    standX: s.x + BOX_W * (s.side < 0 ? 0.72 : 0.28),
+    standY: s.y + BOX_H + 8,   // 진열대 숫자를 안 가리도록 가게 발치 바로 아래
   };
 }
 
@@ -161,9 +166,9 @@ export class Village {
       if (w.state === 'in') {
         // 길을 따라 올라가다가, 가게 높이에 닿으면 가게 쪽으로 붙는다
         const dy = sl.standY - w.y;
-        w.y += Math.sign(dy) * Math.min(Math.abs(dy), 132 * dt);
+        w.y += Math.sign(dy) * Math.min(Math.abs(dy), 155 * dt);
         const dx = sl.standX - w.x;
-        if (Math.abs(dy) < 90) w.x += Math.sign(dx) * Math.min(Math.abs(dx), 90 * dt);
+        if (Math.abs(dy) < 130) w.x += Math.sign(dx) * Math.min(Math.abs(dx), 175 * dt);
         if (Math.abs(dy) < 3 && Math.abs(dx) < 3) {
           w.state = 'buy'; w.wait = 0.75;
           // 도착한 지금이 재고가 빠지는 순간이다
