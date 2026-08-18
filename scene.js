@@ -28,7 +28,7 @@ const roadX = (y) => 240 + 24 * Math.sin(y / 175 + 0.6);
  * 폭도 제각각인데, 길이 오른쪽으로 휜 구간에서는 왼쪽에 자리가 더 남기
  * 때문이다. 길에 맞춰 자리를 잡으니 배치가 저절로 불규칙해진다. */
 const SLOTS = [
-  { x: 14,  y: 650, w: 162, h: 132, side: -1 },  // 대장간
+  { x: 14,  y: 616, w: 162, h: 132, side: -1 },  // 대장간
   { x: 280, y: 488, w: 186, h: 126, side: 1 },   // 필방
   { x: 14,  y: 342, w: 178, h: 126, side: -1 },  // 지물포
   { x: 16,  y: 158, w: 196, h: 126, side: -1 },  // 옹기점
@@ -117,10 +117,20 @@ export class Village {
 
   /** 빈 풀밭이 지도 여백처럼 보였다. 나무·장독·초롱·바위를 깔아 마을로 만든다. */
   _props() {
-    const rnd = this._rng(20250818), out = [];
+    /* 마을 어귀의 장승 한 쌍.
+     *
+     * 길이 화면 위아래로 그냥 뚫려 있어 어디가 입구인지 알 수 없었다.
+     * 아래를 장승으로 막아 '마을 어귀', 위를 숲으로 막아 '산길'로 읽히게 한다.
+     * 손님이 위아래 양쪽에서 오는 게 그제야 말이 된다 — 마을을 지나는 길이니까. */
+    const gy = 778, gx = roadX(gy);
+    const out = [
+      { x: gx - 48, y: gy, k: 'jangseung', r: 16, f: 0 },
+      { x: gx + 48, y: gy, k: 'jangseung', r: 16, f: 1 },
+    ];
+    const rnd = this._rng(20250818);
     const kinds = ['tree', 'tree', 'tree', 'jars', 'lantern', 'rock', 'flower', 'flower'];
     let guard = 0;
-    while (out.length < 26 && guard++ < 900) {
+    while (out.length < 28 && guard++ < 900) {
       const x = 14 + rnd() * (W - 28), y = 30 + rnd() * (H - 40);
       if (Math.abs(x - roadX(y)) < ROAD_W / 2 + 20) continue;      // 길 위엔 안 놓는다
       if (SLOTS.some((s) => x > s.x - 22 && x < s.x + s.w + 22 &&
@@ -283,6 +293,14 @@ export class Village {
       G.rect(c, rx - ROAD_W / 2, y, 3, 2.4, C.edge);
       G.rect(c, rx + ROAD_W / 2 - 3, y, 3, 2.4, C.edge);
     }
+    // 위쪽 = 산길. 숲으로 막아 마을이 어디서 끝나는지 보이게 한다.
+    for (let i = 0; i < 15; i++) {
+      const px = 6 + i * 33;
+      if (Math.abs(px - roadX(14)) < ROAD_W / 2 + 12) continue;
+      G.circle(c, px, 4, 21, '#5e7351');
+      G.circle(c, px + 15, -4, 17, '#556a49');
+    }
+
     // 디딤돌. 좌우로 어긋나게 놓아야 사다리처럼 안 보인다.
     for (let i = 0, y = 46; y < H; y += 98, i++) {
       G.round(c, roadX(y) + (i % 2 ? 13 : -13) - 13, y, 26, 13, 6, C.edge);
@@ -313,6 +331,19 @@ export class Village {
       G.round(c, x - 9, y - 48, 18, 17, 6, '#d9534a');
       G.round(c, x - 9, y - 50, 18, 4, 2, C.wood2);
       G.glow(c, x, y - 40, 17, 'rgba(255,214,138,.28)');
+    } else if (p.k === 'jangseung') {
+      // 장승 — 마을 어귀를 지키는 나무 장승. 부릅뜬 눈과 벌린 입이 특징이다.
+      const hh = 44;
+      c.fillStyle = 'rgba(0,0,0,.15)';
+      c.beginPath(); c.ellipse(x, y + 2, 11, 4.5, 0, 0, 7); c.fill();
+      G.round(c, x - 7, y - hh, 14, hh, 3, '#6d5236');
+      G.round(c, x - 12, y - hh - 20, 24, 22, 5, '#836745');
+      G.round(c, x - 16, y - hh - 24, 32, 6, 2, '#57432c');    // 벙거지
+      for (const ex of [-5.5, 5.5]) {
+        G.circle(c, x + ex, y - hh - 13, 3.2, '#f2e8d2');
+        G.circle(c, x + ex, y - hh - 13, 1.5, '#2b241b');
+      }
+      G.round(c, x - 6, y - hh - 6, 12, 4.5, 2, '#3a2c1e');
     } else if (p.k === 'rock') {
       G.circle(c, x, y + 1, r * 0.42, 'rgba(0,0,0,.12)');
       G.round(c, x - r * 0.44, y - r * 0.5, r * 0.88, r * 0.55, 6, '#8d8b7e');
