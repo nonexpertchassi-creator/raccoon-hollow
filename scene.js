@@ -17,8 +17,11 @@ import { Juice, Sfx } from './core/juice.js';
 import { SHOPS, STOCK_CAP } from './content.js';
 import { fmt } from './sim.js';
 
-const W = 480, H = 800;
+/* 보이는 창은 480×800이고, 마을은 그보다 세로로 길다. 손가락으로 밀어 훑는다.
+ * 가게가 늘 때마다 화면에 욱여넣을 수 없어서 세로로 늘렸다. */
+const W = 480, VIEW_H = 800, H = 1560;
 const ROAD_W = 74;
+const CAM_MAX = H - VIEW_H;
 
 /** 구불구불한 길. 이 한 줄이 "지도 느낌"의 가장 큰 원인을 없앤다. */
 const roadX = (y) => 240 + 24 * Math.sin(y / 175 + 0.6);
@@ -28,11 +31,11 @@ const roadX = (y) => 240 + 24 * Math.sin(y / 175 + 0.6);
  * 폭도 제각각인데, 길이 오른쪽으로 휜 구간에서는 왼쪽에 자리가 더 남기
  * 때문이다. 길에 맞춰 자리를 잡으니 배치가 저절로 불규칙해진다. */
 const SLOTS = [
-  { x: 14,  y: 616, w: 162, h: 132, side: -1 },  // 대장간
-  { x: 280, y: 488, w: 186, h: 126, side: 1 },   // 필방
-  { x: 14,  y: 342, w: 178, h: 126, side: -1 },  // 지물포
-  { x: 16,  y: 158, w: 196, h: 126, side: -1 },  // 옹기점
-  { x: 304, y: 14,  w: 164, h: 126, side: 1 },   // 약재상
+  { x: 12,  y: 1358, w: 188, h: 150, side: -1 },  // 대장간
+  { x: 308, y: 1112, w: 160, h: 150, side: 1 },   // 필방
+  { x: 12,  y: 872,  w: 168, h: 150, side: -1 },  // 지물포
+  { x: 12,  y: 612,  w: 160, h: 150, side: -1 },  // 옹기점
+  { x: 300, y: 322,  w: 168, h: 150, side: 1 },   // 약재상
 ];
 
 const C = {
@@ -95,6 +98,11 @@ export class Village {
     this.flash = {};
     this.bubble = null;
     this.t = 0;
+    /* 카메라 — 창의 위쪽이 마을의 어느 높이를 보고 있는가.
+     * 마을 어귀(아래)에서 시작한다. 첫 가게가 거기 있다. */
+    this.cam = CAM_MAX;
+    this.vel = 0;          // 손을 뗀 뒤 미끄러지는 속도
+    this.drag = null;      // 끄는 중일 때 {y, moved}
     this.tufts = this._scatter();
     this.props = this._props();
   }
@@ -107,7 +115,7 @@ export class Village {
 
   _scatter() {
     const rnd = this._rng(7), out = [];
-    for (let i = 0; i < 130; i++) {
+    for (let i = 0; i < 260; i++) {
       const x = rnd() * W, y = rnd() * H;
       if (Math.abs(x - roadX(y)) < ROAD_W / 2 + 6) continue;
       out.push({ x, y, r: 2 + rnd() * 3.2 });
@@ -122,7 +130,7 @@ export class Village {
      * 길이 화면 위아래로 그냥 뚫려 있어 어디가 입구인지 알 수 없었다.
      * 아래를 장승으로 막아 '마을 어귀', 위를 숲으로 막아 '산길'로 읽히게 한다.
      * 손님이 위아래 양쪽에서 오는 게 그제야 말이 된다 — 마을을 지나는 길이니까. */
-    const gy = 778, gx = roadX(gy);
+    const gy = 1522, gx = roadX(gy);
     const out = [
       { x: gx - 48, y: gy, k: 'jangseung', r: 16, f: 0 },
       { x: gx + 48, y: gy, k: 'jangseung', r: 16, f: 1 },
@@ -130,7 +138,7 @@ export class Village {
     const rnd = this._rng(20250818);
     const kinds = ['tree', 'tree', 'tree', 'jars', 'lantern', 'rock', 'flower', 'flower'];
     let guard = 0;
-    while (out.length < 28 && guard++ < 900) {
+    while (out.length < 52 && guard++ < 2600) {
       const x = 14 + rnd() * (W - 28), y = 30 + rnd() * (H - 40);
       if (Math.abs(x - roadX(y)) < ROAD_W / 2 + 20) continue;      // 길 위엔 안 놓는다
       if (SLOTS.some((s) => x > s.x - 22 && x < s.x + s.w + 22 &&
@@ -223,7 +231,12 @@ export class Village {
           }
           const tk = (this.takings[stop.idx] ||= { amount: 0, t: 0 });
           tk.amount += stop.gain; tk.t = 1.7;
-          Juice.burst(w.x, w.y - 14, { n: 4, color: ['#f0d98b'], size: 2, speed: 52, life: 0.34 });
+          // Juice는 엔진이 화면 좌표로 그린다 — 카메라만큼 빼서 넘긴다.
+          // 화면 밖 거래에는 아예 안 뿌린다.
+          const sy = w.y - this.cam;
+          if (sy > -20 && sy < VIEW_H + 20) {
+            Juice.burst(w.x, sy - 14, { n: 4, color: ['#f0d98b'], size: 2, speed: 52, life: 0.34 });
+          }
           Sfx.coin();
         }
       } else if (w.state === 'buy') {
@@ -250,14 +263,44 @@ export class Village {
       if (this.takings[k].t <= 0) delete this.takings[k];
     }
 
-    if (pointer.justDown) {
-      for (let i = 0; i < SHOPS.length; i++) {
-        const s = SLOTS[i];
-        if (pointer.x > s.x && pointer.x < s.x + s.w &&
-            pointer.y > s.y && pointer.y < s.y + s.h) {
-          this.onShopTap(SHOPS[i].id, this.sim.shops.includes(SHOPS[i].id));
-          return;
-        }
+    this._camera(dt, pointer);
+  }
+
+  /* ── 카메라 ──
+   * 손가락으로 밀어 마을을 위아래로 훑는다. 밀었는지 눌렀는지는 움직인
+   * 거리로 가른다 — 안 그러면 스크롤할 때마다 가게 창이 열린다. */
+  _camera(dt, p) {
+    /* justDown으로 시작을 잡는 게 중요하다. '눌린 상태'를 한 프레임이라도
+     * 봐야 하는 방식으로 짰더니, 누름과 뗌이 한 프레임 안에 들어오는 빠른
+     * 탭을 통째로 놓쳤다. justDown은 엔진이 한 프레임 붙들어 주므로 안 샌다. */
+    if (p.justDown) { this.drag = { y: p.y, moved: 0 }; this.vel = 0; }
+
+    if (this.drag && p.down) {
+      const dy = p.y - this.drag.y;
+      this.cam -= dy;
+      this.vel = -dy / Math.max(dt, 1 / 120);
+      this.drag.moved += Math.abs(dy);
+      this.drag.y = p.y;
+    } else if (this.drag) {
+      if (this.drag.moved < 7) this._tap(p.x, p.y + this.cam);   // 민 게 아니라 누른 것
+      this.drag = null;
+    }
+
+    if (!this.drag) {
+      this.cam += this.vel * dt;
+      this.vel *= Math.pow(0.0016, dt);        // 손을 떼면 미끄러지다 멎는다
+      if (Math.abs(this.vel) < 4) this.vel = 0;
+    }
+    if (this.cam < 0) { this.cam = 0; this.vel = 0; }
+    if (this.cam > CAM_MAX) { this.cam = CAM_MAX; this.vel = 0; }
+  }
+
+  _tap(wx, wy) {
+    for (let i = 0; i < SHOPS.length; i++) {
+      const s = SLOTS[i];
+      if (wx > s.x && wx < s.x + s.w && wy > s.y && wy < s.y + s.h) {
+        this.onShopTap(SHOPS[i].id, this.sim.shops.includes(SHOPS[i].id));
+        return;
       }
     }
   }
@@ -266,28 +309,50 @@ export class Village {
    * 건물·소품·손님을 한 줄로 세워 발끝 높이 순으로 그린다. 앞에 있는 것이
    * 뒤를 가려야 평면이 아니라 공간으로 보인다. */
   draw(c) {
-    this._ground(c);
+    const top = this.cam - 60, bot = this.cam + VIEW_H + 60;
+    const near = (y, pad = 0) => y > top - pad && y < bot + pad;
 
+    c.save();
+    c.translate(0, -this.cam);
+    this._ground(c, top, bot);
+
+    /* 화면 밖은 아예 건너뛴다. 마을이 창의 두 배라 그냥 그리면 절반이
+     * 헛일이고, 폰에서 그 값을 그대로 치른다. */
     const layer = [];
     for (let i = 0; i < SHOPS.length; i++) {
-      layer.push({ z: SLOTS[i].y + SLOTS[i].h, d: () => this._shop(c, i) });
+      const s = SLOTS[i];
+      if (near(s.y, s.h + 60)) layer.push({ z: s.y + s.h, d: () => this._shop(c, i) });
     }
-    for (const p of this.props) layer.push({ z: p.y, d: () => this._prop(c, p) });
-    for (const w of this.walkers) layer.push({ z: w.y, d: () => this._walker(c, w) });
+    for (const p of this.props) if (near(p.y, 60)) layer.push({ z: p.y, d: () => this._prop(c, p) });
+    for (const w of this.walkers) if (near(w.y, 40)) layer.push({ z: w.y, d: () => this._walker(c, w) });
     layer.sort((a, b) => a.z - b.z);
     for (const l of layer) l.d();
 
     for (const k of Object.keys(this.takings)) this._takings(c, Number(k));
     if (this.bubble) this._bubble(c);
-    for (const co of this.coins) this._coin(c, co);
+    for (const co of this.coins) if (near(co.y, 30)) this._coin(c, co);
+    c.restore();
+
+    this._scrollHint(c);
   }
 
-  _ground(c) {
-    G.rect(c, 0, 0, W, H, C.grass);
-    for (const t of this.tufts) G.circle(c, t.x, t.y, t.r, C.grass2);
+  /** 마을이 창보다 길다는 걸 알려주는 가느다란 표시 */
+  _scrollHint(c) {
+    const track = VIEW_H - 44;
+    const th = Math.max(46, track * VIEW_H / H);
+    const ty = 22 + (track - th) * (this.cam / CAM_MAX);
+    G.round(c, W - 10, 22, 4, track, 2, 'rgba(43,36,27,.10)');
+    G.round(c, W - 10, ty, 4, th, 2, 'rgba(43,36,27,.34)');
+  }
 
-    // 구부러진 길 — 가로줄을 촘촘히 쌓아 곡선을 만든다
-    for (let y = 0; y < H; y += 2) {
+  _ground(c, top, bot) {
+    G.rect(c, 0, top, W, bot - top, C.grass);
+    for (const t of this.tufts) {
+      if (t.y > top && t.y < bot) G.circle(c, t.x, t.y, t.r, C.grass2);
+    }
+
+    // 구부러진 길 — 가로줄을 촘촘히 쌓아 곡선을 만든다 (보이는 구간만)
+    for (let y = Math.max(0, Math.floor(top / 2) * 2); y < Math.min(H, bot); y += 2) {
       const rx = roadX(y);
       G.rect(c, rx - ROAD_W / 2, y, ROAD_W, 2.4, C.road);
       G.rect(c, rx - ROAD_W / 2, y, 3, 2.4, C.edge);
@@ -303,7 +368,7 @@ export class Village {
 
     // 디딤돌. 좌우로 어긋나게 놓아야 사다리처럼 안 보인다.
     for (let i = 0, y = 46; y < H; y += 98, i++) {
-      G.round(c, roadX(y) + (i % 2 ? 13 : -13) - 13, y, 26, 13, 6, C.edge);
+      if (y > top && y < bot) G.round(c, roadX(y) + (i % 2 ? 13 : -13) - 13, y, 26, 13, 6, C.edge);
     }
   }
 
