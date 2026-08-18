@@ -111,15 +111,26 @@ main{flex:1;overflow-y:auto;padding:10px 12px 16px;border-top:1.5px solid var(--
 .promo .req.on{color:var(--jade)}
 .promo button{margin-top:9px}
 
-/* 단골 목록 */
-.guests{margin-top:12px;border:1.5px solid var(--line);border-radius:12px;padding:11px;background:var(--paper2)}
-.guests .gh{font:800 13px inherit;margin-bottom:7px;color:var(--ink2)}
-.grow{display:flex;align-items:center;gap:7px;padding:3px 0;font-size:12px}
-.grow .gf{font-size:15px}
-.grow .gn{font-weight:800;min-width:44px}
+/* 손님 도감 */
+.gh2{font:800 13px inherit;color:var(--ink2);margin-bottom:9px}
+.gh2 b{color:var(--gold)}
+.grow{display:flex;flex-wrap:wrap;align-items:center;gap:7px;padding:9px 11px;font-size:12.5px;
+  border:1.5px solid var(--line);border-radius:10px;background:var(--paper2);margin-bottom:7px}
+.grow.off{border-style:dashed;background:transparent;color:var(--ink3)}
+.grow .gf{font-size:19px;width:24px;text-align:center}
+.grow.off .gf{color:var(--ink3);font-weight:800}
+.grow .gn{font-weight:800;min-width:46px}
 .grow .gr{font-weight:800;color:var(--gold)}
 .grow .gr.top{color:var(--jade)}
 .grow .gl{margin-left:auto;color:var(--ink3);font-size:11px}
+.grow .gsub{flex-basis:100%;color:var(--ink3);font-size:11px;margin-left:31px}
+/* 버튼 줄. 앞선 규칙의 width:100%를 반드시 풀어야 한다 —
+ * 안 풀면 한쪽이 396px를 먹고 다른 쪽이 40px로 눌려 글자가 줄바꿈되며
+ * 줄 높이가 141px까지 늘어난다. */
+#autobar{display:flex;gap:7px;padding:0 12px}
+#autobar button{flex:1;width:auto;min-width:0;white-space:nowrap}
+#autobar button.ghost{flex:0 0 auto;background:var(--paper2);color:var(--ink2);
+  border:1.5px solid var(--line)}
 
 .locked-item{background:transparent;border:1.5px dashed var(--line);color:var(--ink3)}
 .locked-item .nm{color:var(--ink2)}
@@ -230,6 +241,16 @@ function showOffline(r) {
  * 장면이 기본 화면이 되면서 목록은 여기로 들어왔다. 강화·칸 열기는
  * 손가락으로 정확히 눌러야 하는 조작이라 캔버스보다 DOM이 낫다. */
 let openShopId = null;
+let panelKind = null;      // 'shop' | 'guests'
+
+/** 손님 도감 열기 */
+function openGuests() {
+  panelKind = 'guests'; openShopId = null;
+  $('#ptitle').textContent = '손님 도감';
+  $('#pbody').innerHTML = guestsHTML();
+  $('#panel').hidden = false;
+  Sfx.click();
+}
 
 function openPanel(id, isOpen) {
   const shop = shopById(id);
@@ -243,7 +264,7 @@ function openPanel(id, isOpen) {
     }
     return;
   }
-  openShopId = id;
+  openShopId = id; panelKind = 'shop';
   $('#ptitle').textContent = `${shop.sign} ${shop.name}`;
   $('#pbody').innerHTML = shopHTML(shop);
   $('#panel').hidden = false;
@@ -251,7 +272,7 @@ function openPanel(id, isOpen) {
   Sfx.click();
 }
 
-function closePanel() { openShopId = null; $('#panel').hidden = true; }
+function closePanel() { openShopId = null; panelKind = null; $('#panel').hidden = true; }
 $('#pclose').onclick = () => { Sfx.click(); closePanel(); };
 $('#panel').onclick = (e) => { if (e.target.id === 'panel') closePanel(); };
 
@@ -290,21 +311,38 @@ function shopHTML(s) {
     return `<div class="item locked-item"><div class="row">
       <div><div class="nm">? ? ?</div><div class="lv">아직 아무도 찾지 않았다</div></div></div></div>`;
   }).join('');
-  return `<div class="shopnote">${s.desc}</div>${rows}${promoteHTML(s)}${guestsHTML()}`;
+  return `<div class="shopnote">${s.desc}</div>${rows}${promoteHTML(s)}`;
 }
 
-/* 단골 — 손님이 얼마나 자주 오는지가 여기에 쌓인다.
- * 승급 조건에 '단골 등급 합계'가 있으므로, 지금 누가 몇 급인지 보여야
- * 그 조건이 목표가 된다. */
+/* 손님 도감.
+ *
+ * 단골 목록을 가게 창마다 붙였더니 다섯 곳에 똑같은 게 반복됐다. 손님은
+ * 특정 가게의 것이 아니라 마을 전체의 것이므로 따로 뺀다.
+ *
+ * 아직 안 온 손님도 자리를 비워 보여준다 — 몇이 더 남았는지, 무엇을 하면
+ * 오는지가 보여야 모으는 재미가 생긴다.
+ */
 function guestsHTML() {
-  const rows = GUESTS.filter((g) => sim.guests.includes(g.id)).map((g) => {
+  const rows = GUESTS.map((g) => {
+    if (!sim.guests.includes(g.id)) {
+      return `<div class="grow off"><span class="gf">?</span>
+        <span class="gn">? ? ?</span>
+        <span class="gl">누적 매출 ${fmt(g.at)}냥에 온다</span></div>`;
+    }
     const lv = sim.regularLv(g.id), left = sim.regularLeft(g.id);
-    return `<div class="grow"><span class="gf">${g.face}</span>
+    const carry = g.qty <= 5 ? '맨손' : g.qty <= 9 ? '봇짐' : g.qty <= 12 ? '지게' : '달구지';
+    const bought = sim.bought[g.id] || 0;
+    return `<div class="grow">
+      <span class="gf">${g.face}</span>
       <span class="gn">${g.name}</span>
       <span class="gr ${lv >= 4 ? 'top' : ''}">${sim.regularName(g.id)}</span>
-      <span class="gl">${left === null ? '최고' : `다음까지 ${fmt(left)}개`}</span></div>`;
+      <span class="gl">${left === null ? '최고 등급' : `다음까지 ${fmt(left)}개`}</span>
+      <div class="gsub">${carry} · ${g.every}초마다 · 누적 ${fmt(bought)}개 사감</div>
+    </div>`;
   }).join('');
-  return `<div class="guests"><div class="gh">단골 (등급 합계 ${sim.regularSum()})</div>${rows}</div>`;
+  const have = sim.guests.length;
+  return `<div class="gh2">마을에 온 손님 ${have} / ${GUESTS.length}
+    · 단골 등급 합계 <b>${sim.regularSum()}</b></div>${rows}`;
 }
 
 /* 승급 — 마을이 다 찬 뒤의 다음 목표.
@@ -354,10 +392,13 @@ function bindShop() {
 /* ── 장부 정리(자동 강화) ── */
 function renderAuto() {
   const bar = $('#autobar');
-  if (sim.auto) { bar.innerHTML = ''; return; }
-  bar.innerHTML = `<button id="buyauto" ${sim.money >= AUTO_COST ? '' : 'disabled'}>
-    장부 정리 ${fmt(AUTO_COST)}냥 — 버는 돈의 6할로 알아서 강화</button>`;
-  $('#buyauto').onclick = () => {
+  bar.innerHTML =
+    `<button id="openguests" class="ghost">손님 ${sim.guests.length}/${GUESTS.length}</button>` +
+    (sim.auto ? '' : `<button id="buyauto" ${sim.money >= AUTO_COST ? '' : 'disabled'}>
+      장부 정리 ${fmt(AUTO_COST)}냥</button>`);
+  $('#openguests').onclick = openGuests;
+  const ba = $('#buyauto');
+  if (ba) ba.onclick = () => {
     if (sim.buyAuto()) { Sfx.reward(); Juice.shake(5); renderAuto(); }
   };
 }
@@ -403,7 +444,7 @@ eng.add('village', {
   draw(c) { village.draw(c); },
 });
 
-let lastMoney = -1, lastAuto = null;
+let lastMoney = -1, lastAuto = null, lastGuests = -1, guestTick = 0;
 function paint() {
   const m = $('#money');
   m.textContent = fmt(sim.money) + '냥';
@@ -413,9 +454,16 @@ function paint() {
   $('#shopcount').textContent = `가게 ${sim.shops.length}/${SHOPS.length} · 손님 ${sim.guests.length}`;
 
   const canAuto = !sim.auto && sim.money >= AUTO_COST;
-  if (sim.auto !== lastAuto) { lastAuto = sim.auto; renderAuto(); }
+  if (sim.auto !== lastAuto || lastGuests !== sim.guests.length) {
+    lastAuto = sim.auto; lastGuests = sim.guests.length; renderAuto();
+  }
   const ba = $('#buyauto');
   if (ba) ba.disabled = !canAuto;
+
+  if (panelKind === 'guests') {
+    guestTick += 1;
+    if (guestTick > 8) { guestTick = 0; $('#pbody').innerHTML = guestsHTML(); }
+  }
 
   if (openShopId) {
     for (const el of document.querySelectorAll('.item[data-id]')) {
