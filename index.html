@@ -299,7 +299,7 @@ function renderAuto() {
 }
 
 /* ── 마을 장면 ── */
-const eng = new Engine($('#cv'), { w: 480, h: 800, bg: '#8b9e74' });
+const eng = new Engine($('#cv'), { w: 480, h: 800, bg: '#8b9e74', fit: 'width' });
 const village = new Village(sim, openPanel);
 
 let uiAcc = 0, saveAcc = 0;
@@ -326,7 +326,7 @@ eng.add('village', {
     }
     if (r.newGuest) Sfx.reward();
 
-    village.update(dt, eng.pointer);
+    village.update(dt, eng.pointer, eng.viewH);
 
     // 화면 글자 갱신은 초당 8회면 충분하다. 매 프레임 DOM을 만지면 폰이 뜨거워진다.
     uiAcc += dt;

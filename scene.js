@@ -19,9 +19,8 @@ import { fmt } from './sim.js';
 
 /* 보이는 창은 480×800이고, 마을은 그보다 세로로 길다. 손가락으로 밀어 훑는다.
  * 가게가 늘 때마다 화면에 욱여넣을 수 없어서 세로로 늘렸다. */
-const W = 480, VIEW_H = 800, H = 1560;
+const W = 480, H = 1560;
 const ROAD_W = 74;
-const CAM_MAX = H - VIEW_H;
 
 /** 구불구불한 길. 이 한 줄이 "지도 느낌"의 가장 큰 원인을 없앤다. */
 const roadX = (y) => 240 + 24 * Math.sin(y / 175 + 0.6);
@@ -100,7 +99,8 @@ export class Village {
     this.t = 0;
     /* 카메라 — 창의 위쪽이 마을의 어느 높이를 보고 있는가.
      * 마을 어귀(아래)에서 시작한다. 첫 가게가 거기 있다. */
-    this.cam = CAM_MAX;
+    this.cam = H;          // 첫 update에서 마을 어귀로 물린다
+    this.viewH = 800;      // 기기마다 다르다. 엔진이 매 프레임 알려준다.
     this.vel = 0;          // 손을 뗀 뒤 미끄러지는 속도
     this.drag = null;      // 끄는 중일 때 {y, moved}
     this.tufts = this._scatter();
@@ -200,7 +200,8 @@ export class Village {
   }
 
   /* ── 매 프레임 ── */
-  update(dt, pointer) {
+  update(dt, pointer, viewH) {
+    if (viewH) this.viewH = viewH;
     this.t += dt;
     if (this.bubble) { this.bubble.t -= dt; if (this.bubble.t <= 0) this.bubble = null; }
 
@@ -234,7 +235,7 @@ export class Village {
           // Juice는 엔진이 화면 좌표로 그린다 — 카메라만큼 빼서 넘긴다.
           // 화면 밖 거래에는 아예 안 뿌린다.
           const sy = w.y - this.cam;
-          if (sy > -20 && sy < VIEW_H + 20) {
+          if (sy > -20 && sy < this.viewH + 20) {
             Juice.burst(w.x, sy - 14, { n: 4, color: ['#f0d98b'], size: 2, speed: 52, life: 0.34 });
           }
           Sfx.coin();
@@ -291,9 +292,13 @@ export class Village {
       this.vel *= Math.pow(0.0016, dt);        // 손을 떼면 미끄러지다 멎는다
       if (Math.abs(this.vel) < 4) this.vel = 0;
     }
+    const camMax = this.camMax();
     if (this.cam < 0) { this.cam = 0; this.vel = 0; }
-    if (this.cam > CAM_MAX) { this.cam = CAM_MAX; this.vel = 0; }
+    if (this.cam > camMax) { this.cam = camMax; this.vel = 0; }
   }
+
+  /** 밀 수 있는 최대 거리. 창이 마을보다 크면 0 — 밀 것이 없다. */
+  camMax() { return Math.max(0, H - this.viewH); }
 
   _tap(wx, wy) {
     for (let i = 0; i < SHOPS.length; i++) {
@@ -309,7 +314,7 @@ export class Village {
    * 건물·소품·손님을 한 줄로 세워 발끝 높이 순으로 그린다. 앞에 있는 것이
    * 뒤를 가려야 평면이 아니라 공간으로 보인다. */
   draw(c) {
-    const top = this.cam - 60, bot = this.cam + VIEW_H + 60;
+    const top = this.cam - 60, bot = this.cam + this.viewH + 60;
     const near = (y, pad = 0) => y > top - pad && y < bot + pad;
 
     c.save();
@@ -338,9 +343,11 @@ export class Village {
 
   /** 마을이 창보다 길다는 걸 알려주는 가느다란 표시 */
   _scrollHint(c) {
-    const track = VIEW_H - 44;
-    const th = Math.max(46, track * VIEW_H / H);
-    const ty = 22 + (track - th) * (this.cam / CAM_MAX);
+    const camMax = this.camMax();
+    if (camMax <= 0) return;                 // 다 보이면 표시할 것도 없다
+    const track = this.viewH - 44;
+    const th = Math.max(46, track * this.viewH / H);
+    const ty = 22 + (track - th) * (this.cam / camMax);
     G.round(c, W - 10, 22, 4, track, 2, 'rgba(43,36,27,.10)');
     G.round(c, W - 10, ty, 4, th, 2, 'rgba(43,36,27,.34)');
   }

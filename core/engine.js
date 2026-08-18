@@ -7,10 +7,20 @@
 import { Juice, Sfx } from './juice.js';
 
 export class Engine {
-  constructor(canvas, { w = 480, h = 800, bg = '#0b0d17' } = {}) {
+  /**
+   * @param fit  'contain' 통째로 우겨넣는다 — 남는 쪽에 빈 띠가 생긴다
+   *             'width'   가로만 맞추고 세로는 기기가 주는 대로 받는다
+   *
+   * 세로 게임은 'width'가 맞다. 'contain'으로 두면 iPhone SE에서 좌우 50px,
+   * iPad에서 상하 98px씩 빈 띠가 생긴다. 가로만 맞추면 여백이 아예 없고,
+   * 세로로 넘치거나 모자란 양은 화면을 밀어 훑는 것으로 흡수된다.
+   */
+  constructor(canvas, { w = 480, h = 800, bg = '#0b0d17', fit = 'contain' } = {}) {
     this.cv = canvas;
     this.ctx = canvas.getContext('2d');
-    this.W = w; this.H = h; this.bg = bg;
+    this.W = w; this.H = h; this.bg = bg; this.fit = fit;
+    // 실제로 보이는 범위(가상 단위). 기기마다 다르므로 장면이 이걸 보고 그린다.
+    this.viewW = w; this.viewH = h;
     this.scenes = {}; this.scene = null;
     this.keys = new Set(); this.pointer = { x: 0, y: 0, down: false, justDown: false };
     this.running = false; this.t = 0; this.paused = false;
@@ -23,12 +33,18 @@ export class Engine {
   _fit() {
     const dpr = Math.min(devicePixelRatio || 1, 2);
     const box = this.cv.parentElement.getBoundingClientRect();
-    const s = Math.min(box.width / this.W, box.height / this.H);
+    const s = this.fit === 'width'
+      ? box.width / this.W
+      : Math.min(box.width / this.W, box.height / this.H);
     this.scale = s;
-    this.cv.style.width = this.W * s + 'px';
-    this.cv.style.height = this.H * s + 'px';
-    this.cv.width = this.W * s * dpr;
-    this.cv.height = this.H * s * dpr;
+    const cw = this.fit === 'width' ? box.width : this.W * s;
+    const ch = this.fit === 'width' ? box.height : this.H * s;
+    this.viewW = cw / s;
+    this.viewH = ch / s;
+    this.cv.style.width = cw + 'px';
+    this.cv.style.height = ch + 'px';
+    this.cv.width = Math.round(cw * dpr);
+    this.cv.height = Math.round(ch * dpr);
     this.ctx.setTransform(s * dpr, 0, 0, s * dpr, 0, 0);
   }
 
@@ -93,7 +109,7 @@ export class Engine {
       }
       // 흔들려도 가장자리가 비지 않도록 배경을 넉넉히 칠한다
       c.fillStyle = this.bg;
-      c.fillRect(-60, -60, this.W + 120, this.H + 120);
+      c.fillRect(-60, -60, this.viewW + 120, this.viewH + 120);
       this.scene?.draw?.(c);
       Juice.draw(c);
       c.restore();
