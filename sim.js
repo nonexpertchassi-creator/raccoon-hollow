@@ -9,7 +9,7 @@
 
 import {
   SHOPS, GUESTS, LEVEL, MILESTONE_EVERY, MILESTONE_MULT, STOCK_CAP, OFFLINE, ASK_LINES,
-  BASKET_SPREAD, MAX_BULK, AUTO_COST, AUTO_PER_TICK, AUTO_SHARE, ASK_EVERY, FAIR,
+  BASKET_SPREAD, MAX_BULK, AUTO_COST, AUTO_PER_TICK, AUTO_SHARE, ASK_EVERY, FAIR, SMALL_SHOPS,
 } from './content.js';
 
 const ALL_ITEMS = SHOPS.flatMap((s) => s.items.map((i) => ({ ...i, shop: s.id })));
@@ -28,6 +28,7 @@ export class Sim {
     this.guests = ['rabbit'];
     this.sold = 0;
     this.auto = false;                    // 자동 강화를 샀는가
+    this.smalls = [];                     // 세워 둔 작은 건물의 번호
     this.fair = 0;                        // 장이 서 있는 남은 시간(초)
     this.busy = -1;                       // 지금 북적이는 작은 건물 (없으면 -1)
     this._busyT = 0;
@@ -194,6 +195,25 @@ export class Sim {
     return true;
   }
 
+  /* ── 작은 건물 ── */
+  canBuildSmall(i) {
+    return SMALL_SHOPS[i] && !this.smalls.includes(i) && this.money >= SMALL_SHOPS[i].cost;
+  }
+
+  buildSmall(i) {
+    if (!this.canBuildSmall(i)) return false;
+    this.money -= SMALL_SHOPS[i].cost;
+    this.smalls.push(i);
+    this._ev(`${SMALL_SHOPS[i].name}을(를) 세웠다`, 'shop');
+    return true;
+  }
+
+  /** 아직 안 세운 것 중 제일 싼 것 */
+  nextSmall() {
+    for (let i = 0; i < SMALL_SHOPS.length; i++) if (!this.smalls.includes(i)) return i;
+    return -1;
+  }
+
   /**
    * 북적이는 작은 건물을 눌렀다 → 장이 선다.
    * 북적이지 않는 곳을 누르면 아무 일도 없다.
@@ -215,11 +235,12 @@ export class Sim {
     if (this.busy >= 0) {
       this._busyT -= dt;
       if (this._busyT <= 0) this.busy = -1;
-    } else if (this.fair <= 0) {
+    } else if (this.fair <= 0 && this.smalls.length) {
+      // 세워 둔 곳 중에서만 북적인다
       this._fairAcc += dt;
       if (this._fairAcc >= FAIR.every) {
         this._fairAcc = 0;
-        this.busy = Math.floor(rng() * FAIR.spots);
+        this.busy = this.smalls[Math.floor(rng() * this.smalls.length)];
         this._busyT = FAIR.window;
       }
     }

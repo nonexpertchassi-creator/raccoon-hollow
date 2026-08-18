@@ -32,6 +32,8 @@ function act(s) {
   if (ns && s.money >= ns.cost) { s.openShop(ns.id); return 'shop'; }
   for (const id of s.asked) if (s.canOpenItem(id)) { s.openItem(id); return 'item'; }
   if (s.canBuyAuto()) { s.buyAuto(); return 'auto'; }
+  const sm = s.nextSmall();
+  if (sm >= 0 && s.canBuildSmall(sm)) { s.buildSmall(sm); return 'item'; }
   /* 자동 강화를 산 뒤로는 손으로 안 누른다 — 그게 산 이유다.
    * 그래서 여기 세어지는 'level'은 자동 강화를 사기 전까지의 클릭 수다. */
   if (s.auto) return null;

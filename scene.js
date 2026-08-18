@@ -14,7 +14,7 @@
 
 import { G } from './core/engine.js';
 import { Juice, Sfx } from './core/juice.js';
-import { SHOPS, STOCK_CAP } from './content.js';
+import { SHOPS, STOCK_CAP, SMALL_SHOPS } from './content.js';
 import { fmt } from './sim.js';
 
 /* 보이는 창은 480×800이고, 마을은 그보다 세로로 길다. 손가락으로 밀어 훑는다.
@@ -41,11 +41,13 @@ const SLOTS = [
  * 마을이 세로로 길어지면서 가게 사이가 휑해졌다. 자리는 길과 큰 가게를
  * 피해 계산으로 잡았다. */
 const SMALL_W = 96, SMALL_H = 76;
-const SMALLS = [
-  { x: 16,  y: 1150, k: 'store', name: '점포' },   // 오른쪽 1270에 뒀더니 '장 서다!' 표시가 필방 글자를 가렸다
-  { x: 368, y: 1004, k: 'inn',   name: '주막' },
-  { x: 368, y: 760,  k: 'cart',  name: '포장마차' },
-  { x: 16,  y: 470,  k: 'store', name: '점포' },
+/** content.js의 SMALL_SHOPS와 같은 순서·같은 개수여야 한다.
+ *  점포를 오른쪽 1270에 뒀더니 '장 서다!' 표시가 필방 글자를 가려 옮겼다. */
+const SMALL_POS = [
+  { x: 16,  y: 1150 },
+  { x: 368, y: 1004 },
+  { x: 368, y: 760 },
+  { x: 16,  y: 470 },
 ];
 
 const C = {
@@ -331,10 +333,12 @@ export class Village {
 
   _tap(wx, wy) {
     // 북적이는 작은 건물을 먼저 본다 — 이게 이 순간 제일 하고 싶은 조작이다
-    for (let i = 0; i < SMALLS.length; i++) {
-      const s = SMALLS[i];
-      if (wx > s.x - 8 && wx < s.x + SMALL_W + 8 && wy > s.y - 26 && wy < s.y + SMALL_H + 8) {
-        if (this.sim.tapSmall(i)) { Sfx.win(); Juice.shake(6); }
+    for (let i = 0; i < SMALL_POS.length; i++) {
+      const p = SMALL_POS[i];
+      if (wx > p.x - 8 && wx < p.x + SMALL_W + 8 && wy > p.y - 26 && wy < p.y + SMALL_H + 8) {
+        if (!this.sim.smalls.includes(i)) {
+          if (this.sim.buildSmall(i)) { Sfx.reward(); Juice.shake(5); } else Sfx.deny();
+        } else if (this.sim.tapSmall(i)) { Sfx.win(); Juice.shake(6); }
         else Sfx.click();
         return;
       }
@@ -366,8 +370,9 @@ export class Village {
       const s = SLOTS[i];
       if (near(s.y, s.h + 60)) layer.push({ z: s.y + s.h, d: () => this._shop(c, i) });
     }
-    for (const sm of SMALLS) {
-      if (near(sm.y, SMALL_H + 40)) layer.push({ z: sm.y + SMALL_H, d: () => this._small(c, sm) });
+    for (let i = 0; i < SMALL_POS.length; i++) {
+      const p = SMALL_POS[i];
+      if (near(p.y, SMALL_H + 40)) layer.push({ z: p.y + SMALL_H, d: () => this._small(c, i) });
     }
     for (const p of this.props) if (near(p.y, 60)) layer.push({ z: p.y, d: () => this._prop(c, p) });
     for (const w of this.walkers) if (near(w.y, 40)) layer.push({ z: w.y, d: () => this._walker(c, w) });
@@ -632,13 +637,30 @@ export class Village {
    * 큰 가게 사이가 휑해서 넣었다. 큰 가게보다 확실히 작고 낮아야
    * "저건 곁다리"라는 게 한눈에 읽힌다.
    */
-  _small(c, s) {
-    const { x, y } = s, w = SMALL_W, h = SMALL_H;
+  _small(c, i) {
+    const { x, y } = SMALL_POS[i], w = SMALL_W, h = SMALL_H;
+    const def = SMALL_SHOPS[i];
     const cx = x + w / 2;
+
+    // 아직 안 세운 자리 — 빈터
+    if (!this.sim.smalls.includes(i)) {
+      c.save();
+      c.setLineDash([7, 6]); c.lineWidth = 2; c.strokeStyle = 'rgba(60,52,36,.34)';
+      c.beginPath(); c.roundRect(x + 4, y + 14, w - 8, h - 20, 8); c.stroke();
+      c.restore();
+      G.text(c, `${def.name} 자리`, cx, y + 34, { size: 11, fill: '#5f6b4e', weight: 800 });
+      const can = this.sim.money >= def.cost;
+      G.round(c, cx - 40, y + 44, 80, 21, 7, can ? C.jade : 'rgba(60,52,36,.30)');
+      G.text(c, `${fmt(def.cost)}냥`, cx, y + 54.5,
+        { size: 11, fill: can ? '#fff' : '#e6e0cf', weight: 800 });
+      return;
+    }
+
+    const s = { ...SMALL_POS[i], k: def.k };
     c.fillStyle = 'rgba(0,0,0,.14)';
     c.beginPath(); c.ellipse(cx, y + h, w * 0.42, 8, 0, 0, 7); c.fill();
 
-    if (this.sim.busy === SMALLS.indexOf(s)) {
+    if (this.sim.busy === i) {
       const bob = Math.sin(this.t * 5) * 4;
       G.glow(c, cx, y + 18, 46, 'rgba(255,214,120,.34)');
       G.round(c, cx - 30, y - 34 + bob, 60, 24, 9, '#c7563f');
@@ -678,7 +700,7 @@ export class Village {
     c.closePath(); c.fill();
 
     // 북적임 — 지금 누르면 장이 선다
-    if (this.sim.busy === SMALLS.indexOf(s)) {
+    if (this.sim.busy === i) {
       const bob = Math.sin(this.t * 5) * 4;
       G.glow(c, cx, y + 18, 46, 'rgba(255,214,120,.34)');
       G.round(c, cx - 30, y - 34 + bob, 60, 24, 9, '#c7563f');
