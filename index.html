@@ -98,6 +98,19 @@ main{flex:1;overflow-y:auto;padding:10px 12px 16px;border-top:1.5px solid var(--
 .sheethead button{margin-left:auto;border:0;background:var(--paper2);color:var(--ink2);
   border-radius:8px;padding:7px 13px;font:800 12.5px inherit;cursor:pointer}
 
+.maxed{margin-top:8px;padding:8px;border-radius:8px;background:var(--paper);
+  text-align:center;font:700 12px inherit;color:var(--ink3)}
+/* 승급 — 마을이 다 찬 뒤의 다음 목표 */
+.promo{margin-top:12px;border:1.5px solid var(--gold);border-radius:12px;
+  padding:12px;background:var(--paper2)}
+.promo.done{text-align:center;font:800 13px inherit;color:var(--gold);border-style:dashed}
+.promo .ph{font:800 14px inherit;margin-bottom:3px}
+.promo .ph b{color:var(--gold)}
+.promo .pd{font-size:11.5px;color:var(--ink3);margin-bottom:9px}
+.promo .req{font-size:12px;color:var(--ink3);padding:3px 0;font-weight:700}
+.promo .req.on{color:var(--jade)}
+.promo button{margin-top:9px}
+
 .locked-item{background:transparent;border:1.5px dashed var(--line);color:var(--ink3)}
 .locked-item .nm{color:var(--ink2)}
 .open-btn{background:var(--jade)}
@@ -237,36 +250,56 @@ function shopHTML(s) {
     if (sim.isOpen(it.id)) {
       const lv = sim.lv(it.id), st = sim.items[it.id];
       const cost = sim.levelCost(it.id);
+      const max = sim.maxLv(it.id), atMax = sim.atMax(it.id);
       const toMs = MILESTONE_EVERY - (lv % MILESTONE_EVERY);
-      const ms = toMs <= 3;
+      const ms = !atMax && toMs <= 3;
       return `<div class="item" data-id="${it.id}">
         <div class="bar"></div>
         <div class="row">
-          <div><div class="nm">${it.name}</div><div class="lv">Lv.${lv}${
-            ms ? ` · ${toMs}레벨 뒤 값이 2배` : ''}</div></div>
+          <div><div class="nm">${sim.itemName(it.id)}</div><div class="lv">Lv.${lv}/${max}${
+            atMax ? ' · 만렙' : ms ? ` · ${toMs}레벨 뒤 값이 2배` : ''}</div></div>
           <div class="stat"><b>${fmt(sim.price(it.id))}냥</b><br>
             재고 <span class="stk">${st.stock}</span>/${STOCK_CAP} · ${sim.craftTime(it.id).toFixed(1)}초</div>
         </div>
-        <div class="ups">
+        ${atMax ? '<div class="maxed">더 올릴 수 없다 — 가게를 승급해야 한다</div>' : `<div class="ups">
           <button class="up ${ms ? 'ms' : ''}" data-up="${it.id}" data-n="1"
             ${sim.money >= cost ? '' : 'disabled'}>레벨업 ${fmt(cost)}냥</button>
           <button class="up bulk" data-up="${it.id}" data-n="10"
             ${sim.money >= sim.levelCostMany(it.id, 10) ? '' : 'disabled'}>×10</button>
           <button class="up bulk" data-up="${it.id}" data-n="max"
             ${sim.money >= cost ? '' : 'disabled'}>최대</button>
-        </div>
+        </div>`}
       </div>`;
     }
     if (sim.asked.includes(it.id)) {
       return `<div class="item locked-item"><div class="row">
-        <div><div class="nm">${it.name}</div><div class="lv">손님이 찾던 물건</div></div></div>
+        <div><div class="nm">${sim.itemName(it.id)}</div><div class="lv">손님이 찾던 물건</div></div></div>
         <button class="up open-btn" data-open="${it.id}"
           ${sim.money >= it.cost ? '' : 'disabled'}>칸 열기 ${fmt(it.cost)}냥</button></div>`;
     }
     return `<div class="item locked-item"><div class="row">
       <div><div class="nm">? ? ?</div><div class="lv">아직 아무도 찾지 않았다</div></div></div></div>`;
   }).join('');
-  return `<div class="shopnote">${s.desc}</div>${rows}`;
+  return `<div class="shopnote">${s.desc}</div>${rows}${promoteHTML(s)}`;
+}
+
+/* 승급 — 마을이 다 찬 뒤의 다음 목표.
+ * 조건을 통과/미통과로 하나씩 보여준다. 못 하는 이유가 안 보이면
+ * 목표가 되지 못하고 그냥 잠긴 버튼으로만 남는다. */
+function promoteHTML(s) {
+  const r = sim.promoteReqs(s.id);
+  if (!r) return `<div class="promo done">${s.ranks[sim.rankOf(s.id)]} 등급 — 더 오를 곳이 없다</div>`;
+  const ok = r.list.every((x) => x.ok);
+  const lines = r.list.map((x) =>
+    `<div class="req ${x.ok ? 'on' : ''}">${x.ok ? '✓' : '·'} ${x.text}</div>`).join('');
+  const nextName = s.ranks[r.rank];
+  return `<div class="promo">
+    <div class="ph">${s.ranks[sim.rankOf(s.id)]} → <b>${nextName}</b> 등급으로 승급</div>
+    <div class="pd">${s.items.map((it) => nextName + it.name).join(' · ')}</div>
+    ${lines}
+    <button class="up ${ok ? 'ms' : ''}" data-promote="${s.id}" ${ok ? '' : 'disabled'}>
+      ${ok ? `승급하기 ${fmt(r.cost)}냥` : '조건을 채워야 한다'}</button>
+  </div>`;
 }
 
 function bindShop() {
@@ -279,6 +312,13 @@ function bindShop() {
     else Sfx.click();
     $('#pbody').innerHTML = shopHTML(shopById(openShopId)); bindShop();
   });
+  const pb = document.querySelector('[data-promote]');
+  if (pb) pb.onclick = () => {
+    if (sim.promote(pb.dataset.promote)) {
+      Sfx.win(); Juice.shake(10);
+      $('#pbody').innerHTML = shopHTML(shopById(openShopId)); bindShop();
+    }
+  };
   document.querySelectorAll('[data-open]').forEach((b) => b.onclick = () => {
     if (sim.openItem(b.dataset.open)) {
       Sfx.reward(); Juice.shake(4);
@@ -362,9 +402,10 @@ function paint() {
     }
     document.querySelectorAll('[data-up]').forEach((b) => {
       const id = b.dataset.up;
-      b.disabled = b.dataset.n === '10'
+      if (!id) return;
+      b.disabled = sim.atMax(id) || (b.dataset.n === '10'
         ? sim.money < sim.levelCostMany(id, 10)
-        : sim.money < sim.levelCost(id);
+        : sim.money < sim.levelCost(id));
     });
     document.querySelectorAll('[data-open]').forEach((b) => {
       b.disabled = sim.money < itemById(b.dataset.open).cost;

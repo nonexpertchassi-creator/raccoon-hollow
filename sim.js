@@ -9,7 +9,7 @@
 
 import {
   SHOPS, GUESTS, LEVEL, MILESTONE_EVERY, MILESTONE_MULT, STOCK_CAP, OFFLINE, ASK_LINES,
-  BASKET_SPREAD, MAX_BULK, AUTO_COST, AUTO_PER_TICK, AUTO_SHARE, ASK_EVERY, FAIR, SMALL_SHOPS,
+  BASKET_SPREAD, MAX_BULK, AUTO_COST, AUTO_PER_TICK, AUTO_SHARE, ASK_EVERY, FAIR, SMALL_SHOPS, RANKS,
 } from './content.js';
 
 const ALL_ITEMS = SHOPS.flatMap((s) => s.items.map((i) => ({ ...i, shop: s.id })));
@@ -23,6 +23,7 @@ export class Sim {
     this.t = 0;
 
     this.shops = ['smith'];              // 되살린 가게
+    this.rank = {};                      // 가게 등급 (가게id → 0·1·2). 없으면 0급
     this.items = { pick: { lv: 1, stock: 0, prog: 0 } };  // 열린 품목
     this.asked = [];                     // 손님이 물어본 적 있는(=열 수 있는) 품목
     this.guests = ['rabbit'];
@@ -51,10 +52,25 @@ export class Sim {
    * 화면에는 오래도록 '생산 2배'라고 적혀 있었지만 생산은 한 번도 안 빨라졌다. */
   milestone(id) { return Math.pow(MILESTONE_MULT, Math.floor(this.lv(id) / MILESTONE_EVERY)); }
 
+  /* ── 가게 등급 ── */
+  rankOf(shopId) { return this.rank[shopId] || 0; }
+  rankOfItem(id) { return this.rankOf(itemById(id).shop); }
+
+  /** 화면에 보이는 이름. 돌도끼 → 쇠도끼 → 강철도끼 */
+  itemName(id) {
+    const it = itemById(id);
+    return shopById(it.shop).ranks[this.rankOf(it.shop)] + it.name;
+  }
+
+  /** 이 품목이 지금 등급에서 올릴 수 있는 최대 레벨 */
+  maxLv(id) { return RANKS[this.rankOfItem(id)].maxLv; }
+  atMax(id) { return this.lv(id) >= this.maxLv(id); }
+
   price(id) {
     const it = itemById(id);
-    // 선형 증가 × 이정표. 지수로 올리면 비용 곡선을 추월해서 게임이 폭주한다.
-    return Math.floor(it.price * (1 + LEVEL.priceStep * (this.lv(id) - 1)) * this.milestone(id));
+    // 선형 증가 × 이정표 × 등급. 지수로 올리면 비용 곡선을 추월해 폭주한다.
+    return Math.floor(it.price * RANKS[this.rankOfItem(id)].priceMul
+      * (1 + LEVEL.priceStep * (this.lv(id) - 1)) * this.milestone(id));
   }
 
   craftTime(id) {
@@ -72,7 +88,8 @@ export class Sim {
 
   /** lv레벨에서 다음 한 레벨을 올리는 값 */
   _stepCost(id, lv) {
-    const base = Math.max(20, itemById(id).price * 4);
+    // 등급이 오르면 값도 같이 올라야 한다. 안 그러면 3급 레벨업이 공짜가 된다.
+    const base = Math.max(20, itemById(id).price * RANKS[this.rankOfItem(id)].priceMul * 4);
     return Math.floor(base * Math.pow(LEVEL.costGrowth, lv - 1));
   }
 
@@ -92,7 +109,8 @@ export class Sim {
     if (!this.isOpen(id)) return 0;
     let left = this.money, n = 0;
     const lv = this.lv(id);
-    while (n < MAX_BULK) {
+    const room = this.maxLv(id) - lv;
+    while (n < Math.min(MAX_BULK, room)) {
       const c = this._stepCost(id, lv + n);
       if (c > left) break;
       left -= c; n++;
@@ -108,7 +126,7 @@ export class Sim {
    * 의미 있는 선택(새 가게·새 품목)은 14번뿐이었다. 나머지는 전부 손가락 노동이다.
    */
   levelUpMany(id, want) {
-    const n = Math.min(want, this.affordableLevels(id));
+    const n = Math.min(want, this.affordableLevels(id), this.maxLv(id) - this.lv(id));
     if (n <= 0) return 0;
     this.money -= this.levelCostMany(id, n);
     const before = Math.floor(this.lv(id) / MILESTONE_EVERY);
@@ -163,6 +181,7 @@ export class Sim {
     while (done < AUTO_PER_TICK) {
       let best = null, bestCost = Infinity;
       for (const id of Object.keys(this.items)) {
+        if (this.atMax(id)) continue;              // 만렙은 건드리지 않는다
         const c = this.levelCost(id);
         if (c < bestCost) { bestCost = c; best = id; }
       }
@@ -178,6 +197,59 @@ export class Sim {
       done++;
     }
     return done;
+  }
+
+  /* ── 가게 승급 ── */
+
+  /**
+   * 승급 조건을 하나씩 따져 목록으로 돌려준다.
+   * 화면에서 "무엇이 모자란가"를 그대로 보여주기 위해 boolean이 아니라
+   * 항목별 결과를 넘긴다 — 못 하는 이유가 안 보이면 목표가 되지 못한다.
+   */
+  promoteReqs(shopId) {
+    const shop = shopById(shopId);
+    const r = this.rankOf(shopId);
+    const next = RANKS[r + 1];
+    if (!next) return null;                       // 이미 최고 등급
+
+    const allOpen = shop.items.every((it) => this.isOpen(it.id));
+    const allMax = allOpen && shop.items.every((it) => this.atMax(it.id));
+    const i = SHOPS.findIndex((x) => x.id === shopId);
+    const after = SHOPS[i + 1];
+    const ips = this.incomePerSec();
+    const cost = shop.promote[r];
+    return {
+      rank: r + 1,
+      cost,
+      list: [
+        { ok: allMax, text: `${shop.name}의 모든 칸을 ${next === RANKS[1] ? RANKS[0].maxLv : RANKS[r].maxLv}레벨까지` },
+        { ok: !after || this.shops.includes(after.id), text: after ? `${after.name} 열기` : '—' },
+        { ok: this.guests.length >= next.guests, text: `손님 ${next.guests}종 (지금 ${this.guests.length})` },
+        { ok: ips >= next.ips, text: `초당 ${fmt(next.ips)}냥 (지금 ${fmt(ips)})` },
+        { ok: this.money >= cost, text: `승급값 ${fmt(cost)}냥` },
+      ].filter((x) => x.text !== '—'),
+    };
+  }
+
+  canPromote(shopId) {
+    const r = this.promoteReqs(shopId);
+    return !!r && r.list.every((x) => x.ok);
+  }
+
+  /**
+   * 승급. 레벨은 1로 돌아가지만 밑천이 통째로 좋아진다 — 이 가게만의 작은 환생이다.
+   * 재고는 남긴다. 승급했다고 진열대가 비면 손해 본 느낌만 남는다.
+   */
+  promote(shopId) {
+    if (!this.canPromote(shopId)) return false;
+    const shop = shopById(shopId);
+    this.money -= shop.promote[this.rankOf(shopId)];
+    this.rank[shopId] = this.rankOf(shopId) + 1;
+    for (const it of shop.items) {
+      if (this.items[it.id]) this.items[it.id].lv = 1;
+    }
+    this._ev(`${shop.name}이(가) ${shop.ranks[this.rankOf(shopId)]} 등급으로 올라섰다`, 'milestone');
+    return true;
   }
 
   /* ── 가게 ── */

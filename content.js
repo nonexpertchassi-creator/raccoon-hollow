@@ -17,6 +17,8 @@ export const SHOPS = [
     id: 'smith', name: '대장간', sign: '⚒', cost: 0,
     desc: '무쇠를 두드려 연장을 만든다',
     color: '#b8622f',
+    ranks: ['돌', '쇠', '강철'],
+    promote: [10_000_000_000, 300_000_000_000_000],
     items: [
       { id: 'pick',   name: '곡괭이', price: 12,     time: 3.0, cost: 0 },
       { id: 'sickle', name: '낫',     price: 34,     time: 3.8, cost: 260 },
@@ -28,6 +30,8 @@ export const SHOPS = [
     id: 'brush', name: '필방', sign: '筆', cost: 9_000,
     desc: '붓과 먹을 다룬다',
     color: '#3f6f4a',
+    ranks: ['거친', '고운', '명품'],
+    promote: [60_000_000_000, 1_500_000_000_000_000],
     items: [
       { id: 'brush',    name: '붓',   price: 700,    time: 4.2, cost: 0 },
       { id: 'ink',      name: '먹',   price: 1_900,  time: 5.0, cost: 60_000 },
@@ -38,6 +42,8 @@ export const SHOPS = [
     id: 'paper', name: '지물포', sign: '紙', cost: 900_000,
     desc: '닥나무를 떠서 종이를 만든다',
     color: '#8a7440',
+    ranks: ['막', '고운', '진상'],
+    promote: [400_000_000_000, 8_000_000_000_000_000],
     items: [
       { id: 'hanji',  name: '한지',   price: 14_000,  time: 5.0, cost: 0 },
       { id: 'fan',    name: '부채',   price: 38_000,  time: 6.0, cost: 5_000_000 },
@@ -48,6 +54,8 @@ export const SHOPS = [
     id: 'pot', name: '옹기점', sign: '甕', cost: 120_000_000,
     desc: '흙을 빚어 항아리를 굽는다',
     color: '#6b4a3a',
+    ranks: ['질', '오지', '왕실'],
+    promote: [3_000_000_000_000, 50_000_000_000_000_000],
     items: [
       { id: 'jar',   name: '옹기',   price: 280_000,   time: 5.4, cost: 0 },
       { id: 'bowl',  name: '사발',   price: 760_000,   time: 6.4, cost: 700_000_000 },
@@ -58,6 +66,8 @@ export const SHOPS = [
     id: 'herb', name: '약재상', sign: '藥', cost: 20_000_000_000,
     desc: '산에서 캔 것을 말리고 썬다',
     color: '#4a5f7a',
+    ranks: ['햇', '묵은', '천년'],
+    promote: [30_000_000_000_000, 400_000_000_000_000_000],
     items: [
       { id: 'root',    name: '도라지', price: 5_600_000,   time: 5.6, cost: 0 },
       { id: 'ginseng', name: '산삼',   price: 15_000_000,  time: 7.0, cost: 120_000_000_000 },
@@ -172,6 +182,28 @@ export const AUTO_SHARE = 0.6;
 /** "최대" 버튼 한 번에 올릴 수 있는 상한. 계산이 한 레벨씩 도는 반복문이라
  * 무한정 열어두면 클릭 한 번에 화면이 멎을 수 있어 막아둔다. */
 export const MAX_BULK = 1000;
+
+/* ───────────── 가게 승급 ─────────────
+ * 돌도끼 → 쇠도끼 → 강철도끼.
+ *
+ * 이게 필요한 이유: 마을이 1시간 51분이면 다 채워진다. 가게 다섯, 작은 건물
+ * 넷이 전부 서고 나면 지도 위에 새로 생길 게 없다. 그 뒤로는 이미 본 건물
+ * 안에서 숫자만 오른다.
+ *
+ * 승급은 **그 가게만의 작은 환생**이다. 레벨이 1로 돌아가는 대신 밑천이
+ * 통째로 좋아진다. 전체를 리셋하지 않으므로 잃는 느낌이 없고, 가게마다
+ * 따로 돌아가므로 목표가 계속 하나씩 남는다.
+ *
+ * 승급 직후 값이 직전 최대보다 **커야** 한다. 작으면 애써 만렙을 찍고
+ * 승급했는데 수입이 떨어지는 꼴이 된다.
+ *   1급 만렙 ×31  →  2급 시작 ×40    (오름)
+ *   2급 만렙 ×4,880 → 3급 시작 ×6,000 (오름)
+ */
+export const RANKS = [
+  { maxLv: 30,  priceMul: 1,     guests: 0, ips: 0 },
+  { maxLv: 60,  priceMul: 40,    guests: 5, ips: 1_000_000 },
+  { maxLv: 100, priceMul: 6_000, guests: 7, ips: 10_000_000_000 },
+];
 
 /** 25레벨마다 그 품목의 **판매가**가 2배가 된다. 24→25가 제일 신나야 한다.
  *

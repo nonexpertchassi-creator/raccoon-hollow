@@ -31,6 +31,7 @@ function act(s) {
   const ns = s.nextShop();
   if (ns && s.money >= ns.cost) { s.openShop(ns.id); return 'shop'; }
   for (const id of s.asked) if (s.canOpenItem(id)) { s.openItem(id); return 'item'; }
+  for (const sh of s.shops) if (s.canPromote(sh)) { s.promote(sh); return 'shop'; }
   if (s.canBuyAuto()) { s.buyAuto(); return 'auto'; }
   const sm = s.nextSmall();
   if (sm >= 0 && s.canBuildSmall(sm)) { s.buildSmall(sm); return 'item'; }

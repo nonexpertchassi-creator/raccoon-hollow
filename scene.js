@@ -76,12 +76,16 @@ const C = {
  * 규칙은 아니고 표시일 뿐이다 — qty를 그대로 그림으로 옮긴다. */
 const carryOf = (qty) => qty <= 5 ? 'hand' : qty <= 9 ? 'bojjim' : qty <= 12 ? 'jige' : 'cart';
 
-/* 가게의 격. 칸이 열릴수록 집이 좋아진다 — 조선식으로 초가에서 시작해
- * 기와를 얹고, 단청을 올리고, 담장을 두른다.
- * 새 수치를 만들지 않고 '몇 칸이 열렸나'를 그대로 쓴다. */
-function tierOf(shop, sim) {
-  const open = shop.items.filter((it) => sim.isOpen(it.id)).length;
-  return open >= shop.items.length ? 4 : Math.max(1, Math.min(3, open));
+/* 집이 좋아지는 축이 둘이다.
+ *   지붕 = 가게 등급   초가(돌급) → 기와(쇠급) → 기와+단청(강철급)
+ *   장식 = 칸을 다 열었는가   현판 금테와 화분
+ * 축을 둘로 나눈 이유: 등급 하나로만 하면 첫 승급까지 두 시간 반 동안
+ * 건물이 전혀 안 변한다. 칸을 여는 것도 눈에 보여야 한다. */
+function lookOf(shop, sim) {
+  return {
+    roof: sim.rankOf(shop.id),
+    deco: shop.items.every((it) => sim.isOpen(it.id)),
+  };
 }
 
 function slotOf(i) {
@@ -489,9 +493,9 @@ export class Village {
    * 지붕. 격에 따라 초가 → 기와 → 단청 얹은 기와로 바뀐다.
    * 한옥 지붕 앞모습은 양 끝이 치켜올라가고 가운데가 처진다.
    */
-  _roof(c, x, y, w, tier) {
+  _roof(c, x, y, w, roof) {
     const l = x - 10, r = x + w + 10;
-    const thatch = tier <= 1;
+    const thatch = roof <= 0;
     const band = (yTop, yBot, fill) => {
       c.fillStyle = fill;
       c.beginPath();
@@ -529,7 +533,7 @@ export class Village {
     }
 
     // 단청 — 처마 아래 채색 띠. 격이 오른 집에만 올린다.
-    if (tier >= 3) {
+    if (roof >= 2) {
       for (let k = 0; k < 9; k++) {
         const bw = (w + 8) / 9;
         const bx = x - 4 + k * bw;
@@ -570,10 +574,10 @@ export class Village {
     c.fillStyle = 'rgba(0,0,0,.15)';
     c.beginPath(); c.ellipse(sl.cx, y + h + 2, w * 0.46, 11, 0, 0, 7); c.fill();
 
-    const tier = tierOf(shop, this.sim);
+    const look = lookOf(shop, this.sim);
 
     // 담장·화분 — 제일 격이 높은 집에만 두른다
-    if (tier >= 4) {
+    if (look.deco) {
       for (const px of [x - 4, x + w - 10]) {
         G.round(c, px, y + h - 26, 14, 10, 3, '#7d6a4a');
         G.circle(c, px + 7, y + h - 30, 8, '#6f8a5c');
@@ -587,19 +591,26 @@ export class Village {
     G.rect(c, x + 6, y + 34, 9, h - 46, C.wood);                // 기둥
     G.rect(c, x + w - 15, y + 34, 9, h - 46, C.wood);
 
-    this._roof(c, x, y, w, tier);
+    this._roof(c, x, y, w, look.roof);
 
     // 간판 — 처마에 걸린 현판
-    const sw = Math.min(w - 34, tier >= 3 ? 126 : 112);
-    const sh2 = tier >= 3 ? 27 : 24;
+    const sw = Math.min(w - 34, look.deco ? 126 : 112);
+    const sh2 = look.deco ? 27 : 24;
     G.round(c, sl.cx - sw / 2, y + 30, sw, sh2, 6, shop.color);
     G.round(c, sl.cx - sw / 2, y + 30, sw, 4, 2, 'rgba(0,0,0,.18)');
-    if (tier >= 3) {   // 격이 오르면 현판에 금테를 두른다
+    if (look.deco) {   // 칸을 다 열면 현판에 금테를 두른다
       c.strokeStyle = '#e0c073'; c.lineWidth = 1.6;
       c.beginPath(); c.roundRect(sl.cx - sw / 2 + 2, y + 32, sw - 4, sh2 - 4, 4); c.stroke();
     }
     G.text(c, `${shop.sign} ${shop.name}`, sl.cx, y + 30 + sh2 / 2,
-      { size: tier >= 3 ? 14 : 13.5, fill: '#fff8ec', weight: 800 });
+      { size: look.deco ? 14 : 13.5, fill: '#fff8ec', weight: 800 });
+
+    // 승급할 수 있으면 알려준다 — 이게 마을이 다 찬 뒤의 다음 목표다
+    if (this.sim.canPromote(shop.id)) {
+      const bob = Math.sin(this.t * 4) * 3;
+      G.round(c, sl.cx - 40, y - 26 + bob, 80, 22, 8, '#c7563f');
+      G.text(c, '승급 가능', sl.cx, y - 15 + bob, { size: 12, fill: '#fff3dd', weight: 800 });
+    }
 
     // 좌판 — 열린 품목마다 한 칸. 재고가 차오르는 게 눈에 보여야 한다.
     const items = shop.items.filter((it) => this.sim.isOpen(it.id));
@@ -618,7 +629,8 @@ export class Village {
       const shown = Math.min(STOCK_CAP, st.stock + (this.pending[it.id] || 0));
       const bh = Math.round((h - 84) * Math.min(1, shown / STOCK_CAP));
       if (bh > 0) G.round(c, bx + 2, by + (h - 82) - bh, bw - 4, bh, 4, shop.color);
-      G.text(c, it.name, bx + bw / 2, by + 11, { size: 9.5, fill: C.ink2, weight: 800 });
+      G.text(c, this.sim.itemName(it.id), bx + bw / 2, by + 11,
+        { size: 9, fill: C.ink2, weight: 800 });
       G.text(c, String(shown), bx + bw / 2, by + 30,
         { size: fl > 0 ? 15 : 13, fill: C.ink, weight: 800 });
     }
@@ -627,7 +639,7 @@ export class Village {
     const locked = shop.items.filter((it) => !this.sim.isOpen(it.id));
     if (locked.length) {
       const askedNext = locked.find((it) => this.sim.asked.includes(it.id));
-      G.text(c, askedNext ? `${askedNext.name} 칸 열 수 있음` : `${locked.length}칸 더 있다`,
+      G.text(c, askedNext ? `${this.sim.itemName(askedNext.id)} 칸 열 수 있음` : `${locked.length}칸 더 있다`,
         sl.cx, y + h - 5, { size: 10.5, fill: askedNext ? '#ffe9a8' : '#d8ccb0', weight: 800 });
     }
   }
