@@ -1,0 +1,272 @@
+/* scene.js — 마을을 위에서 내려다본 한 폭. 그리기만 한다.
+ *
+ * 여기엔 경제 계산이 한 줄도 없다. sim.js를 읽기만 하고 절대 고치지 않는다.
+ * 목록·버튼으로 보여주던 걸 장면으로 바꾸는 게 전부다:
+ *
+ *   "토끼가 곡괭이 3개를 사갔다"  →  토끼가 길을 걸어 올라와 대장간 앞에 서고,
+ *                                  동전이 튀고, 다시 걸어 내려간다
+ *
+ * core/engine.js를 처음으로 쓴다. 그 파일은 이걸 하라고 만들어져 있었는데
+ * 게임이 목록 방식이라 한 번도 안 쓰였다.
+ */
+
+import { G } from './core/engine.js';
+import { Juice, Sfx } from './core/juice.js';
+import { SHOPS, STOCK_CAP } from './content.js';
+import { fmt } from './sim.js';
+
+/* ── 마을 배치 ──
+ * 길이 가운데를 세로로 지나고, 가게가 좌우로 번갈아 선다.
+ * 손님은 화면 아래에서 길을 따라 올라온다. */
+const W = 480, H = 800;
+const ROAD_X = 240, ROAD_W = 74;
+const BOX_W = 190, BOX_H = 138;
+
+/** 가게 자리. SHOPS 순서대로 아래에서 위로 올라간다 — 아래가 오래된 가게다. */
+const SLOTS = [
+  { x: 12,  y: 596, side: -1 },
+  { x: 278, y: 450, side: 1 },
+  { x: 12,  y: 304, side: -1 },
+  { x: 278, y: 158, side: 1 },
+  { x: 12,  y: 12,  side: -1 },
+];
+
+const C = {
+  grass:  '#8b9e74',
+  grass2: '#7e9268',
+  road:   '#d9cba9',
+  edge:   '#bfae8a',
+  paper:  '#e8ddc8',
+  paper2: '#ddd0b6',
+  ink:    '#2b241b',
+  ink2:   '#5a4e3d',
+  ink3:   '#8a7a63',
+  gold:   '#a8763e',
+  jade:   '#4a7c59',
+  ruin:   '#6f7d5e',
+};
+
+/** 자리 정보 + 손님이 설 위치 */
+function slotOf(i) {
+  const s = SLOTS[i];
+  return {
+    ...s,
+    cx: s.x + BOX_W / 2,
+    cy: s.y + BOX_H / 2,
+    // 손님은 길 쪽 가장자리에 선다
+    standX: s.side < 0 ? ROAD_X - ROAD_W / 2 + 16 : ROAD_X + ROAD_W / 2 - 16,
+    standY: s.y + BOX_H - 26,
+  };
+}
+
+export class Village {
+  /**
+   * @param sim         읽기 전용으로 들여다볼 게임 상태
+   * @param onShopTap   가게를 눌렀을 때 부를 함수 (강화 창을 여는 쪽에서 처리)
+   */
+  constructor(sim, onShopTap) {
+    this.sim = sim;
+    this.onShopTap = onShopTap;
+    this.walkers = [];
+    this.floats = [];
+    this.bubble = null;      // 손님 요청 말풍선 {shopIdx, text, t}
+    this.t = 0;
+    this.tufts = this._tufts();
+  }
+
+  /** 풀밭 무늬. 매 프레임 난수를 쓰면 잔디가 부들부들 떨린다 — 한 번만 정해둔다. */
+  _tufts() {
+    let seed = 7;
+    const rnd = () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+    const out = [];
+    for (let i = 0; i < 90; i++) {
+      const x = rnd() * W, y = rnd() * H;
+      if (Math.abs(x - ROAD_X) < ROAD_W / 2 + 8) continue;   // 길 위엔 안 난다
+      out.push({ x, y, r: 2 + rnd() * 3 });
+    }
+    return out;
+  }
+
+  /* ── 바깥에서 알려주는 사건 ── */
+
+  /** 손님이 뭔가 사갔다 → 그 가게로 걸어 보낸다 */
+  onSale(sale) {
+    if (this.walkers.length > 9) return;          // 너무 많으면 화면이 지저분해진다
+    const shopId = sale.lines[0].item.shop;
+    const idx = SHOPS.findIndex((s) => s.id === shopId);
+    if (idx < 0) return;
+    this.walkers.push({
+      face: sale.guest.face,
+      idx,
+      gain: sale.gain,
+      lines: sale.lines.length,
+      x: ROAD_X + (Math.random() - 0.5) * (ROAD_W - 40),
+      y: H + 30,
+      state: 'in',
+      wait: 0,
+      bob: Math.random() * 6,
+    });
+  }
+
+  /** 손님이 없는 물건을 물어봤다 → 그 가게 위에 말풍선 */
+  onAsk(ask) {
+    const idx = SHOPS.findIndex((s) => s.id === ask.item.shop);
+    if (idx < 0) return;
+    this.bubble = { idx, text: `${ask.item.name}?`, t: 4.5, face: ask.guest.face };
+  }
+
+  /* ── 매 프레임 ── */
+  update(dt, pointer) {
+    this.t += dt;
+    if (this.bubble) { this.bubble.t -= dt; if (this.bubble.t <= 0) this.bubble = null; }
+
+    for (const w of this.walkers) {
+      const sl = slotOf(w.idx);
+      if (w.state === 'in') {
+        // 길을 따라 올라가다가, 가게 높이에 닿으면 가게 쪽으로 붙는다
+        const dy = sl.standY - w.y;
+        w.y += Math.sign(dy) * Math.min(Math.abs(dy), 108 * dt);
+        const dx = sl.standX - w.x;
+        if (Math.abs(dy) < 90) w.x += Math.sign(dx) * Math.min(Math.abs(dx), 90 * dt);
+        if (Math.abs(dy) < 3 && Math.abs(dx) < 3) {
+          w.state = 'buy'; w.wait = 0.75;
+          this.floats.push({ x: w.x, y: w.y - 22, text: `+${fmt(w.gain)}`, t: 1.1 });
+          Juice.burst(w.x, w.y - 14, { n: 7, color: ['#e8b64c', '#c9922f'], size: 3, speed: 70, life: 0.5 });
+          Sfx.coin();
+        }
+      } else if (w.state === 'buy') {
+        w.wait -= dt;
+        if (w.wait <= 0) w.state = 'out';
+      } else {
+        w.y += 132 * dt;
+        const back = ROAD_X - w.x;
+        w.x += Math.sign(back) * Math.min(Math.abs(back), 70 * dt);
+      }
+    }
+    this.walkers = this.walkers.filter((w) => w.y < H + 60);
+
+    for (const f of this.floats) { f.t -= dt; f.y -= 26 * dt; }
+    this.floats = this.floats.filter((f) => f.t > 0);
+
+    // 가게를 눌렀나
+    if (pointer.justDown) {
+      for (let i = 0; i < SHOPS.length; i++) {
+        const s = SLOTS[i];
+        if (pointer.x > s.x && pointer.x < s.x + BOX_W &&
+            pointer.y > s.y && pointer.y < s.y + BOX_H) {
+          this.onShopTap(SHOPS[i].id, this.sim.shops.includes(SHOPS[i].id));
+          return;
+        }
+      }
+    }
+  }
+
+  /* ── 그리기 ── */
+  draw(c) {
+    this._ground(c);
+    for (let i = 0; i < SHOPS.length; i++) this._shop(c, i);
+    for (const w of this.walkers) this._walker(c, w);
+    if (this.bubble) this._bubble(c);
+    for (const f of this.floats) {
+      c.globalAlpha = Math.min(1, f.t);
+      G.text(c, f.text, f.x, f.y, { size: 15, fill: '#b8860b', weight: 800 });
+      c.globalAlpha = 1;
+    }
+  }
+
+  _ground(c) {
+    G.rect(c, 0, 0, W, H, C.grass);
+    for (const t of this.tufts) G.circle(c, t.x, t.y, t.r, C.grass2);
+    // 길
+    G.rect(c, ROAD_X - ROAD_W / 2, 0, ROAD_W, H, C.road);
+    G.rect(c, ROAD_X - ROAD_W / 2, 0, 3, H, C.edge);
+    G.rect(c, ROAD_X + ROAD_W / 2 - 3, 0, 3, H, C.edge);
+    // 디딤돌. 처음엔 54px마다 한가운데 놓았더니 길이 사다리처럼 보였다.
+    // 간격을 벌리고 좌우로 어긋나게 놓으니 밟고 지나가는 길이 됐다.
+    for (let i = 0, y = 40; y < H; y += 96, i++) {
+      const off = i % 2 ? 13 : -13;
+      G.round(c, ROAD_X + off - 13, y, 26, 13, 6, C.edge);
+    }
+  }
+
+  _shop(c, i) {
+    const shop = SHOPS[i], sl = slotOf(i), open = this.sim.shops.includes(shop.id);
+    const { x, y } = sl;
+
+    if (!open) {
+      // 무너진 집 — 점선 테두리에 잡초
+      c.save();
+      c.setLineDash([7, 6]); c.lineWidth = 2; c.strokeStyle = C.ruin;
+      c.beginPath(); c.roundRect(x + 6, y + 10, BOX_W - 12, BOX_H - 20, 12); c.stroke();
+      c.restore();
+      G.text(c, '□', sl.cx, sl.cy - 12, { size: 30, fill: C.ruin, weight: 700 });
+      const next = this.sim.nextShop();
+      const isNext = next && next.id === shop.id;
+      G.text(c, isNext ? shop.name : '무너진 집', sl.cx, sl.cy + 18,
+        { size: 12.5, fill: isNext ? C.paper : C.ruin, weight: 800 });
+      if (isNext) {
+        G.round(c, sl.cx - 46, sl.cy + 32, 92, 22, 8,
+          this.sim.money >= shop.cost ? C.jade : '#7d7a68');
+        G.text(c, `${fmt(shop.cost)}냥`, sl.cx, sl.cy + 43, { size: 11.5, fill: '#fff', weight: 800 });
+      }
+      return;
+    }
+
+    // 바닥 그림자
+    G.round(c, x + 6, y + 16, BOX_W - 12, BOX_H - 18, 12, 'rgba(0,0,0,.13)');
+    // 몸체
+    G.round(c, x + 4, y + 10, BOX_W - 8, BOX_H - 20, 12, C.paper);
+    // 차양 — 가게 색
+    G.round(c, x + 4, y + 10, BOX_W - 8, 30, 12, shop.color);
+    G.rect(c, x + 4, y + 32, BOX_W - 8, 8, shop.color);
+    // 간판
+    G.text(c, `${shop.sign} ${shop.name}`, sl.cx, y + 26, { size: 14, fill: '#fff8ec', weight: 800 });
+
+    // 진열대 — 열린 품목마다 재고 칸. 재고가 차오르는 게 눈에 보여야 한다.
+    const items = shop.items.filter((it) => this.sim.isOpen(it.id));
+    const per = Math.min(4, items.length);
+    for (let k = 0; k < per; k++) {
+      const it = items[k];
+      const bw = (BOX_W - 24) / per - 4;
+      const bx = x + 12 + k * (bw + 4);
+      const by = y + 48;
+      G.round(c, bx, by, bw, 46, 7, C.paper2);
+      const st = this.sim.items[it.id];
+      // 재고 막대 — 아래에서 위로 찬다
+      const h = Math.round(42 * Math.min(1, st.stock / STOCK_CAP));
+      if (h > 0) G.round(c, bx + 2, by + 44 - h, bw - 4, h, 5, shop.color);
+      G.text(c, it.name, bx + bw / 2, by + 12, { size: 9.5, fill: C.ink2, weight: 800 });
+      G.text(c, String(st.stock), bx + bw / 2, by + 32, { size: 13, fill: C.ink, weight: 800 });
+    }
+
+    // 잠긴 칸이 남아 있으면 알려준다 — 다음에 뭘 열지가 여기서 보인다
+    const locked = shop.items.filter((it) => !this.sim.isOpen(it.id));
+    if (locked.length) {
+      const askedNext = locked.find((it) => this.sim.asked.includes(it.id));
+      G.text(c, askedNext ? `${askedNext.name} 칸 열 수 있음` : `${locked.length}칸 더 있다`,
+        sl.cx, y + BOX_H - 18, { size: 10.5, fill: askedNext ? C.gold : C.ink3, weight: 800 });
+    }
+  }
+
+  _walker(c, w) {
+    const bob = Math.sin(this.t * 9 + w.bob) * (w.state === 'buy' ? 0.8 : 2.4);
+    G.circle(c, w.x, w.y + 8, 9, 'rgba(0,0,0,.16)');
+    G.text(c, w.face, w.x, w.y - 8 + bob, { size: 27, fill: '#000' });
+    if (w.state === 'buy' && w.lines > 1) {
+      G.round(c, w.x + 10, w.y - 30, 30, 15, 6, C.paper);
+      G.text(c, `${w.lines}종`, w.x + 25, w.y - 22, { size: 10, fill: C.ink2, weight: 800 });
+    }
+  }
+
+  _bubble(c) {
+    const b = this.bubble, sl = slotOf(b.idx);
+    const w = 108, x = sl.cx - w / 2, y = sl.y - 34;
+    c.globalAlpha = Math.min(1, b.t);
+    G.round(c, x, y, w, 28, 9, '#fff6d8');
+    c.fillStyle = '#fff6d8';
+    c.beginPath(); c.moveTo(sl.cx - 6, y + 27); c.lineTo(sl.cx + 6, y + 27);
+    c.lineTo(sl.cx, y + 36); c.fill();
+    G.text(c, `${b.face} ${b.text}`, sl.cx, y + 14, { size: 13, fill: C.ink, weight: 800 });
+    c.globalAlpha = 1;
+  }
+}

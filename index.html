@@ -76,6 +76,28 @@ main{flex:1;overflow-y:auto;padding:10px 12px 16px;border-top:1.5px solid var(--
 .up.bulk{width:auto;flex:0 0 auto;padding:9px 13px;background:var(--ink2)}
 .up.bulk:disabled{background:#c9bb9f;color:#8d8069}
 
+/* 마을 장면. 목록 대신 이게 기본 화면이 된다. */
+#stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;
+  background:#8b9e74;overflow:hidden}
+#cv{display:block;touch-action:none}
+#autobar{padding:0 12px}
+#autobar button{width:100%;margin:8px 0 0;border:0;background:var(--gold);color:#fff8ec;
+  border-radius:9px;padding:9px;font:800 12.5px inherit;cursor:pointer}
+#autobar button:disabled{background:#c9bb9f;color:#8d8069}
+
+/* 가게를 누르면 아래에서 올라오는 창 */
+#panel{position:fixed;inset:0;background:rgba(26,21,15,.55);z-index:40;
+  display:flex;align-items:flex-end;justify-content:center}
+#panel[hidden]{display:none}
+#panel .sheet{width:100%;max-width:480px;max-height:78%;overflow-y:auto;
+  background:var(--paper);border-radius:16px 16px 0 0;padding:12px 12px 20px;
+  border-top:2px solid var(--gold);animation:rise .18s ease}
+@keyframes rise{from{transform:translateY(18px);opacity:.4}to{transform:none;opacity:1}}
+.sheethead{display:flex;align-items:center;margin-bottom:10px}
+.sheethead b{font-size:16px}
+.sheethead button{margin-left:auto;border:0;background:var(--paper2);color:var(--ink2);
+  border-radius:8px;padding:7px 13px;font:800 12.5px inherit;cursor:pointer}
+
 .locked-item{background:transparent;border:1.5px dashed var(--line);color:var(--ink3)}
 .locked-item .nm{color:var(--ink2)}
 .open-btn{background:var(--jade)}
@@ -136,23 +158,28 @@ main{flex:1;overflow-y:auto;padding:10px 12px 16px;border-top:1.5px solid var(--
     </div>
   </header>
   <div id="guest"><span class="face">🐰</span><span class="say">토끼가 가게를 기웃거린다…</span></div>
-  <nav id="tabs"></nav>
-  <main id="main"></main>
+  <div id="autobar"></div>
+  <div id="stage"><canvas id="cv"></canvas></div>
 </div>
+<div id="panel" hidden><div class="sheet">
+  <div class="sheethead"><b id="ptitle"></b><button id="pclose">닫기</button></div>
+  <div id="pbody"></div>
+</div></div>
 <div id="float"></div>
 
 <script type="module">
 import { Sim, fmt, itemById, shopById } from './sim.js';
-import { SHOPS, GUESTS, STOCK_CAP, MILESTONE_EVERY, AUTO_COST } from './content.js';
+import { SHOPS, STOCK_CAP, MILESTONE_EVERY, AUTO_COST } from './content.js';
 import { Store } from './core/store.js';
 import { Juice, Sfx } from './core/juice.js';
+import { Engine } from './core/engine.js';
+import { Village } from './scene.js';
 
 const $ = (s) => document.querySelector(s);
 const SAVE = 'rs:save';
 
 const saved = Store.get(SAVE);
 const sim = new Sim(saved?.state || null);
-let tab = 'village';
 
 /* 오프라인 수익 — 방치형의 심장 */
 if (saved?.at) {
@@ -176,52 +203,34 @@ function showOffline(r) {
   el.querySelector('#ok').onclick = () => { Sfx.coin(); el.remove(); };
 }
 
-/* ── 렌더 ── */
-function renderTabs() {
-  const t = $('#tabs');
-  t.innerHTML = `<button data-t="village" class="${tab === 'village' ? 'on' : ''}">마을</button>` +
-    SHOPS.map((s) => {
-      const open = sim.shops.includes(s.id);
-      return `<button data-t="${s.id}" class="${tab === s.id ? 'on' : ''} ${open ? '' : 'locked'}"
-        ${open ? '' : 'disabled'}>${s.sign} ${s.name}</button>`;
-    }).join('');
-  t.querySelectorAll('button').forEach((b) => b.onclick = () => {
-    Sfx.click(); tab = b.dataset.t; renderTabs(); renderMain();
-  });
-}
+/* ── 가게를 누르면 올라오는 창 ──
+ * 장면이 기본 화면이 되면서 목록은 여기로 들어왔다. 강화·칸 열기는
+ * 손가락으로 정확히 눌러야 하는 조작이라 캔버스보다 DOM이 낫다. */
+let openShopId = null;
 
-function renderMain() {
-  const m = $('#main');
-  if (tab === 'village') { m.innerHTML = villageHTML(); bindVillage(); }
-  else { m.innerHTML = shopHTML(shopById(tab)); bindShop(); }
-}
-
-function villageHTML() {
-  const plots = SHOPS.map((s) => {
-    const open = sim.shops.includes(s.id);
-    if (open) return `<div class="plot"><div class="sign">${s.sign}</div>
-      <div><div class="nm">${s.name}</div><div class="ds">${s.desc}</div></div></div>`;
+function openPanel(id, isOpen) {
+  const shop = shopById(id);
+  if (!isOpen) {
+    // 아직 무너진 집 — 다음 차례고 돈이 되면 바로 되살린다
     const next = sim.nextShop();
-    const isNext = next && next.id === s.id;
-    return `<div class="plot ruin"><div class="sign">□</div>
-      <div><div class="nm">${isNext ? s.name : '무너진 집'}</div>
-      <div class="ds">${isNext ? s.desc : '아직 손댈 수 없다'}</div></div>
-      <div class="act">${isNext
-        ? `<button data-shop="${s.id}" ${sim.money >= s.cost ? '' : 'disabled'}>${fmt(s.cost)}냥</button>`
-        : ''}</div></div>`;
-  }).join('');
-  const auto = sim.auto
-    ? `<div class="autobox on">✓ 장부를 정리해 두었다 — 버는 돈의 6할로 알아서 강화된다</div>`
-    : `<div class="autobox"><div><div class="nm">장부 정리</div>
-        <div class="ds">버는 돈의 6할로 알아서 강화한다. 나머지는 그대로 쌓인다</div></div>
-        <button data-auto="1" ${sim.money >= AUTO_COST ? '' : 'disabled'}>${fmt(AUTO_COST)}냥</button></div>`;
-  const done = sim.shops.length, all = SHOPS.length;
-  return auto + `<div class="shopnote">가게 ${done} / ${all} — ${done === all
-    ? '마을이 완전히 살아났다' : '아직 무너진 집이 남아 있다'}</div>
-    <div class="village">${plots}</div>
-    <div id="log">${sim.events.slice(0, 8)
-      .map((e) => `<div class="${e.kind}">· ${e.msg}</div>`).join('')}</div>`;
+    if (next && next.id === id && sim.openShop(id)) {
+      Sfx.win(); Juice.shake(7);
+    } else {
+      Sfx.deny();
+    }
+    return;
+  }
+  openShopId = id;
+  $('#ptitle').textContent = `${shop.sign} ${shop.name}`;
+  $('#pbody').innerHTML = shopHTML(shop);
+  $('#panel').hidden = false;
+  bindShop();
+  Sfx.click();
 }
+
+function closePanel() { openShopId = null; $('#panel').hidden = true; }
+$('#pclose').onclick = () => { Sfx.click(); closePanel(); };
+$('#panel').onclick = (e) => { if (e.target.id === 'panel') closePanel(); };
 
 function shopHTML(s) {
   const rows = s.items.map((it) => {
@@ -260,19 +269,6 @@ function shopHTML(s) {
   return `<div class="shopnote">${s.desc}</div>${rows}`;
 }
 
-function bindVillage() {
-  const ab = document.querySelector('[data-auto]');
-  if (ab) ab.onclick = () => {
-    if (sim.buyAuto()) { Sfx.reward(); Juice.shake(5); renderMain(); }
-  };
-  document.querySelectorAll('[data-shop]').forEach((b) => b.onclick = () => {
-    if (sim.openShop(b.dataset.shop)) {
-      Sfx.win(); Juice.shake(6);
-      tab = b.dataset.shop; renderTabs(); renderMain();
-    }
-  });
-}
-
 function bindShop() {
   document.querySelectorAll('[data-up]').forEach((b) => b.onclick = () => {
     const id = b.dataset.up;
@@ -281,51 +277,68 @@ function bindShop() {
     if (!sim.levelUpMany(id, want)) return;
     if (Math.floor(sim.lv(id) / MILESTONE_EVERY) > wasMs) { Sfx.win(); Juice.shake(7); }
     else Sfx.click();
-    renderMain();
+    $('#pbody').innerHTML = shopHTML(shopById(openShopId)); bindShop();
   });
   document.querySelectorAll('[data-open]').forEach((b) => b.onclick = () => {
-    if (sim.openItem(b.dataset.open)) { Sfx.reward(); Juice.shake(4); renderMain(); }
+    if (sim.openItem(b.dataset.open)) {
+      Sfx.reward(); Juice.shake(4);
+      $('#pbody').innerHTML = shopHTML(shopById(openShopId)); bindShop();
+    }
   });
 }
 
-/* ── 루프 ── */
-let last = performance.now(), acc = 0, uiAcc = 0;
-function loop(now) {
-  const dt = Math.min((now - last) / 1000, 0.25);
-  last = now;
-
-  const r = sim.tick(dt);
-
-  for (const s of r.sales) {
-    fly(`+${fmt(s.gain)}`);
-    $('#guest').className = '';
-    $('#guest').innerHTML =
-      `<span class="face">${s.guest.face}</span><span class="say">${s.guest.name}가 ` +
-      `<b>${s.lines[0].item.name}${s.lines.length > 1 ? ` 외 ${s.lines.length - 1}종` : ''}</b> ` +
-      `${s.n}개를 사갔다 · <b>${fmt(s.gain)}냥</b></span>`;
-  }
-  if (r.ask) {
-    Sfx.deny();
-    $('#guest').className = 'ask';
-    $('#guest').innerHTML =
-      `<span class="face">${r.ask.guest.face}</span><span class="say">${r.ask.guest.name}: ` +
-      `"<b>${r.ask.line}</b>" — 없다고 하자 돌아갔다</span>`;
-    if (tab === r.ask.item.shop) renderMain();
-  }
-  if (r.newGuest) { Sfx.reward(); }
-
-  // 화면 갱신은 초당 8회면 충분하다. 매 프레임 DOM을 다시 그리면 폰이 뜨거워진다.
-  uiAcc += dt;
-  if (uiAcc > 0.12) { uiAcc = 0; paint(); }
-
-  acc += dt;
-  if (acc > 5) { acc = 0; Store.set(SAVE, { state: sim.save(), at: Date.now() }); }
-
-  Juice.update(dt);
-  requestAnimationFrame(loop);
+/* ── 장부 정리(자동 강화) ── */
+function renderAuto() {
+  const bar = $('#autobar');
+  if (sim.auto) { bar.innerHTML = ''; return; }
+  bar.innerHTML = `<button id="buyauto" ${sim.money >= AUTO_COST ? '' : 'disabled'}>
+    장부 정리 ${fmt(AUTO_COST)}냥 — 버는 돈의 6할로 알아서 강화</button>`;
+  $('#buyauto').onclick = () => {
+    if (sim.buyAuto()) { Sfx.reward(); Juice.shake(5); renderAuto(); }
+  };
 }
 
-let lastMoney = 0;
+/* ── 마을 장면 ── */
+const eng = new Engine($('#cv'), { w: 480, h: 800, bg: '#8b9e74' });
+const village = new Village(sim, openPanel);
+
+let uiAcc = 0, saveAcc = 0;
+eng.add('village', {
+  update(dt) {
+    const r = sim.tick(dt);
+
+    for (const s of r.sales) {
+      village.onSale(s);
+      const head = s.lines[0].item.name;
+      const more = s.lines.length > 1 ? ` 외 ${s.lines.length - 1}종` : '';
+      $('#guest').className = '';
+      $('#guest').innerHTML =
+        `<span class="face">${s.guest.face}</span><span class="say">${s.guest.name}가 ` +
+        `<b>${head}${more}</b> ${s.n}개를 사갔다 · <b>${fmt(s.gain)}냥</b></span>`;
+    }
+    if (r.ask) {
+      village.onAsk(r.ask);
+      Sfx.deny();
+      $('#guest').className = 'ask';
+      $('#guest').innerHTML =
+        `<span class="face">${r.ask.guest.face}</span><span class="say">${r.ask.guest.name}: ` +
+        `"<b>${r.ask.line}</b>" — 없다고 하자 돌아갔다</span>`;
+    }
+    if (r.newGuest) Sfx.reward();
+
+    village.update(dt, eng.pointer);
+
+    // 화면 글자 갱신은 초당 8회면 충분하다. 매 프레임 DOM을 만지면 폰이 뜨거워진다.
+    uiAcc += dt;
+    if (uiAcc > 0.12) { uiAcc = 0; paint(); }
+
+    saveAcc += dt;
+    if (saveAcc > 5) { saveAcc = 0; Store.set(SAVE, { state: sim.save(), at: Date.now() }); }
+  },
+  draw(c) { village.draw(c); },
+});
+
+let lastMoney = -1, lastAuto = null;
 function paint() {
   const m = $('#money');
   m.textContent = fmt(sim.money) + '냥';
@@ -334,13 +347,12 @@ function paint() {
   $('#ips').textContent = '초당 ' + fmt(sim.incomePerSec()) + '냥';
   $('#shopcount').textContent = `가게 ${sim.shops.length}/${SHOPS.length} · 손님 ${sim.guests.length}`;
 
-  if (tab === 'village') {
-    document.querySelectorAll('[data-shop]').forEach((b) => {
-      b.disabled = sim.money < shopById(b.dataset.shop).cost;
-    });
-    const ab = document.querySelector('[data-auto]');
-    if (ab) ab.disabled = sim.money < AUTO_COST;
-  } else {
+  const canAuto = !sim.auto && sim.money >= AUTO_COST;
+  if (sim.auto !== lastAuto) { lastAuto = sim.auto; renderAuto(); }
+  const ba = $('#buyauto');
+  if (ba) ba.disabled = !canAuto;
+
+  if (openShopId) {
     for (const el of document.querySelectorAll('.item[data-id]')) {
       const id = el.dataset.id, st = sim.items[id];
       if (!st) continue;
@@ -350,8 +362,6 @@ function paint() {
     }
     document.querySelectorAll('[data-up]').forEach((b) => {
       const id = b.dataset.up;
-      // "최대"는 한 레벨이라도 살 수 있으면 켠다 — affordableLevels를 초당 8회씩
-      // 품목마다 부르면 최대 1000회 반복이 그대로 낭비된다.
       b.disabled = b.dataset.n === '10'
         ? sim.money < sim.levelCostMany(id, 10)
         : sim.money < sim.levelCost(id);
@@ -362,24 +372,13 @@ function paint() {
   }
 }
 
-function fly(text) {
-  const el = document.createElement('div');
-  el.className = 'fly';
-  el.textContent = text;
-  el.style.left = (30 + Math.random() * 45) + '%';
-  el.style.top = '92px';
-  $('#float').appendChild(el);
-  setTimeout(() => el.remove(), 1100);
-}
-
-// 첫 입력에서 소리 열기 (브라우저 정책)
 addEventListener('pointerdown', () => Sfx.unlock(), { once: true });
 addEventListener('visibilitychange', () => {
   if (document.hidden) Store.set(SAVE, { state: sim.save(), at: Date.now() });
 });
 
-renderTabs(); renderMain(); paint();
-requestAnimationFrame(loop);
+renderAuto(); paint();
+eng.start('village');
 </script>
 </body>
 </html>
