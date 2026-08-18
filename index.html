@@ -270,7 +270,8 @@ function loop(now) {
     $('#guest').className = '';
     $('#guest').innerHTML =
       `<span class="face">${s.guest.face}</span><span class="say">${s.guest.name}가 ` +
-      `<b>${s.item.name}</b> ${s.n}개를 사갔다 · <b>${fmt(s.gain)}냥</b></span>`;
+      `<b>${s.lines[0].item.name}${s.lines.length > 1 ? ` 외 ${s.lines.length - 1}종` : ''}</b> ` +
+      `${s.n}개를 사갔다 · <b>${fmt(s.gain)}냥</b></span>`;
   }
   if (r.ask) {
     Sfx.deny();

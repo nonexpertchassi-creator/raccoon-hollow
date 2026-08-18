@@ -9,6 +9,7 @@
 
 import {
   SHOPS, GUESTS, LEVEL, MILESTONE_EVERY, MILESTONE_MULT, STOCK_CAP, OFFLINE, ASK_LINES,
+  BASKET_SPREAD,
 } from './content.js';
 
 const ALL_ITEMS = SHOPS.flatMap((s) => s.items.map((i) => ({ ...i, shop: s.id })));
@@ -155,19 +156,40 @@ export class Sim {
     return { sales, ask, newGuest };
   }
 
+  /**
+   * 손님이 장바구니에 여러 품목을 담아간다.
+   *
+   * 예전엔 제일 비싼 것 **한 종류**만 사갔다. 그러면 싼 품목은 아무도 안 사서
+   * 재고가 상한에 박히고, tick()의 `stock >= STOCK_CAP` 때문에 생산까지 멈췄다.
+   * 한 번 멈추면 팔릴 일이 없으니 영영 죽는다 — 12개 중 7개가 그 상태였다.
+   *
+   * 그래서 **재고가 많은 것부터** 담는다. 상한에 박힌 품목이 먼저 빠져나가면서
+   * 생산이 저절로 재개된다. 정렬 방향을 뒤집은 이 한 줄이 수정의 전부다.
+   */
   _buy(g) {
-    const open = Object.keys(this.items).filter((id) => this.items[id].stock > 0);
-    if (!open.length) return null;
-    // 비싼 것부터 사간다
-    open.sort((a, b) => this.price(b) - this.price(a));
-    const id = open[0];
-    const n = Math.min(g.qty, this.items[id].stock);
-    const gain = Math.floor(this.price(id) * g.pay * n);
-    this.items[id].stock -= n;
+    const have = Object.keys(this.items).filter((id) => this.items[id].stock > 0);
+    if (!have.length) return null;
+
+    have.sort((a, b) => this.items[b].stock - this.items[a].stock);
+
+    const per = Math.max(1, Math.ceil(g.qty / BASKET_SPREAD));
+    const lines = [];
+    let left = g.qty, gain = 0;
+
+    for (const id of have) {
+      if (left <= 0) break;
+      const n = Math.min(left, per, this.items[id].stock);
+      if (n <= 0) continue;
+      const got = Math.floor(this.price(id) * g.pay * n);
+      this.items[id].stock -= n;
+      left -= n; gain += got; this.sold += n;
+      lines.push({ item: itemById(id), n, gain: got });
+    }
+    if (!lines.length) return null;
+
     this.money += gain;
     this.revenue += gain;
-    this.sold += n;
-    return { guest: g, item: itemById(id), n, gain };
+    return { guest: g, lines, gain, n: g.qty - left };
   }
 
   /**

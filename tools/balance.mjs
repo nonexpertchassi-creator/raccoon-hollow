@@ -94,19 +94,25 @@ for (const g of GUESTS) {
 }
 
 /* ── 품목별 성적표 ──
- * 매출기여 0.0% = 그 품목은 게임에 없는 것과 같다. 플레이어가 레벨업에
- * 쏟은 돈이 전부 허공으로 간다. 이 표의 0.0%가 밸런스 수정의 합격 기준이다. */
-console.log('\n■ 품목별 성적   (매출기여 0.0% = 죽은 품목)');
-console.log('      품목    레벨    열린시점    매출기여    생산정지   상태');
-const dead = [];
+ * 판정 기준이 **매출 비중이 아니라 판매 개수**인 이유:
+ * 곡괭이는 제일 싸므로 아무리 많이 팔아도 매출 비중은 1%를 못 넘는다.
+ * 비중으로 재면 잘 팔리는 품목을 '죽음'으로 오진한다 — 실제로 그랬다.
+ *
+ * 진짜 죽음은 하나뿐이다: **안 팔려서 재고 상한에 박히고 생산까지 멈춘 것.**
+ * 싼 물건의 낮은 매출 비중은 정상이다. */
+console.log('\n■ 품목별 성적   (죽음 = 안 팔려서 생산이 멈춘 것)');
+console.log('      품목    레벨    열린시점      판매    매출기여   생산정지   상태');
+const dead = [], stuck = [];
 for (const id of Object.keys(s.items)) {
   const p = seen(id), name = itemById(id).name;
   const rev = pct(p.rev, s.revenue), stall = pct(p.stall, p.live);
-  const bad = rev < 0.05;
-  if (bad) dead.push(name);
+  let mark = '✓';
+  if (!p.sold) { dead.push(name); mark = '✗ 죽음'; }
+  else if (stall > 50) { stuck.push(name); mark = '△ 정체'; }
   console.log(`   ${name.padEnd(5)} ${String(s.lv(id)).padStart(6)}  ${
-    mm(firstItem.get(id)).padStart(9)}  ${(rev.toFixed(1) + '%').padStart(9)}  ${
-    (stall.toFixed(0) + '%').padStart(9)}   ${bad ? '✗ 죽음' : '✓'}`);
+    mm(firstItem.get(id)).padStart(9)}  ${String(p.sold).padStart(8)}  ${
+    (rev.toFixed(1) + '%').padStart(8)}  ${
+    (stall.toFixed(0) + '%').padStart(9)}   ${mark}`);
 }
 
 const w = waits.filter((x) => x > 0).sort((a, b) => a - b);
@@ -137,11 +143,10 @@ if (firstShop.size < 2) bad.push(`${HOURS}시간에 가게를 하나도 못 늘�
 if (w.length && w[Math.floor(w.length / 2)] > 60) bad.push('할 게 생기기까지 중앙 60초 초과 — 지루함');
 if (w.length && w[Math.floor(w.length / 2)] < 2) bad.push('간격 2초 미만 — 긴장이 없음');
 if (dead.length) {
-  bad.push(`품목 ${dead.length}/${Object.keys(s.items).length}개가 매출 0 — ${dead.join('·')}`);
+  bad.push(`품목 ${dead.length}/${Object.keys(s.items).length}개가 한 개도 안 팔림 — ${dead.join('·')}`);
 }
-const stalled = Object.keys(s.items).filter((id) => pct(seen(id).stall, seen(id).live) > 50);
-if (stalled.length) {
-  bad.push(`품목 ${stalled.length}개가 재고 상한에 박혀 절반 이상 생산 정지`);
+if (stuck.length) {
+  bad.push(`품목 ${stuck.length}개가 재고 상한에 박혀 절반 이상 생산 정지 — ${stuck.join('·')}`);
 }
 if (leftover > 1800) bad.push(`${mm(lastUnlock)}에 콘텐츠 소진 — 남은 ${mm(leftover)}은 레벨업뿐`);
 if (Object.keys(s.items).length < 3) bad.push('열린 품목이 3개 미만 — 요청 흐름이 막힘');
