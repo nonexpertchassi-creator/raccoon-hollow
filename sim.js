@@ -9,7 +9,7 @@
 
 import {
   SHOPS, GUESTS, LEVEL, MILESTONE_EVERY, MILESTONE_MULT, STOCK_CAP, OFFLINE, ASK_LINES,
-  BASKET_SPREAD, MAX_BULK, AUTO_COST, AUTO_PER_TICK, AUTO_SHARE, ASK_EVERY,
+  BASKET_SPREAD, MAX_BULK, AUTO_COST, AUTO_PER_TICK, AUTO_SHARE, ASK_EVERY, FAIR,
 } from './content.js';
 
 const ALL_ITEMS = SHOPS.flatMap((s) => s.items.map((i) => ({ ...i, shop: s.id })));
@@ -28,6 +28,10 @@ export class Sim {
     this.guests = ['rabbit'];
     this.sold = 0;
     this.auto = false;                    // 자동 강화를 샀는가
+    this.fair = 0;                        // 장이 서 있는 남은 시간(초)
+    this.busy = -1;                       // 지금 북적이는 작은 건물 (없으면 -1)
+    this._busyT = 0;
+    this._fairAcc = 0;
     this._purse = 0;                     // 자동 강화가 쓸 수 있는 몫
     this.events = [];                    // 화면에 띄울 최근 사건
 
@@ -190,9 +194,35 @@ export class Sim {
     return true;
   }
 
+  /**
+   * 북적이는 작은 건물을 눌렀다 → 장이 선다.
+   * 북적이지 않는 곳을 누르면 아무 일도 없다.
+   */
+  tapSmall(idx) {
+    if (idx !== this.busy) return false;
+    this.busy = -1;
+    this.fair = FAIR.boost;
+    this._ev('장이 섰다 — 손님이 몰린다!', 'shop');
+    return true;
+  }
+
   /* ── 한 틱 ── */
   tick(dt, rng = Math.random) {
     this.t += dt;
+
+    // 0) 장 — 북적임이 떴다 사라지고, 장이 서 있으면 시간이 줄어든다
+    if (this.fair > 0) this.fair = Math.max(0, this.fair - dt);
+    if (this.busy >= 0) {
+      this._busyT -= dt;
+      if (this._busyT <= 0) this.busy = -1;
+    } else if (this.fair <= 0) {
+      this._fairAcc += dt;
+      if (this._fairAcc >= FAIR.every) {
+        this._fairAcc = 0;
+        this.busy = Math.floor(rng() * FAIR.spots);
+        this._busyT = FAIR.window;
+      }
+    }
 
     // 1) 생산 — 열린 품목이 각자 자기 타이머로 돈다. 손 댈 필요 없음.
     for (const id of Object.keys(this.items)) {
@@ -210,7 +240,8 @@ export class Sim {
     const sales = [];
     for (const g of GUESTS) {
       if (!this.guests.includes(g.id)) continue;
-      this._guestAcc[g.id] += dt;
+      // 장이 서면 손님이 그만큼 자주 온다
+      this._guestAcc[g.id] += dt * (this.fair > 0 ? FAIR.mult : 1);
       while (this._guestAcc[g.id] >= g.every) {
         this._guestAcc[g.id] -= g.every;
         const s = this._buy(g, rng);

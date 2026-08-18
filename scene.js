@@ -42,7 +42,7 @@ const SLOTS = [
  * 피해 계산으로 잡았다. */
 const SMALL_W = 96, SMALL_H = 76;
 const SMALLS = [
-  { x: 368, y: 1270, k: 'store', name: '점포' },
+  { x: 16,  y: 1150, k: 'store', name: '점포' },   // 오른쪽 1270에 뒀더니 '장 서다!' 표시가 필방 글자를 가렸다
   { x: 368, y: 1004, k: 'inn',   name: '주막' },
   { x: 368, y: 760,  k: 'cart',  name: '포장마차' },
   { x: 16,  y: 470,  k: 'store', name: '점포' },
@@ -330,6 +330,15 @@ export class Village {
   camMax() { return Math.max(0, H - this.viewH); }
 
   _tap(wx, wy) {
+    // 북적이는 작은 건물을 먼저 본다 — 이게 이 순간 제일 하고 싶은 조작이다
+    for (let i = 0; i < SMALLS.length; i++) {
+      const s = SMALLS[i];
+      if (wx > s.x - 8 && wx < s.x + SMALL_W + 8 && wy > s.y - 26 && wy < s.y + SMALL_H + 8) {
+        if (this.sim.tapSmall(i)) { Sfx.win(); Juice.shake(6); }
+        else Sfx.click();
+        return;
+      }
+    }
     for (let i = 0; i < SHOPS.length; i++) {
       const s = SLOTS[i];
       if (wx > s.x && wx < s.x + s.w && wy > s.y && wy < s.y + s.h) {
@@ -371,6 +380,15 @@ export class Village {
     c.restore();
 
     this._scrollHint(c);
+    if (this.sim.fair > 0) this._fairBanner(c);
+  }
+
+  /** 장이 서 있는 동안 창 위쪽에 남은 시간을 띄운다 (화면 좌표) */
+  _fairBanner(c) {
+    const left = this.sim.fair;
+    G.round(c, W / 2 - 76, 10, 152, 28, 10, '#c7563f');
+    G.text(c, `장이 섰다 · ${Math.ceil(left)}초`, W / 2, 24,
+      { size: 13.5, fill: '#fff3dd', weight: 800 });
   }
 
   /** 마을이 창보다 길다는 걸 알려주는 가느다란 표시 */
@@ -620,6 +638,13 @@ export class Village {
     c.fillStyle = 'rgba(0,0,0,.14)';
     c.beginPath(); c.ellipse(cx, y + h, w * 0.42, 8, 0, 0, 7); c.fill();
 
+    if (this.sim.busy === SMALLS.indexOf(s)) {
+      const bob = Math.sin(this.t * 5) * 4;
+      G.glow(c, cx, y + 18, 46, 'rgba(255,214,120,.34)');
+      G.round(c, cx - 30, y - 34 + bob, 60, 24, 9, '#c7563f');
+      G.text(c, '장 서다!', cx, y - 22 + bob, { size: 12.5, fill: '#fff3dd', weight: 800 });
+    }
+
     if (s.k === 'cart') {
       // 포장마차 — 천막 씌운 수레. 바퀴가 달려 있다.
       G.round(c, x + 10, y + 30, w - 20, h - 40, 4, C.paper);
@@ -651,6 +676,14 @@ export class Village {
     c.lineTo(x + w + 2, y + 8);
     c.quadraticCurveTo(cx, y + 20, x - 2, y + 8);
     c.closePath(); c.fill();
+
+    // 북적임 — 지금 누르면 장이 선다
+    if (this.sim.busy === SMALLS.indexOf(s)) {
+      const bob = Math.sin(this.t * 5) * 4;
+      G.glow(c, cx, y + 18, 46, 'rgba(255,214,120,.34)');
+      G.round(c, cx - 30, y - 34 + bob, 60, 24, 9, '#c7563f');
+      G.text(c, '장 서다!', cx, y - 22 + bob, { size: 12.5, fill: '#fff3dd', weight: 800 });
+    }
 
     if (s.k === 'inn') {
       // 주막 — 술 깃발과 평상에 앉은 손님
