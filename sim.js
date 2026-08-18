@@ -9,7 +9,7 @@
 
 import {
   SHOPS, GUESTS, LEVEL, MILESTONE_EVERY, MILESTONE_MULT, STOCK_CAP, OFFLINE, ASK_LINES,
-  BASKET_SPREAD, MAX_BULK, AUTO_COST, AUTO_PER_TICK, AUTO_SHARE, ASK_EVERY, FAIR, SMALL_SHOPS, RANKS, REGULARS,
+  BASKET_SPREAD, MAX_BULK, AUTO_COST, AUTO_PER_TICK, AUTO_SHARE, ASK_EVERY, FAIR, SMALL_SHOPS, RANKS, REGULARS, THIEF,
 } from './content.js';
 
 const ALL_ITEMS = SHOPS.flatMap((s) => s.items.map((i) => ({ ...i, shop: s.id })));
@@ -41,6 +41,9 @@ export class Sim {
 
     this._guestAcc = {};
     this._guestGap = {};
+    this.thief = null;                   // 지금 물건을 집어 든 쥐 {id, qty, left, life}
+    this._thiefAcc = 0;
+    this._thiefGap = null;
     this._askAcc = 0;
     for (const g of GUESTS) this._guestAcc[g.id] = 0;
 
@@ -73,11 +76,55 @@ export class Sim {
    *  둘 사이는 섞는다. **어느 쪽이든 평균 간격은 every 그대로**라서
    *  밸런스 표를 다시 잴 필요가 없다. 흔들리기만 한다.
    */
-  _gap(g, rng = Math.random) {
-    const w = g.wild || 0;
-    if (w <= 0) return g.every;
+  _gap(g, rng = Math.random) { return this._wildGap(g.every, g.wild || 0, rng); }
+
+  _wildGap(every, w, rng = Math.random) {
+    if (w <= 0) return every;
     const e = -Math.log(1 - rng() * 0.999);          // 평균 1인 지수분포
-    return Math.max(g.every * 0.15, g.every * (1 - w + w * e));
+    return Math.max(every * 0.15, every * (1 - w + w * e));
+  }
+
+  /* ── 쥐 도둑 ── */
+  _thief(dt, rng) {
+    if (this.thief) {
+      this.thief.left -= dt;
+      if (this.thief.left <= 0) {
+        const th = this.thief;
+        this.thief = null;
+        const it = this.items[th.id];
+        const n = it ? Math.min(it.stock, th.qty) : 0;
+        if (it) it.stock -= n;
+        this._ev(`쥐가 ${this.itemName(th.id)} ${n}개를 훔쳐 달아났다`, 'thief');
+      }
+      return;
+    }
+    if (this.revenue < THIEF.at) return;
+    this._thiefAcc += dt;
+    if (this._thiefGap == null) this._thiefGap = this._wildGap(THIEF.every, THIEF.wild, rng);
+    if (this._thiefAcc < this._thiefGap) return;
+    this._thiefAcc = 0;
+    this._thiefGap = this._wildGap(THIEF.every, THIEF.wild, rng);
+    // 재고가 있는 칸 중 하나. 없으면 훔칠 것도 없다
+    const pool = Object.keys(this.items).filter((id) => this.items[id].stock > 0);
+    if (!pool.length) return;
+    const id = pool[Math.floor(rng() * pool.length)];
+    const qty = Math.max(1, Math.min(THIEF.max, Math.floor(this.items[id].stock * THIEF.take)));
+    this.thief = { id, qty, left: THIEF.life, life: THIEF.life };
+    this._ev(`쥐가 ${this.itemName(id)}에 손을 댔다 — 눌러서 잡아라`, 'thief');
+  }
+
+  /** 도둑을 잡았다. 물건은 그대로 남고 벌금을 받는다.
+   *  손해를 막는 게 아니라 이득을 줍는 구조여야 한다 — 안 보고 있어도
+   *  잃는 건 작고, 보고 있으면 버는 게 크다. */
+  catchThief() {
+    const th = this.thief;
+    if (!th) return null;
+    this.thief = null;
+    const gain = Math.floor(this.price(th.id) * th.qty * THIEF.fine);
+    this.money += gain;
+    this.revenue += gain;
+    this._ev(`쥐를 잡았다 — 벌금 ${fmt(gain)}냥`, 'catch');
+    return { id: th.id, qty: th.qty, gain };
   }
 
   /* ── 단골 20성 ── */
@@ -390,6 +437,9 @@ export class Sim {
         st.stock++;
       }
     }
+
+    // 1.5) 쥐 도둑 — 재고를 집어 들고 도망친다
+    this._thief(dt, rng);
 
     // 2) 손님 — 재고에서 여러 종류를 무작위로 담아간다
     const sales = [];

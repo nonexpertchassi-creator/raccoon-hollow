@@ -6,7 +6,7 @@
  * 절반이 죽어 있는데도 "문제 없음"을 보고했다. 그래서 품목별로 따로 센다.
  */
 import { Sim, fmt, itemById } from '../sim.js';
-import { SHOPS, GUESTS, STOCK_CAP } from '../content.js';
+import { SHOPS, GUESTS, STOCK_CAP, THIEF } from '../content.js';
 
 const HOURS = Number(process.argv[2] || 4);
 const SEED = Number(process.argv[3] || 1);
@@ -59,9 +59,22 @@ let last = 0, samples = 0, timeline = [];
 const perItem = {};                 // id → { rev, sold, stall, live }
 const seen = (id) => (perItem[id] ??= { rev: 0, sold: 0, stall: 0, live: 0 });
 let lastUnlock = 0, lastUnlockWhat = '시작';
+let ratsSeen = 0, ratsGone = 0, ratLoss = 0, ratWorth = 0;
+let ratHad = false;
 
 for (let t = 0; t < HOURS * 3600; t += DT) {
+  /* 쥐는 '안 잡았을 때'를 잰다 — 폰을 꺼놓고 자는 쪽이 최악이고,
+   * 그쪽이 안전해야 이 장치를 넣어도 된다. */
+  const ratBefore = s.thief;
   const r = s.tick(DT, rng);
+  if (s.thief && !ratHad) {
+    ratsSeen++; ratHad = true;
+    ratWorth += s.price(s.thief.id) * s.thief.qty;
+  }
+  if (!s.thief && ratHad) {
+    ratHad = false; ratsGone++;
+    if (ratBefore) ratLoss += s.price(ratBefore.id) * ratBefore.qty;
+  }
 
   /* 매출을 품목별로 쪼개 적는다.
    * 손님 한 명이 여러 품목을 사갈 수 있으므로 lines[]를 먼저 본다. */
@@ -169,6 +182,14 @@ if (w.length) {
     `상위10% ${w[Math.floor(w.length * 0.9)].toFixed(1)}초 · 최장 ${w[w.length - 1].toFixed(1)}초`);
   console.log(`   가게 ${counts.shop} · 새 품목 ${counts.item} · 강화 클릭 ${counts.level}` +
     (s.auto ? ' (자동 강화 구입 후로는 0)' : ''));
+}
+
+if (ratsSeen) {
+  console.log('\n■ 쥐 도둑  (한 번도 안 잡았을 때 = 폰을 꺼놓고 잔 경우)');
+  console.log(`   ${ratsSeen}마리 나타남 · 훔쳐간 물건값 ${fmt(Math.floor(ratLoss))}냥` +
+    ` = 누적매출의 ${(ratLoss / s.revenue * 100).toFixed(2)}%`);
+  console.log(`   매번 잡았다면 벌금 ${fmt(Math.floor(ratWorth * THIEF.fine))}냥` +
+    ` = 누적매출의 ${(ratWorth * THIEF.fine / s.revenue * 100).toFixed(1)}%`);
 }
 
 /* ── 콘텐츠 소진 ──

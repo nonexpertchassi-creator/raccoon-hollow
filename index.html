@@ -37,6 +37,9 @@ header{padding:10px 14px 8px;border-bottom:1.5px solid var(--line);flex-shrink:0
 #guest .face{font-size:19px}
 #guest .say{color:var(--ink2)} #guest .say b{color:var(--ink)}
 #guest.ask{background:#f2e4bd;animation:blink 1.4s ease}
+/* 쥐가 들었다 — 몇 초짜리 사건이라 눈에 안 띄면 그냥 지나친다 */
+#guest.thief{background:#efd0c6;animation:blink .5s ease infinite}
+#guest.catch{background:#dbe8cf}
 @keyframes blink{0%{background:#ffe89a}100%{background:#f2e4bd}}
 
 /* 탭 */
@@ -411,7 +414,7 @@ function renderAuto() {
 const eng = new Engine($('#cv'), { w: 480, h: 800, bg: '#8b9e74', fit: 'width' });
 const village = new Village(sim, openPanel);
 
-let uiAcc = 0, saveAcc = 0;
+let uiAcc = 0, saveAcc = 0, thiefShown = false;
 eng.add('village', {
   update(dt) {
     const r = sim.tick(dt);
@@ -435,6 +438,29 @@ eng.add('village', {
         `"<b>${r.ask.line}</b>" — 없다고 하자 돌아갔다</span>`;
     }
     if (r.newGuest) Sfx.reward();
+
+    /* 쥐 — 화면 위쪽 띠로도 알린다. 마을을 밀어 다른 데를 보고 있으면
+     * 캔버스의 쥐가 화면 밖일 수 있는데, 그때 알 방법이 없다. */
+    if (sim.thief && !thiefShown) {
+      thiefShown = true;
+      Sfx.deny();
+      $('#guest').className = 'thief';
+      $('#guest').innerHTML = `<span class="face">🐀</span><span class="say">` +
+        `쥐가 <b>${sim.itemName(sim.thief.id)}</b>에 손을 댔다 — <b>눌러서 잡아라!</b></span>`;
+    } else if (!sim.thief && thiefShown) {
+      thiefShown = false;
+      /* 잡았는지 놓쳤는지는 sim이 남긴 사건으로 갈린다.
+       * 잡는 조작은 캔버스에서 일어나므로 여기까지 따로 알려오지 않는다. */
+      const e = sim.events[0];
+      if (e && e.kind === 'catch') {
+        Sfx.win();
+        $('#guest').className = 'catch';
+        $('#guest').innerHTML = `<span class="face">🎉</span><span class="say">${e.msg}</span>`;
+      } else if (e && e.kind === 'thief') {
+        $('#guest').className = '';
+        $('#guest').innerHTML = `<span class="face">💨</span><span class="say">${e.msg}</span>`;
+      }
+    }
 
     village.update(dt, eng.pointer, eng.viewH);
 
