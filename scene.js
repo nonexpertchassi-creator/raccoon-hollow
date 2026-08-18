@@ -75,6 +75,12 @@ export class Village {
      * 금액은 헤더가 이미 은행 잔고처럼 보여준다. 여기서는 "팔렸다"만
      * 알려주면 된다. 조선 동전은 가운데가 네모로 뚫린 상평통보다. */
     this.coins = [];
+    /* 가게별 매상 카운터. 가게idx → {amount, t}
+     *
+     * 금액을 손님 자리에 띄웠더니 손님이 몰릴 때 글자끼리 겹쳤다.
+     * 가게마다 한 자리를 정해두면 같은 가게에 손님이 여럿 와도 금액이
+     * 그 자리에서 합쳐질 뿐 겹치지 않는다. */
+    this.takings = {};
     /* 아직 손님이 도착하지 않은 판매량. 품목id → 개수.
      *
      * sim은 손님이 사는 순간 재고를 바로 깎는다. 그런데 화면에서는 그 손님이
@@ -102,6 +108,11 @@ export class Village {
       out.push({ x, y, r: 2 + rnd() * 3 });
     }
     return out;
+  }
+
+  /** 가게 위에 띄울 자리. 맨 위 가게(약재상)는 위쪽이 화면 밖이라 아래에 단다. */
+  _perch(sl, h) {
+    return sl.y - h - 8 >= 4 ? sl.y - h - 8 : sl.y + BOX_H - 4;
   }
 
   /* ── 바깥에서 알려주는 사건 ── */
@@ -171,6 +182,9 @@ export class Village {
               t: 1.05, r: 8.5 + Math.random() * 2.5,
             });
           }
+          const tk = (this.takings[w.idx] ||= { amount: 0, t: 0 });
+          tk.amount += w.gain;
+          tk.t = 1.7;
           Juice.burst(w.x, w.y - 14, { n: 4, color: ['#f0d98b'], size: 2, speed: 52, life: 0.34 });
           Sfx.coin();
         }
@@ -198,6 +212,11 @@ export class Village {
     }
     this.coins = this.coins.filter((co) => co.t > 0);
 
+    for (const k of Object.keys(this.takings)) {
+      this.takings[k].t -= dt;
+      if (this.takings[k].t <= 0) delete this.takings[k];
+    }
+
     // 가게를 눌렀나
     if (pointer.justDown) {
       for (let i = 0; i < SHOPS.length; i++) {
@@ -216,8 +235,21 @@ export class Village {
     this._ground(c);
     for (let i = 0; i < SHOPS.length; i++) this._shop(c, i);
     for (const w of this.walkers) this._walker(c, w);
+    for (const k of Object.keys(this.takings)) this._takings(c, Number(k));
     if (this.bubble) this._bubble(c);
     for (const co of this.coins) this._coin(c, co);
+  }
+
+  /** 매상 카운터. 가게 위에 떠서 잠깐 올라가다 사라진다. */
+  _takings(c, idx) {
+    const tk = this.takings[idx], sl = slotOf(idx);
+    const label = `+${fmt(tk.amount)}냥`;
+    const bw = 26 + label.length * 8.4;
+    const y = this._perch(sl, 26) - (1.7 - tk.t) * 11;
+    c.globalAlpha = Math.min(1, tk.t / 0.45);
+    G.round(c, sl.cx - bw / 2, y, bw, 25, 9, '#3d3327');
+    G.text(c, label, sl.cx, y + 13, { size: 13.5, fill: '#f2d88c', weight: 800 });
+    c.globalAlpha = 1;
   }
 
   /** 엽전 — 둥근 몸통에 네모 구멍. 조선 상평통보 모양이다. */
@@ -318,13 +350,24 @@ export class Village {
 
   _bubble(c) {
     const b = this.bubble, sl = slotOf(b.idx);
-    const w = 108, x = sl.cx - w / 2, y = sl.y - 34;
+    // 맨 위 가게는 위가 화면 밖이라 말풍선이 아래에 달린다. 그때는 꼬리도
+    // 위를 향해야 어느 가게를 가리키는지가 맞는다.
+    const below = sl.y - 28 - 8 < 4;
+    const lift = this.takings[b.idx] ? 32 : 0;
+    const w = 108, x = sl.cx - w / 2;
+    const y = below ? this._perch(sl, 28) + lift : this._perch(sl, 28) - lift;
     c.globalAlpha = Math.min(1, b.t);
     G.round(c, x, y, w, 28, 9, '#fff6d8');
     c.fillStyle = '#fff6d8';
-    c.beginPath(); c.moveTo(sl.cx - 6, y + 27); c.lineTo(sl.cx + 6, y + 27);
-    c.lineTo(sl.cx, y + 36); c.fill();
+    c.beginPath();
+    if (below) {
+      c.moveTo(sl.cx - 6, y + 1); c.lineTo(sl.cx + 6, y + 1); c.lineTo(sl.cx, y - 8);
+    } else {
+      c.moveTo(sl.cx - 6, y + 27); c.lineTo(sl.cx + 6, y + 27); c.lineTo(sl.cx, y + 36);
+    }
+    c.fill();
     G.text(c, `${b.face} ${b.text}`, sl.cx, y + 14, { size: 13, fill: C.ink, weight: 800 });
     c.globalAlpha = 1;
   }
+
 }
