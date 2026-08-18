@@ -9,7 +9,7 @@
 
 import {
   SHOPS, GUESTS, LEVEL, MILESTONE_EVERY, MILESTONE_MULT, STOCK_CAP, OFFLINE, ASK_LINES,
-  BASKET_SPREAD, MAX_BULK, AUTO_COST, AUTO_PER_TICK, AUTO_SHARE, ASK_EVERY, FAIR, SMALL_SHOPS, RANKS,
+  BASKET_SPREAD, MAX_BULK, AUTO_COST, AUTO_PER_TICK, AUTO_SHARE, ASK_EVERY, FAIR, SMALL_SHOPS, RANKS, REGULARS,
 } from './content.js';
 
 const ALL_ITEMS = SHOPS.flatMap((s) => s.items.map((i) => ({ ...i, shop: s.id })));
@@ -27,6 +27,7 @@ export class Sim {
     this.items = { pick: { lv: 1, stock: 0, prog: 0 } };  // 열린 품목
     this.asked = [];                     // 손님이 물어본 적 있는(=열 수 있는) 품목
     this.guests = ['rabbit'];
+    this.bought = {};                    // 손님별 누적 구매 개수 → 단골 등급
     this.sold = 0;
     this.auto = false;                    // 자동 강화를 샀는가
     this.smalls = [];                     // 세워 둔 작은 건물의 번호
@@ -51,6 +52,22 @@ export class Sim {
   /** 25레벨마다 2배. **판매가**에만 붙는다 — price()에서만 쓰인다.
    * 화면에는 오래도록 '생산 2배'라고 적혀 있었지만 생산은 한 번도 안 빨라졌다. */
   milestone(id) { return Math.pow(MILESTONE_MULT, Math.floor(this.lv(id) / MILESTONE_EVERY)); }
+
+  /* ── 단골 ── */
+  regularLv(gid) {
+    const n = this.bought[gid] || 0;
+    let lv = 0;
+    for (let i = 1; i < REGULARS.length; i++) if (n >= REGULARS[i].at) lv = i;
+    return lv;
+  }
+  regularName(gid) { return REGULARS[this.regularLv(gid)].name; }
+  /** 다음 등급까지 남은 개수 (최고 등급이면 null) */
+  regularLeft(gid) {
+    const lv = this.regularLv(gid);
+    return lv >= REGULARS.length - 1 ? null : REGULARS[lv + 1].at - (this.bought[gid] || 0);
+  }
+  /** 모든 손님의 단골 등급 합계. 가게 승급 조건에 쓴다. */
+  regularSum() { return this.guests.reduce((a, g) => a + this.regularLv(g), 0); }
 
   /* ── 가게 등급 ── */
   rankOf(shopId) { return this.rank[shopId] || 0; }
@@ -224,7 +241,8 @@ export class Sim {
       list: [
         { ok: allMax, text: `${shop.name}의 모든 칸을 ${next === RANKS[1] ? RANKS[0].maxLv : RANKS[r].maxLv}레벨까지` },
         { ok: !after || this.shops.includes(after.id), text: after ? `${after.name} 열기` : '—' },
-        { ok: this.guests.length >= next.guests, text: `손님 ${next.guests}종 (지금 ${this.guests.length})` },
+        { ok: this.regularSum() >= next.guests,
+          text: `손님 단골 등급 합계 ${next.guests} (지금 ${this.regularSum()})` },
         { ok: ips >= next.ips, text: `초당 ${fmt(next.ips)}냥 (지금 ${fmt(ips)})` },
         { ok: this.money >= cost, text: `승급값 ${fmt(cost)}냥` },
       ].filter((x) => x.text !== '—'),
@@ -381,6 +399,11 @@ export class Sim {
     const have = Object.keys(this.items).filter((id) => this.items[id].stock > 0);
     if (!have.length) return null;
 
+    // 단골일수록 많이 사가고 값도 후하게 쳐준다
+    const reg = REGULARS[this.regularLv(g.id)];
+    const qty = Math.max(1, Math.round(g.qty * reg.qty));
+    const pay = g.pay * reg.pay;
+
     // 무작위로 섞는다 (Fisher-Yates)
     for (let i = have.length - 1; i > 0; i--) {
       const j = Math.floor(rng() * (i + 1));
@@ -394,15 +417,15 @@ export class Sim {
     have.sort((a, b) =>
       (this.items[b].stock >= STOCK_CAP) - (this.items[a].stock >= STOCK_CAP));
 
-    const per = Math.max(1, Math.ceil(g.qty / BASKET_SPREAD));
+    const per = Math.max(1, Math.ceil(qty / BASKET_SPREAD));
     const lines = [];
-    let left = g.qty, gain = 0;
+    let left = qty, gain = 0;
 
     for (const id of have) {
       if (left <= 0) break;
       const n = Math.min(left, per, this.items[id].stock);
       if (n <= 0) continue;
-      const got = Math.floor(this.price(id) * g.pay * n);
+      const got = Math.floor(this.price(id) * pay * n);
       this.items[id].stock -= n;
       left -= n; gain += got; this.sold += n;
       lines.push({ item: itemById(id), n, gain: got });
@@ -412,7 +435,15 @@ export class Sim {
     this.money += gain;
     this.revenue += gain;
     if (this.auto) this._purse += gain * AUTO_SHARE;
-    return { guest: g, lines, gain, n: g.qty - left };
+
+    // 단골 등급이 올랐으면 알린다 — 손님이 굳어 있지 않다는 신호다
+    const before = this.regularLv(g.id);
+    this.bought[g.id] = (this.bought[g.id] || 0) + (qty - left);
+    const after = this.regularLv(g.id);
+    if (after > before) {
+      this._ev(`${g.name}이(가) ${REGULARS[after].name} 손님이 되었다`, 'guest');
+    }
+    return { guest: g, lines, gain, n: qty - left, want: qty };
   }
 
   /**

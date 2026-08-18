@@ -209,6 +209,7 @@ export class Village {
     const y = fromTop ? -30 : H + 30;
     this.walkers.push({
       face: sale.guest.face,
+      reg: this.sim.regularLv(sale.guest.id),   // 단골 등급 — 갓으로 보여준다
       carry: carryOf(sale.guest.qty),
       stops, si: 0,
       lane: (Math.random() - 0.5) * (ROAD_W - 34),
@@ -741,6 +742,16 @@ export class Village {
     c.beginPath(); c.ellipse(w.x, w.y + 8, 11, 4.5, 0, 0, 7); c.fill();
     this._carry(c, w, bob);
     G.text(c, w.face, w.x, w.y - 8 + bob, { size: 27, fill: '#000' });
+
+    /* 단골은 갓을 쓴다. 등급이 오를수록 갓이 커지고 색이 진해진다.
+     * 손님 머리 위에 글자를 얹으면 여럿 몰릴 때 다시 겹치므로 모양으로 알린다. */
+    if (w.reg > 0) {
+      const y = w.y - 24 + bob, sw = 9 + w.reg * 2.2;
+      const tone = ['', '#8a7a63', '#6d5236', '#3f3327', '#2b241b'][w.reg];
+      G.round(c, w.x - sw, y, sw * 2, 3.5, 2, tone);          // 갓양태
+      G.round(c, w.x - sw * 0.42, y - 6.5, sw * 0.84, 8, 3, tone);  // 갓모자
+      if (w.reg >= 4) G.circle(c, w.x, y - 8.5, 2.4, '#e0c073');    // 터줏대감은 금관자
+    }
   }
 
   /** 짐 — 많이 사가는 손님일수록 큰 걸 끌고 온다. 멀리서도 읽혀야 한다. */
