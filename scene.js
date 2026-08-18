@@ -69,6 +69,17 @@ export class Village {
     this.onShopTap = onShopTap;
     this.walkers = [];
     this.floats = [];
+    /* 아직 손님이 도착하지 않은 판매량. 품목id → 개수.
+     *
+     * sim은 손님이 사는 순간 재고를 바로 깎는다. 그런데 화면에서는 그 손님이
+     * 길을 걸어오는 데 몇 초가 걸린다. 그대로 두면 **아무도 없는 가게에서
+     * 물건이 먼저 사라진다** — 결과가 원인보다 먼저 나온다.
+     *
+     * 그래서 진열대에 보여줄 때만 이 수치를 도로 더한다. 손님이 도착하는
+     * 순간 빼면 숫자가 그때 떨어진다. 계산은 건드리지 않으므로 밸런스는
+     * 그대로다. 화면이 계산을 따라잡는 것뿐이다. */
+    this.pending = {};
+    this.flash = {};         // 방금 깎인 칸을 잠깐 빛나게 한다
     this.bubble = null;      // 손님 요청 말풍선 {shopIdx, text, t}
     this.t = 0;
     this.tufts = this._tufts();
@@ -91,17 +102,25 @@ export class Village {
 
   /** 손님이 뭔가 사갔다 → 그 가게로 걸어 보낸다 */
   onSale(sale) {
-    if (this.walkers.length > 9) return;          // 너무 많으면 화면이 지저분해진다
+    // 손님을 못 띄우면 재고도 붙잡지 않는다. 안 그러면 영영 안 빠진다.
+    if (this.walkers.length > 9) return;
     const shopId = sale.lines[0].item.shop;
     const idx = SHOPS.findIndex((s) => s.id === shopId);
     if (idx < 0) return;
+    for (const ln of sale.lines) {
+      this.pending[ln.item.id] = (this.pending[ln.item.id] || 0) + ln.n;
+    }
     this.walkers.push({
       face: sale.guest.face,
       idx,
       gain: sale.gain,
+      sold: sale.lines.map((ln) => ({ id: ln.item.id, n: ln.n })),
       lines: sale.lines.length,
-      x: ROAD_X + (Math.random() - 0.5) * (ROAD_W - 40),
-      y: H + 30,
+      // 가까운 쪽에서 들어온다. 전부 화면 아래에서 출발시켰더니 맨 위 약재상까지
+      // 7초가 걸렸고, 그동안 진열대 숫자가 멈춰 있어 그것대로 어색했다.
+      x: ROAD_X + (Math.random() - 0.5) * (ROAD_W - 34),
+      y: SLOTS[idx].y < H / 2 ? -30 : H + 30,
+      exit: SLOTS[idx].y < H / 2 ? -1 : 1,
       state: 'in',
       wait: 0,
       bob: Math.random() * 6,
@@ -125,11 +144,16 @@ export class Village {
       if (w.state === 'in') {
         // 길을 따라 올라가다가, 가게 높이에 닿으면 가게 쪽으로 붙는다
         const dy = sl.standY - w.y;
-        w.y += Math.sign(dy) * Math.min(Math.abs(dy), 108 * dt);
+        w.y += Math.sign(dy) * Math.min(Math.abs(dy), 132 * dt);
         const dx = sl.standX - w.x;
         if (Math.abs(dy) < 90) w.x += Math.sign(dx) * Math.min(Math.abs(dx), 90 * dt);
         if (Math.abs(dy) < 3 && Math.abs(dx) < 3) {
           w.state = 'buy'; w.wait = 0.75;
+          // 도착한 지금이 재고가 빠지는 순간이다
+          for (const s of w.sold) {
+            this.pending[s.id] = Math.max(0, (this.pending[s.id] || 0) - s.n);
+            this.flash[s.id] = 0.45;
+          }
           this.floats.push({ x: w.x, y: w.y - 22, text: `+${fmt(w.gain)}`, t: 1.1 });
           Juice.burst(w.x, w.y - 14, { n: 7, color: ['#e8b64c', '#c9922f'], size: 3, speed: 70, life: 0.5 });
           Sfx.coin();
@@ -138,12 +162,17 @@ export class Village {
         w.wait -= dt;
         if (w.wait <= 0) w.state = 'out';
       } else {
-        w.y += 132 * dt;
+        w.y += 150 * dt * w.exit;      // 왔던 쪽으로 돌아간다
         const back = ROAD_X - w.x;
         w.x += Math.sign(back) * Math.min(Math.abs(back), 70 * dt);
       }
     }
-    this.walkers = this.walkers.filter((w) => w.y < H + 60);
+    this.walkers = this.walkers.filter((w) => w.y > -90 && w.y < H + 90);
+
+    for (const id of Object.keys(this.flash)) {
+      this.flash[id] -= dt;
+      if (this.flash[id] <= 0) delete this.flash[id];
+    }
 
     for (const f of this.floats) { f.t -= dt; f.y -= 26 * dt; }
     this.floats = this.floats.filter((f) => f.t > 0);
@@ -230,13 +259,16 @@ export class Village {
       const bw = (BOX_W - 24) / per - 4;
       const bx = x + 12 + k * (bw + 4);
       const by = y + 48;
-      G.round(c, bx, by, bw, 46, 7, C.paper2);
+      const fl = this.flash[it.id] || 0;
+      G.round(c, bx, by, bw, 46, 7, fl > 0 ? '#f0e2b4' : C.paper2);
       const st = this.sim.items[it.id];
-      // 재고 막대 — 아래에서 위로 찬다
-      const h = Math.round(42 * Math.min(1, st.stock / STOCK_CAP));
+      // 걸어오는 중인 몫을 도로 더한다 — 손님이 닿아야 숫자가 떨어진다
+      const shown = Math.min(STOCK_CAP, st.stock + (this.pending[it.id] || 0));
+      const h = Math.round(42 * Math.min(1, shown / STOCK_CAP));
       if (h > 0) G.round(c, bx + 2, by + 44 - h, bw - 4, h, 5, shop.color);
       G.text(c, it.name, bx + bw / 2, by + 12, { size: 9.5, fill: C.ink2, weight: 800 });
-      G.text(c, String(st.stock), bx + bw / 2, by + 32, { size: 13, fill: C.ink, weight: 800 });
+      G.text(c, String(shown), bx + bw / 2, by + 32,
+        { size: fl > 0 ? 15 : 13, fill: C.ink, weight: 800 });
     }
 
     // 잠긴 칸이 남아 있으면 알려준다 — 다음에 뭘 열지가 여기서 보인다
