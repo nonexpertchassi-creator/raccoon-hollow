@@ -1,5 +1,5 @@
 /* balance.mjs — 그리기 전에 곡선부터 확인한다.
- * 실행: node tools/balance.mjs [시간]
+ * 실행: node tools/balance.mjs [시간] [씨앗]
  *
  * 이 도구의 임무는 하나다: **게임이 망가졌으면 망가졌다고 말하는 것.**
  * 예전 판은 재고 정지를 `every`로 판정해서(= 품목이 전부 꽉 차야 셈)
@@ -9,8 +9,21 @@ import { Sim, fmt, itemById } from '../sim.js';
 import { SHOPS, GUESTS, STOCK_CAP } from '../content.js';
 
 const HOURS = Number(process.argv[2] || 4);
+const SEED = Number(process.argv[3] || 1);
 const DT = 0.25;
 const s = new Sim();
+
+/* 씨앗 고정 난수.
+ * 손님이 무작위로 물건을 집으면서 매 실행마다 결과가 달라졌다. 그러면
+ * 수치를 바꿨을 때 그게 개선인지 그냥 운인지 구분할 수 없다.
+ * 씨앗을 고정하면 같은 코드는 항상 같은 숫자를 낸다.
+ * 운에 안 흔들리는지 보려면 씨앗을 바꿔 돌린다: node tools/balance.mjs 6 2 */
+const rng = ((a) => () => {
+  a = a + 0x6D2B79F5 | 0;
+  let x = Math.imul(a ^ a >>> 15, a | 1);
+  x ^= x + Math.imul(x ^ x >>> 7, x | 61);
+  return ((x ^ x >>> 14) >>> 0) / 4294967296;
+})(SEED);
 
 /* 보통 사람이 할 법한 판단:
  * 새 가게 > 손님이 물어본 새 품목 > 제일 싼 레벨업 */
@@ -33,7 +46,7 @@ const seen = (id) => (perItem[id] ??= { rev: 0, sold: 0, stall: 0, live: 0 });
 let lastUnlock = 0, lastUnlockWhat = '시작';
 
 for (let t = 0; t < HOURS * 3600; t += DT) {
-  const r = s.tick(DT);
+  const r = s.tick(DT, rng);
 
   /* 매출을 품목별로 쪼개 적는다.
    * 손님 한 명이 여러 품목을 사갈 수 있으므로 lines[]를 먼저 본다. */
@@ -81,7 +94,7 @@ const mm = (x) => { const m = Math.floor(x / 60); const ss = Math.floor(x % 60);
   return m >= 60 ? `${Math.floor(m / 60)}시간${m % 60}분` : `${m}분${String(ss).padStart(2, '0')}초`; };
 const pct = (a, b) => (b ? (a / b) * 100 : 0);
 
-console.log(`\n═══ 너구리 만물상 — ${HOURS}시간 플레이 ═══\n`);
+console.log(`\n═══ 너구리 만물상 — ${HOURS}시간 플레이 (씨앗 ${SEED}) ═══\n`);
 
 console.log('■ 가게가 살아난 시점  (= 마을이 구제되는 속도)');
 for (const sh of SHOPS) {

@@ -124,14 +124,14 @@ export class Sim {
       }
     }
 
-    // 2) 손님 — 재고에서 비싼 것부터 사간다
+    // 2) 손님 — 재고에서 여러 종류를 무작위로 담아간다
     const sales = [];
     for (const g of GUESTS) {
       if (!this.guests.includes(g.id)) continue;
       this._guestAcc[g.id] += dt;
       while (this._guestAcc[g.id] >= g.every) {
         this._guestAcc[g.id] -= g.every;
-        const s = this._buy(g);
+        const s = this._buy(g, rng);
         if (s) sales.push(s);
       }
     }
@@ -157,20 +157,33 @@ export class Sim {
   }
 
   /**
-   * 손님이 장바구니에 여러 품목을 담아간다.
+   * 손님이 장바구니에 여러 품목을 **무작위로** 담아간다.
    *
-   * 예전엔 제일 비싼 것 **한 종류**만 사갔다. 그러면 싼 품목은 아무도 안 사서
+   * 예전엔 제일 비싼 것 한 종류만 사갔다. 그러면 싼 품목은 아무도 안 사서
    * 재고가 상한에 박히고, tick()의 `stock >= STOCK_CAP` 때문에 생산까지 멈췄다.
-   * 한 번 멈추면 팔릴 일이 없으니 영영 죽는다 — 12개 중 7개가 그 상태였다.
+   * 한 번 멈추면 팔릴 일이 없으니 영영 죽는다 — 15개 중 7개가 그 상태였다.
    *
-   * 그래서 **재고가 많은 것부터** 담는다. 상한에 박힌 품목이 먼저 빠져나가면서
-   * 생산이 저절로 재개된다. 정렬 방향을 뒤집은 이 한 줄이 수정의 전부다.
+   * 고친 건 순서가 아니라 **종류 수**였다. 시뮬로 무작위·재고순·재고가중을
+   * 나란히 돌려보니 셋 다 정지 0%가 나왔다. 여러 종류를 사기만 하면 안 막힌다.
+   * 그래서 제일 재미있는 쪽인 무작위를 고른다 — 손님이 매번 다른 조합을
+   * 집어가야 가게가 살아있는 느낌이 난다.
    */
-  _buy(g) {
+  _buy(g, rng = Math.random) {
     const have = Object.keys(this.items).filter((id) => this.items[id].stock > 0);
     if (!have.length) return null;
 
-    have.sort((a, b) => this.items[b].stock - this.items[a].stock);
+    // 무작위로 섞는다 (Fisher-Yates)
+    for (let i = have.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      [have[i], have[j]] = [have[j], have[i]];
+    }
+
+    // 안전장치: 진열대가 꽉 찬 품목만 맨 앞으로 당긴다. 꽉 찬 품목은 생산이
+    // 멈춰 있으므로 먼저 비워야 다시 돈다. 지금 수치로는 없어도 안 막히지만,
+    // 앞으로 생산·손님 수치를 만지면 다시 막힐 수 있어 보험으로 남긴다.
+    // sort는 안정 정렬이라 같은 그룹 안에서는 위에서 섞은 순서가 유지된다.
+    have.sort((a, b) =>
+      (this.items[b].stock >= STOCK_CAP) - (this.items[a].stock >= STOCK_CAP));
 
     const per = Math.max(1, Math.ceil(g.qty / BASKET_SPREAD));
     const lines = [];
