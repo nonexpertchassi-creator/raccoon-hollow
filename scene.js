@@ -54,6 +54,13 @@ const C = {
   ruin:   '#6f7d5e',
 };
 
+/* 손님이 지고 온 짐.
+ *
+ * GUESTS의 qty(한 번에 사가는 개수)는 이미 정해져 있는데 숫자로만 숨어 있었다.
+ * 짐으로 보이면 "큰 손님이 온다"가 멀리서부터 읽힌다.
+ * 규칙은 아니고 표시일 뿐이다 — qty를 그대로 그림으로 옮긴다. */
+const carryOf = (qty) => qty <= 5 ? 'hand' : qty <= 9 ? 'bojjim' : qty <= 12 ? 'jige' : 'cart';
+
 function slotOf(i) {
   const s = SLOTS[i];
   return {
@@ -126,21 +133,44 @@ export class Village {
 
   /* ── 바깥에서 알려주는 사건 ── */
 
+  /**
+   * 손님이 사간 것을 가게별로 묶어 **순회 경로**로 만든다.
+   *
+   * 거래의 85%는 두세 가게에 걸쳐 있다(3시간 측정: 1곳 14%, 2곳 59%, 3곳 27%).
+   * 예전엔 첫 줄의 가게 한 곳에만 손님을 세워서, 실제로는 대장간과 필방을
+   * 같이 들르는 손님을 화면이 한 곳만 보여주는 거짓말을 하고 있었다.
+   */
   onSale(sale) {
-    if (this.walkers.length > 9) return;   // 못 띄우면 재고도 붙잡지 않는다
-    const idx = SHOPS.findIndex((s) => s.id === sale.lines[0].item.shop);
-    if (idx < 0) return;
+    if (this.walkers.length > 6) return;   // 못 띄우면 재고도 붙잡지 않는다
+
+    const byShop = new Map();
     for (const ln of sale.lines) {
+      const idx = SHOPS.findIndex((s) => s.id === ln.item.shop);
+      if (idx < 0) continue;
+      if (!byShop.has(idx)) byShop.set(idx, { idx, sold: [], gain: 0 });
+      const g = byShop.get(idx);
+      g.sold.push({ id: ln.item.id, n: ln.n });
+      g.gain += ln.gain;
       this.pending[ln.item.id] = (this.pending[ln.item.id] || 0) + ln.n;
     }
-    const fromTop = SLOTS[idx].y < H / 2;
+    const stops = [...byShop.values()];
+    if (!stops.length) return;
+
+    // 들어온 쪽에서 가까운 가게부터 차례로 들르고, 그대로 반대편으로 빠져나간다.
+    // 왔던 길을 되돌아가는 것보다 마을을 훑고 지나가는 게 자연스럽다.
+    const avgY = stops.reduce((a, x) => a + SLOTS[x.idx].y, 0) / stops.length;
+    const fromTop = avgY < H / 2;
+    stops.sort((a, b) => fromTop ? SLOTS[a.idx].y - SLOTS[b.idx].y
+                                 : SLOTS[b.idx].y - SLOTS[a.idx].y);
+
     const y = fromTop ? -30 : H + 30;
     this.walkers.push({
-      face: sale.guest.face, idx, gain: sale.gain,
-      sold: sale.lines.map((ln) => ({ id: ln.item.id, n: ln.n })),
+      face: sale.guest.face,
+      carry: carryOf(sale.guest.qty),
+      stops, si: 0,
       lane: (Math.random() - 0.5) * (ROAD_W - 34),
       x: roadX(y), y,
-      exit: fromTop ? -1 : 1,
+      exit: fromTop ? 1 : -1,
       state: 'in', wait: 0, bob: Math.random() * 6,
     });
   }
@@ -157,8 +187,9 @@ export class Village {
     if (this.bubble) { this.bubble.t -= dt; if (this.bubble.t <= 0) this.bubble = null; }
 
     for (const w of this.walkers) {
-      const sl = slotOf(w.idx);
-      if (w.state === 'in') {
+      const stop = w.stops[w.si];
+      if (w.state === 'in' && stop) {
+        const sl = slotOf(stop.idx);
         const dy = sl.standY - w.y;
         w.y += Math.sign(dy) * Math.min(Math.abs(dy), 155 * dt);
         // 멀리 있을 땐 구부러진 길을 따라가고, 가까워지면 가게 앞으로 꺾는다
@@ -166,26 +197,28 @@ export class Village {
         const dx = tx - w.x;
         w.x += Math.sign(dx) * Math.min(Math.abs(dx), 175 * dt);
         if (Math.abs(dy) < 3 && Math.abs(sl.standX - w.x) < 3) {
-          w.state = 'buy'; w.wait = 0.75;
-          for (const s of w.sold) {                 // 도착한 지금이 재고가 빠지는 순간
+          w.state = 'buy'; w.wait = 0.7;
+          for (const s of stop.sold) {              // 도착한 지금이 재고가 빠지는 순간
             this.pending[s.id] = Math.max(0, (this.pending[s.id] || 0) - s.n);
             this.flash[s.id] = 0.45;
           }
-          for (let k = 0; k < Math.min(5, w.sold.length); k++) {
+          // 엽전은 길 쪽으로 튄다. 가게 쪽으로 튀면 좌판의 재고 숫자를 가린다.
+          const away = -SLOTS[stop.idx].side;
+          for (let k = 0; k < Math.min(5, stop.sold.length); k++) {
             this.coins.push({
-              x: w.x + (Math.random() - 0.5) * 14, y: w.y - 18,
-              vx: (Math.random() - 0.5) * 46, vy: -92 - Math.random() * 46,
+              x: w.x + away * 16 + (Math.random() - 0.5) * 12, y: w.y - 8,
+              vx: away * (26 + Math.random() * 26), vy: -78 - Math.random() * 38,
               t: 1.05, r: 8.5 + Math.random() * 2.5,
             });
           }
-          const tk = (this.takings[w.idx] ||= { amount: 0, t: 0 });
-          tk.amount += w.gain; tk.t = 1.7;
+          const tk = (this.takings[stop.idx] ||= { amount: 0, t: 0 });
+          tk.amount += stop.gain; tk.t = 1.7;
           Juice.burst(w.x, w.y - 14, { n: 4, color: ['#f0d98b'], size: 2, speed: 52, life: 0.34 });
           Sfx.coin();
         }
       } else if (w.state === 'buy') {
         w.wait -= dt;
-        if (w.wait <= 0) w.state = 'out';
+        if (w.wait <= 0) { w.si++; w.state = w.si < w.stops.length ? 'in' : 'out'; }
       } else {
         w.y += 150 * dt * w.exit;
         const back = roadX(w.y) + w.lane - w.x;
@@ -398,7 +431,34 @@ export class Village {
     const bob = Math.sin(this.t * 9 + w.bob) * (w.state === 'buy' ? 0.8 : 2.4);
     c.fillStyle = 'rgba(0,0,0,.17)';
     c.beginPath(); c.ellipse(w.x, w.y + 8, 11, 4.5, 0, 0, 7); c.fill();
+    this._carry(c, w, bob);
     G.text(c, w.face, w.x, w.y - 8 + bob, { size: 27, fill: '#000' });
+  }
+
+  /** 짐 — 많이 사가는 손님일수록 큰 걸 끌고 온다. 멀리서도 읽혀야 한다. */
+  _carry(c, w, bob) {
+    const x = w.x, y = w.y + bob * 0.4;
+    if (w.carry === 'hand') return;
+    if (w.carry === 'bojjim') {
+      // 봇짐 — 보자기로 싸 등에 진 짐
+      G.circle(c, x - 14, y - 13, 9.5, '#c07a56');
+      G.round(c, x - 18.5, y - 24, 9, 7, 3, '#9c5c3c');
+    } else if (w.carry === 'jige') {
+      // 지게 — 나무 틀에 짐을 얹었다
+      G.rect(c, x - 20, y - 28, 4, 28, C.wood2);
+      G.rect(c, x - 12, y - 28, 4, 28, C.wood2);
+      G.round(c, x - 24, y - 38, 22, 14, 4, '#bb8d55');
+      G.round(c, x - 21, y - 47, 16, 10, 3, '#a1743f');
+    } else {
+      // 달구지 — 바퀴 달린 수레
+      G.round(c, x - 38, y - 20, 28, 15, 3, '#a1743f');
+      G.round(c, x - 35, y - 27, 22, 8, 3, '#bb8d55');
+      G.rect(c, x - 13, y - 14, 9, 3.5, C.wood2);
+      for (const wx of [x - 32, x - 16]) {
+        G.circle(c, wx, y - 2, 6.5, C.wood2);
+        G.circle(c, wx, y - 2, 3, '#cbab7c');
+      }
+    }
   }
 
   /* ── 가게 위에 뜨는 것들 ── */
