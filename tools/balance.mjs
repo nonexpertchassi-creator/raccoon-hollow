@@ -38,7 +38,12 @@ function act(s) {
   /* 자동 강화를 산 뒤로는 손으로 안 누른다 — 그게 산 이유다.
    * 그래서 여기 세어지는 'level'은 자동 강화를 사기 전까지의 클릭 수다. */
   if (s.auto) return null;
-  const open = Object.keys(s.items).sort((a, b) => s.levelCost(a) - s.levelCost(b));
+  /* 만렙은 반드시 걸러야 한다. 안 그러면 제일 싼 품목이 상한에 닿는 순간
+   * 매 틱마다 아무 일도 안 하고 '눌렀다'로 세어진다 — 클릭 수가 16,547회로
+   * 튀고 행동 간격이 0.3초로 찍혔다. 도구가 또 거짓말을 하는 것이다.
+   * 레벨 상한이 없던 시절엔 값이 지수로 올라 저절로 막혀 안 보이던 함정이다. */
+  const open = Object.keys(s.items).filter((id) => !s.atMax(id))
+    .sort((a, b) => s.levelCost(a) - s.levelCost(b));
   for (const id of open) if (s.money >= s.levelCost(id)) {
     s.levelUpMany(id, 10); return 'level';
   }
@@ -46,6 +51,7 @@ function act(s) {
 }
 
 const firstShop = new Map(), firstGuest = new Map(), firstItem = new Map();
+const firstRank = new Map();
 const waits = []; const counts = { shop: 0, item: 0, level: 0, auto: 0 };
 let last = 0, samples = 0, timeline = [];
 
@@ -76,7 +82,17 @@ for (let t = 0; t < HOURS * 3600; t += DT) {
   }
   for (const id of Object.keys(s.items)) if (!firstItem.has(id)) {
     firstItem.set(id, s.t); lastUnlock = s.t;
-    lastUnlockWhat = itemById(id).name;
+    lastUnlockWhat = s.itemName(id);
+  }
+  /* 승급도 '새로 열린 것'이다. 이걸 안 세면 도구가 또 눈이 먼다 —
+   * 예전에 죽은 품목을 every로 판정해 못 잡던 것과 같은 종류의 실수다. */
+  for (const sh of s.shops) {
+    const key = `${sh}:${s.rankOf(sh)}`;
+    if (s.rankOf(sh) > 0 && !firstRank.has(key)) {
+      firstRank.set(key, s.t); lastUnlock = s.t;
+      const S = SHOPS.find((x) => x.id === sh);
+      lastUnlockWhat = `${S.name} ${S.ranks[s.rankOf(sh)]}급`;
+    }
   }
 
   const a = act(s);
@@ -135,6 +151,15 @@ for (const id of Object.keys(s.items)) {
     mm(firstItem.get(id)).padStart(9)}  ${String(p.sold).padStart(8)}  ${
     (rev.toFixed(1) + '%').padStart(8)}  ${
     (stall.toFixed(0) + '%').padStart(9)}   ${mark}`);
+}
+
+if (firstRank.size) {
+  console.log('\n■ 가게 승급');
+  for (const [k, t] of firstRank) {
+    const [sid, r] = k.split(':');
+    const S = SHOPS.find((x) => x.id === sid);
+    console.log(`   ${mm(t).padStart(10)}   ${S.name} → ${S.ranks[+r]}급`);
+  }
 }
 
 const w = waits.filter((x) => x > 0).sort((a, b) => a - b);
