@@ -37,6 +37,17 @@ const SLOTS = [
   { x: 300, y: 322,  w: 168, h: 150, side: 1 },   // 약재상
 ];
 
+/* 작은 건물 — 큰 가게 사이를 채우는 점포·주막·포장마차.
+ * 마을이 세로로 길어지면서 가게 사이가 휑해졌다. 자리는 길과 큰 가게를
+ * 피해 계산으로 잡았다. */
+const SMALL_W = 96, SMALL_H = 76;
+const SMALLS = [
+  { x: 368, y: 1270, k: 'store', name: '점포' },
+  { x: 368, y: 1004, k: 'inn',   name: '주막' },
+  { x: 368, y: 760,  k: 'cart',  name: '포장마차' },
+  { x: 16,  y: 470,  k: 'store', name: '점포' },
+];
+
 const C = {
   grass:  '#8b9e74',
   grass2: '#7e9268',
@@ -62,6 +73,14 @@ const C = {
  * 짐으로 보이면 "큰 손님이 온다"가 멀리서부터 읽힌다.
  * 규칙은 아니고 표시일 뿐이다 — qty를 그대로 그림으로 옮긴다. */
 const carryOf = (qty) => qty <= 5 ? 'hand' : qty <= 9 ? 'bojjim' : qty <= 12 ? 'jige' : 'cart';
+
+/* 가게의 격. 칸이 열릴수록 집이 좋아진다 — 조선식으로 초가에서 시작해
+ * 기와를 얹고, 단청을 올리고, 담장을 두른다.
+ * 새 수치를 만들지 않고 '몇 칸이 열렸나'를 그대로 쓴다. */
+function tierOf(shop, sim) {
+  const open = shop.items.filter((it) => sim.isOpen(it.id)).length;
+  return open >= shop.items.length ? 4 : Math.max(1, Math.min(3, open));
+}
 
 function slotOf(i) {
   const s = SLOTS[i];
@@ -338,6 +357,9 @@ export class Village {
       const s = SLOTS[i];
       if (near(s.y, s.h + 60)) layer.push({ z: s.y + s.h, d: () => this._shop(c, i) });
     }
+    for (const sm of SMALLS) {
+      if (near(sm.y, SMALL_H + 40)) layer.push({ z: sm.y + SMALL_H, d: () => this._small(c, sm) });
+    }
     for (const p of this.props) if (near(p.y, 60)) layer.push({ z: p.y, d: () => this._prop(c, p) });
     for (const w of this.walkers) if (near(w.y, 40)) layer.push({ z: w.y, d: () => this._walker(c, w) });
     layer.sort((a, b) => a.z - b.z);
@@ -440,28 +462,58 @@ export class Village {
 
   /* ── 가게 ── */
 
-  /** 기와지붕. 양 끝이 치켜올라가고 가운데가 처지는 게 한옥 지붕의 앞모습이다. */
-  _roof(c, x, y, w) {
+  /**
+   * 지붕. 격에 따라 초가 → 기와 → 단청 얹은 기와로 바뀐다.
+   * 한옥 지붕 앞모습은 양 끝이 치켜올라가고 가운데가 처진다.
+   */
+  _roof(c, x, y, w, tier) {
     const l = x - 10, r = x + w + 10;
-    c.fillStyle = C.tile;
-    c.beginPath();
-    c.moveTo(l, y + 6);
-    c.quadraticCurveTo(x + w / 2, y + 21, r, y + 6);
-    c.lineTo(r, y + 34);
-    c.quadraticCurveTo(x + w / 2, y + 49, l, y + 34);
-    c.closePath(); c.fill();
-    // 용마루
-    c.strokeStyle = C.tile2; c.lineWidth = 4;
+    const thatch = tier <= 1;
+    const band = (yTop, yBot, fill) => {
+      c.fillStyle = fill;
+      c.beginPath();
+      c.moveTo(l, y + yTop);
+      c.quadraticCurveTo(x + w / 2, y + yTop + 15, r, y + yTop);
+      c.lineTo(r, y + yBot);
+      c.quadraticCurveTo(x + w / 2, y + yBot + 15, l, y + yBot);
+      c.closePath(); c.fill();
+    };
+
+    if (thatch) {
+      // 초가 — 볏짚을 얹은 지붕. 결이 세로로 보인다.
+      band(4, 38, '#b39a63');
+      c.strokeStyle = 'rgba(90,70,40,.22)'; c.lineWidth = 1.6;
+      for (let k = 1; k < 14; k++) {
+        const px = x - 6 + ((w + 12) * k) / 14;
+        const t = (px - l) / (r - l);
+        const top = y + 4 + 30 * t * (1 - t) * 2;
+        c.beginPath(); c.moveTo(px, top + 2); c.lineTo(px, top + 30); c.stroke();
+      }
+      return;
+    }
+
+    band(6, 34, C.tile);
+    c.strokeStyle = C.tile2; c.lineWidth = 4;            // 용마루
     c.beginPath();
     c.moveTo(l, y + 7); c.quadraticCurveTo(x + w / 2, y + 22, r, y + 7);
     c.stroke();
-    // 기왓골
-    c.strokeStyle = 'rgba(255,255,255,.09)'; c.lineWidth = 1.4;
+    c.strokeStyle = 'rgba(255,255,255,.09)'; c.lineWidth = 1.4;   // 기왓골
     for (let k = 1; k < 8; k++) {
       const px = x - 6 + ((w + 12) * k) / 8;
       const t = (px - l) / (r - l);
       const top = y + 6 + 30 * t * (1 - t) * 2;
       c.beginPath(); c.moveTo(px, top + 3); c.lineTo(px, top + 26); c.stroke();
+    }
+
+    // 단청 — 처마 아래 채색 띠. 격이 오른 집에만 올린다.
+    if (tier >= 3) {
+      for (let k = 0; k < 9; k++) {
+        const bw = (w + 8) / 9;
+        const bx = x - 4 + k * bw;
+        const t = (bx + bw / 2 - l) / (r - l);
+        const yy = y + 34 + 30 * t * (1 - t) * 2;
+        G.round(c, bx + 1, yy, bw - 2, 6, 2, k % 3 === 0 ? '#3f6f4a' : k % 3 === 1 ? '#a34a3a' : '#3a5f86');
+      }
     }
   }
 
@@ -495,19 +547,36 @@ export class Village {
     c.fillStyle = 'rgba(0,0,0,.15)';
     c.beginPath(); c.ellipse(sl.cx, y + h + 2, w * 0.46, 11, 0, 0, 7); c.fill();
 
+    const tier = tierOf(shop, this.sim);
+
+    // 담장·화분 — 제일 격이 높은 집에만 두른다
+    if (tier >= 4) {
+      for (const px of [x - 4, x + w - 10]) {
+        G.round(c, px, y + h - 26, 14, 10, 3, '#7d6a4a');
+        G.circle(c, px + 7, y + h - 30, 8, '#6f8a5c');
+        G.circle(c, px + 3, y + h - 34, 5, '#7fa070');
+      }
+    }
+
     // 몸채 — 흙벽에 나무 기둥
     G.round(c, x + 6, y + 30, w - 12, h - 30, 5, C.paper);
     G.rect(c, x + 6, y + h - 12, w - 12, 12, C.wood2);          // 툇마루
     G.rect(c, x + 6, y + 34, 9, h - 46, C.wood);                // 기둥
     G.rect(c, x + w - 15, y + 34, 9, h - 46, C.wood);
 
-    this._roof(c, x, y, w);
+    this._roof(c, x, y, w, tier);
 
     // 간판 — 처마에 걸린 현판
-    const sw = Math.min(w - 34, 118);
-    G.round(c, sl.cx - sw / 2, y + 30, sw, 25, 6, shop.color);
+    const sw = Math.min(w - 34, tier >= 3 ? 126 : 112);
+    const sh2 = tier >= 3 ? 27 : 24;
+    G.round(c, sl.cx - sw / 2, y + 30, sw, sh2, 6, shop.color);
     G.round(c, sl.cx - sw / 2, y + 30, sw, 4, 2, 'rgba(0,0,0,.18)');
-    G.text(c, `${shop.sign} ${shop.name}`, sl.cx, y + 43, { size: 13.5, fill: '#fff8ec', weight: 800 });
+    if (tier >= 3) {   // 격이 오르면 현판에 금테를 두른다
+      c.strokeStyle = '#e0c073'; c.lineWidth = 1.6;
+      c.beginPath(); c.roundRect(sl.cx - sw / 2 + 2, y + 32, sw - 4, sh2 - 4, 4); c.stroke();
+    }
+    G.text(c, `${shop.sign} ${shop.name}`, sl.cx, y + 30 + sh2 / 2,
+      { size: tier >= 3 ? 14 : 13.5, fill: '#fff8ec', weight: 800 });
 
     // 좌판 — 열린 품목마다 한 칸. 재고가 차오르는 게 눈에 보여야 한다.
     const items = shop.items.filter((it) => this.sim.isOpen(it.id));
@@ -537,6 +606,65 @@ export class Village {
       const askedNext = locked.find((it) => this.sim.asked.includes(it.id));
       G.text(c, askedNext ? `${askedNext.name} 칸 열 수 있음` : `${locked.length}칸 더 있다`,
         sl.cx, y + h - 5, { size: 10.5, fill: askedNext ? '#ffe9a8' : '#d8ccb0', weight: 800 });
+    }
+  }
+
+  /**
+   * 작은 건물 — 점포·주막·포장마차.
+   * 큰 가게 사이가 휑해서 넣었다. 큰 가게보다 확실히 작고 낮아야
+   * "저건 곁다리"라는 게 한눈에 읽힌다.
+   */
+  _small(c, s) {
+    const { x, y } = s, w = SMALL_W, h = SMALL_H;
+    const cx = x + w / 2;
+    c.fillStyle = 'rgba(0,0,0,.14)';
+    c.beginPath(); c.ellipse(cx, y + h, w * 0.42, 8, 0, 0, 7); c.fill();
+
+    if (s.k === 'cart') {
+      // 포장마차 — 천막 씌운 수레. 바퀴가 달려 있다.
+      G.round(c, x + 10, y + 30, w - 20, h - 40, 4, C.paper);
+      c.fillStyle = '#c0705a';                       // 천막
+      c.beginPath();
+      c.moveTo(x + 2, y + 30);
+      c.quadraticCurveTo(cx, y + 2, x + w - 2, y + 30);
+      c.lineTo(x + w - 2, y + 38);
+      c.quadraticCurveTo(cx, y + 10, x + 2, y + 38);
+      c.closePath(); c.fill();
+      for (let k = 0; k < 4; k++) {                  // 천막 줄무늬
+        G.round(c, x + 10 + k * 20, y + 12 + Math.abs(k - 1.5) * 5, 8, 22, 3, 'rgba(255,255,255,.20)');
+      }
+      for (const wx of [x + 22, x + w - 22]) {
+        G.circle(c, wx, y + h - 6, 8, C.wood2);
+        G.circle(c, wx, y + h - 6, 3.5, '#cbab7c');
+      }
+      G.text(c, '국밥', cx, y + 48, { size: 11, fill: C.ink2, weight: 800 });
+      return;
+    }
+
+    // 점포·주막 공통 — 낮은 초가집
+    G.round(c, x + 8, y + 24, w - 16, h - 30, 4, C.paper);
+    G.rect(c, x + 8, y + h - 10, w - 16, 10, C.wood2);
+    c.fillStyle = '#b39a63';
+    c.beginPath();
+    c.moveTo(x - 2, y + 22);
+    c.quadraticCurveTo(cx, y + 34, x + w + 2, y + 22);
+    c.lineTo(x + w + 2, y + 8);
+    c.quadraticCurveTo(cx, y + 20, x - 2, y + 8);
+    c.closePath(); c.fill();
+
+    if (s.k === 'inn') {
+      // 주막 — 술 깃발과 평상에 앉은 손님
+      G.rect(c, x + w - 6, y + 4, 3, 34, C.wood2);
+      G.round(c, x + w - 4, y + 6, 20, 13, 2, '#c7563f');
+      G.text(c, '酒', x + w + 6, y + 12.5, { size: 10, fill: '#fff3dd', weight: 800 });
+      G.round(c, x + 12, y + h - 22, 34, 8, 3, C.wood);        // 평상
+      G.text(c, '🐿️', x + 20, y + h - 30, { size: 14, fill: '#000' });
+      G.text(c, '🦡', x + 38, y + h - 29, { size: 14, fill: '#000' });
+      G.text(c, '주막', cx + 12, y + 44, { size: 11.5, fill: C.ink2, weight: 800 });
+    } else {
+      G.round(c, x + 16, y + 38, w - 32, 18, 4, C.paper2);      // 좌판
+      for (let k = 0; k < 3; k++) G.circle(c, x + 26 + k * 17, y + 47, 5, '#b07f4a');
+      G.text(c, '점포', cx, y + 30, { size: 11.5, fill: C.ink2, weight: 800 });
     }
   }
 
