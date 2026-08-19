@@ -779,10 +779,17 @@ export class Village {
     if (todo > 0) {
       const bob = Math.sin(this.t * 4) * 3;
       const promo = this.sim.canPromote(shop.id);
-      const txt = promo ? '승급할 수 있다' : `${todo}가지 할 일`;
-      const tw = 22 + txt.length * 12;
-      G.round(c, sl.cx - tw / 2, y - 28 + bob, tw, 24, 9, promo ? '#c7563f' : C.jade);
-      G.text(c, txt, sl.cx, y - 16 + bob, { size: 13, fill: '#fff3dd', weight: 800 });
+      /* 문구가 중요하다. 처음엔 "2가지 할 일"이라고 적었는데 그건 숙제다 —
+       * 일일 던전이 사람을 떠나게 하는 게 정확히 그 느낌이다. 표는 **덜
+       * 들여다보라고** 만든 것이지 시키려고 만든 게 아니다.
+       * 그래서 개수가 아니라 **뭐가 좋은지**를 적는다. 초대장에 가깝게.
+       *
+       * 그리고 이건 **사라지지 않는다.** 일일 던전이 의무가 되는 이유는
+       * 놓치면 손해가 나기 때문이다. 여기선 언제 들어가도 그대로 있다. */
+      const txt = promo ? '승급!' : '새 칸!';
+      const tw = 26 + txt.length * 13;
+      G.round(c, sl.cx - tw / 2, y - 28 + bob, tw, 25, 9, promo ? '#c7563f' : C.jade);
+      G.text(c, txt, sl.cx, y - 15.5 + bob, { size: 14, fill: '#fff3dd', weight: 800 });
     }
 
     /* 좌판 — 열린 품목마다 한 칸. **두 줄까지 쓴다.**
