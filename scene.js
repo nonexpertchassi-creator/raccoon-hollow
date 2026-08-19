@@ -20,22 +20,31 @@ import { drawArt } from './art.js';
 
 /* 보이는 창은 480×800이고, 마을은 그보다 세로로 길다. 손가락으로 밀어 훑는다.
  * 가게가 늘 때마다 화면에 욱여넣을 수 없어서 세로로 늘렸다. */
-const W = 480, H = 1560;
-const ROAD_W = 74;
+const W = 480, H = 1750;
+const ROAD_W = 66;
 
 /** 구불구불한 길. 이 한 줄이 "지도 느낌"의 가장 큰 원인을 없앤다. */
-const roadX = (y) => 240 + 24 * Math.sin(y / 175 + 0.6);
+/* 휨을 24 → 18로 줄였다. 길이 가운데를 크게 흔들수록 양옆에 남는 폭이
+ * 줄어드는데, 가게가 커지면서 그 폭이 모자랐다. 구불구불한 느낌은 남는다. */
+const roadX = (y) => 240 + 18 * Math.sin(y / 175 + 0.6);
 
 /* 가게 자리.
  * 좌우 번갈이를 일부러 깼다 — 지물포와 옹기점은 둘 다 왼쪽에 선다.
  * 폭도 제각각인데, 길이 오른쪽으로 휜 구간에서는 왼쪽에 자리가 더 남기
  * 때문이다. 길에 맞춰 자리를 잡으니 배치가 저절로 불규칙해진다. */
+/* 높이를 150 → 192로 키웠다. 좌판을 **두 줄**로 놓기 위해서다.
+ *
+ * 한 줄에 네 칸을 넣으면 칸이 37px밖에 안 돼 글자가 폰에서 1.9mm가 된다.
+ * 가게를 넓히려 했지만 길이 가운데를 지나 **2px밖에 안 남았다.**
+ * 두 줄로 놓으면 칸 폭이 37 → 78로 두 배가 된다 — 넓이가 아니라 높이로 푼 것이다.
+ *
+ * 그 대신 마을이 1560 → 1900으로 길어졌다. 스와이프가 늘어나는 건 감수한다. */
 const SLOTS = [
-  { x: 12,  y: 1358, w: 188, h: 150, side: -1 },  // 대장간
-  { x: 308, y: 1112, w: 160, h: 150, side: 1 },   // 필방
-  { x: 12,  y: 872,  w: 168, h: 150, side: -1 },  // 지물포
-  { x: 12,  y: 612,  w: 160, h: 150, side: -1 },  // 옹기점
-  { x: 300, y: 322,  w: 168, h: 150, side: 1 },   // 약재상
+  { x: 300, y: 1528, w: 172, h: 192, side: 1 },   // 대장간
+  { x: 12,  y: 1256, w: 160, h: 192, side: -1 },  // 필방
+  { x: 12,  y: 984,  w: 168, h: 192, side: -1 },  // 지물포
+  { x: 312, y: 712,  w: 160, h: 192, side: 1 },   // 옹기점
+  { x: 304, y: 440,  w: 168, h: 192, side: 1 },   // 약재상
 ];
 
 /* 작은 건물 — 큰 가게 사이를 채우는 점포·주막·포장마차.
@@ -44,16 +53,18 @@ const SLOTS = [
 const SMALL_W = 96, SMALL_H = 76;
 /** content.js의 SMALL_SHOPS와 같은 순서·같은 개수여야 한다.
  *  점포를 오른쪽 1270에 뒀더니 '장 서다!' 표시가 필방 글자를 가려 옮겼다. */
+/* 가게 **맞은편**에 놓는다. 가게와 가게 사이(80px)에 끼워 넣었더니
+ * 위 가게 점장이 서는 자리(가게 아래 15px)를 깔고 앉았다. */
 const SMALL_POS = [
-  { x: 16,  y: 1150 },
-  { x: 368, y: 1004 },
-  { x: 368, y: 760 },
-  { x: 16,  y: 470 },
+  { x: 368, y: 1300 },   // 필방 맞은편
+  { x: 368, y: 1030 },   // 지물포 맞은편
+  { x: 16,  y: 760 },    // 옹기점 맞은편
+  { x: 16,  y: 480 },    // 약재상 맞은편
 ];
 
-/* 삽살개 집 — 필방(오른쪽 1112~1262)과 대장간(왼쪽 1358) 사이의 빈 오른쪽.
- * 마을 어귀 쪽에 둔 이유: 처음 켰을 때 화면에 바로 들어와야 "저게 뭐지"가 된다. */
-const DOG = { x: 372, y: 1286, w: 84, h: 60 };
+/* 삽살개 집 — 대장간 맞은편. 처음 켰을 때 화면에 바로 들어와야
+ * "저게 뭐지"가 된다. */
+const DOG = { x: 16, y: 1560, w: 84, h: 60 };
 
 const C = {
   grass:  '#8b9e74',
@@ -231,7 +242,7 @@ export class Village {
      * 길이 화면 위아래로 그냥 뚫려 있어 어디가 입구인지 알 수 없었다.
      * 아래를 장승으로 막아 '마을 어귀', 위를 숲으로 막아 '산길'로 읽히게 한다.
      * 손님이 위아래 양쪽에서 오는 게 그제야 말이 된다 — 마을을 지나는 길이니까. */
-    const gy = 1522, gx = roadX(gy);
+    const gy = 1726, gx = roadX(gy);
     const out = [
       { x: gx - 48, y: gy, k: 'jangseung', r: 16, f: 0 },
       { x: gx + 48, y: gy, k: 'jangseung', r: 16, f: 1 },
@@ -318,9 +329,14 @@ export class Village {
      * 안 그러면 카메라 값만 그대로 남아 보던 곳이 화면 밖으로 밀려난다.
      * 폴드를 펴는 순간 마을 어귀와 대장간이 통째로 아래로 사라졌다. */
     if (viewH && viewH !== this.viewH) {
+      /* 끝에 붙어 있었으면 끝에 그대로 붙여 둔다. 가운데를 붙잡는 것만
+       * 하면 마을 어귀를 보고 있다가 창이 바뀔 때 어귀에서 밀려난다 —
+       * 처음 켤 때가 정확히 그 경우다(버튼 줄이 채워지며 창이 줄어든다). */
+      const wasBottom = this.cam >= this.camMax() - 2;
+      const wasTop = this.cam <= 2;
       const center = this.cam + this.viewH / 2;
       this.viewH = viewH;
-      this.cam = center - viewH / 2;
+      this.cam = wasBottom ? this.camMax() : wasTop ? 0 : center - viewH / 2;
       this.vel = 0;
     }
     this.t += dt;
@@ -424,6 +440,7 @@ export class Village {
     const camMax = this.camMax();
     if (this.cam < 0) { this.cam = 0; this.vel = 0; }
     if (this.cam > camMax) { this.cam = camMax; this.vel = 0; }
+    if (this.cam < 0) { this.cam = 0; this.vel = 0; }
   }
 
   /** 밀 수 있는 최대 거리. 창이 마을보다 크면 0 — 밀 것이 없다. */
@@ -753,57 +770,64 @@ export class Village {
       G.text(c, '승급 가능', sl.cx, y - 15 + bob, { size: 12, fill: '#fff3dd', weight: 800 });
     }
 
-    // 좌판 — 열린 품목마다 한 칸. 재고가 차오르는 게 눈에 보여야 한다.
+    /* 좌판 — 열린 품목마다 한 칸. **두 줄까지 쓴다.**
+     *
+     * 한 줄에 네 칸을 넣던 시절 대장간 칸이 37px이었다. 거기에 물건 이름을
+     * 넣으면 폰에서 글자가 1.9mm가 된다. 가게를 넓혀 풀려 했지만 길이
+     * 가운데를 지나 2px밖에 안 남았다 — **넓이가 아니라 높이로 풀었다.**
+     * 두 칸씩 두 줄이면 칸 폭이 37 → 73이다. 마을이 1560 → 1750으로
+     * 길어졌지만 스와이프가 조금 느는 건 감수한다. */
     const items = shop.items.filter((it) => this.sim.isOpen(it.id));
-    const per = Math.min(4, items.length);
-    // 대장간은 폭이 제일 좁은데 물건은 4개라 칸이 빠듯하다. 여백을 줄여 벌어준다.
-    const inner = w - 26;
-    for (let k = 0; k < per; k++) {
+    const cols = Math.min(2, items.length);
+    const rows = Math.ceil(items.length / cols);
+    const gap = 6;
+    const inner = w - 24;
+    const areaY = y + 60, areaH = h - 78;
+    const bw = (inner - (cols - 1) * gap) / cols;
+    const bh = (areaH - (rows - 1) * gap) / rows;
+
+    for (let k = 0; k < items.length; k++) {
       const it = items[k];
-      const bw = inner / per - 4;
-      const bx = x + 13 + k * (bw + 4);
-      const by = y + 62;
+      const r = Math.floor(k / cols), cIdx = k % cols;
+      // 마지막 줄이 덜 찼으면 가운데로 모은다. 왼쪽에 붙이면 빈칸이 눈에 띈다.
+      const inRow = Math.min(cols, items.length - r * cols);
+      const rowW = inRow * bw + (inRow - 1) * gap;
+      const bx = x + 12 + (inner - rowW) / 2 + cIdx * (bw + gap);
+      const by = areaY + r * (bh + gap);
+
       const fl = this.flash[it.id] || 0;
-      G.round(c, bx, by, bw, h - 80, 6, fl > 0 ? '#f2e5b6' : C.paper2);
+      G.round(c, bx, by, bw, bh, 6, fl > 0 ? '#f2e5b6' : C.paper2);
       const st = this.sim.items[it.id];
       // 걸어오는 중인 몫을 도로 더한다 — 손님이 닿아야 숫자가 떨어진다
       const shown = Math.min(STOCK_CAP, st.stock + (this.pending[it.id] || 0));
-      const bh = Math.round((h - 84) * Math.min(1, shown / STOCK_CAP));
-      if (bh > 0) G.round(c, bx + 2, by + (h - 82) - bh, bw - 4, bh, 4, shop.color);
+      const fillH = Math.round((bh - 4) * Math.min(1, shown / STOCK_CAP));
+      if (fillH > 0) G.round(c, bx + 2, by + bh - 2 - fillH, bw - 4, fillH, 4, shop.color);
+
       /* 물건 그림은 재고 막대 위, 숫자 아래에 깔린다.
        * 등급(돌·쇠·강철)마다 따로 그리면 17장이 51장이 된다 —
-       * 그림은 한 장만 두고 등급은 이름과 색으로 알린다. */
-      drawArt(c, 'items', it.id, bx + bw / 2, by + h - 86, bw - 8, (h - 88) * 0.8);
-      /* 칸 폭에 맞춰 글자를 최대한 키운다. 대장간 칸 37px에 '곡괭이' 세 글자면
-       * 11.5px까지 올라가고, 약재상 칸 31px에 '도라지'면 9.7px에서 멈춘다.
-       * 폰(0.79배)에서 각각 9.1 / 7.7 CSS px이다 — 여전히 작다.
-       * 진짜 해결은 물건 그림이다. 그림이 들어오면 이 글자는 뺀다. */
+       * 그림은 한 장만 두고 등급은 현판이 알린다. */
+      drawArt(c, 'items', it.id, bx + bw * 0.5, by + bh - 4, bw * 0.62, bh * 0.72);
+
       const nm = itemById(it.id).name;
       G.text(c, nm, bx + bw / 2, by + 11,
-        { size: Math.min(11.5, (bw - 3) / Math.max(2, nm.length)),
+        { size: Math.min(14, (bw - 6) / Math.max(2, nm.length)),
           fill: C.ink2, weight: 800 });
 
       /* 다음 한 개가 나오기까지 — 숫자를 두른 고리가 채워진다.
-       *
-       * 원래는 점원 너구리가 제작 주기에 맞춰 두드리게 했었다. 정보는
-       * 맞았지만 **캐릭터에게 계기판을 시킨 셈**이라, 다섯 마리가 각자
-       * 다른 박자로 쉬지 않고 움직였다. 고리는 조용하고 정확하다.
-       * 너구리는 이제 분위기만 맡고, 숫자는 여기가 맡는다.
-       *
        * 한 칸이 두 가지를 같이 보여준다:
-       *   가운데 숫자 = 지금 쌓인 개수      고리 = 다음 개까지 얼마나 남았나
-       *
-       * 꽉 차면 sim이 생산을 멈추므로 고리도 저절로 멈춘다 — 따로 처리할 게 없다. */
-      const cxk = bx + bw / 2, cyk = by + 32;
-      const rr = Math.min(12.5, bw / 2 - 3);
+       *   가운데 숫자 = 지금 쌓인 개수    고리 = 다음 개까지 남은 정도
+       * 꽉 차면 sim이 생산을 멈추므로 고리도 저절로 멈춘다. */
+      /* 고리가 이름 글자를 먹지 않게 아래로 내려 앉힌다. 처음엔 0.62에
+       * 두었더니 '붓'이 '부'로, '먹'이 '머'로 보였다. */
+      const cxk = bx + bw / 2, cyk = by + bh * 0.66;
+      const rr = Math.min(16, bw / 2 - 6, bh * 0.28);
       const capped = shown >= STOCK_CAP;
-      /* 꽉 차면 생산이 멈추고 고리도 멈춘다. 그때 하필 고리가 거의 비어
-       * 있으면 '멈췄다'가 아니라 '방금 시작했다'로 보인다. 그래서 막힌
-       * 칸은 **빨간 고리를 한 바퀴 다** 그린다 — 조는 점원과 같은 신호다. */
+      /* 막힌 칸은 **빨간 고리를 한 바퀴 다** 그린다 — 하필 거의 빈 채로
+       * 멈추면 '멈췄다'가 아니라 '방금 시작했다'로 보인다. */
       const p = capped ? 1
         : Math.max(0, Math.min(1, st.prog / this.sim.craftTime(it.id)));
       c.save();
-      c.lineWidth = 3;
+      c.lineWidth = 3.5;
       c.lineCap = 'round';
       /* 바탕 고리를 진하게 깐다. 옅게 두면 좌판이 찼을 때 주황 위에서
        * 고리가 통째로 사라진다 — 배경이 매번 바뀌는 자리라서 그렇다. */
@@ -818,7 +842,7 @@ export class Village {
       c.restore();
 
       G.text(c, String(shown), cxk, cyk,
-        { size: fl > 0 ? 17 : 15, fill: C.ink, weight: 800 });
+        { size: fl > 0 ? 21 : 19, fill: C.ink, weight: 800 });
     }
 
     // 잠긴 칸 — 다음에 뭘 열지가 여기서 보인다

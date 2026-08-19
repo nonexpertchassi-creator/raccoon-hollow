@@ -26,6 +26,17 @@ export class Engine {
     this.running = false; this.t = 0; this.paused = false;
     this._fit();
     addEventListener('resize', () => this._fit());
+    /* 창 크기 말고 **담는 상자**를 지켜본다.
+     *
+     * 처음엔 resize만 듣고 있었다. 그런데 캔버스를 처음 맞추는 시점이
+     * 머리말·버튼 줄이 채워지기 전이라, 상자가 나중에 줄어들어도 캔버스는
+     * 처음 잰 크기 그대로 남았다 — 실제로 46px이 더 커서 위 23px은 버튼 줄
+     * 뒤로 숨고 아래 23px은 화면 밖으로 나가 있었다. 마을이 계속 잘려 있던 것이다.
+     *
+     * 상자를 직접 지켜보면 폴더블을 펴고 접거나 키보드가 올라와도 같이 따라간다. */
+    if (typeof ResizeObserver !== 'undefined' && canvas.parentElement) {
+      new ResizeObserver(() => this._fit()).observe(canvas.parentElement);
+    }
     this._bindInput();
   }
 
