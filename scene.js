@@ -15,7 +15,7 @@
 import { G } from './core/engine.js';
 import { Juice, Sfx } from './core/juice.js';
 import { SHOPS, STOCK_CAP, SMALL_SHOPS, GUARD } from './content.js';
-import { fmt } from './sim.js';
+import { fmt, itemById } from './sim.js';
 import { drawArt } from './art.js';
 
 /* 보이는 창은 480×800이고, 마을은 그보다 세로로 길다. 손가락으로 밀어 훑는다.
@@ -109,7 +109,7 @@ const BUY_TIME = 2.3;        // 가게 앞에 서 있는 총 시간
 const HAND_OVER = 1.1;       // 이 시점에 물건이 건네진다
 const WALK_IN = 95, WALK_SIDE = 105, WALK_OUT = 92;
 
-const CLERK_PX = 30;         // 손님과 같은 크기. 마을 사람들이니까
+const CLERK_PX = 33;         // 손님과 같은 크기. 마을 사람들이니까
 const CLERK_SPEED = 130;     // 손님이 서 있는 2.3초 안에 반드시 닿아야 한다
 const HERO_SPEED = 120;
 
@@ -141,7 +141,7 @@ function serveSpot(i) {
 
 /* 화면에 보이는 손님 크기. 임시 토끼 한 장을 넣고 폰 크기로 확인해서 정했다 —
  * 27은 장승 머리보다 작아 캐릭터로 안 읽혔다. 그림이 들어오면 여기만 고친다. */
-const GUEST_PX = 30;
+const GUEST_PX = 33;
 
 const carryOf = (qty) => qty <= 5 ? 'hand' : qty <= 9 ? 'bojjim' : qty <= 12 ? 'jige' : 'cart';
 
@@ -736,8 +736,15 @@ export class Village {
       c.strokeStyle = '#e0c073'; c.lineWidth = 1.6;
       c.beginPath(); c.roundRect(sl.cx - sw / 2 + 2, y + 32, sw - 4, sh2 - 4, 4); c.stroke();
     }
-    G.text(c, `${shop.sign} ${shop.name}`, sl.cx, y + 30 + sh2 / 2,
-      { size: look.deco ? 14 : 13.5, fill: '#fff8ec', weight: 800 });
+    /* 등급(돌·쇠·강철)을 현판으로 옮겼다. 예전엔 좌판마다 '쇠곡괭이'처럼
+     * 앞에 붙였는데, 대장간 칸 하나가 37px밖에 안 돼 네 글자를 넣으려면
+     * 글자가 9px까지 내려간다 — 폰에서 1.9mm다. 등급은 가게마다 하나이니
+     * 현판에 한 번만 적으면 된다. */
+    const rk = this.sim.rankOf(shop.id);
+    const sTxt = rk > 0 ? `${shop.sign} ${shop.name} · ${shop.ranks[rk]}`
+                        : `${shop.sign} ${shop.name}`;
+    G.text(c, sTxt, sl.cx, y + 30 + sh2 / 2,
+      { size: look.deco ? 15 : 14.5, fill: '#fff8ec', weight: 800 });
 
     // 승급할 수 있으면 알려준다 — 이게 마을이 다 찬 뒤의 다음 목표다
     if (this.sim.canPromote(shop.id)) {
@@ -767,8 +774,14 @@ export class Village {
        * 등급(돌·쇠·강철)마다 따로 그리면 17장이 51장이 된다 —
        * 그림은 한 장만 두고 등급은 이름과 색으로 알린다. */
       drawArt(c, 'items', it.id, bx + bw / 2, by + h - 86, bw - 8, (h - 88) * 0.8);
-      G.text(c, this.sim.itemName(it.id), bx + bw / 2, by + 11,
-        { size: 9, fill: C.ink2, weight: 800 });
+      /* 칸 폭에 맞춰 글자를 최대한 키운다. 대장간 칸 37px에 '곡괭이' 세 글자면
+       * 11.5px까지 올라가고, 약재상 칸 31px에 '도라지'면 9.7px에서 멈춘다.
+       * 폰(0.79배)에서 각각 9.1 / 7.7 CSS px이다 — 여전히 작다.
+       * 진짜 해결은 물건 그림이다. 그림이 들어오면 이 글자는 뺀다. */
+      const nm = itemById(it.id).name;
+      G.text(c, nm, bx + bw / 2, by + 11,
+        { size: Math.min(11.5, (bw - 3) / Math.max(2, nm.length)),
+          fill: C.ink2, weight: 800 });
 
       /* 다음 한 개가 나오기까지 — 숫자를 두른 고리가 채워진다.
        *
@@ -805,7 +818,7 @@ export class Village {
       c.restore();
 
       G.text(c, String(shown), cxk, cyk,
-        { size: fl > 0 ? 15 : 13, fill: C.ink, weight: 800 });
+        { size: fl > 0 ? 17 : 15, fill: C.ink, weight: 800 });
     }
 
     // 잠긴 칸 — 다음에 뭘 열지가 여기서 보인다
@@ -813,7 +826,7 @@ export class Village {
     if (locked.length) {
       const askedNext = locked.find((it) => this.sim.asked.includes(it.id));
       G.text(c, askedNext ? `${this.sim.itemName(askedNext.id)} 칸 열 수 있음` : `${locked.length}칸 더 있다`,
-        sl.cx, y + h - 5, { size: 10.5, fill: askedNext ? '#ffe9a8' : '#d8ccb0', weight: 800 });
+        sl.cx, y + h - 5, { size: 12, fill: askedNext ? '#ffe9a8' : '#d8ccb0', weight: 800 });
     }
   }
 
@@ -1157,7 +1170,7 @@ export class Village {
     const n = stop.sold.reduce((a, s) => a + s.n, 0);
     const kinds = stop.sold.length;
     const txt = kinds > 1 ? `${n}개 · ${kinds}종` : `${n}개`;
-    const tw = 10 + txt.length * 6.4;
+    const tw = 12 + txt.length * 7.2;
     /* 가게 반대쪽(길 쪽)으로 비껴 띄운다. 머리 바로 위에 두면 좌판 칸을
      * 가려서 재고 숫자가 안 보인다. */
     const away = -SLOTS[stop.idx].side;
@@ -1168,7 +1181,7 @@ export class Village {
     const tipX = bx - away * 12;                       // 꼬리는 손님 쪽을 가리킨다
     c.moveTo(tipX - 4, by + 7); c.lineTo(tipX - away * 2, by + 13); c.lineTo(tipX + 4, by + 7);
     c.closePath(); c.fill();
-    G.text(c, txt, bx, by - 1, { size: 11, fill: C.ink, weight: 800 });
+    G.text(c, txt, bx, by - 1, { size: 12.5, fill: C.ink, weight: 800 });
   }
 
   _walker(c, w) {
