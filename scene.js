@@ -166,6 +166,11 @@ export class Village {
     /* 너구리는 대장간에서 시작한다 — 처음 열려 있는 유일한 가게다. */
     const h0 = heroSpot(0);
     this.hero = { at: 0, x: h0.x, y: h0.y, state: 'make', face: 1, idle: 0 };
+    /* 가게별로 '방금 팔렸다'가 몇 초 남았나.
+     * 손님이 서 있는 0.7초만 보고 너구리를 보내려 했더니 **한 번도 도착을
+     * 못 했다** — 걸어가는 동안 손님이 이미 떠난다. 그래서 손님이 아니라
+     * 거래의 여운을 쫓아가게 했다. */
+    this.busyShop = {};
   }
 
   /* ── 배경 무늬·소품은 한 번만 정한다. 매 프레임 난수를 쓰면 떨린다. ── */
@@ -304,6 +309,7 @@ export class Village {
               t: 1.05, r: 8.5 + Math.random() * 2.5,
             });
           }
+          this.busyShop[stop.idx] = 2.6;      // 너구리가 걸어올 시간까지 쳐준다
           const tk = (this.takings[stop.idx] ||= { amount: 0, t: 0 });
           tk.amount += stop.gain; tk.t = 1.7;
           // Juice는 엔진이 화면 좌표로 그린다 — 카메라만큼 빼서 넘긴다.
@@ -928,13 +934,17 @@ export class Village {
   _hero(dt) {
     const hr = this.hero;
 
-    // 지금 어느 가게에 손님이 서 있나 (가까운 쪽부터)
+    for (const k of Object.keys(this.busyShop)) {
+      this.busyShop[k] -= dt;
+      if (this.busyShop[k] <= 0) delete this.busyShop[k];
+    }
+
+    // 방금 판 가게 중 제일 가까운 곳
     let want = -1;
     let best = Infinity;
-    for (const w of this.walkers) {
-      if (w.state !== 'buy') continue;
-      const idx = w.stops[w.si]?.idx;
-      if (idx == null || !this.sim.shops.includes(SHOPS[idx].id)) continue;
+    for (const k of Object.keys(this.busyShop)) {
+      const idx = Number(k);
+      if (!this.sim.shops.includes(SHOPS[idx].id)) continue;
       const d = Math.abs(heroSpot(idx).y - hr.y);
       if (d < best) { best = d; want = idx; }
     }
@@ -963,7 +973,7 @@ export class Village {
       hr.state = 'walk';
       if (Math.abs(dx) > 1) hr.face = Math.sign(dx);
     } else {
-      hr.state = want >= 0 ? 'sell' : 'make';
+      hr.state = this.busyShop[hr.at] > 0 ? 'sell' : 'make';
       /* 파는 중이면 손님 쪽을 본다. 손님은 길 쪽에 서 있다. */
       if (hr.state === 'sell') hr.face = -SLOTS[hr.at].side;
     }
@@ -982,22 +992,35 @@ export class Village {
     c.fillStyle = 'rgba(0,0,0,.17)';
     c.beginPath(); c.ellipse(hr.x, hr.y + 2, 12, 5, 0, 0, 7); c.fill();
 
+    /* 처음엔 망치를 앞발에 쥐여 주려고 했다. 세 번 고쳐도 안 됐다 —
+     * 알파값으로 찾은 '제일 오른쪽 픽셀'은 앞발이 아니라 뺨이었고, 눈금을
+     * 얹어 진짜 앞발을 찾아 맞췄더니 이번엔 망치가 머리 뒤로 숨었다.
+     *
+     * 원인은 위치가 아니라 그림이다. 이 그림은 **연장을 든 자세가 아니다.**
+     * 서 있는 자세에 도구를 갖다 붙이면 어떻게 놔도 남의 손에 든 것처럼 보인다.
+     *
+     * 그래서 붙이는 걸 그만두고 **옆에 모루를 놓았다.** 대장간 일이라는 건
+     * 모루와 불똥이 알려주고, 두드리는 동작은 캐릭터가 위아래로 들썩이는
+     * 것으로 충분하다. 이러면 그림이 어떤 자세든 상관이 없다. */
     if (make) {
-      // 망치질 — 도구가 위에서 내려온다. 무엇을 하는지가 이걸로 읽힌다
-      const a = -0.9 + Math.abs(Math.sin(this.t * 7)) * 1.1;
-      c.save();
-      c.translate(hr.x + hr.face * 11, hr.y - 20);
-      c.rotate(hr.face * a);
-      G.rect(c, -1.5, -16, 3, 16, C.wood2);
-      G.round(c, -5, -21, 10, 7, 2, '#6b6257');
-      c.restore();
-      if (Math.sin(this.t * 7) > 0.94) {                 // 불똥
-        G.circle(c, hr.x + hr.face * 13, hr.y - 22, 2.2, '#f0d98b');
+      const ax = hr.x + hr.face * 15;
+      G.round(c, ax - 7, hr.y - 9, 14, 5, 2, '#6b6257');      // 모루 윗판
+      G.round(c, ax - 3, hr.y - 5, 6, 6, 1, '#57504a');       // 모루 허리
+      G.round(c, ax - 6, hr.y + 1, 12, 3, 1, '#4a4139');      // 받침
+      const hit = Math.abs(Math.sin(this.t * 7));
+      if (hit > 0.9) {                                        // 불똥
+        for (let k = 0; k < 3; k++) {
+          G.circle(c, ax + (k - 1) * 4.5, hr.y - 12 - (k === 1 ? 4 : 0), 1.9, '#f0d98b');
+        }
       }
     }
     if (sell) {
-      // 건네는 보따리
-      G.circle(c, hr.x + hr.face * 13, hr.y - 14 + bob, 6.5, '#c9a227');
+      /* 파는 그림은 앞발을 확실히 내밀고 있어서 여기엔 붙일 수 있다.
+       * 눈금으로 잰 자리가 (60,38)/72다. */
+      const px = hr.x + hr.face * (HERO_PX * (60 / 72 - 0.5));
+      const py = hr.y + 6 - HERO_PX + HERO_PX * (38 / 72);
+      G.circle(c, px, py - bob, 6, '#c9a227');
+      G.round(c, px - 2, py - bob - 7, 4, 4, 1, '#8a6a45');
     }
 
     /* 좌우 뒤집기 — 그림은 오른쪽을 보는 한 장만 그리면 된다.
