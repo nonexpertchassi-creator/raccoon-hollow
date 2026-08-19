@@ -93,6 +93,22 @@ const C = {
  *   파는 중    그 가게에 손님이 서 있을 때. 손님 쪽으로 돌아서 건넨다
  * 둘 다 sim이 이미 아는 상태라 새로 계산할 게 없다 — 화면 몫이다.
  */
+/* 손님이 가게 앞에서 보내는 시간.
+ *
+ * 예전엔 도착하자마자(0.7초) 재고가 빠지고 엽전이 튀고 떠났다 —
+ * "명령 주입된 손님이 호다닥 사간다"는 느낌이었다. 장사가 아니라 자판기다.
+ *
+ * 세 박자로 나눴다:
+ *   0.0초  도착. 무엇을 얼마나 살지 말풍선을 띄운다 (주문)
+ *   1.1초  주인 너구리가 건넨다. 이때 재고가 빠지고 엽전이 튄다
+ *   2.3초  짐을 지고 떠난다
+ *
+ * 걸음도 155 → 95로 늦췄다. 손님 수가 아니라 **한 명이 오래 머무는 것**이
+ * 마을을 붐비게 만든다. */
+const BUY_TIME = 2.3;        // 가게 앞에 서 있는 총 시간
+const HAND_OVER = 1.1;       // 이 시점에 물건이 건네진다
+const WALK_IN = 95, WALK_SIDE = 105, WALK_OUT = 92;
+
 const HERO_PX = 34;          // 손님(30)보다 조금 크다. 주인공이니까
 const CLERK_PX = 28;         // 점원은 주인공보다 작다. 누가 '나'인지 헷갈리면 안 된다
 const HERO_SPEED = 120;
@@ -235,7 +251,14 @@ export class Village {
    * 같이 들르는 손님을 화면이 한 곳만 보여주는 거짓말을 하고 있었다.
    */
   onSale(sale) {
-    if (this.walkers.length > 6) return;   // 못 띄우면 재고도 붙잡지 않는다
+    /* 걸음을 늦추고 머무는 시간을 늘렸으니 한 명이 화면에 오래 남는다.
+     * 그만큼 자리를 늘려야 거래가 안 잘린다 — 실측 판매가 초당 0.93건이고
+     * 한 명이 10~12초 머무르므로 열 자리면 열에 아홉은 보인다.
+     * 넘치면 그 거래는 화면에 안 나온다(계산은 이미 끝났다).
+     *
+     * 실측으로 맞췄다 — 열 자리로는 78%만 나왔다. 열넷이면 거의 다 나오고,
+     * 마을 세로 1560 중 절반쯤만 보이므로 한 화면에는 예닐곱만 잡힌다. */
+    if (this.walkers.length > 14) return;
 
     const byShop = new Map();
     for (const ln of sale.lines) {
@@ -299,14 +322,23 @@ export class Village {
       if (w.state === 'in' && stop) {
         const sl = slotOf(stop.idx);
         const dy = sl.standY - w.y;
-        w.y += Math.sign(dy) * Math.min(Math.abs(dy), 155 * w.speed * dt);
+        w.y += Math.sign(dy) * Math.min(Math.abs(dy), WALK_IN * w.speed * dt);
         // 멀리 있을 땐 구부러진 길을 따라가고, 가까워지면 가게 앞으로 꺾는다
         const tx = Math.abs(dy) < 130 ? sl.standX : roadX(w.y) + w.lane;
         const dx = tx - w.x;
-        w.x += Math.sign(dx) * Math.min(Math.abs(dx), 175 * w.speed * dt);
+        w.x += Math.sign(dx) * Math.min(Math.abs(dx), WALK_SIDE * w.speed * dt);
         if (Math.abs(dy) < 3 && Math.abs(sl.standX - w.x) < 3) {
-          w.state = 'buy'; w.wait = 0.7;
-          for (const s of stop.sold) {              // 도착한 지금이 재고가 빠지는 순간
+          /* 도착 = 주문. 물건은 아직 안 넘어간다. */
+          w.state = 'buy'; w.wait = BUY_TIME; w.paid = false;
+          this.busyShop[stop.idx] = BUY_TIME + 1.2;   // 주인이 걸어올 시간까지
+        }
+      } else if (w.state === 'buy') {
+        w.wait -= dt;
+        if (!w.paid && w.wait <= BUY_TIME - HAND_OVER) {
+          /* 건네는 순간 — 여기서야 재고가 빠지고 엽전이 튄다.
+           * 도착 즉시 처리하면 "주문했는데 이미 받아 갔다"가 된다. */
+          w.paid = true;
+          for (const s of stop.sold) {
             this.pending[s.id] = Math.max(0, (this.pending[s.id] || 0) - s.n);
             this.flash[s.id] = 0.45;
           }
@@ -319,7 +351,6 @@ export class Village {
               t: 1.05, r: 8.5 + Math.random() * 2.5,
             });
           }
-          this.busyShop[stop.idx] = 2.6;      // 너구리가 걸어올 시간까지 쳐준다
           const tk = (this.takings[stop.idx] ||= { amount: 0, t: 0 });
           tk.amount += stop.gain; tk.t = 1.7;
           // Juice는 엔진이 화면 좌표로 그린다 — 카메라만큼 빼서 넘긴다.
@@ -330,11 +361,9 @@ export class Village {
           }
           Sfx.coin();
         }
-      } else if (w.state === 'buy') {
-        w.wait -= dt;
         if (w.wait <= 0) { w.si++; w.state = w.si < w.stops.length ? 'in' : 'out'; }
       } else {
-        w.y += 150 * w.speed * dt * w.exit;
+        w.y += WALK_OUT * w.speed * dt * w.exit;
         const back = roadX(w.y) + w.lane - w.x;
         w.x += Math.sign(back) * Math.min(Math.abs(back), 120 * dt);
       }
@@ -461,6 +490,12 @@ export class Village {
     if (near(DOG.y, DOG.h + 40)) layer.push({ z: DOG.y + DOG.h, d: () => this._dog(c) });
     for (const p of this.props) if (near(p.y, 60)) layer.push({ z: p.y, d: () => this._prop(c, p) });
     for (const w of this.walkers) if (near(w.y, 40)) layer.push({ z: w.y, d: () => this._walker(c, w) });
+    /* 말풍선은 깊이 정렬 밖에 둔다 — 앞에 선 것에 가려지면 읽을 수가 없다. */
+    for (const w of this.walkers) {
+      if (w.state === 'buy' && !w.paid && near(w.y, 60)) {
+        layer.push({ z: 9e8, d: () => this._order(c, w) });
+      }
+    }
     for (let i = 0; i < SHOPS.length; i++) {
       const k = this._clerk(i);
       if (k && near(k.y, 40)) layer.push({ z: k.y, d: () => this._clerkDraw(c, k) });
@@ -1133,6 +1168,33 @@ export class Village {
      * 가렸다. 주인이라는 건 이미 세 가지가 알린다: 손님보다 크고(34 대 30),
      * 연장을 들고 있고, 손님과 반대쪽인 가게 안쪽에 선다.
      * 진짜 그림이 들어오면 앞치마는 그림 안에 그려 넣는다. */
+  }
+
+  /** 주문 말풍선 — 도착해서 물건을 받기 전까지 머리 위에 뜬다.
+   *
+   *  이게 있어야 '주문 → 제작·전달'이라는 순서가 읽힌다. 없으면 손님이
+   *  가게 앞에 잠깐 멈췄다 가는 것으로만 보인다.
+   *
+   *  글자는 개수만 적는다. 품목 이름까지 넣으면 손님이 몰릴 때 서로 겹친다 —
+   *  예전에 금액 글자로 똑같은 실수를 했다. */
+  _order(c, w) {
+    const stop = w.stops[w.si];
+    if (!stop) return;
+    const n = stop.sold.reduce((a, s) => a + s.n, 0);
+    const kinds = stop.sold.length;
+    const txt = kinds > 1 ? `${n}개 · ${kinds}종` : `${n}개`;
+    const tw = 10 + txt.length * 6.4;
+    /* 가게 반대쪽(길 쪽)으로 비껴 띄운다. 머리 바로 위에 두면 좌판 칸을
+     * 가려서 재고 숫자가 안 보인다. */
+    const away = -SLOTS[stop.idx].side;
+    const bx = w.x + away * 20, by = w.y - 38 + Math.sin(this.t * 3.4) * 1.6;
+    G.round(c, bx - tw / 2, by - 11, tw, 19, 7, 'rgba(252,246,232,.96)');
+    c.fillStyle = 'rgba(252,246,232,.96)';
+    c.beginPath();
+    const tipX = bx - away * 12;                       // 꼬리는 손님 쪽을 가리킨다
+    c.moveTo(tipX - 4, by + 7); c.lineTo(tipX - away * 2, by + 13); c.lineTo(tipX + 4, by + 7);
+    c.closePath(); c.fill();
+    G.text(c, txt, bx, by - 1, { size: 11, fill: C.ink, weight: 800 });
   }
 
   _walker(c, w) {
