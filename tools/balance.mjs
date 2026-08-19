@@ -6,7 +6,7 @@
  * 절반이 죽어 있는데도 "문제 없음"을 보고했다. 그래서 품목별로 따로 센다.
  */
 import { Sim, fmt, itemById } from '../sim.js';
-import { SHOPS, GUESTS, STOCK_CAP, PESTS } from '../content.js';
+import { SHOPS, GUESTS, STOCK_CAP, PESTS, GUARD } from '../content.js';
 
 const HOURS = Number(process.argv[2] || 4);
 const SEED = Number(process.argv[3] || 1);
@@ -33,6 +33,7 @@ function act(s) {
   for (const id of s.asked) if (s.canOpenItem(id)) { s.openItem(id); return 'item'; }
   for (const sh of s.shops) if (s.canPromote(sh)) { s.promote(sh); return 'shop'; }
   if (s.canBuyAuto()) { s.buyAuto(); return 'auto'; }
+  if (s.canBuyGuard()) { s.buyGuard(); return 'item'; }
   const sm = s.nextSmall();
   if (sm >= 0 && s.canBuildSmall(sm)) { s.buildSmall(sm); return 'item'; }
   /* 자동 강화를 산 뒤로는 손으로 안 누른다 — 그게 산 이유다.
@@ -198,6 +199,12 @@ if (PESTS.some((P) => pestLog[P.id].seen)) {
   }
   console.log(`   ─ 합계: 잃는 것 누적매출의 ${(ls / s.revenue * 100).toFixed(2)}% ·` +
     ` 버는 것 ${(gs / s.revenue * 100).toFixed(1)}% (${(gs / ls).toFixed(0)}배)`);
+  /* 삽살개는 '자리를 비웠을 때'만 일한다. 직접 잡는 것보다 확실히 나빠야 한다 —
+   * 개가 더 나으면 화면을 볼 이유가 사라지고, 나쁜 놈을 넣은 이유도 같이 사라진다. */
+  const worth = ls;                                    // 놓쳤을 때 오가는 값의 총합
+  const dog = worth * (GUARD.rate * GUARD.fine - (1 - GUARD.rate));
+  console.log(`   삽살개만 믿고 자리를 비우면: ${dog >= 0 ? '+' : ''}${(dog / s.revenue * 100).toFixed(1)}%` +
+    ` (직접 매번 잡기의 ${(gs / dog).toFixed(0)}분의 1)`);
 }
 
 /* ── 콘텐츠 소진 ──

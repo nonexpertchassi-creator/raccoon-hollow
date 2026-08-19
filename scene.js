@@ -14,7 +14,7 @@
 
 import { G } from './core/engine.js';
 import { Juice, Sfx } from './core/juice.js';
-import { SHOPS, STOCK_CAP, SMALL_SHOPS } from './content.js';
+import { SHOPS, STOCK_CAP, SMALL_SHOPS, GUARD } from './content.js';
 import { fmt } from './sim.js';
 
 /* 보이는 창은 480×800이고, 마을은 그보다 세로로 길다. 손가락으로 밀어 훑는다.
@@ -49,6 +49,10 @@ const SMALL_POS = [
   { x: 368, y: 760 },
   { x: 16,  y: 470 },
 ];
+
+/* 삽살개 집 — 필방(오른쪽 1112~1262)과 대장간(왼쪽 1358) 사이의 빈 오른쪽.
+ * 마을 어귀 쪽에 둔 이유: 처음 켰을 때 화면에 바로 들어와야 "저게 뭐지"가 된다. */
+const DOG = { x: 372, y: 1286, w: 84, h: 60 };
 
 const C = {
   grass:  '#8b9e74',
@@ -356,6 +360,12 @@ export class Village {
       }
     }
 
+    if (!this.sim.guard && wx > DOG.x - 8 && wx < DOG.x + DOG.w + 8
+        && wy > DOG.y - 8 && wy < DOG.y + DOG.h + 8) {
+      if (this.sim.buyGuard()) { Sfx.reward(); Juice.shake(5); } else Sfx.deny();
+      return;
+    }
+
     // 북적이는 작은 건물을 먼저 본다 — 이게 이 순간 제일 하고 싶은 조작이다
     for (let i = 0; i < SMALL_POS.length; i++) {
       const p = SMALL_POS[i];
@@ -398,6 +408,7 @@ export class Village {
       const p = SMALL_POS[i];
       if (near(p.y, SMALL_H + 40)) layer.push({ z: p.y + SMALL_H, d: () => this._small(c, i) });
     }
+    if (near(DOG.y, DOG.h + 40)) layer.push({ z: DOG.y + DOG.h, d: () => this._dog(c) });
     for (const p of this.props) if (near(p.y, 60)) layer.push({ z: p.y, d: () => this._prop(c, p) });
     for (const w of this.walkers) if (near(w.y, 40)) layer.push({ z: w.y, d: () => this._walker(c, w) });
     const th = this._pestAt();
@@ -762,6 +773,43 @@ export class Village {
   /** 나쁜 놈이 지금 화면 어디쯤 있나.
    *  sim은 '몇 초 남았다'만 들고 있다. 어디서 어디로 가는지는 화면 몫이다.
    *  둘은 **다르게** 움직인다 — 쥐는 땅을 뛰고 까마귀는 하늘을 가로지른다. */
+  /** 삽살개 집. 안 들였으면 빈터로 값을 보여준다 — 작은 건물과 같은 규칙이다. */
+  _dog(c) {
+    const { x, y, w, h } = DOG, cx = x + w / 2;
+    if (!this.sim.guard) {
+      c.save();
+      c.setLineDash([7, 6]); c.lineWidth = 2; c.strokeStyle = 'rgba(60,52,36,.34)';
+      c.beginPath(); c.roundRect(x + 4, y + 12, w - 8, h - 18, 8); c.stroke();
+      c.restore();
+      G.text(c, '삽살개 자리', cx, y + 30, { size: 11, fill: '#5f6b4e', weight: 800 });
+      const can = this.sim.money >= GUARD.cost;
+      G.round(c, cx - 38, y + 38, 76, 21, 7, can ? C.jade : 'rgba(60,52,36,.30)');
+      G.text(c, `${fmt(GUARD.cost)}냥`, cx, y + 48.5,
+        { size: 11, fill: can ? '#fff' : '#e6e0cf', weight: 800 });
+      return;
+    }
+    c.fillStyle = 'rgba(0,0,0,.14)';
+    c.beginPath(); c.ellipse(cx, y + h, w * 0.38, 7, 0, 0, 7); c.fill();
+
+    // 개집 — 흙벽에 기와를 얹은 작은 것
+    G.round(c, x + 12, y + 24, w - 24, h - 26, 4, '#dccfb2');
+    c.fillStyle = C.tile;                                  // 지붕
+    c.beginPath();
+    c.moveTo(x + 4, y + 26); c.lineTo(cx, y + 8); c.lineTo(x + w - 4, y + 26);
+    c.closePath(); c.fill();
+    G.circle(c, cx, y + 42, 11, '#2b241b');                // 드나드는 구멍
+
+    /* 개는 집 앞에 앉아 있다. 나쁜 놈이 나오면 일어나 그쪽을 본다 —
+     * 지금 지켜주고 있다는 걸 글자 없이 알린다. */
+    const alert = !!this.sim.pest;
+    const bob = alert ? Math.abs(Math.sin(this.t * 12)) * 3 : Math.sin(this.t * 2) * 1.2;
+    G.text(c, '🐕', x + 16, y + h - 4 - bob, { size: 24, fill: '#000' });
+    if (alert) {
+      G.round(c, x + 2, y + h - 34, 22, 15, 6, '#c7563f');
+      G.text(c, '멍!', x + 13, y + h - 26, { size: 9.5, fill: '#fff3dd', weight: 800 });
+    }
+  }
+
   _pestAt() {
     const t = this.sim.pest;
     if (!t) return null;

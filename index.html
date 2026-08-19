@@ -457,6 +457,10 @@ eng.add('village', {
         Sfx.win();
         $('#guest').className = 'catch';
         $('#guest').innerHTML = `<span class="face">🎉</span><span class="say">${e.msg}</span>`;
+      } else if (e && e.kind === 'guard') {
+        Sfx.reward();
+        $('#guest').className = 'catch';
+        $('#guest').innerHTML = `<span class="face">🐕</span><span class="say">${e.msg}</span>`;
       } else if (e && e.kind === 'pest') {
         $('#guest').className = '';
         $('#guest').innerHTML = `<span class="face">💨</span><span class="say">${e.msg}</span>`;

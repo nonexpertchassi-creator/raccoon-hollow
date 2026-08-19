@@ -9,7 +9,7 @@
 
 import {
   SHOPS, GUESTS, LEVEL, MILESTONE_EVERY, MILESTONE_MULT, STOCK_CAP, OFFLINE, ASK_LINES,
-  BASKET_SPREAD, MAX_BULK, AUTO_COST, AUTO_PER_TICK, AUTO_SHARE, ASK_EVERY, FAIR, SMALL_SHOPS, RANKS, REGULARS, PESTS,
+  BASKET_SPREAD, MAX_BULK, AUTO_COST, AUTO_PER_TICK, AUTO_SHARE, ASK_EVERY, FAIR, SMALL_SHOPS, RANKS, REGULARS, PESTS, GUARD,
 } from './content.js';
 
 const ALL_ITEMS = SHOPS.flatMap((s) => s.items.map((i) => ({ ...i, shop: s.id })));
@@ -40,6 +40,7 @@ export class Sim {
     this.sold = 0;
     this.auto = false;                    // 자동 강화를 샀는가
     this.smalls = [];                     // 세워 둔 작은 건물의 번호
+    this.guard = false;                   // 삽살개를 들였는가
     this.fair = 0;                        // 장이 서 있는 남은 시간(초)
     this.busy = -1;                       // 지금 북적이는 작은 건물 (없으면 -1)
     this._busyT = 0;
@@ -100,7 +101,7 @@ export class Sim {
   _pests(dt, rng) {
     if (this.pest) {
       this.pest.left -= dt;
-      if (this.pest.left <= 0) this._pestEscape();
+      if (this.pest.left <= 0) this._pestEscape(rng);
       return;
     }
     for (const P of PESTS) {
@@ -135,10 +136,31 @@ export class Sim {
              what: `엽전 ${fmt(amount)}냥을 노린다` };
   }
 
-  _pestEscape() {
+  /* ── 삽살개 ── */
+  canBuyGuard() { return !this.guard && this.money >= GUARD.cost; }
+  buyGuard() {
+    if (!this.canBuyGuard()) return false;
+    this.money -= GUARD.cost;
+    this.guard = true;
+    this._ev(`${GUARD.name}을 들였다 — 자리를 비워도 지켜준다`, 'shop');
+    return true;
+  }
+
+  _pestEscape(rng = Math.random) {
     const t = this.pest;
     const P = PESTS.find((p) => p.id === t.kind);
     this.pest = null;
+
+    /* 삽살개가 대신 문다. 직접 잡을 때보다 벌금이 훨씬 적고, 놓치기도 한다 —
+     * 개가 더 잘 잡으면 아무도 화면을 안 보게 된다. */
+    if (this.guard && rng() < GUARD.rate) {
+      const worth = P.steal === 'goods' ? this.price(t.itemId) * t.qty : t.amount;
+      const gain = Math.floor(worth * GUARD.fine);
+      this.money += gain;
+      this.revenue += gain;
+      this._ev(`${GUARD.name}가 ${josa(P.name, '을', '를')} 물었다 — 벌금 ${fmt(gain)}냥`, 'guard');
+      return;
+    }
     if (P.steal === 'goods') {
       const it = this.items[t.itemId];
       const n = it ? Math.min(it.stock, t.qty) : 0;
