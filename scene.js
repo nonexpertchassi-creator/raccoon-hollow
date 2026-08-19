@@ -79,6 +79,30 @@ const C = {
  * GUESTS의 qty(한 번에 사가는 개수)는 이미 정해져 있는데 숫자로만 숨어 있었다.
  * 짐으로 보이면 "큰 손님이 온다"가 멀리서부터 읽힌다.
  * 규칙은 아니고 표시일 뿐이다 — qty를 그대로 그림으로 옮긴다. */
+/* 주인공 너구리.
+ *
+ * 게임 이름이 '너구리 만물상'인데 화면에 너구리가 없었다. 손님과 물건과
+ * 도둑만 있고 주인이 없으니, 이 마을이 누구 것인지가 안 보인다.
+ *
+ * 한 마리만 둔다. 가게마다 하나씩 세우면 '내 분신'이 아니라 '점원'이 되고,
+ * 다섯이 동시에 같은 짓을 하면 오히려 아무도 주인공이 아니게 된다.
+ * (가게별 점원은 나중에 고용으로 넣을 자리다.)
+ *
+ * 두 가지 모습이 있다:
+ *   만드는 중  손님이 없을 때. 좌판 옆에서 두드린다
+ *   파는 중    그 가게에 손님이 서 있을 때. 손님 쪽으로 돌아서 건넨다
+ * 둘 다 sim이 이미 아는 상태라 새로 계산할 게 없다 — 화면 몫이다.
+ */
+const HERO_PX = 34;          // 손님(30)보다 조금 크다. 주인공이니까
+const HERO_SPEED = 120;
+
+/* 손님은 길 쪽(0.74/0.26)에 선다. 너구리는 그 반대편 — 가게 안쪽에 선다.
+ * 같은 자리에 두면 손님과 겹쳐서 둘 다 안 보인다. */
+function heroSpot(i) {
+  const s = SLOTS[i];
+  return { x: s.x + s.w * (s.side < 0 ? 0.22 : 0.78), y: s.y + s.h + 17 };
+}
+
 /* 화면에 보이는 손님 크기. 임시 토끼 한 장을 넣고 폰 크기로 확인해서 정했다 —
  * 27은 장승 머리보다 작아 캐릭터로 안 읽혔다. 그림이 들어오면 여기만 고친다. */
 const GUEST_PX = 30;
@@ -139,6 +163,9 @@ export class Village {
     this.drag = null;      // 끄는 중일 때 {y, moved}
     this.tufts = this._scatter();
     this.props = this._props();
+    /* 너구리는 대장간에서 시작한다 — 처음 열려 있는 유일한 가게다. */
+    const h0 = heroSpot(0);
+    this.hero = { at: 0, x: h0.x, y: h0.y, state: 'make', face: 1, idle: 0 };
   }
 
   /* ── 배경 무늬·소품은 한 번만 정한다. 매 프레임 난수를 쓰면 떨린다. ── */
@@ -297,6 +324,7 @@ export class Village {
       }
     }
     this.walkers = this.walkers.filter((w) => w.y > -90 && w.y < H + 90);
+    this._hero(dt);
 
     for (const id of Object.keys(this.flash)) {
       this.flash[id] -= dt;
@@ -417,6 +445,7 @@ export class Village {
     if (near(DOG.y, DOG.h + 40)) layer.push({ z: DOG.y + DOG.h, d: () => this._dog(c) });
     for (const p of this.props) if (near(p.y, 60)) layer.push({ z: p.y, d: () => this._prop(c, p) });
     for (const w of this.walkers) if (near(w.y, 40)) layer.push({ z: w.y, d: () => this._walker(c, w) });
+    if (near(this.hero.y, 40)) layer.push({ z: this.hero.y + 0.5, d: () => this._heroDraw(c) });
     const th = this._pestAt();
     /* 까마귀는 하늘에 있으니 무엇에도 안 가린다. 쥐는 발끝 높이로 줄을 선다. */
     if (th && th.kind === 'crow') layer.push({ z: 1e9, d: () => this._pest(c, th) });
@@ -891,6 +920,98 @@ export class Village {
       G.circle(c, t.x + 12, t.y + 2 - bob, 5.5, '#c9a227');
       G.rect(c, t.x + 10, t.y - bob, 4, 4, '#8a6a45');
     }
+  }
+
+  /** 너구리를 움직인다.
+   *  규칙은 하나 — **손님이 서 있는 가게로 간다.** 없으면 지금 자리에서 만든다.
+   *  그래서 화면을 보고 있으면 너구리가 손님을 따라다니는 것처럼 보인다. */
+  _hero(dt) {
+    const hr = this.hero;
+
+    // 지금 어느 가게에 손님이 서 있나 (가까운 쪽부터)
+    let want = -1;
+    let best = Infinity;
+    for (const w of this.walkers) {
+      if (w.state !== 'buy') continue;
+      const idx = w.stops[w.si]?.idx;
+      if (idx == null || !this.sim.shops.includes(SHOPS[idx].id)) continue;
+      const d = Math.abs(heroSpot(idx).y - hr.y);
+      if (d < best) { best = d; want = idx; }
+    }
+
+    if (want >= 0) {
+      hr.at = want;
+      hr.idle = 0;
+    } else {
+      /* 손님이 없으면 한동안 그대로 두드린다. 매번 옮겨 다니면 산만하다.
+       * 오래 비면 열린 가게 중 한 곳으로 옮겨 — 마을을 돌보는 것처럼 보인다. */
+      hr.idle += dt;
+      if (hr.idle > 9) {
+        hr.idle = 0;
+        const open = SHOPS.map((sh, i) => i).filter((i) => this.sim.shops.includes(SHOPS[i].id));
+        if (open.length) hr.at = open[(open.indexOf(hr.at) + 1) % open.length];
+      }
+    }
+
+    const spot = heroSpot(hr.at);
+    const dx = spot.x - hr.x, dy = spot.y - hr.y;
+    const d = Math.hypot(dx, dy);
+    if (d > 2) {
+      const step = Math.min(d, HERO_SPEED * dt);
+      hr.x += dx / d * step;
+      hr.y += dy / d * step;
+      hr.state = 'walk';
+      if (Math.abs(dx) > 1) hr.face = Math.sign(dx);
+    } else {
+      hr.state = want >= 0 ? 'sell' : 'make';
+      /* 파는 중이면 손님 쪽을 본다. 손님은 길 쪽에 서 있다. */
+      if (hr.state === 'sell') hr.face = -SLOTS[hr.at].side;
+    }
+  }
+
+  _heroDraw(c) {
+    const hr = this.hero;
+    const sell = hr.state === 'sell';
+    const make = hr.state === 'make';
+    /* 만들 땐 위아래로 내려치고, 걸을 땐 총총, 팔 땐 살짝 숙인다.
+     * 세 가지가 눈에 띄게 달라야 "지금 뭘 하는지"가 읽힌다. */
+    const bob = make ? Math.abs(Math.sin(this.t * 7)) * 5
+              : sell ? Math.sin(this.t * 3) * 1.5
+              : Math.abs(Math.sin(this.t * 10)) * 3.5;
+
+    c.fillStyle = 'rgba(0,0,0,.17)';
+    c.beginPath(); c.ellipse(hr.x, hr.y + 2, 12, 5, 0, 0, 7); c.fill();
+
+    if (make) {
+      // 망치질 — 도구가 위에서 내려온다. 무엇을 하는지가 이걸로 읽힌다
+      const a = -0.9 + Math.abs(Math.sin(this.t * 7)) * 1.1;
+      c.save();
+      c.translate(hr.x + hr.face * 11, hr.y - 20);
+      c.rotate(hr.face * a);
+      G.rect(c, -1.5, -16, 3, 16, C.wood2);
+      G.round(c, -5, -21, 10, 7, 2, '#6b6257');
+      c.restore();
+      if (Math.sin(this.t * 7) > 0.94) {                 // 불똥
+        G.circle(c, hr.x + hr.face * 13, hr.y - 22, 2.2, '#f0d98b');
+      }
+    }
+    if (sell) {
+      // 건네는 보따리
+      G.circle(c, hr.x + hr.face * 13, hr.y - 14 + bob, 6.5, '#c9a227');
+    }
+
+    /* 좌우 뒤집기 — 그림은 오른쪽을 보는 한 장만 그리면 된다.
+     * 방향마다 따로 그리면 장수가 두 배가 된다. */
+    c.save();
+    if (hr.face < 0) { c.translate(hr.x * 2, 0); c.scale(-1, 1); }
+    if (!drawArt(c, 'hero', sell ? 'raccoon-sell' : 'raccoon-make', hr.x, hr.y + 6 - bob, HERO_PX, HERO_PX))
+      G.text(c, '🦝', hr.x, hr.y - 9 - bob, { size: HERO_PX, fill: '#000' });
+    c.restore();
+
+    /* 앞치마를 덧그려 봤다가 뺐다 — 이모지 얼굴 위에 정확히 겹쳐 주둥이를
+     * 가렸다. 주인이라는 건 이미 세 가지가 알린다: 손님보다 크고(34 대 30),
+     * 연장을 들고 있고, 손님과 반대쪽인 가게 안쪽에 선다.
+     * 진짜 그림이 들어오면 앞치마는 그림 안에 그려 넣는다. */
   }
 
   _walker(c, w) {
