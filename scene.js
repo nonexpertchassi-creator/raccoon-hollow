@@ -109,24 +109,34 @@ const BUY_TIME = 2.3;        // 가게 앞에 서 있는 총 시간
 const HAND_OVER = 1.1;       // 이 시점에 물건이 건네진다
 const WALK_IN = 95, WALK_SIDE = 105, WALK_OUT = 92;
 
-const HERO_PX = 34;          // 손님(30)보다 조금 크다. 주인공이니까
-const CLERK_PX = 28;         // 점원은 주인공보다 작다. 누가 '나'인지 헷갈리면 안 된다
+const CLERK_PX = 30;         // 손님과 같은 크기. 마을 사람들이니까
+const CLERK_SPEED = 130;     // 손님이 서 있는 2.3초 안에 반드시 닿아야 한다
 const HERO_SPEED = 120;
 
-/* 가게 앞 한 줄에 셋이 선다. 서로 안 겹치게 자리를 갈라 놓았다.
+/* 가게 앞에 둘이 선다.
  *
- *   점원   가게 안쪽 (0.18/0.82)      늘 그 가게에 붙어 있다
- *   손님   길 쪽    (0.74/0.26)       왔다가 간다
- *   주인   한가운데 (0.50)            돌아다니며 판다
+ *   점장   가게마다 한 마리. 만들고 · 팔고 · 존다
+ *   손님   길 쪽(0.74/0.26)에 잠깐 선다
  *
- * 대장간 폭이 188이니 셋의 간격이 50px쯤 된다. 28~34px짜리라 딱 안 닿는다. */
-function clerkSpot(i) {
+ * 예전엔 '사장 너구리' 한 마리가 마을을 돌며 팔았다. 뺐다 —
+ * **사장은 플레이어다.** 화면 밖에서 마을을 보고 있는 사람이 곧 사장인데,
+ * 그 사람의 분신이 필드를 종종거리면 내가 둘이 되는 셈이다. 게다가
+ * 초당 0.9건씩 팔리니 어느 가게에도 제때 못 닿아, 하는 일 없이 왔다
+ * 갔다만 했다.
+ *
+ * 이제 파는 것도 그 가게 점장이 한다. 점장은 자리를 두 개 오간다:
+ *
+ *   작업대 자리  가게 안쪽 (0.18/0.82)   평소
+ *   손님 자리    (0.52/0.48)             손님이 오면 몇 걸음 나온다
+ *
+ * 손님(0.74)까지 41px쯤 남는다 — 물건을 건네는 거리로 딱 맞고 안 겹친다. */
+function workSpot(i) {
   const s = SLOTS[i];
   return { x: s.x + s.w * (s.side < 0 ? 0.18 : 0.82), y: s.y + s.h + 15 };
 }
-function heroSpot(i) {
+function serveSpot(i) {
   const s = SLOTS[i];
-  return { x: s.x + s.w * 0.5, y: s.y + s.h + 26 };
+  return { x: s.x + s.w * (s.side < 0 ? 0.52 : 0.48), y: s.y + s.h + 18 };
 }
 
 /* 화면에 보이는 손님 크기. 임시 토끼 한 장을 넣고 폰 크기로 확인해서 정했다 —
@@ -189,9 +199,8 @@ export class Village {
     this.drag = null;      // 끄는 중일 때 {y, moved}
     this.tufts = this._scatter();
     this.props = this._props();
-    /* 너구리는 대장간에서 시작한다 — 처음 열려 있는 유일한 가게다. */
-    const h0 = heroSpot(0);
-    this.hero = { at: 0, x: h0.x, y: h0.y, state: 'make', face: 1, idle: 0 };
+    /* 점장은 가게마다 한 마리. 자기 가게를 안 떠난다. */
+    this.mgr = SHOPS.map((_, i) => ({ ...workSpot(i), at: 'work' }));
     /* 가게별로 '방금 팔렸다'가 몇 초 남았나.
      * 손님이 서 있는 0.7초만 보고 너구리를 보내려 했더니 **한 번도 도착을
      * 못 했다** — 걸어가는 동안 손님이 이미 떠난다. 그래서 손님이 아니라
@@ -369,7 +378,7 @@ export class Village {
       }
     }
     this.walkers = this.walkers.filter((w) => w.y > -90 && w.y < H + 90);
-    this._hero(dt);
+    this._mgr(dt);
 
     for (const id of Object.keys(this.flash)) {
       this.flash[id] -= dt;
@@ -500,7 +509,7 @@ export class Village {
       const k = this._clerk(i);
       if (k && near(k.y, 40)) layer.push({ z: k.y, d: () => this._clerkDraw(c, k) });
     }
-    if (near(this.hero.y, 40)) layer.push({ z: this.hero.y + 0.5, d: () => this._heroDraw(c) });
+
     const th = this._pestAt();
     /* 까마귀는 하늘에 있으니 무엇에도 안 가린다. 쥐는 발끝 높이로 줄을 선다. */
     if (th && th.kind === 'crow') layer.push({ z: 1e9, d: () => this._pest(c, th) });
@@ -1012,162 +1021,106 @@ export class Village {
     }
   }
 
-  /** 점원 너구리의 지금 상태. **sim이 이미 아는 사실만 읽는다.**
+  /** 점장 너구리를 움직인다.
    *
-   *  일하는 속도를 화면이 지어내지 않는다. 그 가게에서 제일 빨리 나오는 칸의
-   *  실제 제작 시간(craftTime)을 그대로 쓴다. 그래서 강화를 하면 너구리가
-   *  눈에 띄게 빨라진다 — 지금까지 강화는 숫자만 바뀌고 화면은 그대로였다.
+   *  손님이 오면 몇 걸음 나가 건네주고, 가면 작업대로 돌아간다.
+   *  손님이 서 있는 시간이 2.3초, 건네는 건 1.1초 시점 — 64px를 130px/s로
+   *  가면 0.5초라 **항상 제때 닿는다.** 예전 사장 너구리는 마을 반대편에서
+   *  출발하느라 한 번도 제때 못 닿았고, 그래서 '파는 중' 자세가 실제로는
+   *  화면에 나온 적이 없었다.
+   */
+  _mgr(dt) {
+    for (let i = 0; i < SHOPS.length; i++) {
+      const m = this.mgr[i];
+      const serving = (this.busyShop[i] || 0) > 0;
+      const t = serving ? serveSpot(i) : workSpot(i);
+      const dx = t.x - m.x, dy = t.y - m.y;
+      const d = Math.hypot(dx, dy);
+      if (d > 1.5) {
+        const step = Math.min(d, CLERK_SPEED * dt);
+        m.x += dx / d * step; m.y += dy / d * step;
+        m.at = 'walk';
+      } else {
+        m.x = t.x; m.y = t.y;
+        m.at = serving ? 'serve' : 'work';
+      }
+    }
+  }
+
+  /** 점장의 지금 모습. **sim이 이미 아는 사실만 읽는다.**
    *
-   *  실측: 제일 빠른 칸이 하나 만드는 데 1분 시점 2.8초, 4시간 시점 1.2초.
-   *  1~3초에 한 번 두드리는 셈이라 **생산을 늦출 필요가 없다.**
-   *  다섯 마리가 동시에 두드려도 각자 느긋하다.
+   *  세 가지다:
+   *    팖    손님이 와 있다 — 몇 걸음 나가 건넨다
+   *    만듦  평소 — 작업대 옆에서 느긋하게
+   *    졺    진열대가 꽉 차 생산이 실제로 멈췄다(`stock >= STOCK_CAP`)
+   *
+   *  조는 건 귀여우라고 재우는 게 아니다. **정말로 노는 중**인데 그 사실이
+   *  화면에 안 보여서 유저가 어느 칸이 막혔는지 몰랐다.
    */
   _clerk(i) {
     const shop = SHOPS[i];
     if (!this.sim.shops.includes(shop.id)) return null;
     const open = shop.items.filter((it) => this.sim.isOpen(it.id));
     if (!open.length) return null;
-    /* 진열대가 다 차면 생산이 실제로 멈춘다(sim의 `stock >= STOCK_CAP`).
-     * 그때 점원이 존다 — 귀여우라고 재우는 게 아니라 **정말로 노는 중**이고,
-     * 화면에 그 사실이 안 보여서 유저가 눈치를 못 챘다. */
+    const m = this.mgr[i];
     const full = open.every((it) => this.sim.items[it.id].stock >= STOCK_CAP);
-    let fastest = Infinity;
-    for (const it of open) fastest = Math.min(fastest, this.sim.craftTime(it.id));
-    return { i, full, period: fastest, ...clerkSpot(i) };
+    const mode = m.at === 'serve' ? 'sell' : m.at === 'walk' ? 'walk' : full ? 'sleep' : 'work';
+    return { i, mode, x: m.x, y: m.y };
   }
 
   _clerkDraw(c, k) {
     const shop = SHOPS[k.i];
     const face = -SLOTS[k.i].side;                  // 길 쪽(손님 쪽)을 본다
-    /* 느긋한 한 박자로 움직인다. 예전엔 실제 제작 주기(1.2~3.6초)에 맞춰
-     * 두드리게 했는데, 정확하긴 해도 **캐릭터에게 계기판을 시킨 것**이었다.
-     * 정확한 진행은 좌판의 고리가 맡는다. 여기서는 "일하고 있다"만 알리면 된다.
+    /* 느긋한 한 박자. 예전엔 실제 제작 주기(1.2~3.6초)에 맞춰 두드리게 했는데,
+     * 정확하긴 해도 **캐릭터에게 계기판을 시킨 것**이었다. 정확한 진행은
+     * 좌판의 고리가 맡는다. 여기서는 "일하고 있다"만 알리면 된다.
      * 가게마다 위상을 어긋나게 둔다 — 다섯이 딱딱 맞으면 기계처럼 보인다. */
     const ph = (this.t / 2.4 + k.i * 0.37) % 1;
     const swing = Math.max(0, Math.sin(ph * Math.PI * 2));
-    const bob = k.full ? 0 : swing * 3;
+    const bob = k.mode === 'work' ? swing * 3
+              : k.mode === 'walk' ? Math.abs(Math.sin(this.t * 10)) * 3
+              : k.mode === 'sell' ? Math.sin(this.t * 3) * 1.4
+              : 0;
 
     c.fillStyle = 'rgba(0,0,0,.15)';
     c.beginPath(); c.ellipse(k.x, k.y + 2, 10, 4, 0, 0, 7); c.fill();
 
-    if (!k.full) {
+    if (k.mode === 'work' || k.mode === 'sleep') {
       // 모루 — 무슨 일을 하는지는 도구가 아니라 작업대가 알린다
       const ax = k.x + face * 13;
       G.round(c, ax - 6, k.y - 8, 12, 4.5, 2, '#6b6257');
       G.round(c, ax - 2.5, k.y - 4, 5, 5, 1, '#57504a');
       G.round(c, ax - 5, k.y + 1, 10, 2.5, 1, '#4a4139');
-      if (swing > 0.96) for (let j = 0; j < 3; j++) {
+      if (k.mode === 'work' && swing > 0.96) for (let j = 0; j < 3; j++) {
         G.circle(c, ax + (j - 1) * 4, k.y - 11 - (j === 1 ? 3 : 0), 1.7, '#f0d98b');
       }
+    }
+    if (k.mode === 'sell') {
+      /* 파는 그림은 앞발을 확실히 내밀고 있어서 여기엔 물건이 붙는다.
+       * 눈금으로 잰 자리가 (60,38)/72다. 선 자세 그림에는 못 붙인다 —
+       * 망치를 쥐여 주려다 세 번 실패하고 배웠다. */
+      const px = k.x + face * (CLERK_PX * (60 / 72 - 0.5));
+      const py = k.y + 4 - CLERK_PX + CLERK_PX * (38 / 72);
+      G.circle(c, px, py - bob, 5.5, '#c9a227');
+      G.round(c, px - 2, py - bob - 6.5, 4, 4, 1, '#8a6a45');
     }
 
     c.save();
     if (face < 0) { c.translate(k.x * 2, 0); c.scale(-1, 1); }
     /* 그림 찾는 순서: 가게 전용 → 공용 너구리 → 이모지.
      * 그래서 대장간 것만 먼저 그려 넣어도 나머지는 안 깨진다. */
-    const kind = k.full ? 'sleep' : 'work';
-    if (!drawArt(c, 'clerks', `${shop.id}-${kind}`, k.x, k.y + 4 - bob, CLERK_PX, CLERK_PX)
-     && !drawArt(c, 'hero', 'raccoon-make', k.x, k.y + 4 - bob, CLERK_PX, CLERK_PX))
+    const pose = k.mode === 'sell' ? 'sell' : k.mode === 'sleep' ? 'sleep' : 'work';
+    if (!drawArt(c, 'clerks', `${shop.id}-${pose}`, k.x, k.y + 4 - bob, CLERK_PX, CLERK_PX)
+     && !drawArt(c, 'hero', pose === 'sell' ? 'raccoon-sell' : 'raccoon-make',
+                 k.x, k.y + 4 - bob, CLERK_PX, CLERK_PX))
       G.text(c, '🦝', k.x, k.y - 9 - bob, { size: CLERK_PX, fill: '#000' });
     c.restore();
 
-    if (k.full) {
+    if (k.mode === 'sleep') {
       // 조는 표시 — 이건 "진열대가 꽉 찼다"는 알림이기도 하다
       const z = (this.t * 0.6) % 1;
       G.text(c, '💤', k.x + face * 11, k.y - 26 - z * 9, { size: 11 + z * 3, fill: '#000' });
     }
-  }
-
-  /** 너구리를 움직인다.
-   *  규칙은 하나 — **손님이 서 있는 가게로 간다.** 없으면 지금 자리에서 만든다.
-   *  그래서 화면을 보고 있으면 너구리가 손님을 따라다니는 것처럼 보인다. */
-  _hero(dt) {
-    const hr = this.hero;
-
-    for (const k of Object.keys(this.busyShop)) {
-      this.busyShop[k] -= dt;
-      if (this.busyShop[k] <= 0) delete this.busyShop[k];
-    }
-
-    // 방금 판 가게 중 제일 가까운 곳
-    let want = -1;
-    let best = Infinity;
-    for (const k of Object.keys(this.busyShop)) {
-      const idx = Number(k);
-      if (!this.sim.shops.includes(SHOPS[idx].id)) continue;
-      const d = Math.abs(heroSpot(idx).y - hr.y);
-      if (d < best) { best = d; want = idx; }
-    }
-
-    if (want >= 0) {
-      hr.at = want;
-      hr.idle = 0;
-    } else {
-      /* 손님이 없으면 한동안 그대로 두드린다. 매번 옮겨 다니면 산만하다.
-       * 오래 비면 열린 가게 중 한 곳으로 옮겨 — 마을을 돌보는 것처럼 보인다. */
-      hr.idle += dt;
-      if (hr.idle > 9) {
-        hr.idle = 0;
-        const open = SHOPS.map((sh, i) => i).filter((i) => this.sim.shops.includes(SHOPS[i].id));
-        if (open.length) hr.at = open[(open.indexOf(hr.at) + 1) % open.length];
-      }
-    }
-
-    const spot = heroSpot(hr.at);
-    const dx = spot.x - hr.x, dy = spot.y - hr.y;
-    const d = Math.hypot(dx, dy);
-    if (d > 2) {
-      const step = Math.min(d, HERO_SPEED * dt);
-      hr.x += dx / d * step;
-      hr.y += dy / d * step;
-      hr.state = 'walk';
-      if (Math.abs(dx) > 1) hr.face = Math.sign(dx);
-    } else {
-      hr.state = this.busyShop[hr.at] > 0 ? 'sell' : 'make';
-      /* 파는 중이면 손님 쪽을 본다. 손님은 길 쪽에 서 있다. */
-      if (hr.state === 'sell') hr.face = -SLOTS[hr.at].side;
-    }
-  }
-
-  _heroDraw(c) {
-    const hr = this.hero;
-    const sell = hr.state === 'sell';
-    const make = hr.state === 'make';
-    /* 만들 땐 위아래로 내려치고, 걸을 땐 총총, 팔 땐 살짝 숙인다.
-     * 세 가지가 눈에 띄게 달라야 "지금 뭘 하는지"가 읽힌다. */
-    const bob = make ? Math.sin(this.t * 1.8) * 1.2          // 서서 숨 쉬는 정도
-              : sell ? Math.sin(this.t * 3) * 1.5
-              : Math.abs(Math.sin(this.t * 10)) * 3.5;         // 걸을 땐 총총
-
-    c.fillStyle = 'rgba(0,0,0,.17)';
-    c.beginPath(); c.ellipse(hr.x, hr.y + 2, 12, 5, 0, 0, 7); c.fill();
-
-    /* 주인공은 이제 만들지 않는다 — 그건 가게마다 붙은 점원 몫이다.
-     * 주인은 돌아다니며 **파는 사람**이다. 둘이 같은 짓을 하면 왜 둘인지
-     * 알 수가 없다.
-     *
-     * (연장을 앞발에 쥐여 주려다 세 번 실패하고 배운 것: 선 자세 그림에는
-     *  도구를 붙일 수 없다. 그래서 점원은 옆에 모루를 두고, 주인은 앞발을
-     *  확실히 내민 '파는 그림'에만 보따리를 붙인다.) */
-    if (sell) {
-      const px = hr.x + hr.face * (HERO_PX * (60 / 72 - 0.5));
-      const py = hr.y + 6 - HERO_PX + HERO_PX * (38 / 72);
-      G.circle(c, px, py - bob, 6, '#c9a227');
-      G.round(c, px - 2, py - bob - 7, 4, 4, 1, '#8a6a45');
-    }
-
-    /* 좌우 뒤집기 — 그림은 오른쪽을 보는 한 장만 그리면 된다.
-     * 방향마다 따로 그리면 장수가 두 배가 된다. */
-    c.save();
-    if (hr.face < 0) { c.translate(hr.x * 2, 0); c.scale(-1, 1); }
-    if (!drawArt(c, 'hero', sell ? 'raccoon-sell' : 'raccoon-make', hr.x, hr.y + 6 - bob, HERO_PX, HERO_PX))
-      G.text(c, '🦝', hr.x, hr.y - 9 - bob, { size: HERO_PX, fill: '#000' });
-    c.restore();
-
-    /* 앞치마를 덧그려 봤다가 뺐다 — 이모지 얼굴 위에 정확히 겹쳐 주둥이를
-     * 가렸다. 주인이라는 건 이미 세 가지가 알린다: 손님보다 크고(34 대 30),
-     * 연장을 들고 있고, 손님과 반대쪽인 가게 안쪽에 선다.
-     * 진짜 그림이 들어오면 앞치마는 그림 안에 그려 넣는다. */
   }
 
   /** 주문 말풍선 — 도착해서 물건을 받기 전까지 머리 위에 뜬다.
