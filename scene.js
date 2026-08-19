@@ -14,7 +14,7 @@
 
 import { G } from './core/engine.js';
 import { Juice, Sfx } from './core/juice.js';
-import { SHOPS, STOCK_CAP, SMALL_SHOPS, THIEF } from './content.js';
+import { SHOPS, STOCK_CAP, SMALL_SHOPS } from './content.js';
 import { fmt } from './sim.js';
 
 /* 보이는 창은 480×800이고, 마을은 그보다 세로로 길다. 손가락으로 밀어 훑는다.
@@ -338,11 +338,11 @@ export class Village {
   camMax() { return Math.max(0, H - this.viewH); }
 
   _tap(wx, wy) {
-    /* 쥐가 제일 급하다. 몇 초 안에 사라지므로 다른 무엇보다 먼저 본다.
-     * 손가락은 뭉툭하고 쥐는 뛰고 있으니 판정을 넉넉히 준다(32). */
-    const th = this._thiefAt();
-    if (th && Math.hypot(wx - th.x, wy - th.y + 6) < 32) {
-      const got = this.sim.catchThief();
+    /* 나쁜 놈이 제일 급하다. 몇 초 안에 사라지므로 무엇보다 먼저 본다.
+     * 손가락은 뭉툭하고 놈들은 뛰거나 날고 있으니 판정을 넉넉히 준다. */
+    const th = this._pestAt();
+    if (th && Math.hypot(wx - th.x, wy - th.y + 6) < th.r) {
+      const got = this.sim.catchPest();
       if (got) {
         Sfx.win(); Juice.shake(7);
         for (let i = 0; i < 6; i++) {
@@ -400,8 +400,10 @@ export class Village {
     }
     for (const p of this.props) if (near(p.y, 60)) layer.push({ z: p.y, d: () => this._prop(c, p) });
     for (const w of this.walkers) if (near(w.y, 40)) layer.push({ z: w.y, d: () => this._walker(c, w) });
-    const th = this._thiefAt();
-    if (th && near(th.y, 40)) layer.push({ z: th.y + 1, d: () => this._thief(c, th) });
+    const th = this._pestAt();
+    /* 까마귀는 하늘에 있으니 무엇에도 안 가린다. 쥐는 발끝 높이로 줄을 선다. */
+    if (th && th.kind === 'crow') layer.push({ z: 1e9, d: () => this._pest(c, th) });
+    else if (th && near(th.y, 40)) layer.push({ z: th.y + 1, d: () => this._pest(c, th) });
     layer.sort((a, b) => a.z - b.z);
     for (const l of layer) l.d();
 
@@ -757,32 +759,53 @@ export class Village {
     }
   }
 
-  /** 쥐 도둑이 지금 어디쯤 있나.
-   *  sim은 '몇 초 남았다'만 들고 있다. 어디서 어디로 뛰는지는 화면 몫이다.
-   *  훔친 가게 앞에서 시작해 가까운 마을 끝으로 달아난다. */
-  _thiefAt() {
-    const th = this.sim.thief;
-    if (!th) return null;
-    const idx = SHOPS.findIndex((sh) => sh.items.some((it) => it.id === th.id));
+  /** 나쁜 놈이 지금 화면 어디쯤 있나.
+   *  sim은 '몇 초 남았다'만 들고 있다. 어디서 어디로 가는지는 화면 몫이다.
+   *  둘은 **다르게** 움직인다 — 쥐는 땅을 뛰고 까마귀는 하늘을 가로지른다. */
+  _pestAt() {
+    const t = this.sim.pest;
+    if (!t) return null;
+    const p = 1 - Math.max(0, t.left) / t.life;      // 0=나타났다 1=사라진다
+
+    if (t.kind === 'crow') {
+      /* 까마귀는 길도 건물도 무시한다. **보이는 화면을 가로질러** 날게 해서
+       * 마을 어디를 보고 있든 항상 눈에 들어오게 만든다. 쥐처럼 가게에
+       * 묶어 두면 다른 데를 보고 있을 때 아예 못 본다. */
+      const dir = t.amount % 2 ? 1 : -1;             // 어느 쪽에서 오는지
+      /* 일정한 속도로 지나가면 시간의 절반을 화면 밖에서 쓴다 — 4초를 줘도
+       * 실제로 누를 수 있는 건 3.4초다. 들어올 땐 빠르게, 가운데선 천천히
+       * 맴돌다, 나갈 때 다시 빠르게. 새가 엽전을 노리는 모양이기도 하다. */
+      const u = p * 2 - 1;
+      const e = 0.5 + 0.5 * (u * 0.3 + u * u * u * 0.7);
+      const x = dir > 0 ? -40 + e * 560 : 520 - e * 560;
+      return {
+        kind: 'crow', face: '🐦‍⬛',
+        x, y: this.cam + this.viewH * 0.3 + Math.sin(p * Math.PI * 2.4) * 46,
+        p, left: t.left, life: t.life, r: 30, flip: dir < 0,
+      };
+    }
+
+    const idx = SHOPS.findIndex((sh) => sh.items.some((it) => it.id === t.itemId));
     const sl = slotOf(idx < 0 ? 0 : idx);
-    const p = 1 - Math.max(0, th.left) / th.life;      // 0=집었다 1=사라진다
     /* 마을 안쪽으로 달아난다. 마을 끝으로 보내면 대장간처럼 가장자리에 붙은
      * 가게에서는 화면 밖으로 반쯤 잘린 채 서 있다 — 누를 수가 없다. */
     const dir = sl.standY > H / 2 ? -1 : 1;
     const ey = sl.standY + dir * 240;
     return {
+      kind: 'rat', face: '🐀',
       x: sl.standX + (roadX(sl.standY) - sl.standX) * Math.min(1, p * 2.2),
       y: sl.standY + (ey - sl.standY) * p,
-      p, left: th.left, life: th.life, qty: th.qty,
+      p, left: t.left, life: t.life, r: 32, flip: false,
     };
   }
 
-  _thief(c, t) {
-    const bob = Math.abs(Math.sin(this.t * 16)) * 4;    // 총총 뛴다
+  _pest(c, t) {
+    const fly = t.kind === 'crow';
+    const bob = fly ? Math.sin(this.t * 11) * 5 : Math.abs(Math.sin(this.t * 16)) * 4;
     /* 남은 시간 고리 — 몇 초 안에 눌러야 하는지가 안 보이면 그냥 지나친다 */
-    const r = 25;
+    const r = fly ? 27 : 25;
     c.save();
-    /* 뒤에 옅은 판을 깔지 않으면 건물 앞에서 쥐가 묻힌다 */
+    /* 뒤에 옅은 판을 깔지 않으면 건물이나 나무 앞에서 묻힌다 */
     G.circle(c, t.x, t.y - 6, r - 3, 'rgba(255,246,232,.55)');
     c.lineWidth = 4;
     c.strokeStyle = 'rgba(163,74,58,.28)';
@@ -793,11 +816,21 @@ export class Village {
     c.stroke();
     c.restore();
 
-    c.fillStyle = 'rgba(0,0,0,.17)';
-    c.beginPath(); c.ellipse(t.x, t.y + 7, 10, 4, 0, 0, 7); c.fill();
-    // 훔친 보따리
-    G.circle(c, t.x + 11, t.y - 10 - bob * 0.4, 7, '#a34a3a');
-    G.text(c, '🐀', t.x, t.y - 7 - bob, { size: 30, fill: '#000' });
+    if (fly) {
+      // 나는 놈은 그림자가 땅에 안 붙는다. 대신 아래로 옅게 깔아 높이를 알린다
+      c.fillStyle = 'rgba(0,0,0,.10)';
+      c.beginPath(); c.ellipse(t.x, t.y + 34, 13, 4, 0, 0, 7); c.fill();
+    } else {
+      c.fillStyle = 'rgba(0,0,0,.17)';
+      c.beginPath(); c.ellipse(t.x, t.y + 7, 10, 4, 0, 0, 7); c.fill();
+      G.circle(c, t.x + 11, t.y - 10 - bob * 0.4, 7, '#a34a3a');   // 훔친 보따리
+    }
+    G.text(c, t.face, t.x, t.y - 7 - bob, { size: 30, fill: '#000' });
+    if (fly) {
+      // 물고 가는 엽전
+      G.circle(c, t.x + 12, t.y + 2 - bob, 5.5, '#c9a227');
+      G.rect(c, t.x + 10, t.y - bob, 4, 4, '#8a6a45');
+    }
   }
 
   _walker(c, w) {

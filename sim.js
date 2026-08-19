@@ -9,11 +9,19 @@
 
 import {
   SHOPS, GUESTS, LEVEL, MILESTONE_EVERY, MILESTONE_MULT, STOCK_CAP, OFFLINE, ASK_LINES,
-  BASKET_SPREAD, MAX_BULK, AUTO_COST, AUTO_PER_TICK, AUTO_SHARE, ASK_EVERY, FAIR, SMALL_SHOPS, RANKS, REGULARS, THIEF,
+  BASKET_SPREAD, MAX_BULK, AUTO_COST, AUTO_PER_TICK, AUTO_SHARE, ASK_EVERY, FAIR, SMALL_SHOPS, RANKS, REGULARS, PESTS,
 } from './content.js';
 
 const ALL_ITEMS = SHOPS.flatMap((s) => s.items.map((i) => ({ ...i, shop: s.id })));
 export const itemById = (id) => ALL_ITEMS.find((i) => i.id === id);
+
+/** 조사 붙이기. '쥐이(가)'처럼 나오면 글이 삭는다.
+ *  한글 마지막 글자에 받침이 있으면 앞쪽, 없으면 뒤쪽을 쓴다. */
+export function josa(word, withJong, without) {
+  const c = word.charCodeAt(word.length - 1) - 0xac00;
+  const jong = c >= 0 && c <= 11171 && c % 28 !== 0;
+  return word + (jong ? withJong : without);
+}
 export const shopById = (id) => SHOPS.find((s) => s.id === id);
 
 export class Sim {
@@ -41,9 +49,11 @@ export class Sim {
 
     this._guestAcc = {};
     this._guestGap = {};
-    this.thief = null;                   // 지금 물건을 집어 든 쥐 {id, qty, left, life}
-    this._thiefAcc = 0;
-    this._thiefGap = null;
+    /* 지금 나와 있는 나쁜 놈. 한 번에 하나만.
+     * { kind, itemId?, qty?, amount?, left, life } */
+    this.pest = null;
+    this._pestAcc = {};
+    this._pestGap = {};
     this._askAcc = 0;
     for (const g of GUESTS) this._guestAcc[g.id] = 0;
 
@@ -84,47 +94,77 @@ export class Sim {
     return Math.max(every * 0.15, every * (1 - w + w * e));
   }
 
-  /* ── 쥐 도둑 ── */
-  _thief(dt, rng) {
-    if (this.thief) {
-      this.thief.left -= dt;
-      if (this.thief.left <= 0) {
-        const th = this.thief;
-        this.thief = null;
-        const it = this.items[th.id];
-        const n = it ? Math.min(it.stock, th.qty) : 0;
-        if (it) it.stock -= n;
-        this._ev(`쥐가 ${this.itemName(th.id)} ${n}개를 훔쳐 달아났다`, 'thief');
-      }
+  /* ── 나쁜 놈들 ── */
+  pestKind() { return this.pest ? PESTS.find((p) => p.id === this.pest.kind) : null; }
+
+  _pests(dt, rng) {
+    if (this.pest) {
+      this.pest.left -= dt;
+      if (this.pest.left <= 0) this._pestEscape();
       return;
     }
-    if (this.revenue < THIEF.at) return;
-    this._thiefAcc += dt;
-    if (this._thiefGap == null) this._thiefGap = this._wildGap(THIEF.every, THIEF.wild, rng);
-    if (this._thiefAcc < this._thiefGap) return;
-    this._thiefAcc = 0;
-    this._thiefGap = this._wildGap(THIEF.every, THIEF.wild, rng);
-    // 재고가 있는 칸 중 하나. 없으면 훔칠 것도 없다
-    const pool = Object.keys(this.items).filter((id) => this.items[id].stock > 0);
-    if (!pool.length) return;
-    const id = pool[Math.floor(rng() * pool.length)];
-    const qty = Math.max(1, Math.min(THIEF.max, Math.floor(this.items[id].stock * THIEF.take)));
-    this.thief = { id, qty, left: THIEF.life, life: THIEF.life };
-    this._ev(`쥐가 ${this.itemName(id)}에 손을 댔다 — 눌러서 잡아라`, 'thief');
+    for (const P of PESTS) {
+      if (this.revenue < P.at) continue;
+      this._pestAcc[P.id] = (this._pestAcc[P.id] || 0) + dt;
+      if (this._pestGap[P.id] == null) this._pestGap[P.id] = this._wildGap(P.every, P.wild, rng);
+      if (this._pestAcc[P.id] < this._pestGap[P.id]) continue;
+      this._pestAcc[P.id] = 0;
+      this._pestGap[P.id] = this._wildGap(P.every, P.wild, rng);
+      if (this.pest) continue;              // 이미 하나 나와 있으면 이번엔 거른다
+      const born = this._pestBorn(P, rng);
+      if (!born) continue;
+      this.pest = born;
+      this._ev(`${josa(P.name, '이', '가')} ${born.what} — 눌러서 잡아라`, 'pest');
+    }
   }
 
-  /** 도둑을 잡았다. 물건은 그대로 남고 벌금을 받는다.
+  _pestBorn(P, rng) {
+    if (P.steal === 'goods') {
+      const pool = Object.keys(this.items).filter((id) => this.items[id].stock > 0);
+      if (!pool.length) return null;        // 훔칠 것이 없으면 오지 않는다
+      const itemId = pool[Math.floor(rng() * pool.length)];
+      const qty = Math.max(1, Math.min(P.max, Math.floor(this.items[itemId].stock * P.take)));
+      return { kind: P.id, itemId, qty, left: P.life, life: P.life,
+               what: `${this.itemName(itemId)}에 손을 댔다` };
+    }
+    /* 엽전은 **초당 수입 몇 초치**로 잡는다. 가진 돈의 비율로 하면
+     * 아껴 모은 사람만 크게 털린다 — 모으는 게 벌이 되면 안 된다. */
+    const amount = Math.floor(this.incomePerSec() * P.take);
+    if (amount < 1) return null;
+    return { kind: P.id, amount, left: P.life, life: P.life,
+             what: `엽전 ${fmt(amount)}냥을 노린다` };
+  }
+
+  _pestEscape() {
+    const t = this.pest;
+    const P = PESTS.find((p) => p.id === t.kind);
+    this.pest = null;
+    if (P.steal === 'goods') {
+      const it = this.items[t.itemId];
+      const n = it ? Math.min(it.stock, t.qty) : 0;
+      if (it) it.stock -= n;
+      this._ev(`${josa(P.name, '이', '가')} ${this.itemName(t.itemId)} ${n}개를 훔쳐 달아났다`, 'pest');
+    } else {
+      const n = Math.min(this.money, t.amount);
+      this.money -= n;
+      this._ev(`${josa(P.name, '이', '가')} ${fmt(n)}냥을 채 갔다`, 'pest');
+    }
+  }
+
+  /** 잡았다. 훔치려던 것은 그대로 남고 벌금을 받는다.
    *  손해를 막는 게 아니라 이득을 줍는 구조여야 한다 — 안 보고 있어도
    *  잃는 건 작고, 보고 있으면 버는 게 크다. */
-  catchThief() {
-    const th = this.thief;
-    if (!th) return null;
-    this.thief = null;
-    const gain = Math.floor(this.price(th.id) * th.qty * THIEF.fine);
+  catchPest() {
+    const t = this.pest;
+    if (!t) return null;
+    const P = PESTS.find((p) => p.id === t.kind);
+    this.pest = null;
+    const worth = P.steal === 'goods' ? this.price(t.itemId) * t.qty : t.amount;
+    const gain = Math.floor(worth * P.fine);
     this.money += gain;
     this.revenue += gain;
-    this._ev(`쥐를 잡았다 — 벌금 ${fmt(gain)}냥`, 'catch');
-    return { id: th.id, qty: th.qty, gain };
+    this._ev(`${josa(P.name, '을', '를')} 잡았다 — 벌금 ${fmt(gain)}냥`, 'catch');
+    return { kind: t.kind, gain };
   }
 
   /* ── 단골 20성 ── */
@@ -357,7 +397,7 @@ export class Sim {
     for (const it of shop.items) {
       if (this.items[it.id]) this.items[it.id].lv = 1;
     }
-    this._ev(`${shop.name}이(가) ${shop.ranks[this.rankOf(shopId)]} 등급으로 올라섰다`, 'milestone');
+    this._ev(`${josa(shop.name, '이', '가')} ${shop.ranks[this.rankOf(shopId)]} 등급으로 올라섰다`, 'milestone');
     return true;
   }
 
@@ -372,7 +412,7 @@ export class Sim {
     const first = s.items[0];
     this.items[first.id] = { lv: 1, stock: 0, prog: 0 };
     if (!this.asked.includes(first.id)) this.asked.push(first.id);
-    this._ev(`${s.name}이(가) 다시 문을 열었다`, 'shop');
+    this._ev(`${josa(s.name, '이', '가')} 다시 문을 열었다`, 'shop');
     return true;
   }
 
@@ -385,7 +425,7 @@ export class Sim {
     if (!this.canBuildSmall(i)) return false;
     this.money -= SMALL_SHOPS[i].cost;
     this.smalls.push(i);
-    this._ev(`${SMALL_SHOPS[i].name}을(를) 세웠다`, 'shop');
+    this._ev(`${josa(SMALL_SHOPS[i].name, '을', '를')} 세웠다`, 'shop');
     return true;
   }
 
@@ -438,8 +478,8 @@ export class Sim {
       }
     }
 
-    // 1.5) 쥐 도둑 — 재고를 집어 들고 도망친다
-    this._thief(dt, rng);
+    // 1.5) 나쁜 놈들 — 물건이나 엽전을 집어 들고 도망친다
+    this._pests(dt, rng);
 
     // 2) 손님 — 재고에서 여러 종류를 무작위로 담아간다
     const sales = [];
@@ -473,7 +513,7 @@ export class Sim {
     if (ng) {
       this.guests.push(ng.id);
       newGuest = ng;
-      this._ev(`${ng.name}이(가) 마을에 왔다`, 'guest');
+      this._ev(`${josa(ng.name, '이', '가')} 마을에 왔다`, 'guest');
     }
 
     return { sales, ask, newGuest, autoLv };
@@ -539,7 +579,7 @@ export class Sim {
     this.visits[g.id] = (this.visits[g.id] || 0) + 1;
     const after = this.regularLv(g.id);
     if (after > before) {
-      this._ev(`${g.name}이(가) ${after + 1}성 ${REGULARS[after].name}이(가) 되었다`, 'guest');
+      this._ev(`${josa(g.name, '이', '가')} ${after + 1}성 ${josa(REGULARS[after].name, '이', '가')} 되었다`, 'guest');
     }
     return { guest: g, lines, gain, n: qty - left, want: qty };
   }

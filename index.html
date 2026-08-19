@@ -38,7 +38,7 @@ header{padding:10px 14px 8px;border-bottom:1.5px solid var(--line);flex-shrink:0
 #guest .say{color:var(--ink2)} #guest .say b{color:var(--ink)}
 #guest.ask{background:#f2e4bd;animation:blink 1.4s ease}
 /* 쥐가 들었다 — 몇 초짜리 사건이라 눈에 안 띄면 그냥 지나친다 */
-#guest.thief{background:#efd0c6;animation:blink .5s ease infinite}
+#guest.pest{background:#efd0c6;animation:blink .5s ease infinite}
 #guest.catch{background:#dbe8cf}
 @keyframes blink{0%{background:#ffe89a}100%{background:#f2e4bd}}
 
@@ -206,7 +206,7 @@ main{flex:1;overflow-y:auto;padding:10px 12px 16px;border-top:1.5px solid var(--
 <div id="float"></div>
 
 <script type="module">
-import { Sim, fmt, itemById, shopById } from './sim.js';
+import { Sim, fmt, josa, itemById, shopById } from './sim.js';
 import { SHOPS, GUESTS, STOCK_CAP, MILESTONE_EVERY, AUTO_COST } from './content.js';
 import { Store } from './core/store.js';
 import { Juice, Sfx } from './core/juice.js';
@@ -414,7 +414,7 @@ function renderAuto() {
 const eng = new Engine($('#cv'), { w: 480, h: 800, bg: '#8b9e74', fit: 'width' });
 const village = new Village(sim, openPanel);
 
-let uiAcc = 0, saveAcc = 0, thiefShown = false;
+let uiAcc = 0, saveAcc = 0, pestShown = false;
 eng.add('village', {
   update(dt) {
     const r = sim.tick(dt);
@@ -439,16 +439,17 @@ eng.add('village', {
     }
     if (r.newGuest) Sfx.reward();
 
-    /* 쥐 — 화면 위쪽 띠로도 알린다. 마을을 밀어 다른 데를 보고 있으면
+    /* 나쁜 놈 — 화면 위쪽 띠로도 알린다. 마을을 밀어 다른 데를 보고 있으면
      * 캔버스의 쥐가 화면 밖일 수 있는데, 그때 알 방법이 없다. */
-    if (sim.thief && !thiefShown) {
-      thiefShown = true;
+    if (sim.pest && !pestShown) {
+      pestShown = true;
       Sfx.deny();
-      $('#guest').className = 'thief';
-      $('#guest').innerHTML = `<span class="face">🐀</span><span class="say">` +
-        `쥐가 <b>${sim.itemName(sim.thief.id)}</b>에 손을 댔다 — <b>눌러서 잡아라!</b></span>`;
-    } else if (!sim.thief && thiefShown) {
-      thiefShown = false;
+      const P = sim.pestKind();
+      $('#guest').className = 'pest';
+      $('#guest').innerHTML = `<span class="face">${P.face}</span><span class="say">` +
+        `${josa(P.name, '이', '가')} <b>${sim.pest.what}</b> — <b>눌러서 잡아라!</b></span>`;
+    } else if (!sim.pest && pestShown) {
+      pestShown = false;
       /* 잡았는지 놓쳤는지는 sim이 남긴 사건으로 갈린다.
        * 잡는 조작은 캔버스에서 일어나므로 여기까지 따로 알려오지 않는다. */
       const e = sim.events[0];
@@ -456,7 +457,7 @@ eng.add('village', {
         Sfx.win();
         $('#guest').className = 'catch';
         $('#guest').innerHTML = `<span class="face">🎉</span><span class="say">${e.msg}</span>`;
-      } else if (e && e.kind === 'thief') {
+      } else if (e && e.kind === 'pest') {
         $('#guest').className = '';
         $('#guest').innerHTML = `<span class="face">💨</span><span class="say">${e.msg}</span>`;
       }

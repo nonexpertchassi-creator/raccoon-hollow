@@ -6,7 +6,7 @@
  * 절반이 죽어 있는데도 "문제 없음"을 보고했다. 그래서 품목별로 따로 센다.
  */
 import { Sim, fmt, itemById } from '../sim.js';
-import { SHOPS, GUESTS, STOCK_CAP, THIEF } from '../content.js';
+import { SHOPS, GUESTS, STOCK_CAP, PESTS } from '../content.js';
 
 const HOURS = Number(process.argv[2] || 4);
 const SEED = Number(process.argv[3] || 1);
@@ -59,22 +59,21 @@ let last = 0, samples = 0, timeline = [];
 const perItem = {};                 // id → { rev, sold, stall, live }
 const seen = (id) => (perItem[id] ??= { rev: 0, sold: 0, stall: 0, live: 0 });
 let lastUnlock = 0, lastUnlockWhat = '시작';
-let ratsSeen = 0, ratsGone = 0, ratLoss = 0, ratWorth = 0;
-let ratHad = false;
+/* 나쁜 놈은 '안 잡았을 때'를 잰다 — 폰을 꺼놓고 자는 쪽이 최악이고,
+ * 그쪽이 안전해야 이 장치를 넣어도 된다. */
+const pestLog = {};
+for (const P of PESTS) pestLog[P.id] = { seen: 0, loss: 0, worth: 0 };
+let pestHad = null;
 
 for (let t = 0; t < HOURS * 3600; t += DT) {
-  /* 쥐는 '안 잡았을 때'를 잰다 — 폰을 꺼놓고 자는 쪽이 최악이고,
-   * 그쪽이 안전해야 이 장치를 넣어도 된다. */
-  const ratBefore = s.thief;
   const r = s.tick(DT, rng);
-  if (s.thief && !ratHad) {
-    ratsSeen++; ratHad = true;
-    ratWorth += s.price(s.thief.id) * s.thief.qty;
+  if (s.pest && !pestHad) {
+    pestHad = s.pest;
+    const L = pestLog[s.pest.kind];
+    const w = s.pest.amount ?? s.price(s.pest.itemId) * s.pest.qty;
+    L.seen++; L.worth += w; L.loss += w;
   }
-  if (!s.thief && ratHad) {
-    ratHad = false; ratsGone++;
-    if (ratBefore) ratLoss += s.price(ratBefore.id) * ratBefore.qty;
-  }
+  if (!s.pest && pestHad) pestHad = null;
 
   /* 매출을 품목별로 쪼개 적는다.
    * 손님 한 명이 여러 품목을 사갈 수 있으므로 lines[]를 먼저 본다. */
@@ -184,12 +183,21 @@ if (w.length) {
     (s.auto ? ' (자동 강화 구입 후로는 0)' : ''));
 }
 
-if (ratsSeen) {
-  console.log('\n■ 쥐 도둑  (한 번도 안 잡았을 때 = 폰을 꺼놓고 잔 경우)');
-  console.log(`   ${ratsSeen}마리 나타남 · 훔쳐간 물건값 ${fmt(Math.floor(ratLoss))}냥` +
-    ` = 누적매출의 ${(ratLoss / s.revenue * 100).toFixed(2)}%`);
-  console.log(`   매번 잡았다면 벌금 ${fmt(Math.floor(ratWorth * THIEF.fine))}냥` +
-    ` = 누적매출의 ${(ratWorth * THIEF.fine / s.revenue * 100).toFixed(1)}%`);
+if (PESTS.some((P) => pestLog[P.id].seen)) {
+  console.log('\n■ 나쁜 놈들');
+  console.log('   놈    나타남     안 잡았을 때 잃는 것   매번 잡았을 때 버는 것');
+  let ls = 0, gs = 0;
+  for (const P of PESTS) {
+    const L = pestLog[P.id];
+    if (!L.seen) continue;
+    const gain = L.worth * P.fine;
+    ls += L.loss; gs += gain;
+    console.log(`   ${P.name.padEnd(5)}${String(L.seen).padStart(5)}마리` +
+      `${(fmt(Math.floor(L.loss)) + '냥').padStart(14)} (${(L.loss / s.revenue * 100).toFixed(2)}%)` +
+      `${(fmt(Math.floor(gain)) + '냥').padStart(14)} (${(gain / s.revenue * 100).toFixed(1)}%)`);
+  }
+  console.log(`   ─ 합계: 잃는 것 누적매출의 ${(ls / s.revenue * 100).toFixed(2)}% ·` +
+    ` 버는 것 ${(gs / s.revenue * 100).toFixed(1)}% (${(gs / ls).toFixed(0)}배)`);
 }
 
 /* ── 콘텐츠 소진 ──
