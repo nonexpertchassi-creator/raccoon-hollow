@@ -443,6 +443,12 @@ export class Village {
     if (this.cam < 0) { this.cam = 0; this.vel = 0; }
   }
 
+  /** 이 가게가 지금 화면 어디에 있나. 들어갈 때 거기서 방이 부풀어 오른다. */
+  shopScreenPos(i) {
+    const s = SLOTS[i];
+    return { x: s.x + s.w / 2, y: s.y + s.h / 2 - this.cam };
+  }
+
   /** 밀 수 있는 최대 거리. 창이 마을보다 크면 0 — 밀 것이 없다. */
   camMax() { return Math.max(0, H - this.viewH); }
 
