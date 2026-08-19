@@ -1106,14 +1106,35 @@ export class Village {
     }
 
     c.save();
-    if (face < 0) { c.translate(k.x * 2, 0); c.scale(-1, 1); }
+    c.translate(k.x, k.y + 4);                       // 발끝을 원점으로
+    if (face < 0) c.scale(-1, 1);
+    /* 뒤뚱뒤뚱 — **그림 한 장으로 만든다.**
+     *
+     * 걷는 그림을 여러 장 그리는 대신 몸통을 좌우로 ±6도 기울인다.
+     * 꼬리만 흔드는 것보다 훨씬 세게 읽힌다 — 뒤뚱거림의 정체가
+     * 사실 '무게중심이 좌우로 넘어가는 것'이라 몸 전체가 기울어야 한다.
+     * 위아래 들썩임과 반박자 어긋나게 두면 두 발로 걷는 것처럼 보인다.
+     *
+     * 걷는 그림(-walk1/-walk2)이 들어오면 아래에서 저절로 두 장을 번갈아
+     * 쓰고, 기울기는 그대로 얹힌다. 두 장이면 충분하다. */
+    if (k.mode === 'walk') c.rotate(Math.sin(this.t * 9) * 0.11);
+
     /* 그림 찾는 순서: 가게 전용 → 공용 너구리 → 이모지.
      * 그래서 대장간 것만 먼저 그려 넣어도 나머지는 안 깨진다. */
-    const pose = k.mode === 'sell' ? 'sell' : k.mode === 'sleep' ? 'sleep' : 'work';
-    if (!drawArt(c, 'clerks', `${shop.id}-${pose}`, k.x, k.y + 4 - bob, CLERK_PX, CLERK_PX)
-     && !drawArt(c, 'hero', pose === 'sell' ? 'raccoon-sell' : 'raccoon-make',
-                 k.x, k.y + 4 - bob, CLERK_PX, CLERK_PX))
-      G.text(c, '🦝', k.x, k.y - 9 - bob, { size: CLERK_PX, fill: '#000' });
+    const step = Math.sin(this.t * 9) > 0 ? 1 : 2;
+    const names = k.mode === 'sell' ? [`${shop.id}-sell`]
+      : k.mode === 'sleep' ? [`${shop.id}-sleep`]
+      : k.mode === 'walk' ? [`${shop.id}-walk${step}`, `${shop.id}-walk1`,
+                             `${shop.id}-idle`, `${shop.id}-work`]
+      : [`${shop.id}-work`];
+    let drawn = false;
+    for (const n of names) {
+      if (drawArt(c, 'clerks', n, 0, -bob, CLERK_PX, CLERK_PX)) { drawn = true; break; }
+    }
+    if (!drawn
+     && !drawArt(c, 'hero', k.mode === 'sell' ? 'raccoon-sell' : 'raccoon-make',
+                 0, -bob, CLERK_PX, CLERK_PX))
+      G.text(c, '🦝', 0, -13 - bob, { size: CLERK_PX, fill: '#000' });
     c.restore();
 
     if (k.mode === 'sleep') {
