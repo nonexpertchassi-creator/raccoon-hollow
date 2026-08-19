@@ -15,7 +15,7 @@ import path from 'path';
 const ROOT = path.resolve(import.meta.dirname, '..');
 const OUT = process.argv[2] || path.join(ROOT, 'nogur.html');
 const ORDER = ['content.js', 'core/store.js', 'core/juice.js', 'core/engine.js',
-               'art.js', 'sim.js', 'scene.js'];
+               'art.js', 'sim.js', 'scene.js', 'interior.js'];
 
 const strip = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8')
   .replace(/^import\s+[^;]*?;\s*$/gms, '')
@@ -38,6 +38,24 @@ const i = html.indexOf('<script type="module">');
 const j = html.indexOf('</script>', i);
 const body = html.slice(i + '<script type="module">'.length, j)
   .replace(/^import\s+[^;]*?;\s*$/gms, '');
+
+/* 같은 이름을 두 파일이 쓰면 묶는 순간 터진다.
+ * 파일로 나눠 쓸 때는 각자 자기 안에서만 사는 이름이지만, 이어 붙이면
+ * 한 덩어리가 되기 때문이다. scene.js와 interior.js가 둘 다 W와 C를
+ * 쓰다가 실제로 터졌다 — 브라우저를 켜야만 보이는 종류의 고장이라
+ * 여기서 미리 잡는다. */
+const seen = new Map();
+for (const p of ORDER) {
+  const src = strip(p);
+  for (const m of src.matchAll(/^(?:const|let|var|function|class)\s+([A-Za-z_$][\w$]*)/gm)) {
+    const name = m[1];
+    if (seen.has(name)) {
+      console.error(`✗ 이름이 겹친다: ${name} — ${seen.get(name)} 와 ${p}`);
+      process.exit(1);
+    }
+    seen.set(name, p);
+  }
+}
 
 const mods = ORDER.map((p) => `/* ===== ${p} ===== */\n${strip(p)}`).join('\n');
 fs.writeFileSync(OUT,

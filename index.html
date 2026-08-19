@@ -212,6 +212,7 @@ import { Store } from './core/store.js';
 import { Juice, Sfx } from './core/juice.js';
 import { Engine } from './core/engine.js';
 import { Village } from './scene.js';
+import { Interior } from './interior.js';
 
 const $ = (s) => document.querySelector(s);
 const SAVE = 'rs:save';
@@ -253,6 +254,16 @@ function openGuests() {
   $('#ptitle').textContent = '손님 도감';
   $('#pbody').innerHTML = guestsHTML();
   $('#panel').hidden = false;
+  Sfx.click();
+}
+
+/** 가게를 눌렀다 — 살아있으면 안으로 들어간다. 폐허면 되살린다. */
+function enterShop(id, isOpen) {
+  if (!isOpen) { openPanel(id, false); return; }
+  const idx = SHOPS.findIndex((s) => s.id === id);
+  if (idx < 0) return;
+  inside.open(idx);
+  where = 'inside';
   Sfx.click();
 }
 
@@ -412,7 +423,12 @@ function renderAuto() {
 
 /* ── 마을 장면 ── */
 const eng = new Engine($('#cv'), { w: 480, h: 800, bg: '#8b9e74', fit: 'width' });
-const village = new Village(sim, openPanel);
+const village = new Village(sim, enterShop);
+/* 화면이 둘이다 — 마을(어디에 무엇이 있나)과 가게 안(무슨 일이 벌어지나).
+ * 가게 하나만 보여주면 같은 물건이 2.5배로 커진다. 폰에서 작다는 문제를
+ * 글자 크기가 아니라 **화면 구성**으로 푸는 것이다. */
+const inside = new Interior(sim, () => { where = 'village'; }, (id) => openPanel(id, true));
+let where = 'village';
 
 let uiAcc = 0, saveAcc = 0, pestShown = false;
 eng.add('village', {
@@ -467,7 +483,12 @@ eng.add('village', {
       }
     }
 
-    village.update(dt, eng.pointer, eng.viewH);
+    if (where === 'inside') {
+      for (const s of r.sales) inside.onSale(s);
+      inside.update(dt, eng.pointer, eng.viewH);
+    } else {
+      village.update(dt, eng.pointer, eng.viewH);
+    }
 
     // 화면 글자 갱신은 초당 8회면 충분하다. 매 프레임 DOM을 만지면 폰이 뜨거워진다.
     uiAcc += dt;
@@ -476,7 +497,7 @@ eng.add('village', {
     saveAcc += dt;
     if (saveAcc > 5) { saveAcc = 0; Store.set(SAVE, { state: sim.save(), at: Date.now() }); }
   },
-  draw(c) { village.draw(c); },
+  draw(c) { if (where === 'inside') inside.draw(c, eng.viewH); else village.draw(c); },
 });
 
 let lastMoney = -1, lastAuto = null, lastGuests = -1, guestTick = 0;
