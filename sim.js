@@ -254,6 +254,21 @@ export class Sim {
     return n;
   }
 
+  /** 이 가게에 매대가 몇 칸 있나 — 마당 크기가 정한다.
+   *  무쇠급 3×3 마당 = 4칸, 참쇠급 4×4 = 6칸, 강철급 5×5 = 8칸.
+   *  "품목을 늘리려면 대장간2를 지어야 하나"에 대한 답이 이것이다 —
+   *  둘째 대장간이 아니라 **같은 마당이 넓어진다**. */
+  stallCap(shopId) {
+    return 4 + 2 * Math.min(2, this.rankOf(shopId));
+  }
+
+  /** 매대가 아직 없는 품목인가 (승급해야 자리가 생긴다) */
+  _noStall(item) {
+    const shop = SHOPS.find((s) => s.id === item.shop);
+    const idx = shop.items.findIndex((i) => i.id === item.id);
+    return idx >= this.stallCap(item.shop);
+  }
+
   /* ── 가게 등급 ── */
   rankOf(shopId) { return this.rank[shopId] || 0; }
   rankOfItem(id) { return this.rankOf(itemById(id).shop); }
@@ -340,10 +355,11 @@ export class Sim {
 
   levelUp(id) { return this.levelUpMany(id, 1) === 1; }
 
-  /** 손님이 물어본 적 있는 품목만 열 수 있다 */
+  /** 손님이 물어본 적 있는 품목만, 매대가 있어야 열 수 있다 */
   canOpenItem(id) {
     return !this.isOpen(id) && this.asked.includes(id) &&
-           this.shops.includes(itemById(id).shop) && this.money >= itemById(id).cost;
+           this.shops.includes(itemById(id).shop) && this.money >= itemById(id).cost &&
+           !this._noStall(itemById(id));
   }
 
   openItem(id) {
@@ -414,8 +430,12 @@ export class Sim {
     const next = RANKS[r + 1];
     if (!next) return null;                       // 이미 최고 등급
 
-    const allOpen = shop.items.every((it) => this.isOpen(it.id));
-    const allMax = allOpen && shop.items.every((it) => this.atMax(it.id));
+    /* '모든 칸'은 **지금 있는 매대**까지다. 전 품목으로 걸면 5번째 칸이
+     * 승급해야 생기는데 승급 조건이 5번째 칸이라 서로를 영원히 기다린다 —
+     * 실제로 그렇게 잠겨서 10시간 내내 무쇠급에 머물렀다. */
+    const have = shop.items.slice(0, this.stallCap(shopId));
+    const allOpen = have.every((it) => this.isOpen(it.id));
+    const allMax = allOpen && have.every((it) => this.atMax(it.id));
     const i = SHOPS.findIndex((x) => x.id === shopId);
     const after = SHOPS[i + 1];
     const ips = this.incomePerSec();
@@ -424,7 +444,7 @@ export class Sim {
       rank: r + 1,
       cost,
       list: [
-        { ok: allMax, text: `${shop.name}의 모든 칸을 ${next === RANKS[1] ? RANKS[0].maxLv : RANKS[r].maxLv}레벨까지` },
+        { ok: allMax, text: `지금 있는 매대 ${have.length}칸을 전부 ${RANKS[r].maxLv}레벨까지` },
         { ok: !after || this.shops.includes(after.id), text: after ? `${after.name} 열기` : '—' },
         { ok: this.regularSum() >= next.guests,
           text: `손님 단골 등급 합계 ${next.guests} (지금 ${this.regularSum()})` },
@@ -649,7 +669,8 @@ export class Sim {
     const pending = this.asked.some((id) => !this.isOpen(id));
     if (pending) return null;
     const cands = ALL_ITEMS.filter((i) =>
-      !this.isOpen(i.id) && !this.asked.includes(i.id) && this.shops.includes(i.shop));
+      !this.isOpen(i.id) && !this.asked.includes(i.id) && this.shops.includes(i.shop)
+      && !this._noStall(i));   // 매대가 없는 물건을 손님이 조르면 살 수도 없는데 약만 오른다
     if (!cands.length) return null;
     const item = cands[0];                       // 가게 안에서는 순서대로
     const gs = this.guests;

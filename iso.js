@@ -20,14 +20,16 @@ import { drawArt } from './art.js';
 
 const VW = 480;                       // 화면 가상 폭 (엔진이 가로를 여기에 맞춘다)
 const TW = 96, TH = 48;               // 바닥 한 칸
-const GW = 10, GH = 14;                // 마을 크기(칸)
+const GW = 13, GH = 18;                // 마을 크기(칸)
 
 /** 칸 좌표 → 세계 좌표. 정수는 칸의 모서리다. */
 const iso = (tx, ty) => ({ x: (tx - ty) * TW / 2, y: (tx + ty) * TH / 2 });
 
 /* 길 — 세로 큰길(3~4열) 하나와 가로 골목(4·10행) 둘.
  * 손님은 큰길 양끝에서 들어온다. */
-const isRoad = (tx, ty) => (tx === 3 || tx === 4) || ty === 4 || ty === 10;
+/* 길이 마을을 네 마당으로 가른다. 가게 마당이 5×5까지 자라도
+ * 길을 밟지 않도록 4분면 하나에 가게 하나씩이다. */
+const isRoad = (tx, ty) => (tx === 5 || tx === 6) || ty === 5 || ty === 12;
 
 /* 가게는 3×3칸짜리 **마당**이다. 지붕 덮인 상자였던 것을 열어젖혔다 —
  * 안이 다 보이니 들어갈 필요가 없고, '가게 안' 화면 자체가 사라진다.
@@ -43,29 +45,32 @@ const isRoad = (tx, ty) => (tx === 3 || tx === 4) || ty === 4 || ty === 10;
  * 같은 세로줄에 포개진다. 세 세로줄에 번갈아 놓고 같은 줄에선 세로로
  * 260px 이상 벌린다. */
 const SHOP_T = [
-  [6, 11],   // 대장간 — 시작 화면(아래)
-  [6, 6],    // 필방
-  [7, 2],    // 지물포
-  [0, 6],    // 옹기점
-  [0, 1],    // 약재상
+  [7, 13],   // 대장간 — 시작 화면(아래 오른 분면)
+  [7, 7],    // 필방 — 가운데 오른 분면
+  [8, 0],    // 지물포 — 위 오른 분면
+  [0, 7],    // 옹기점 — 가운데 왼 분면
+  [0, 0],    // 약재상 — 위 왼 분면
 ];
-/** 마당 안 배치 — 매대·작업대·가마·계산대가 각각 한 칸.
+
+/** 마당 안 배치 — 등급이 오르면 마당이 커지고 매대가 늘어난다.
  *
- * 매대 넷을 가운데 2×2로 뭉쳐 봤더니 화면에서 마름모로 포개져
- * 앞 매대의 계기가 뒤 매대를 덮었다. 지금은 **뒤 두 담벼락을 따라**
- * 두 개씩 놓는다 — 위 담에 둘, 왼 담에 둘. 가게가 'ㄱ'자 진열이 된다. */
-const PLOT = {
-  kiln: [0, 0], anvil: [1, 1], counter: [2, 2],
-  stalls: [[1, 0], [2, 0], [0, 1], [0, 2]],
-};
-/* 곁가게는 1×1칸. SMALL_SHOPS와 같은 순서(점포·주막·포장마차·점포). */
-/* 곁가게 자리 — 가게의 좌판·현판과 안 겹치는 자리에.
- * 점포를 (8,13)에 뒀더니 대장간 좌판 아랫줄을 정통으로 덮었다.
- * 대장간이 세로줄 x=−240을 위아래로 다 쓰므로 그 줄은 통째로 피한다. */
-/* 점포를 (9,12)에 뒀더니 터치 판정이 대장간 도끼 매대(8,12)와 겹쳐
- * 매대를 눌러도 점포가 먹었다. 판정은 그리는 것보다 넓다는 걸 잊지 말 것. */
-const SMALL_T = [[9, 10], [9, 5], [5, 1], [0, 11]];
-const DOG_T = [2, 12];
+ *   무쇠급 3×3 → 매대 4칸    참쇠급 4×4 → 6칸    강철급 5×5 → 8칸
+ *
+ * "품목을 늘리려면 대장간2를 지어야 하나"의 답: 둘째 대장간이 아니라
+ * **같은 마당이 넓어진다.** 매대는 뒤 두 담벼락을 따라 ㄱ자로 는다.
+ * (가운데에 뭉치면 화면에서 마름모로 포개져 앞 계기가 뒤 매대를 덮는다.)
+ */
+function plotDim(sim, i) { return 3 + Math.min(2, sim.rankOf(SHOPS[i].id)); }
+function stallSpots(n) {
+  const out = [];
+  for (let x = 1; x < n; x++) out.push([x, 0]);      // 위 담벼락
+  for (let y = 1; y < n; y++) out.push([0, y]);      // 왼 담벼락
+  return out;
+}
+const anvilAt = (n) => Math.floor((n - 1) / 2);
+
+const SMALL_T = [[12, 14], [12, 8], [2, 6], [0, 13]];
+const DOG_T = [3, 14];
 
 const BUY_TIME = 2.3;                 // 손님이 가게 앞에 서 있는 시간
 const HAND_OVER = 1.1;                // 이 시점에 물건이 건네진다
@@ -89,19 +94,6 @@ const shade = (hex, d) => {
 /* 손님이 지고 온 짐 — qty를 눈에 보이게 하는 표시 */
 const carryOf = (qty) => qty <= 5 ? 'hand' : qty <= 9 ? 'bojjim' : qty <= 14 ? 'jige' : 'cart';
 
-/** 가게 i의 요지(세계 좌표). S는 마당 마름모의 아래 꼭짓점이다. */
-function shopFoot(i) {
-  const [tx, ty] = SHOP_T[i];
-  const S = iso(tx + 3, ty + 3);
-  const cc = iso(tx + PLOT.counter[0] + 0.5, ty + PLOT.counter[1] + 0.5);  // 계산대 가운데
-  return {
-    S,
-    stand: { x: cc.x + 44, y: cc.y + 22 },   // 손님 — 계산대 앞
-    work: iso(tx + PLOT.anvil[0] + 0.5, ty + PLOT.anvil[1] + 0.5),         // 작업대 칸
-    serve: { x: cc.x - 34, y: cc.y + 12 },   // 점장 — 계산대 뒤
-  };
-}
-
 export class Village {
   constructor(sim, onShopTap) {
     this.sim = sim;
@@ -116,11 +108,12 @@ export class Village {
     this.flash = {};
     this.bubble = null;
     this.busyShop = {};                    // 가게별 '방금 팔렸다' 여운(점장이 쫓는다)
-    this.mgr = SHOPS.map((_, i) => ({ ...shopFoot(i).work, at: 'work', face: 1 }));
+    this.fetch = {};                       // 가게별 '집어올 물건' — 주문 받고 내오는 연출
+    this.mgr = SHOPS.map((_, i) => ({ ...this._foot(i).work, at: 'work', face: 1 }));
 
     /* 카메라 — 이제 2차원이다. 가로로도 민다. */
     this.viewW = VW; this.viewH = 800;
-    const s0 = shopFoot(0).S;
+    const s0 = this._foot(0).S;
     this.cam = { x: s0.x - VW / 2, y: s0.y - 800 * 0.62 };
     this.vel = { x: 0, y: 0 };
     this.drag = null;
@@ -128,12 +121,28 @@ export class Village {
     this.trees = this._trees();
   }
 
+  /** 가게 i의 요지(세계 좌표). 마당 크기는 등급이 정하므로 sim을 읽는다. */
+  _foot(i) {
+    const [tx, ty] = SHOP_T[i];
+    const n = plotDim(this.sim, i);
+    const S = iso(tx + n, ty + n);
+    const a = anvilAt(n);
+    const cc = iso(tx + n - 0.5, ty + n - 0.5);          // 계산대 가운데
+    return {
+      n, S,
+      stand: { x: cc.x + 44, y: cc.y + 22 },             // 손님 — 계산대 앞
+      work: iso(tx + a + 0.5, ty + a + 0.5),             // 작업대 칸
+      serve: { x: cc.x - 34, y: cc.y + 12 },             // 점장 — 계산대 뒤
+    };
+  }
+
   /* 나무 — 빈 풀칸에 심는다. 매 프레임 난수를 쓰면 떨리므로 한 번만. */
   _trees() {
     let s = 20250819;
     const rng = () => (s = (s * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
     const used = new Set();
-    for (const [tx, ty] of SHOP_T) for (let a = 0; a < 3; a++) for (let b = 0; b < 3; b++) used.add(`${tx + a},${ty + b}`);
+    // 마당은 최대 5×5까지 자라니 나무는 처음부터 그 밖에만 심는다
+    for (const [tx, ty] of SHOP_T) for (let a = 0; a < 5; a++) for (let b = 0; b < 5; b++) used.add(`${tx + a},${ty + b}`);
     for (const [tx, ty] of SMALL_T) used.add(`${tx},${ty}`);
     used.add(`${DOG_T[0]},${DOG_T[1]}`);
     const out = [];
@@ -166,12 +175,12 @@ export class Village {
 
     /* 큰길 양끝 중 첫 가게에 가까운 쪽에서 들어와, 가게들을 훑고
      * 반대쪽으로 나간다. */
-    const gate = (top) => iso(4, top ? -1.6 : GH + 1.6);
-    const avgY = stops.reduce((a, x) => a + shopFoot(x.idx).S.y, 0) / stops.length;
+    const gate = (top) => iso(6, top ? -1.6 : GH + 1.6);
+    const avgY = stops.reduce((a, x) => a + this._foot(x.idx).S.y, 0) / stops.length;
     const fromTop = Math.abs(gate(true).y - avgY) < Math.abs(gate(false).y - avgY);
     stops.sort((a, b) => fromTop
-      ? shopFoot(a.idx).S.y - shopFoot(b.idx).S.y
-      : shopFoot(b.idx).S.y - shopFoot(a.idx).S.y);
+      ? this._foot(a.idx).S.y - this._foot(b.idx).S.y
+      : this._foot(b.idx).S.y - this._foot(a.idx).S.y);
     const g0 = gate(fromTop);
     this.walkers.push({
       id: sale.guest.id, face: sale.guest.face,
@@ -210,7 +219,7 @@ export class Village {
         /* 직선으로 걷는다. 세로 두루마리에선 큰길을 따라가다 꺾었지만,
          * 격자에선 그 규칙이 마을 반대편까지 도는 우회를 만들었다.
          * 아이소메트릭에서 직선은 어차피 비스듬한 길로 보인다. */
-        const f = shopFoot(stop.idx);
+        const f = this._foot(stop.idx);
         const tgt = { x: f.stand.x + w.lane * 0.4, y: f.stand.y };
         const dx = tgt.x - w.x, dy = tgt.y - w.y;
         const d = Math.hypot(dx, dy);
@@ -221,6 +230,9 @@ export class Village {
         if (d < 4) {
           w.state = 'buy'; w.wait = BUY_TIME; w.paid = false;
           this.busyShop[stop.idx] = BUY_TIME + 1.2;
+          /* 점장이 이 매대에 들러 물건을 집어 온다 — '주문 받고 내온다'가
+           * 눈에 보이는 지점. 경제는 그대로다(재고에서 파는 것). */
+          this.fetch[stop.idx] = stop.sold[0].id;
         }
       } else if (w.state === 'buy') {
         w.wait -= dt;
@@ -256,12 +268,27 @@ export class Village {
     }
     this.walkers = this.walkers.filter((w) => !w.gone);
 
-    // 점장 — 방금 판 가게에선 나가서 건네고, 아니면 작업대로
+    // 점장 — 주문이 오면 매대에서 집어서 계산대로, 아니면 작업대로
     for (let i = 0; i < SHOPS.length; i++) {
       const m = this.mgr[i];
-      const f = shopFoot(i);
+      const f = this._foot(i);
       const serving = (this.busyShop[i] || 0) > 0;
-      const t = serving ? f.serve : f.work;
+      if (!serving) delete this.fetch[i];
+      let t = serving ? f.serve : f.work;
+      /* 집어올 물건이 있으면 그 매대부터 들른다 */
+      const fid = serving ? this.fetch[i] : null;
+      if (fid && this.sim.isOpen(fid)) {
+        const shop = SHOPS[i];
+        const k = shop.items.findIndex((x) => x.id === fid);
+        const spots = stallSpots(plotDim(this.sim, i));
+        if (k >= 0 && k < spots.length) {
+          const [lx, ly] = spots[k];
+          const sp = iso(SHOP_T[i][0] + lx + 0.5, SHOP_T[i][1] + ly + 0.5);
+          const near = Math.hypot(sp.x + 26 - m.x, sp.y + 14 - m.y) < 5;
+          if (near) delete this.fetch[i];            // 집었다 — 이제 계산대로
+          else t = { x: sp.x + 26, y: sp.y + 14 };
+        }
+      }
       const dx = t.x - m.x, dy = t.y - m.y, d = Math.hypot(dx, dy);
       if (d > 1.5) {
         const step = Math.min(d, CLERK_SPEED * dt);
@@ -316,7 +343,7 @@ export class Village {
   _bounds() {
     return {
       x0: iso(0, GH).x - 40, x1: iso(GW, 0).x + 40,
-      y0: iso(0, 0).y - 60, y1: iso(GW, GH).y + 90,
+      y0: iso(0, 0).y - 150, y1: iso(GW, GH).y + 90,
     };
   }
 
@@ -324,7 +351,7 @@ export class Village {
 
   /** 이 가게가 지금 화면 어디에 있나 — 들어갈 때 확대의 중심 */
   shopScreenPos(i) {
-    const S = shopFoot(i).S;
+    const S = this._foot(i).S;
     return { x: S.x - this.cam.x, y: S.y - 60 - this.cam.y };
   }
 
@@ -383,13 +410,15 @@ export class Village {
         /* 이웃 칸은 화면에서 48px밖에 안 떨어진다. '먼저 맞은 것'을 고르면
          * 뒤 매대가 앞 매대의 몫을 삼킨다 — **제일 가까운 매대**를 고른다. */
         let best = null;
-        const slots = shop.items.slice(0, PLOT.stalls.length);
-        for (let k = 0; k < slots.length; k++) {
-          const [lx, ly] = PLOT.stalls[k];
+        const n = plotDim(this.sim, i);
+        const spots = stallSpots(n);
+        const cap = Math.min(this.sim.stallCap(shop.id), shop.items.length);
+        for (let k = 0; k < cap; k++) {
+          const [lx, ly] = spots[k];
           const p = iso(tx + lx + 0.5, ty + ly + 0.5);
           if (Math.abs(wx - p.x) > 52 || wy < p.y - 64 || wy > p.y + 28) continue;
           const d = Math.hypot(wx - p.x, (wy - (p.y - 18)) * 1.4);
-          if (!best || d < best.d) best = { it: slots[k], d };
+          if (!best || d < best.d) best = { it: shop.items[k], d };
         }
         if (best) {
           const it = best.it;
@@ -407,8 +436,9 @@ export class Village {
         }
       }
       // 마당 나머지(현판 포함) — 가게 창을 연다 (승급·자세한 숫자)
-      const M = iso(tx + 1.5, ty + 1.5);
-      const inPlot = Math.abs(wx - M.x) / 152 + Math.abs(wy - M.y) / 78 <= 1;
+      const n2 = open ? plotDim(this.sim, i) : 3;
+      const M = iso(tx + n2 / 2, ty + n2 / 2);
+      const inPlot = Math.abs(wx - M.x) / (n2 * 50 + 4) + Math.abs(wy - M.y) / (n2 * 25 + 4) <= 1;
       const N = iso(tx, ty);
       const onSign = Math.abs(wx - N.x) < 90 && wy > N.y - 72 && wy < N.y - 40;
       if (inPlot || onSign) {
@@ -438,8 +468,28 @@ export class Village {
     // 깊이 순서대로 — 아래 꼭짓점 y가 큰 것이 앞이다
     const layer = [];
     for (let i = 0; i < SHOPS.length; i++) {
-      const S = shopFoot(i).S;
-      if (vis(S, TW * 3)) layer.push({ z: S.y, d: () => this._shop(c, i) });
+      const [tx, ty] = SHOP_T[i];
+      const n = plotDim(this.sim, i);
+      const S = iso(tx + n, ty + n);
+      if (!vis(S, TW * 3)) continue;
+      if (!this.sim.shops.includes(SHOPS[i].id)) {
+        layer.push({ z: S.y, d: () => this._ruin(c, i) });
+        continue;
+      }
+      /* 마당을 한 덩어리로 그리면 마당의 z(아래 꼭짓점)가 마당 **안에 서 있는**
+       * 손님·점장보다 커서 가구가 동물을 덮었다. 바닥은 맨 뒤로 보내고,
+       * 가구 하나하나를 자기 발끝 z로 따로 세운다 — 그래야 손님이 계산대
+       * 뒤에 서면 가려지고 앞에 서면 가리는, 당연한 일이 당연하게 된다. */
+      layer.push({ z: iso(tx, ty).y + 2, d: () => this._plotBase(c, i, n) });
+      layer.push({ z: iso(tx + 1, ty + 1).y, d: () => this._kiln(c, i) });
+      const cap = Math.min(this.sim.stallCap(SHOPS[i].id), SHOPS[i].items.length);
+      const spots = stallSpots(n);
+      for (let k = 0; k < cap; k++) {
+        const [lx, ly] = spots[k];
+        const kk = k;
+        layer.push({ z: iso(tx + lx + 1, ty + ly + 1).y, d: () => this._stall(c, i, kk, spots[kk]) });
+      }
+      layer.push({ z: S.y, d: () => this._counter(c, i, n) });
     }
     for (let i = 0; i < SMALL_T.length; i++) {
       const p = iso(SMALL_T[i][0] + 1, SMALL_T[i][1] + 1);
@@ -519,43 +569,42 @@ export class Village {
     return { N, E, S, W: W2 };
   }
 
-  _shop(c, i) {
+  _ruin(c, i) {
     const shop = SHOPS[i];
     const [tx, ty] = SHOP_T[i];
-    const open = this.sim.shops.includes(shop.id);
     const S = iso(tx + 3, ty + 3);
     const N = iso(tx, ty), E = iso(tx + 3, ty), W2 = iso(tx, ty + 3);
-
-    if (!open) {
-      // 폐허 — 점선 마당과 부러진 기둥
-      c.save();
-      c.setLineDash([8, 7]); c.lineWidth = 2; c.strokeStyle = 'rgba(50,44,30,.45)';
-      c.beginPath(); c.moveTo(N.x, N.y); c.lineTo(E.x, E.y); c.lineTo(S.x, S.y); c.lineTo(W2.x, W2.y);
-      c.closePath(); c.stroke(); c.restore();
-      const M = iso(tx + 1.5, ty + 1.5);
-      for (let k = 0; k < 3; k++) {
-        G.round(c, M.x - 34 + k * 28, M.y - 14 + (k % 2) * 6, 8, 22 - k * 5, 3, '#6a6a55');
-      }
-      const next = this.sim.nextShop();
-      const isNext = next && next.id === shop.id;
-      G.text(c, isNext ? shop.name : '무너진 집', M.x, M.y - 34,
-        { size: 14, fill: isNext ? '#4a4232' : C.ruin, weight: 800 });
-      if (isNext) {
-        const can = this.sim.money >= shop.cost;
-        G.round(c, M.x - 50, M.y + 4, 100, 25, 9, can ? C.jade : '#77775f');
-        G.text(c, `${fmt(shop.cost)}냥`, M.x, M.y + 16.5, { size: 12.5, fill: '#fff', weight: 800 });
-      }
-      return;
+    c.save();
+    c.setLineDash([8, 7]); c.lineWidth = 2; c.strokeStyle = 'rgba(50,44,30,.45)';
+    c.beginPath(); c.moveTo(N.x, N.y); c.lineTo(E.x, E.y); c.lineTo(S.x, S.y); c.lineTo(W2.x, W2.y);
+    c.closePath(); c.stroke(); c.restore();
+    const M = iso(tx + 1.5, ty + 1.5);
+    for (let k = 0; k < 3; k++) {
+      G.round(c, M.x - 34 + k * 28, M.y - 14 + (k % 2) * 6, 8, 22 - k * 5, 3, '#6a6a55');
     }
+    const next = this.sim.nextShop();
+    const isNext = next && next.id === shop.id;
+    G.text(c, isNext ? shop.name : '무너진 집', M.x, M.y - 34,
+      { size: 14, fill: isNext ? '#4a4232' : C.ruin, weight: 800 });
+    if (isNext) {
+      const can = this.sim.money >= shop.cost;
+      G.round(c, M.x - 50, M.y + 4, 100, 25, 9, can ? C.jade : '#77775f');
+      G.text(c, `${fmt(shop.cost)}냥`, M.x, M.y + 16.5, { size: 12.5, fill: '#fff', weight: 800 });
+    }
+  }
 
-    /* 마당 바닥 — 흙을 다진 색. 가게마다 살짝 물이 든다 */
+  /** 마당 바닥·담·현판·표 — 항상 맨 뒤에 깔린다 */
+  _plotBase(c, i, n) {
+    const shop = SHOPS[i];
+    const [tx, ty] = SHOP_T[i];
+    const N = iso(tx, ty), E = iso(tx + n, ty), S = iso(tx + n, ty + n), W2 = iso(tx, ty + n);
+
     c.beginPath();
     c.moveTo(N.x, N.y); c.lineTo(E.x, E.y); c.lineTo(S.x, S.y); c.lineTo(W2.x, W2.y);
     c.closePath();
     c.fillStyle = '#d3c5a4'; c.fill();
     c.strokeStyle = shade(shop.color, 40); c.lineWidth = 2; c.stroke();
 
-    /* 뒤 두 변의 낮은 담 — 마당의 '가게 쪽'이 어디인지 알린다 */
     for (const [A, B] of [[W2, N], [N, E]]) {
       c.beginPath();
       c.moveTo(A.x, A.y); c.lineTo(B.x, B.y);
@@ -565,7 +614,7 @@ export class Village {
       c.strokeStyle = shade(shop.color, 26); c.lineWidth = 3; c.stroke();
     }
 
-    // 현판 — 뒤 꼭짓점의 기둥 위. 등급은 여기에만 적는다
+    // 현판 — 등급은 여기에만 적는다
     const rk = this.sim.rankOf(shop.id);
     const sTxt = rk > 0 ? `${shop.sign} ${shop.name} · ${shop.ranks[rk]}` : `${shop.sign} ${shop.name}`;
     const sw = 30 + sTxt.length * 12.5;
@@ -573,87 +622,11 @@ export class Village {
     G.round(c, N.x - sw / 2, N.y - 66, sw, 26, 8, shop.color);
     G.text(c, sTxt, N.x, N.y - 53, { size: 14, fill: '#fff8ec', weight: 800 });
 
-    /* 가마 — 가게마다 다른 분위기 소품. 불이 살아 있으면 가게도 살아 있다 */
-    {
-      const p = iso(tx + PLOT.kiln[0] + 0.5, ty + PLOT.kiln[1] + 0.5);
-      this._box(c, tx + PLOT.kiln[0] + 0.22, ty + PLOT.kiln[1] + 0.22, 0.56, 0.56, 26,
-        shade(shop.color, 24), shade(shop.color, -16));
-      const fl2 = 0.6 + Math.abs(Math.sin(this.t * 3 + i)) * 0.4;
-      G.circle(c, p.x, p.y - 30, 5 * fl2, '#f0a24b');
-      G.circle(c, p.x, p.y - 36, 3 * fl2, '#f6d27a');
-    }
-
-    /* 작업대 — 점장이 만드는 자리. 모루는 _clerkDraw가 점장 옆에 그린다 */
-
-    /* 매대 — 품목마다 한 칸. "책상+학생이 한 칸"과 같은 문법이다:
-     * 칸 하나에 좌대(가구) + 물건 + 재고·진행 계기가 같이 산다. */
-    const slots = shop.items.slice(0, PLOT.stalls.length)
-      .map((it, k) => {
-        const [lx, ly] = PLOT.stalls[k];
-        return { it, lx, ly, p: iso(tx + lx + 0.5, ty + ly + 0.5) };
-      })
-      .sort((a, b) => a.p.y - b.p.y);          // 뒤(위)부터 그려야 앞이 덮는다
-    for (const { it, lx, ly, p } of slots) {
-
-      if (!this.sim.isOpen(it.id)) {
-        // 잠긴 매대 — 빈 좌대만. 손님이 물어봐야 열 수 있다
-        c.save();
-        c.setLineDash([5, 5]); c.strokeStyle = 'rgba(60,52,36,.45)'; c.lineWidth = 1.6;
-        const n2 = iso(tx + lx, ty + ly), e2 = iso(tx + lx + 1, ty + ly),
-              s2 = iso(tx + lx + 1, ty + ly + 1), w3 = iso(tx + lx, ty + ly + 1);
-        c.beginPath(); c.moveTo(n2.x, n2.y); c.lineTo(e2.x, e2.y); c.lineTo(s2.x, s2.y); c.lineTo(w3.x, w3.y);
-        c.closePath(); c.stroke(); c.restore();
-        const asked = this.sim.asked.includes(it.id);
-        if (asked) {
-          const can = this.sim.money >= itemById(it.id).cost;
-          G.text(c, itemById(it.id).name, p.x, p.y - 26, { size: 12.5, fill: C.ink2, weight: 800 });
-          G.round(c, p.x - 36, p.y - 16, 72, 21, 7, can ? C.jade : 'rgba(60,52,36,.32)');
-          G.text(c, `${fmt(itemById(it.id).cost)}냥`, p.x, p.y - 5.5, { size: 11, fill: '#fff', weight: 800 });
-        } else {
-          G.text(c, '? ? ?', p.x, p.y - 8, { size: 12, fill: 'rgba(60,52,36,.5)', weight: 800 });
-        }
-        continue;
-      }
-
-      const st = this.sim.items[it.id];
-      const fl = this.flash[it.id] || 0;
-      const shown = Math.min(STOCK_CAP, st.stock + (this.pending[it.id] || 0));
-      const capped = shown >= STOCK_CAP;
-
-      // 좌대
-      this._box(c, tx + lx + 0.14, ty + ly + 0.14, 0.72, 0.72, 14,
-        fl > 0 ? '#f2e0ae' : C.paper, C.wood);
-      // 물건 — 그림이 오면 좌대 위에 선다
-      drawArt(c, 'items', it.id, p.x - 16, p.y - 14, 26, 42);
-
-      // 재고·진행 계기 — 칸 위에 뜬다. 마을에서 제일 많이 읽는 숫자다
-      const ry = p.y - 46, rr = 15;
-      const pr = capped ? 1 : Math.max(0, Math.min(1, st.prog / this.sim.craftTime(it.id)));
-      G.circle(c, p.x + 12, ry, rr - 3, 'rgba(252,246,232,.95)');
-      c.save();
-      c.lineWidth = 3.5; c.lineCap = 'round';
-      c.strokeStyle = 'rgba(43,36,27,.30)';
-      c.beginPath(); c.arc(p.x + 12, ry, rr, 0, Math.PI * 2); c.stroke();
-      if (pr > 0.01) {
-        c.strokeStyle = capped ? '#ff8a63' : '#e8b93f';
-        c.beginPath(); c.arc(p.x + 12, ry, rr, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * pr); c.stroke();
-      }
-      c.restore();
-      G.text(c, String(shown), p.x + 12, ry, { size: fl > 0 ? 17 : 15.5, fill: C.ink, weight: 800 });
-
-      // 이름패 — 좌대 앞에 세운 작은 팻말
-      const nm = itemById(it.id).name;
-      const nw = 14 + nm.length * 11;
-      G.round(c, p.x - nw / 2, p.y + 8, nw, 18, 5, 'rgba(43,36,27,.78)');
-      G.text(c, nm, p.x, p.y + 17, { size: 11, fill: '#fff8ec', weight: 800 });
-    }
-
-    /* 계산대 — 손님이 서는 곳. 이게 보여야 '파는 가게'로 읽힌다 */
-    {
-      const [lx, ly] = PLOT.counter;
-      this._box(c, tx + lx + 0.16, ty + ly + 0.3, 0.68, 0.4, 18, C.paper2, C.wood2);
-      const p = iso(tx + lx + 0.5, ty + ly + 0.5);
-      G.circle(c, p.x + 8, p.y - 24, 4.5, '#c9a227');    // 엽전 접시
+    // 매대가 모자라면 — 다음 승급이 매대를 늘린다는 걸 알린다
+    const cap = this.sim.stallCap(shop.id);
+    if (shop.items.length > cap) {
+      G.text(c, `승급하면 매대 +2`, S.x, S.y + 20,
+        { size: 11.5, fill: 'rgba(43,36,27,.55)', weight: 800 });
     }
 
     /* 들어가서 좋은 일이 있을 때만 표 — 숙제가 아니라 초대장 */
@@ -666,6 +639,80 @@ export class Village {
       G.round(c, N.x - tw / 2, N.y - 100 + bob, tw, 25, 9, promo ? C.red : C.jade);
       G.text(c, txt, N.x, N.y - 87.5 + bob, { size: 14, fill: '#fff3dd', weight: 800 });
     }
+  }
+
+  _kiln(c, i) {
+    const shop = SHOPS[i];
+    const [tx, ty] = SHOP_T[i];
+    const p = iso(tx + 0.5, ty + 0.5);
+    this._box(c, tx + 0.22, ty + 0.22, 0.56, 0.56, 26,
+      shade(shop.color, 24), shade(shop.color, -16));
+    const fl = 0.6 + Math.abs(Math.sin(this.t * 3 + i)) * 0.4;
+    G.circle(c, p.x, p.y - 30, 5 * fl, '#f0a24b');
+    G.circle(c, p.x, p.y - 36, 3 * fl, '#f6d27a');
+  }
+
+  /** 매대 한 칸 = 좌대 + 물건 + 재고·진행 계기 + 이름패 */
+  _stall(c, i, k, spot) {
+    const shop = SHOPS[i];
+    const [tx, ty] = SHOP_T[i];
+    const [lx, ly] = spot;
+    const p = iso(tx + lx + 0.5, ty + ly + 0.5);
+    const it = shop.items[k];
+
+    if (!this.sim.isOpen(it.id)) {
+      c.save();
+      c.setLineDash([5, 5]); c.strokeStyle = 'rgba(60,52,36,.45)'; c.lineWidth = 1.6;
+      const n2 = iso(tx + lx, ty + ly), e2 = iso(tx + lx + 1, ty + ly),
+            s2 = iso(tx + lx + 1, ty + ly + 1), w3 = iso(tx + lx, ty + ly + 1);
+      c.beginPath(); c.moveTo(n2.x, n2.y); c.lineTo(e2.x, e2.y); c.lineTo(s2.x, s2.y); c.lineTo(w3.x, w3.y);
+      c.closePath(); c.stroke(); c.restore();
+      const asked = this.sim.asked.includes(it.id);
+      if (asked) {
+        const can = this.sim.money >= itemById(it.id).cost;
+        G.text(c, itemById(it.id).name, p.x, p.y - 26, { size: 12.5, fill: C.ink2, weight: 800 });
+        G.round(c, p.x - 36, p.y - 16, 72, 21, 7, can ? C.jade : 'rgba(60,52,36,.32)');
+        G.text(c, `${fmt(itemById(it.id).cost)}냥`, p.x, p.y - 5.5, { size: 11, fill: '#fff', weight: 800 });
+      } else {
+        G.text(c, '? ? ?', p.x, p.y - 8, { size: 12, fill: 'rgba(60,52,36,.5)', weight: 800 });
+      }
+      return;
+    }
+
+    const st = this.sim.items[it.id];
+    const fl = this.flash[it.id] || 0;
+    const shown = Math.min(STOCK_CAP, st.stock + (this.pending[it.id] || 0));
+    const capped = shown >= STOCK_CAP;
+
+    this._box(c, tx + lx + 0.14, ty + ly + 0.14, 0.72, 0.72, 14,
+      fl > 0 ? '#f2e0ae' : C.paper, C.wood);
+    drawArt(c, 'items', it.id, p.x - 16, p.y - 14, 26, 42);
+
+    const ry = p.y - 46, rr = 15;
+    const pr = capped ? 1 : Math.max(0, Math.min(1, st.prog / this.sim.craftTime(it.id)));
+    G.circle(c, p.x + 12, ry, rr - 3, 'rgba(252,246,232,.95)');
+    c.save();
+    c.lineWidth = 3.5; c.lineCap = 'round';
+    c.strokeStyle = 'rgba(43,36,27,.30)';
+    c.beginPath(); c.arc(p.x + 12, ry, rr, 0, Math.PI * 2); c.stroke();
+    if (pr > 0.01) {
+      c.strokeStyle = capped ? '#ff8a63' : '#e8b93f';
+      c.beginPath(); c.arc(p.x + 12, ry, rr, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * pr); c.stroke();
+    }
+    c.restore();
+    G.text(c, String(shown), p.x + 12, ry, { size: fl > 0 ? 17 : 15.5, fill: C.ink, weight: 800 });
+
+    const nm = itemById(it.id).name;
+    const nw = 14 + nm.length * 11;
+    G.round(c, p.x - nw / 2, p.y + 8, nw, 18, 5, 'rgba(43,36,27,.78)');
+    G.text(c, nm, p.x, p.y + 17, { size: 11, fill: '#fff8ec', weight: 800 });
+  }
+
+  _counter(c, i, n) {
+    const [tx, ty] = SHOP_T[i];
+    this._box(c, tx + n - 1 + 0.16, ty + n - 1 + 0.3, 0.68, 0.4, 18, C.paper2, C.wood2);
+    const p = iso(tx + n - 0.5, ty + n - 0.5);
+    G.circle(c, p.x + 8, p.y - 24, 4.5, '#c9a227');    // 엽전 접시
   }
 
   _small(c, i) {
@@ -866,7 +913,7 @@ export class Village {
     }
 
     const idx = SHOPS.findIndex((sh) => sh.items.some((it) => it.id === t.itemId));
-    const f = shopFoot(Math.max(0, idx));
+    const f = this._foot(Math.max(0, idx));
     const heart = iso(GW / 2, GH / 2);           // 마을 안쪽으로 달아난다
     return {
       kind: 'rat', face: '🐀', screen: false,
@@ -907,7 +954,6 @@ export class Village {
   /* ── 떠 있는 글자들 ── */
   _takings(c, idx) {
     const tk = this.takings[idx];
-    const S = shopFoot(idx).S;
     const label = `+${fmt(tk.amount)}냥`;
     const bw = 26 + label.length * 8.4;
     /* 마당의 현판이 뒤 꼭짓점 위에 있으니 매상 표도 그 위로 띄운다 */
