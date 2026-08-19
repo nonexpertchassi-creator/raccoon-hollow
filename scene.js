@@ -725,7 +725,42 @@ export class Village {
       drawArt(c, 'items', it.id, bx + bw / 2, by + h - 86, bw - 8, (h - 88) * 0.8);
       G.text(c, this.sim.itemName(it.id), bx + bw / 2, by + 11,
         { size: 9, fill: C.ink2, weight: 800 });
-      G.text(c, String(shown), bx + bw / 2, by + 30,
+
+      /* 다음 한 개가 나오기까지 — 숫자를 두른 고리가 채워진다.
+       *
+       * 원래는 점원 너구리가 제작 주기에 맞춰 두드리게 했었다. 정보는
+       * 맞았지만 **캐릭터에게 계기판을 시킨 셈**이라, 다섯 마리가 각자
+       * 다른 박자로 쉬지 않고 움직였다. 고리는 조용하고 정확하다.
+       * 너구리는 이제 분위기만 맡고, 숫자는 여기가 맡는다.
+       *
+       * 한 칸이 두 가지를 같이 보여준다:
+       *   가운데 숫자 = 지금 쌓인 개수      고리 = 다음 개까지 얼마나 남았나
+       *
+       * 꽉 차면 sim이 생산을 멈추므로 고리도 저절로 멈춘다 — 따로 처리할 게 없다. */
+      const cxk = bx + bw / 2, cyk = by + 32;
+      const rr = Math.min(12.5, bw / 2 - 3);
+      const capped = shown >= STOCK_CAP;
+      /* 꽉 차면 생산이 멈추고 고리도 멈춘다. 그때 하필 고리가 거의 비어
+       * 있으면 '멈췄다'가 아니라 '방금 시작했다'로 보인다. 그래서 막힌
+       * 칸은 **빨간 고리를 한 바퀴 다** 그린다 — 조는 점원과 같은 신호다. */
+      const p = capped ? 1
+        : Math.max(0, Math.min(1, st.prog / this.sim.craftTime(it.id)));
+      c.save();
+      c.lineWidth = 3;
+      c.lineCap = 'round';
+      /* 바탕 고리를 진하게 깐다. 옅게 두면 좌판이 찼을 때 주황 위에서
+       * 고리가 통째로 사라진다 — 배경이 매번 바뀌는 자리라서 그렇다. */
+      c.strokeStyle = 'rgba(43,36,27,.32)';
+      c.beginPath(); c.arc(cxk, cyk, rr, 0, Math.PI * 2); c.stroke();
+      if (p > 0.01) {
+        c.strokeStyle = capped ? '#ff8a63' : '#f2d878';
+        c.beginPath();
+        c.arc(cxk, cyk, rr, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * p);
+        c.stroke();
+      }
+      c.restore();
+
+      G.text(c, String(shown), cxk, cyk,
         { size: fl > 0 ? 15 : 13, fill: C.ink, weight: 800 });
     }
 
@@ -969,11 +1004,13 @@ export class Village {
   _clerkDraw(c, k) {
     const shop = SHOPS[k.i];
     const face = -SLOTS[k.i].side;                  // 길 쪽(손님 쪽)을 본다
-    /* 두드리는 박자 = 진짜 제작 주기. 가게마다 위상을 어긋나게 둔다 —
-     * 다섯이 똑같이 맞춰 움직이면 기계처럼 보인다. */
-    const ph = (this.t / k.period + k.i * 0.37) % 1;
+    /* 느긋한 한 박자로 움직인다. 예전엔 실제 제작 주기(1.2~3.6초)에 맞춰
+     * 두드리게 했는데, 정확하긴 해도 **캐릭터에게 계기판을 시킨 것**이었다.
+     * 정확한 진행은 좌판의 고리가 맡는다. 여기서는 "일하고 있다"만 알리면 된다.
+     * 가게마다 위상을 어긋나게 둔다 — 다섯이 딱딱 맞으면 기계처럼 보인다. */
+    const ph = (this.t / 2.4 + k.i * 0.37) % 1;
     const swing = Math.max(0, Math.sin(ph * Math.PI * 2));
-    const bob = k.full ? 0 : swing * 4;
+    const bob = k.full ? 0 : swing * 3;
 
     c.fillStyle = 'rgba(0,0,0,.15)';
     c.beginPath(); c.ellipse(k.x, k.y + 2, 10, 4, 0, 0, 7); c.fill();
@@ -984,7 +1021,7 @@ export class Village {
       G.round(c, ax - 6, k.y - 8, 12, 4.5, 2, '#6b6257');
       G.round(c, ax - 2.5, k.y - 4, 5, 5, 1, '#57504a');
       G.round(c, ax - 5, k.y + 1, 10, 2.5, 1, '#4a4139');
-      if (swing > 0.93) for (let j = 0; j < 3; j++) {
+      if (swing > 0.96) for (let j = 0; j < 3; j++) {
         G.circle(c, ax + (j - 1) * 4, k.y - 11 - (j === 1 ? 3 : 0), 1.7, '#f0d98b');
       }
     }
