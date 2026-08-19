@@ -769,11 +769,20 @@ export class Village {
     G.text(c, sTxt, sl.cx, y + 30 + sh2 / 2,
       { size: look.deco ? 15 : 14.5, fill: '#fff8ec', weight: 800 });
 
-    // 승급할 수 있으면 알려준다 — 이게 마을이 다 찬 뒤의 다음 목표다
-    if (this.sim.canPromote(shop.id)) {
+    /* 들어가서 할 일이 있으면 표를 띄운다.
+     *
+     * 이게 있어야 "혹시 뭐 생겼나" 하고 가게마다 들락거리지 않는다.
+     * 표가 없으면 안 들어가도 되는 것이고, 그게 들락날락하는 수고를
+     * 없애는 유일한 방법이다. 강화는 안 센다 — 늘 할 수 있어서 표가
+     * 항상 켜져 있게 되고, 항상 켜진 표는 없는 것과 같다. */
+    const todo = this.sim.shopTodo(shop.id);
+    if (todo > 0) {
       const bob = Math.sin(this.t * 4) * 3;
-      G.round(c, sl.cx - 40, y - 26 + bob, 80, 22, 8, '#c7563f');
-      G.text(c, '승급 가능', sl.cx, y - 15 + bob, { size: 12, fill: '#fff3dd', weight: 800 });
+      const promo = this.sim.canPromote(shop.id);
+      const txt = promo ? '승급할 수 있다' : `${todo}가지 할 일`;
+      const tw = 22 + txt.length * 12;
+      G.round(c, sl.cx - tw / 2, y - 28 + bob, tw, 24, 9, promo ? '#c7563f' : C.jade);
+      G.text(c, txt, sl.cx, y - 16 + bob, { size: 13, fill: '#fff3dd', weight: 800 });
     }
 
     /* 좌판 — 열린 품목마다 한 칸. **두 줄까지 쓴다.**

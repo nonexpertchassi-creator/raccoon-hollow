@@ -235,6 +235,25 @@ export class Sim {
   /** 모든 손님의 단골 등급 합계. 가게 승급 조건에 쓴다. */
   regularSum() { return this.guests.reduce((a, g) => a + this.regularLv(g), 0); }
 
+  /**
+   * 이 가게에 **지금 들어가서 할 일**이 몇 개인가.
+   *
+   * 들락날락하는 수고 때문에 유저가 떠나는 걸 막는 방법은 하나다 —
+   * **들어갈 이유가 없으면 안 들어가게 하는 것.** 지도에서 이 수를 표로
+   * 띄우면 "혹시 뭐 있나" 하고 들여다볼 일이 없어진다.
+   *
+   * 강화는 안 센다. 그건 늘 할 수 있어서 표가 항상 켜져 있게 되고,
+   * 항상 켜진 표는 없는 것과 같다. 자동 강화를 사면 아예 할 필요도 없다.
+   */
+  shopTodo(shopId) {
+    const shop = SHOPS.find((s) => s.id === shopId);
+    if (!shop || !this.shops.includes(shopId)) return 0;
+    let n = 0;
+    for (const it of shop.items) if (this.canOpenItem(it.id)) n++;
+    if (this.canPromote(shopId)) n++;
+    return n;
+  }
+
   /* ── 가게 등급 ── */
   rankOf(shopId) { return this.rank[shopId] || 0; }
   rankOfItem(id) { return this.rankOf(itemById(id).shop); }
