@@ -15,7 +15,7 @@ import path from 'path';
 const ROOT = path.resolve(import.meta.dirname, '..');
 const OUT = process.argv[2] || path.join(ROOT, 'nogur.html');
 const ORDER = ['content.js', 'core/store.js', 'core/juice.js', 'core/engine.js',
-               'art.js', 'sim.js', 'iso.js', 'interior.js'];
+               'art.js', 'sim.js', 'iso.js'];
 
 const strip = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8')
   .replace(/^import\s+[^;]*?;\s*$/gms, '')
