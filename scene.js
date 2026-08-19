@@ -94,13 +94,23 @@ const C = {
  * 둘 다 sim이 이미 아는 상태라 새로 계산할 게 없다 — 화면 몫이다.
  */
 const HERO_PX = 34;          // 손님(30)보다 조금 크다. 주인공이니까
+const CLERK_PX = 28;         // 점원은 주인공보다 작다. 누가 '나'인지 헷갈리면 안 된다
 const HERO_SPEED = 120;
 
-/* 손님은 길 쪽(0.74/0.26)에 선다. 너구리는 그 반대편 — 가게 안쪽에 선다.
- * 같은 자리에 두면 손님과 겹쳐서 둘 다 안 보인다. */
+/* 가게 앞 한 줄에 셋이 선다. 서로 안 겹치게 자리를 갈라 놓았다.
+ *
+ *   점원   가게 안쪽 (0.18/0.82)      늘 그 가게에 붙어 있다
+ *   손님   길 쪽    (0.74/0.26)       왔다가 간다
+ *   주인   한가운데 (0.50)            돌아다니며 판다
+ *
+ * 대장간 폭이 188이니 셋의 간격이 50px쯤 된다. 28~34px짜리라 딱 안 닿는다. */
+function clerkSpot(i) {
+  const s = SLOTS[i];
+  return { x: s.x + s.w * (s.side < 0 ? 0.18 : 0.82), y: s.y + s.h + 15 };
+}
 function heroSpot(i) {
   const s = SLOTS[i];
-  return { x: s.x + s.w * (s.side < 0 ? 0.22 : 0.78), y: s.y + s.h + 17 };
+  return { x: s.x + s.w * 0.5, y: s.y + s.h + 26 };
 }
 
 /* 화면에 보이는 손님 크기. 임시 토끼 한 장을 넣고 폰 크기로 확인해서 정했다 —
@@ -451,6 +461,10 @@ export class Village {
     if (near(DOG.y, DOG.h + 40)) layer.push({ z: DOG.y + DOG.h, d: () => this._dog(c) });
     for (const p of this.props) if (near(p.y, 60)) layer.push({ z: p.y, d: () => this._prop(c, p) });
     for (const w of this.walkers) if (near(w.y, 40)) layer.push({ z: w.y, d: () => this._walker(c, w) });
+    for (let i = 0; i < SHOPS.length; i++) {
+      const k = this._clerk(i);
+      if (k && near(k.y, 40)) layer.push({ z: k.y, d: () => this._clerkDraw(c, k) });
+    }
     if (near(this.hero.y, 40)) layer.push({ z: this.hero.y + 0.5, d: () => this._heroDraw(c) });
     const th = this._pestAt();
     /* 까마귀는 하늘에 있으니 무엇에도 안 가린다. 쥐는 발끝 높이로 줄을 선다. */
@@ -928,6 +942,70 @@ export class Village {
     }
   }
 
+  /** 점원 너구리의 지금 상태. **sim이 이미 아는 사실만 읽는다.**
+   *
+   *  일하는 속도를 화면이 지어내지 않는다. 그 가게에서 제일 빨리 나오는 칸의
+   *  실제 제작 시간(craftTime)을 그대로 쓴다. 그래서 강화를 하면 너구리가
+   *  눈에 띄게 빨라진다 — 지금까지 강화는 숫자만 바뀌고 화면은 그대로였다.
+   *
+   *  실측: 제일 빠른 칸이 하나 만드는 데 1분 시점 2.8초, 4시간 시점 1.2초.
+   *  1~3초에 한 번 두드리는 셈이라 **생산을 늦출 필요가 없다.**
+   *  다섯 마리가 동시에 두드려도 각자 느긋하다.
+   */
+  _clerk(i) {
+    const shop = SHOPS[i];
+    if (!this.sim.shops.includes(shop.id)) return null;
+    const open = shop.items.filter((it) => this.sim.isOpen(it.id));
+    if (!open.length) return null;
+    /* 진열대가 다 차면 생산이 실제로 멈춘다(sim의 `stock >= STOCK_CAP`).
+     * 그때 점원이 존다 — 귀여우라고 재우는 게 아니라 **정말로 노는 중**이고,
+     * 화면에 그 사실이 안 보여서 유저가 눈치를 못 챘다. */
+    const full = open.every((it) => this.sim.items[it.id].stock >= STOCK_CAP);
+    let fastest = Infinity;
+    for (const it of open) fastest = Math.min(fastest, this.sim.craftTime(it.id));
+    return { i, full, period: fastest, ...clerkSpot(i) };
+  }
+
+  _clerkDraw(c, k) {
+    const shop = SHOPS[k.i];
+    const face = -SLOTS[k.i].side;                  // 길 쪽(손님 쪽)을 본다
+    /* 두드리는 박자 = 진짜 제작 주기. 가게마다 위상을 어긋나게 둔다 —
+     * 다섯이 똑같이 맞춰 움직이면 기계처럼 보인다. */
+    const ph = (this.t / k.period + k.i * 0.37) % 1;
+    const swing = Math.max(0, Math.sin(ph * Math.PI * 2));
+    const bob = k.full ? 0 : swing * 4;
+
+    c.fillStyle = 'rgba(0,0,0,.15)';
+    c.beginPath(); c.ellipse(k.x, k.y + 2, 10, 4, 0, 0, 7); c.fill();
+
+    if (!k.full) {
+      // 모루 — 무슨 일을 하는지는 도구가 아니라 작업대가 알린다
+      const ax = k.x + face * 13;
+      G.round(c, ax - 6, k.y - 8, 12, 4.5, 2, '#6b6257');
+      G.round(c, ax - 2.5, k.y - 4, 5, 5, 1, '#57504a');
+      G.round(c, ax - 5, k.y + 1, 10, 2.5, 1, '#4a4139');
+      if (swing > 0.93) for (let j = 0; j < 3; j++) {
+        G.circle(c, ax + (j - 1) * 4, k.y - 11 - (j === 1 ? 3 : 0), 1.7, '#f0d98b');
+      }
+    }
+
+    c.save();
+    if (face < 0) { c.translate(k.x * 2, 0); c.scale(-1, 1); }
+    /* 그림 찾는 순서: 가게 전용 → 공용 너구리 → 이모지.
+     * 그래서 대장간 것만 먼저 그려 넣어도 나머지는 안 깨진다. */
+    const kind = k.full ? 'sleep' : 'work';
+    if (!drawArt(c, 'clerks', `${shop.id}-${kind}`, k.x, k.y + 4 - bob, CLERK_PX, CLERK_PX)
+     && !drawArt(c, 'hero', 'raccoon-make', k.x, k.y + 4 - bob, CLERK_PX, CLERK_PX))
+      G.text(c, '🦝', k.x, k.y - 9 - bob, { size: CLERK_PX, fill: '#000' });
+    c.restore();
+
+    if (k.full) {
+      // 조는 표시 — 이건 "진열대가 꽉 찼다"는 알림이기도 하다
+      const z = (this.t * 0.6) % 1;
+      G.text(c, '💤', k.x + face * 11, k.y - 26 - z * 9, { size: 11 + z * 3, fill: '#000' });
+    }
+  }
+
   /** 너구리를 움직인다.
    *  규칙은 하나 — **손님이 서 있는 가게로 간다.** 없으면 지금 자리에서 만든다.
    *  그래서 화면을 보고 있으면 너구리가 손님을 따라다니는 것처럼 보인다. */
@@ -985,38 +1063,21 @@ export class Village {
     const make = hr.state === 'make';
     /* 만들 땐 위아래로 내려치고, 걸을 땐 총총, 팔 땐 살짝 숙인다.
      * 세 가지가 눈에 띄게 달라야 "지금 뭘 하는지"가 읽힌다. */
-    const bob = make ? Math.abs(Math.sin(this.t * 7)) * 5
+    const bob = make ? Math.sin(this.t * 1.8) * 1.2          // 서서 숨 쉬는 정도
               : sell ? Math.sin(this.t * 3) * 1.5
-              : Math.abs(Math.sin(this.t * 10)) * 3.5;
+              : Math.abs(Math.sin(this.t * 10)) * 3.5;         // 걸을 땐 총총
 
     c.fillStyle = 'rgba(0,0,0,.17)';
     c.beginPath(); c.ellipse(hr.x, hr.y + 2, 12, 5, 0, 0, 7); c.fill();
 
-    /* 처음엔 망치를 앞발에 쥐여 주려고 했다. 세 번 고쳐도 안 됐다 —
-     * 알파값으로 찾은 '제일 오른쪽 픽셀'은 앞발이 아니라 뺨이었고, 눈금을
-     * 얹어 진짜 앞발을 찾아 맞췄더니 이번엔 망치가 머리 뒤로 숨었다.
+    /* 주인공은 이제 만들지 않는다 — 그건 가게마다 붙은 점원 몫이다.
+     * 주인은 돌아다니며 **파는 사람**이다. 둘이 같은 짓을 하면 왜 둘인지
+     * 알 수가 없다.
      *
-     * 원인은 위치가 아니라 그림이다. 이 그림은 **연장을 든 자세가 아니다.**
-     * 서 있는 자세에 도구를 갖다 붙이면 어떻게 놔도 남의 손에 든 것처럼 보인다.
-     *
-     * 그래서 붙이는 걸 그만두고 **옆에 모루를 놓았다.** 대장간 일이라는 건
-     * 모루와 불똥이 알려주고, 두드리는 동작은 캐릭터가 위아래로 들썩이는
-     * 것으로 충분하다. 이러면 그림이 어떤 자세든 상관이 없다. */
-    if (make) {
-      const ax = hr.x + hr.face * 15;
-      G.round(c, ax - 7, hr.y - 9, 14, 5, 2, '#6b6257');      // 모루 윗판
-      G.round(c, ax - 3, hr.y - 5, 6, 6, 1, '#57504a');       // 모루 허리
-      G.round(c, ax - 6, hr.y + 1, 12, 3, 1, '#4a4139');      // 받침
-      const hit = Math.abs(Math.sin(this.t * 7));
-      if (hit > 0.9) {                                        // 불똥
-        for (let k = 0; k < 3; k++) {
-          G.circle(c, ax + (k - 1) * 4.5, hr.y - 12 - (k === 1 ? 4 : 0), 1.9, '#f0d98b');
-        }
-      }
-    }
+     * (연장을 앞발에 쥐여 주려다 세 번 실패하고 배운 것: 선 자세 그림에는
+     *  도구를 붙일 수 없다. 그래서 점원은 옆에 모루를 두고, 주인은 앞발을
+     *  확실히 내민 '파는 그림'에만 보따리를 붙인다.) */
     if (sell) {
-      /* 파는 그림은 앞발을 확실히 내밀고 있어서 여기엔 붙일 수 있다.
-       * 눈금으로 잰 자리가 (60,38)/72다. */
       const px = hr.x + hr.face * (HERO_PX * (60 / 72 - 0.5));
       const py = hr.y + 6 - HERO_PX + HERO_PX * (38 / 72);
       G.circle(c, px, py - bob, 6, '#c9a227');

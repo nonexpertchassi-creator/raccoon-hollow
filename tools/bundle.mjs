@@ -23,7 +23,7 @@ const strip = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8')
 
 /* 그림 → data URI. 파일명이 곧 id다(art/guests/rabbit.png → guests/rabbit). */
 const art = {};
-for (const kind of ['guests', 'items', 'pests', 'hero']) {
+for (const kind of ['guests', 'items', 'pests', 'hero', 'clerks']) {
   const dir = path.join(ROOT, 'art', kind);
   if (!fs.existsSync(dir)) continue;
   for (const f of fs.readdirSync(dir)) {
