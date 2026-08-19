@@ -9,7 +9,7 @@
 
 import {
   SHOPS, GUESTS, LEVEL, MILESTONE_EVERY, MILESTONE_MULT, STOCK_CAP, OFFLINE, ASK_LINES,
-  BASKET_SPREAD, MAX_BULK, AUTO_COST, AUTO_PER_TICK, AUTO_SHARE, ASK_EVERY, FAIR, SMALL_SHOPS, RANKS, REGULARS, PESTS, GUARD,
+  BASKET_SPREAD, MAX_BULK, AUTO_COST, AUTO_PER_TICK, AUTO_SHARE, ASK_EVERY, FAIR, SMALL_SHOPS, RANKS, REGULARS, PESTS, GUARD, STAFF,
 } from './content.js';
 
 const ALL_ITEMS = SHOPS.flatMap((s) => s.items.map((i) => ({ ...i, shop: s.id })));
@@ -41,6 +41,7 @@ export class Sim {
     this.auto = false;                    // 자동 강화를 샀는가
     this.smalls = [];                     // 세워 둔 작은 건물의 번호
     this.guard = false;                   // 삽살개를 들였는가
+    this.staff = {};                      // 가게별 직원 수 (점장은 안 센다)
     this.fair = 0;                        // 장이 서 있는 남은 시간(초)
     this.busy = -1;                       // 지금 북적이는 작은 건물 (없으면 -1)
     this._busyT = 0;
@@ -251,7 +252,41 @@ export class Sim {
     let n = 0;
     for (const it of shop.items) if (this.canOpenItem(it.id)) n++;
     if (this.canPromote(shopId)) n++;
+    if (this.canHireStaff(shopId)) n++;
     return n;
+  }
+
+  /* ── 직원 ──
+   * 점장 혼자 만들고 팔다가, 직원을 들이면 그 가게 생산이 빨라진다.
+   * 한 명당 +22%. 자리 수는 등급이 정한다(무쇠 1 · 참쇠 2 · 강철 3). */
+  staffOf(shopId) { return this.staff[shopId] || 0; }
+  /* 무쇠급엔 직원 자리가 없다 — 매대 4칸은 점장 혼자로 충분하고,
+   * 실제로 무쇠급부터 고용을 열었더니 초반 공급이 넘쳐 진열대 절반이
+   * 꽉 찬 채 생산이 멈췄다. 마당이 6칸으로 커지는 순간이 '혼자서는
+   * 벅차지는' 순간이고, 고용은 그때 열린다. */
+  staffMax(shopId) { return this.rankOf(shopId); }
+
+  staffCost(shopId) {
+    const shop = SHOPS.find((s) => s.id === shopId);
+    const n = this.staffOf(shopId);            // 다음이 n+1번째
+    if (n === 0) return Math.floor(shop.promote[0] / STAFF.costDiv);
+    if (n === 1) return Math.floor(shop.promote[1] / STAFF.costDiv);
+    return Math.floor(shop.promote[1] * 30 / STAFF.costDiv);
+  }
+
+  canHireStaff(shopId) {
+    return this.shops.includes(shopId) &&
+           this.staffOf(shopId) < this.staffMax(shopId) &&
+           this.money >= this.staffCost(shopId);
+  }
+
+  hireStaff(shopId) {
+    if (!this.canHireStaff(shopId)) return false;
+    this.money -= this.staffCost(shopId);
+    this.staff[shopId] = this.staffOf(shopId) + 1;
+    const shop = SHOPS.find((s) => s.id === shopId);
+    this._ev(`${shop.name}에 일손을 들였다 (${this.staff[shopId]}명)`, 'shop');
+    return true;
   }
 
   /** 이 가게에 매대가 몇 칸 있나 — 마당 크기가 정한다.
@@ -294,6 +329,16 @@ export class Sim {
     const it = itemById(id);
     const f = Math.max(LEVEL.timeFloor, Math.pow(LEVEL.timeReduce, this.lv(id) - 1));
     return it.time * f;
+  }
+
+  /** 이 품목의 진열대 상한. 직원 한 명이 진열대 10칸을 더 본다.
+   *
+   *  처음엔 직원을 '생산 +22%'로 만들었다 — 진열대의 25%가 꽉 찬 채
+   *  생산이 멈췄다. 공급·수요를 몇 시간 재서 맞춰 놨는데 공급만 22%씩
+   *  올리면 그 균형이 통째로 무너진다. 진열대 확장은 초반을 안 건드리고,
+   *  쌓아둔 것이 후반 큰손(곰·호랑이)의 싹쓸이를 받아내게 한다. */
+  capOf(id) {
+    return STOCK_CAP + STAFF.capAdd * this.staffOf(itemById(id).shop);
   }
 
   /** 초당 수입 — 재고가 안 넘친다는 가정 하의 이론값 */
@@ -543,10 +588,10 @@ export class Sim {
     // 1) 생산 — 열린 품목이 각자 자기 타이머로 돈다. 손 댈 필요 없음.
     for (const id of Object.keys(this.items)) {
       const st = this.items[id];
-      if (st.stock >= STOCK_CAP) continue;      // 진열대가 꽉 차면 잠시 멈춘다
+      if (st.stock >= this.capOf(id)) continue;  // 진열대가 꽉 차면 잠시 멈춘다
       st.prog += dt;
       const need = this.craftTime(id);
-      while (st.prog >= need && st.stock < STOCK_CAP) {
+      while (st.prog >= need && st.stock < this.capOf(id)) {
         st.prog -= need;
         st.stock++;
       }

@@ -294,7 +294,7 @@ function shopHTML(s) {
           <div><div class="nm">${sim.itemName(it.id)}</div><div class="lv">Lv.${lv}/${max}${
             atMax ? ' · 만렙' : ms ? ` · ${toMs}레벨 뒤 값이 2배` : ''}</div></div>
           <div class="stat"><b>${fmt(sim.price(it.id))}냥</b><br>
-            재고 <span class="stk">${st.stock}</span>/${STOCK_CAP} · ${sim.craftTime(it.id).toFixed(1)}초</div>
+            재고 <span class="stk">${st.stock}</span>/${sim.capOf(it.id)} · ${sim.craftTime(it.id).toFixed(1)}초</div>
         </div>
         ${atMax ? '<div class="maxed">더 올릴 수 없다 — 가게를 승급해야 한다</div>' : `<div class="ups">
           <button class="up ${ms ? 'ms' : ''}" data-up="${it.id}" data-n="1"
@@ -315,7 +315,26 @@ function shopHTML(s) {
     return `<div class="item locked-item"><div class="row">
       <div><div class="nm">? ? ?</div><div class="lv">아직 아무도 찾지 않았다</div></div></div></div>`;
   }).join('');
-  return `<div class="shopnote">${s.desc}</div>${rows}${promoteHTML(s)}`;
+  return `<div class="shopnote">${s.desc}</div>${rows}${staffHTML(s)}${promoteHTML(s)}`;
+}
+
+/* 직원 — 점장 혼자 만들고 팔다가, 마당이 커지면(승급) 일손을 들인다.
+ * 직원 한 명 = 이 가게 진열대 +10칸. */
+function staffHTML(s) {
+  const n = sim.staffOf(s.id), max = sim.staffMax(s.id);
+  if (max === 0) {
+    return `<div class="item locked-item"><div class="row">
+      <div><div class="nm">일손 들이기</div>
+      <div class="lv">가게를 승급하면 직원 자리가 생긴다</div></div></div></div>`;
+  }
+  const cost = sim.staffCost(s.id);
+  const full = n >= max;
+  return `<div class="item"><div class="row">
+    <div><div class="nm">일손 ${'🦝'.repeat(n + 1)}</div>
+    <div class="lv">점장 1 + 직원 ${n}/${max} · 직원마다 진열대 +10칸</div></div></div>
+    ${full ? '' : `<button class="up" data-hire="${s.id}"
+      ${sim.money >= cost ? '' : 'disabled'}>직원 들이기 ${fmt(cost)}냥</button>`}
+  </div>`;
 }
 
 /* 손님 도감.
@@ -388,6 +407,9 @@ function bindShop() {
       $('#pbody').innerHTML = shopHTML(shopById(openShopId)); bindShop();
     }
   };
+  document.querySelectorAll('[data-hire]').forEach((b) => b.onclick = () => {
+    if (sim.hireStaff(b.dataset.hire)) { Sfx.reward(); Juice.shake(5); $('#pbody').innerHTML = shopHTML(shopById(openShopId)); bindShop(); }
+  });
   document.querySelectorAll('[data-open]').forEach((b) => b.onclick = () => {
     if (sim.openItem(b.dataset.open)) {
       Sfx.reward(); Juice.shake(4);

@@ -34,6 +34,7 @@ function act(s) {
   for (const sh of s.shops) if (s.canPromote(sh)) { s.promote(sh); return 'shop'; }
   if (s.canBuyAuto()) { s.buyAuto(); return 'auto'; }
   if (s.canBuyGuard()) { s.buyGuard(); return 'item'; }
+  for (const sh of s.shops) if (s.canHireStaff(sh)) { s.hireStaff(sh); return 'item'; }
   const sm = s.nextSmall();
   if (sm >= 0 && s.canBuildSmall(sm)) { s.buildSmall(sm); return 'item'; }
   /* 자동 강화를 산 뒤로는 손으로 안 누른다 — 그게 산 이유다.
@@ -119,7 +120,7 @@ for (let t = 0; t < HOURS * 3600; t += DT) {
     for (const id of Object.keys(s.items)) {
       const p = seen(id);
       p.live++;
-      if (s.items[id].stock >= STOCK_CAP) p.stall++;
+      if (s.items[id].stock >= s.capOf(id)) p.stall++;   // 상한은 직원 수에 따라 다르다
     }
     if (Math.floor(t) % 600 === 0) {
       timeline.push({ min: Math.round(t / 60), rev: s.revenue, ips: s.incomePerSec(),

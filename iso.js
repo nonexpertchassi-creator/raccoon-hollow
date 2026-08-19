@@ -490,6 +490,14 @@ export class Village {
         layer.push({ z: iso(tx + lx + 1, ty + ly + 1).y, d: () => this._stall(c, i, kk, spots[kk]) });
       }
       layer.push({ z: S.y, d: () => this._counter(c, i, n) });
+      /* 직원 — 늘 작업대 줄에 붙어 만든다. 점장이 계산대로 불려가도
+       * 이쪽은 계속 만든다. '한 마리는 생산, 한 마리는 판매'가 이 그림이다. */
+      const nst = this.sim.staffOf(SHOPS[i].id);
+      for (let sIdx = 0; sIdx < nst; sIdx++) {
+        const sp = iso(tx + 1.5 + sIdx, ty + n - 1.5);
+        const si = sIdx;
+        layer.push({ z: sp.y + 0.5, d: () => this._staff(c, i, si, sp) });
+      }
     }
     for (let i = 0; i < SMALL_T.length; i++) {
       const p = iso(SMALL_T[i][0] + 1, SMALL_T[i][1] + 1);
@@ -634,7 +642,7 @@ export class Village {
     if (todo > 0) {
       const bob = Math.sin(this.t * 4) * 3;
       const promo = this.sim.canPromote(shop.id);
-      const txt = promo ? '승급!' : '새 칸!';
+      const txt = promo ? '승급!' : this.sim.canHireStaff(shop.id) ? '일손!' : '새 칸!';
       const tw = 26 + txt.length * 13;
       G.round(c, N.x - tw / 2, N.y - 100 + bob, tw, 25, 9, promo ? C.red : C.jade);
       G.text(c, txt, N.x, N.y - 87.5 + bob, { size: 14, fill: '#fff3dd', weight: 800 });
@@ -681,8 +689,9 @@ export class Village {
 
     const st = this.sim.items[it.id];
     const fl = this.flash[it.id] || 0;
-    const shown = Math.min(STOCK_CAP, st.stock + (this.pending[it.id] || 0));
-    const capped = shown >= STOCK_CAP;
+    const cap = this.sim.capOf(it.id);
+    const shown = Math.min(cap, st.stock + (this.pending[it.id] || 0));
+    const capped = shown >= cap;
 
     this._box(c, tx + lx + 0.14, ty + ly + 0.14, 0.72, 0.72, 14,
       fl > 0 ? '#f2e0ae' : C.paper, C.wood);
@@ -781,7 +790,7 @@ export class Village {
     const open = shop.items.filter((it) => this.sim.isOpen(it.id));
     if (!open.length) return null;
     const m = this.mgr[i];
-    const full = open.every((it) => this.sim.items[it.id].stock >= STOCK_CAP);
+    const full = open.every((it) => this.sim.items[it.id].stock >= this.sim.capOf(it.id));
     const mode = m.at === 'sell' ? 'sell' : m.at === 'walk' ? 'walk' : full ? 'sleep' : 'work';
     return { i, mode, x: m.x, y: m.y, face: m.face };
   }
@@ -833,6 +842,31 @@ export class Village {
       const z = (this.t * 0.6) % 1;
       G.text(c, '💤', k.x + 11, k.y - 26 - z * 9, { size: 11 + z * 3, fill: '#000' });
     }
+  }
+
+  /** 직원 너구리 — 자리를 안 옮긴다. 자기 작업대만 지킨다. */
+  _staff(c, i, k, sp) {
+    const shop = SHOPS[i];
+    const full = shop.items.filter((it) => this.sim.isOpen(it.id))
+      .every((it) => this.sim.items[it.id].stock >= this.sim.capOf(it.id));
+    const ph = (this.t / 2.4 + i * 0.37 + (k + 1) * 0.29) % 1;
+    const swing = Math.max(0, Math.sin(ph * Math.PI * 2));
+    const bob = full ? 0 : swing * 3;
+
+    c.fillStyle = 'rgba(0,0,0,.15)';
+    c.beginPath(); c.ellipse(sp.x, sp.y + 2, 9, 4, 0, 0, 7); c.fill();
+    const ax = sp.x - 14;
+    G.round(c, ax - 6, sp.y - 8, 12, 4.5, 2, '#6b6257');
+    G.round(c, ax - 2.5, sp.y - 4, 5, 5, 1, '#57504a');
+    if (!full && swing > 0.96) G.circle(c, ax, sp.y - 12, 1.7, '#f0d98b');
+    c.save();
+    c.translate(sp.x, sp.y + 4);
+    const pose = full ? 'sleep' : 'work';
+    if (!drawArt(c, 'clerks', `${shop.id}-${pose}`, 0, -bob, 30, 30)
+     && !drawArt(c, 'hero', 'raccoon-make', 0, -bob, 30, 30))
+      G.text(c, '🦝', 0, -12 - bob, { size: 30, fill: '#000' });
+    c.restore();
+    if (full) G.text(c, '💤', sp.x + 10, sp.y - 24, { size: 11, fill: '#000' });
   }
 
   /* ── 손님 ── */
