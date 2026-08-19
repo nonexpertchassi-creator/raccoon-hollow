@@ -16,6 +16,7 @@ import { G } from './core/engine.js';
 import { Juice, Sfx } from './core/juice.js';
 import { SHOPS, STOCK_CAP, SMALL_SHOPS, GUARD } from './content.js';
 import { fmt } from './sim.js';
+import { drawArt } from './art.js';
 
 /* 보이는 창은 480×800이고, 마을은 그보다 세로로 길다. 손가락으로 밀어 훑는다.
  * 가게가 늘 때마다 화면에 욱여넣을 수 없어서 세로로 늘렸다. */
@@ -78,6 +79,10 @@ const C = {
  * GUESTS의 qty(한 번에 사가는 개수)는 이미 정해져 있는데 숫자로만 숨어 있었다.
  * 짐으로 보이면 "큰 손님이 온다"가 멀리서부터 읽힌다.
  * 규칙은 아니고 표시일 뿐이다 — qty를 그대로 그림으로 옮긴다. */
+/* 화면에 보이는 손님 크기. 임시 토끼 한 장을 넣고 폰 크기로 확인해서 정했다 —
+ * 27은 장승 머리보다 작아 캐릭터로 안 읽혔다. 그림이 들어오면 여기만 고친다. */
+const GUEST_PX = 30;
+
 const carryOf = (qty) => qty <= 5 ? 'hand' : qty <= 9 ? 'bojjim' : qty <= 12 ? 'jige' : 'cart';
 
 /* 집이 좋아지는 축이 둘이다.
@@ -212,6 +217,7 @@ export class Village {
 
     const y = fromTop ? -30 : H + 30;
     this.walkers.push({
+      id: sale.guest.id,
       face: sale.guest.face,
       reg: this.sim.regularLv(sale.guest.id),   // 단골 등급 — 갓으로 보여준다
       speed: sale.guest.speed || 1,             // 거북은 느리고 까치는 빠르다
@@ -664,6 +670,10 @@ export class Village {
       const shown = Math.min(STOCK_CAP, st.stock + (this.pending[it.id] || 0));
       const bh = Math.round((h - 84) * Math.min(1, shown / STOCK_CAP));
       if (bh > 0) G.round(c, bx + 2, by + (h - 82) - bh, bw - 4, bh, 4, shop.color);
+      /* 물건 그림은 재고 막대 위, 숫자 아래에 깔린다.
+       * 등급(돌·쇠·강철)마다 따로 그리면 17장이 51장이 된다 —
+       * 그림은 한 장만 두고 등급은 이름과 색으로 알린다. */
+      drawArt(c, 'items', it.id, bx + bw / 2, by + h - 86, bw - 8, (h - 88) * 0.8);
       G.text(c, this.sim.itemName(it.id), bx + bw / 2, by + 11,
         { size: 9, fill: C.ink2, weight: 800 });
       G.text(c, String(shown), bx + bw / 2, by + 30,
@@ -803,7 +813,8 @@ export class Village {
      * 지금 지켜주고 있다는 걸 글자 없이 알린다. */
     const alert = !!this.sim.pest;
     const bob = alert ? Math.abs(Math.sin(this.t * 12)) * 3 : Math.sin(this.t * 2) * 1.2;
-    G.text(c, '🐕', x + 16, y + h - 4 - bob, { size: 24, fill: '#000' });
+    if (!drawArt(c, 'pests', 'dog', x + 16, y + h + 8 - bob, 24, 24))
+      G.text(c, '🐕', x + 16, y + h - 4 - bob, { size: 24, fill: '#000' });
     if (alert) {
       G.round(c, x + 2, y + h - 34, 22, 15, 6, '#c7563f');
       G.text(c, '멍!', x + 13, y + h - 26, { size: 9.5, fill: '#fff3dd', weight: 800 });
@@ -873,7 +884,8 @@ export class Village {
       c.beginPath(); c.ellipse(t.x, t.y + 7, 10, 4, 0, 0, 7); c.fill();
       G.circle(c, t.x + 11, t.y - 10 - bob * 0.4, 7, '#a34a3a');   // 훔친 보따리
     }
-    G.text(c, t.face, t.x, t.y - 7 - bob, { size: 30, fill: '#000' });
+    if (!drawArt(c, 'pests', t.kind, t.x, t.y + 8 - bob, 30, 30))
+      G.text(c, t.face, t.x, t.y - 7 - bob, { size: 30, fill: '#000' });
     if (fly) {
       // 물고 가는 엽전
       G.circle(c, t.x + 12, t.y + 2 - bob, 5.5, '#c9a227');
@@ -886,7 +898,9 @@ export class Village {
     c.fillStyle = 'rgba(0,0,0,.17)';
     c.beginPath(); c.ellipse(w.x, w.y + 8, 11, 4.5, 0, 0, 7); c.fill();
     this._carry(c, w, bob);
-    G.text(c, w.face, w.x, w.y - 8 + bob, { size: 27, fill: '#000' });
+    /* 그림이 들어오면 그림, 아직이면 이모지. 한 장씩 넣어가며 볼 수 있다. */
+    if (!drawArt(c, 'guests', w.id, w.x, w.y + 6 + bob, GUEST_PX, GUEST_PX))
+      G.text(c, w.face, w.x, w.y - 8 + bob, { size: 27, fill: '#000' });
 
     /* 단골은 갓을 쓴다. 등급이 오를수록 갓이 커지고 색이 진해진다.
      * 손님 머리 위에 글자를 얹으면 여럿 몰릴 때 다시 겹치므로 모양으로 알린다. */

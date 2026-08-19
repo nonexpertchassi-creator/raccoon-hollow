@@ -62,8 +62,10 @@ speed   걷는 속도 배수 (화면에서만)
 content.js   내용물 전부 — 가게·품목·손님·단골·곁가게·레벨 공식
 sim.js       경제 로직. 그리기 코드가 한 줄도 없다
 scene.js     마을 장면. 경제 코드가 한 줄도 없다
+art.js       그림을 끼우는 자리. 그림이 없으면 이모지로 넘어간다
 index.html   화면 뼈대 · 헤더 · 아래 창(가게 / 손님 도감)
-tools/       balance.mjs — 브라우저 없이 게임 수백 시간을 몇 초에 돌린다
+art/         PNG를 여기 놓기만 하면 들어간다 (ASSETS.md)
+tools/       balance.mjs 밸런스 측정 · bundle.mjs 한 파일로 묶기
 core/        shipyard에서 가져온 공용 레이어
 ```
 
