@@ -435,6 +435,27 @@ function renderAuto() {
 /* ── 마을 장면 ── */
 const eng = new Engine($('#cv'), { w: 480, h: 800, bg: '#8b9e74', fit: 'width' });
 const village = new Village(sim, openPanel);
+
+/* 장부(아래 로그)는 손님이 계산대에서 물건을 받는 **그 순간** 쓴다.
+ * 예전엔 sim이 계산을 마치자마자 썼는데, 손님은 아직 걸어오는 중이라
+ * "오기도 전에 사갔다고 나온다"가 됐다 — 유저 눈엔 그냥 버그다. */
+village.onDelivered = (s) => {
+  $('#guest').className = '';
+  if (s.n === 0) {
+    const what = s.grumbles && s.grumbles.length ? sim.itemName(s.grumbles[0].item.id) : '물건';
+    $('#guest').innerHTML =
+      `<span class="face">${s.guest.face}</span><span class="say">` +
+      `${s.guest.name}: ${josa(what, '이', '가')} 없어 발길을 돌렸다 💢</span>`;
+    return;
+  }
+  const head = sim.itemName(s.lines[0].item.id);
+  const more = s.lines.length > 1 ? ` 외 ${s.lines.length - 1}종` : '';
+  const waited = s.waited > 0.5 ? ' (기다렸다 받아갔다)' : '';
+  $('#guest').innerHTML =
+    `<span class="face">${s.guest.face}</span><span class="say">` +
+    `${sim.regularLv(s.guest.id) ? sim.regularName(s.guest.id) + ' ' : ''}${s.guest.name}가 ` +
+    `<b>${head}${more}</b> ${s.n}개를 사갔다 · <b>${fmt(s.gain)}냥</b>${waited}</span>`;
+};
 /* '가게 안' 화면은 은퇴했다. 마당 방식이 되면서 안이 지도에서 다 보인다 —
  * 매대를 누르면 그 자리에서 강화되고, 마당을 누르면 가게 창이 열린다. */
 
@@ -443,16 +464,8 @@ eng.add('village', {
   update(dt) {
     const r = sim.tick(dt);
 
-    for (const s of r.sales) {
-      village.onSale(s);
-      const head = s.lines[0].item.name;
-      const more = s.lines.length > 1 ? ` 외 ${s.lines.length - 1}종` : '';
-      $('#guest').className = '';
-      $('#guest').innerHTML =
-        `<span class="face">${s.guest.face}</span><span class="say">` +
-        `${sim.regularLv(s.guest.id) ? sim.regularName(s.guest.id) + ' ' : ''}${s.guest.name}가 ` +
-        `<b>${head}${more}</b> ${s.n}개를 사갔다 · <b>${fmt(s.gain)}냥</b></span>`;
-    }
+    for (const s of r.sales) village.onSale(s);
+    for (const d of r.done || []) village.onOrderDone(d);
     if (r.ask) {
       village.onAsk(r.ask);
       Sfx.deny();
@@ -506,9 +519,12 @@ eng.add('village', {
 let lastMoney = -1, lastAuto = null, lastGuests = -1, guestTick = 0;
 function paint() {
   const m = $('#money');
-  m.textContent = fmt(sim.money) + '냥';
-  if (sim.money !== lastMoney) { m.classList.add('pop'); setTimeout(() => m.classList.remove('pop'), 120); }
-  lastMoney = sim.money;
+  /* 계산 연출이 아직 안 끝난 몫은 빼고 보여준다 — 손님이 오기도 전에
+   * 돈이 오르면 버그로 보인다. sim의 진짜 돈은 그대로다(버튼 계산엔 그걸 쓴다). */
+  const shown = Math.max(0, sim.money - village.inTransit());
+  m.textContent = fmt(shown) + '냥';
+  if (shown !== lastMoney) { m.classList.add('pop'); setTimeout(() => m.classList.remove('pop'), 120); }
+  lastMoney = shown;
   $('#ips').textContent = '초당 ' + fmt(sim.incomePerSec()) + '냥';
   $('#shopcount').textContent = `가게 ${sim.shops.length}/${SHOPS.length} · 손님 ${sim.guests.length}`;
 

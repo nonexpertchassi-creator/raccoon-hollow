@@ -98,6 +98,7 @@ export class Village {
   constructor(sim, onShopTap) {
     this.sim = sim;
     this.onShopTap = onShopTap;
+    this.onDelivered = null;               // 계산이 눈앞에서 끝났을 때 — 장부(로그)는 이때 쓴다
     this.t = 0;
     this.walkers = [];
     this.coins = [];
@@ -159,16 +160,27 @@ export class Village {
   onSale(sale) {
     /* 걸음이 느려 한 명이 10초쯤 머문다. 실측으로 열넷이면 거래의 96%가
      * 화면에 나온다. 넘치면 그 거래는 화면에 안 나온다(계산은 끝났다). */
-    if (this.walkers.length > 14) return;
+    if (this.walkers.length > 14) {
+      // 걸어올 사람이 없으니 장부라도 바로 쓴다 — 돈은 이미 움직였다
+      if (!sale.waiting && sale.n > 0 && this.onDelivered) this.onDelivered(sale);
+      return;
+    }
     const byShop = new Map();
     for (const ln of sale.lines) {
       const idx = SHOPS.findIndex((s) => s.id === ln.item.shop);
       if (idx < 0) continue;
-      if (!byShop.has(idx)) byShop.set(idx, { idx, sold: [], gain: 0 });
+      if (!byShop.has(idx)) byShop.set(idx, { idx, sold: [], gain: 0, pend: !sale.waiting });
       const g = byShop.get(idx);
       g.sold.push({ id: ln.item.id, n: ln.n });
       g.gain += ln.gain;
-      this.pending[ln.item.id] = (this.pending[ln.item.id] || 0) + ln.n;
+      /* 즉시 판매만 도로 더한다. 주문은 점장이 손에 들고 만드는 중이라
+       * 진열대가 파인 게 오히려 맞는 그림이다. */
+      if (!sale.waiting) this.pending[ln.item.id] = (this.pending[ln.item.id] || 0) + ln.n;
+    }
+    /* 빈손 손님 — 포기한 물건의 가게 앞까지는 가 본다. 💢는 거기서 나온다. */
+    if (!byShop.size && sale.grumbles && sale.grumbles.length) {
+      const idx = SHOPS.findIndex((s) => s.id === sale.grumbles[0].item.shop);
+      if (idx >= 0) byShop.set(idx, { idx, sold: [], gain: 0 });
     }
     const stops = [...byShop.values()];
     if (!stops.length) return;
@@ -188,11 +200,51 @@ export class Village {
       speed: sale.guest.speed || 1,
       carry: carryOf(sale.guest.qty),
       stops, si: 0,
+      sale, orderId: sale.orderId, settled: !sale.waiting,
       x: g0.x + (Math.random() - 0.5) * 40, y: g0.y,
       exitGate: gate(!fromTop),
-      state: 'in', wait: 0, paid: false, bob: Math.random() * 6,
+      state: 'in', wait: 0, paid: false, served: false, bob: Math.random() * 6,
       lane: (Math.random() - 0.5) * 34,
     });
+  }
+
+  /** 기다리던 주문이 다 나왔다 — sim이 방금 돈을 움직였다. 손님을 깨운다. */
+  onOrderDone(done) {
+    const w = this.walkers.find((x) => x.orderId === done.orderId);
+    if (!w) {
+      if (done.n > 0 && this.onDelivered) this.onDelivered(done);
+      return;
+    }
+    w.sale = done;
+    w.settled = true;
+    // 실제로 받아가는 만큼으로 바꿔 단다 (시간 초과면 주문보다 적을 수 있다)
+    const byShop = new Map();
+    for (const ln of done.lines) {
+      const idx = SHOPS.findIndex((s) => s.id === ln.item.shop);
+      if (!byShop.has(idx)) byShop.set(idx, { sold: [], gain: 0 });
+      const g = byShop.get(idx);
+      g.sold.push({ id: ln.item.id, n: ln.n });
+      g.gain += ln.gain;
+    }
+    for (const stop of w.stops) {
+      const g = byShop.get(stop.idx);
+      stop.sold = g ? g.sold : [];
+      stop.gain = g ? g.gain : 0;
+    }
+  }
+
+  /** 계산은 끝났는데 아직 계산대 연출이 안 끝난 돈.
+   *  위쪽 엽전 표시는 이만큼 빼고 보여준다 — 돈이 미리 오르면 버그로 보인다. */
+  inTransit() {
+    let s = 0;
+    for (const w of this.walkers) {
+      if (!w.settled) continue;                 // 주문 대기 — 돈이 아직 안 움직였다
+      for (let i = w.si; i < w.stops.length; i++) {
+        if (i === w.si && w.paid) continue;
+        s += w.stops[i].gain;
+      }
+    }
+    return s;
   }
 
   onAsk(ask) {
@@ -228,34 +280,44 @@ export class Village {
           w.x += dx / d * step; w.y += dy / d * step;
         }
         if (d < 4) {
-          w.state = 'buy'; w.wait = BUY_TIME; w.paid = false;
+          w.state = 'buy'; w.wait = BUY_TIME; w.paid = false; w.served = false;
+        }
+      } else if (w.state === 'buy') {
+        /* 주문한 물건이 아직 안 나왔다 — 점장은 만드는 중, 손님은 서서 기다린다.
+         * 계산 연출은 sim이 onOrderDone으로 깨워줄 때 시작한다. */
+        if (!w.settled) continue;
+        if (!w.served) {
+          w.served = true; w.wait = BUY_TIME;
           this.busyShop[stop.idx] = BUY_TIME + 1.2;
           /* 점장이 이 매대에 들러 물건을 집어 온다 — '주문 받고 내온다'가
            * 눈에 보이는 지점. 경제는 그대로다(재고에서 파는 것). */
-          this.fetch[stop.idx] = stop.sold[0].id;
+          if (stop.sold.length) this.fetch[stop.idx] = stop.sold[0].id;
         }
-      } else if (w.state === 'buy') {
         w.wait -= dt;
         if (!w.paid && w.wait <= BUY_TIME - HAND_OVER) {
           w.paid = true;
-          for (const s of stop.sold) {
-            this.pending[s.id] = Math.max(0, (this.pending[s.id] || 0) - s.n);
-            this.flash[s.id] = 0.45;
+          if (stop.gain > 0) {
+            for (const s of stop.sold) {
+              if (stop.pend) this.pending[s.id] = Math.max(0, (this.pending[s.id] || 0) - s.n);
+              this.flash[s.id] = 0.45;
+            }
+            for (let k = 0; k < Math.min(5, stop.sold.length + 2); k++) {
+              this.coins.push({
+                x: w.x + (Math.random() - 0.5) * 16, y: w.y - 10,
+                vx: 20 + Math.random() * 30, vy: -80 - Math.random() * 40,
+                t: 1.05, r: 8.5 + Math.random() * 2.5,
+              });
+            }
+            const tk = (this.takings[stop.idx] ||= { amount: 0, t: 0 });
+            tk.amount += stop.gain; tk.t = 1.7;
+            const sy = w.y - this.cam.y, sx = w.x - this.cam.x;
+            if (sy > -20 && sy < this.viewH + 20 && sx > -20 && sx < VW + 20) {
+              Juice.burst(sx, sy - 14, { n: 4, color: ['#f0d98b'], size: 2, speed: 52, life: 0.34 });
+            }
+            Sfx.coin();
           }
-          for (let k = 0; k < Math.min(5, stop.sold.length + 2); k++) {
-            this.coins.push({
-              x: w.x + (Math.random() - 0.5) * 16, y: w.y - 10,
-              vx: 20 + Math.random() * 30, vy: -80 - Math.random() * 40,
-              t: 1.05, r: 8.5 + Math.random() * 2.5,
-            });
-          }
-          const tk = (this.takings[stop.idx] ||= { amount: 0, t: 0 });
-          tk.amount += stop.gain; tk.t = 1.7;
-          const sy = w.y - this.cam.y, sx = w.x - this.cam.x;
-          if (sy > -20 && sy < this.viewH + 20 && sx > -20 && sx < VW + 20) {
-            Juice.burst(sx, sy - 14, { n: 4, color: ['#f0d98b'], size: 2, speed: 52, life: 0.34 });
-          }
-          Sfx.coin();
+          /* 장부는 마지막 계산이 끝난 이 순간에 쓴다 — 미리 쓰면 버그로 보인다 */
+          if (w.si === w.stops.length - 1 && this.onDelivered) this.onDelivered(w.sale);
         }
         if (w.wait <= 0) { w.si++; w.state = w.si < w.stops.length ? 'in' : 'out'; }
       } else {
@@ -522,7 +584,15 @@ export class Village {
     for (const l of layer) l.d();
 
     // 말풍선·표는 깊이 정렬 밖 — 가려지면 못 읽는다
-    for (const w of this.walkers) if (w.state === 'buy' && !w.paid && vis(w, 80)) this._order(c, w);
+    for (const w of this.walkers) {
+      if (w.state !== 'buy' || !vis(w, 80)) continue;
+      if (!w.paid) this._order(c, w);
+      /* 빈손이거나 일부를 포기했다 — 💢 */
+      const gr = w.sale && w.sale.grumbles && w.sale.grumbles.length;
+      if (gr && (w.paid || !w.stops[w.si] || !w.stops[w.si].sold.length)) {
+        G.text(c, '💢', w.x + 15, w.y - 46 + Math.sin(this.t * 5.2) * 2, { size: 19, fill: '#000' });
+      }
+    }
     for (const k of Object.keys(this.takings)) this._takings(c, Number(k));
     if (this.bubble) this._bubble(c);
     for (const co of this.coins) if (vis(co, 30)) this._coin(c, co);
@@ -913,10 +983,11 @@ export class Village {
 
   _order(c, w) {
     const stop = w.stops[w.si];
-    if (!stop) return;
+    if (!stop || !stop.sold.length) return;
     const n = stop.sold.reduce((a, s) => a + s.n, 0);
     const kinds = stop.sold.length;
-    const txt = kinds > 1 ? `${n}개 · ${kinds}종` : `${n}개`;
+    // 아직 만드는 중이면 🔨를 붙인다 — '기다리는 중'이 눈에 보인다
+    const txt = (w.settled ? '' : '🔨 ') + (kinds > 1 ? `${n}개 · ${kinds}종` : `${n}개`);
     const tw = 12 + txt.length * 7.2;
     const bx = w.x + 24, by = w.y - 38 + Math.sin(this.t * 3.4) * 1.6;
     G.round(c, bx - tw / 2, by - 11, tw, 19, 7, 'rgba(252,246,232,.96)');

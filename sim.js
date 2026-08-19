@@ -9,7 +9,7 @@
 
 import {
   SHOPS, GUESTS, LEVEL, MILESTONE_EVERY, MILESTONE_MULT, STOCK_CAP, OFFLINE, ASK_LINES,
-  BASKET_SPREAD, MAX_BULK, AUTO_COST, AUTO_PER_TICK, AUTO_SHARE, ASK_EVERY, FAIR, SMALL_SHOPS, RANKS, REGULARS, PESTS, GUARD, STAFF,
+  BASKET_SPREAD, MAX_BULK, AUTO_COST, AUTO_PER_TICK, AUTO_SHARE, ASK_EVERY, FAIR, SMALL_SHOPS, RANKS, REGULARS, PESTS, GUARD, STAFF, SERVICE,
 } from './content.js';
 
 const ALL_ITEMS = SHOPS.flatMap((s) => s.items.map((i) => ({ ...i, shop: s.id })));
@@ -49,6 +49,12 @@ export class Sim {
     this._purse = 0;                     // 자동 강화가 쓸 수 있는 몫
     this.events = [];                    // 화면에 띄울 최근 사건
 
+    /* 기다리는 주문. 재고가 모자라도 곧 나올 것 같으면 손님이 기다린다.
+     * { id, gid, lines:[{id,n,rem,unit}], want, grumbles, t } */
+    this.orders = [];
+    this._oid = 0;
+    this._hold = {};                     // 계산 중이라 생산이 멈춘 가게 (점장 혼자일 때만)
+
     this._guestAcc = {};
     this._guestGap = {};
     /* 지금 나와 있는 나쁜 놈. 한 번에 하나만.
@@ -60,6 +66,11 @@ export class Sim {
     for (const g of GUESTS) this._guestAcc[g.id] = 0;
 
     if (save) Object.assign(this, save);
+
+    /* 주문·계산 멈춤은 나중에 생겼다 — 옛 저장본엔 칸 자체가 없다 */
+    if (!Array.isArray(this.orders)) this.orders = [];
+    if (!this._hold || typeof this._hold !== 'object') this._hold = {};
+    if (typeof this._oid !== 'number') this._oid = 0;
 
     /* 저장본에 없는 손님은 **영원히 안 온다.**
      *
@@ -586,14 +597,39 @@ export class Sim {
     }
 
     // 1) 생산 — 열린 품목이 각자 자기 타이머로 돈다. 손 댈 필요 없음.
+    //    단, 점장 혼자인 가게는 계산하는 동안(_hold) 망치를 놓는다.
+    //    직원이 있으면 계산 중에도 직원이 계속 만든다 — 고용의 이유 하나 추가.
+    for (const k of Object.keys(this._hold)) {
+      this._hold[k] -= dt;
+      if (this._hold[k] <= 0) delete this._hold[k];
+    }
     for (const id of Object.keys(this.items)) {
       const st = this.items[id];
-      if (st.stock >= this.capOf(id)) continue;  // 진열대가 꽉 차면 잠시 멈춘다
+      const shop = itemById(id).shop;
+      if (this.staffOf(shop) === 0 && (this._hold[shop] || 0) > 0) continue;  // 계산 중
+      // 진열대가 꽉 차면 멈춘다 — 기다리는 주문이 있으면 그 몫은 계속 만든다
+      if (st.stock >= this.capOf(id) && !this._orderRem(id)) continue;
       st.prog += dt;
       const need = this.craftTime(id);
-      while (st.prog >= need && st.stock < this.capOf(id)) {
+      while (st.prog >= need && (this._orderRem(id) > 0 || st.stock < this.capOf(id))) {
         st.prog -= need;
-        st.stock++;
+        // 갓 만든 물건은 기다리는 손님 먼저, 없으면 진열대로
+        if (!this._giveToOrder(id)) st.stock++;
+      }
+    }
+
+    // 1.2) 주문 시계 — 다 만들어졌으면 계산, 너무 오래 끌면 있는 만큼만 계산
+    const done = [];
+    if (this.orders.length) {
+      const finished = [];
+      for (const o of this.orders) {
+        o.t += dt;
+        if (o.lines.every((l) => l.rem <= 0) || o.t >= SERVICE.patience * 2) finished.push(o);
+      }
+      for (const o of finished) {
+        this.orders.splice(this.orders.indexOf(o), 1);
+        const g = GUESTS.find((x) => x.id === o.gid) || GUESTS[0];
+        done.push(this._settle(g, o.lines, o.want, o.grumbles, o.t, o.id));
       }
     }
 
@@ -635,7 +671,24 @@ export class Sim {
       this._ev(`${josa(ng.name, '이', '가')} 마을에 왔다`, 'guest');
     }
 
-    return { sales, ask, newGuest, autoLv };
+    return { sales, done, ask, newGuest, autoLv };
+  }
+
+  /** 이 품목을 기다리는 주문이 모두 몇 개나 남았나 */
+  _orderRem(id) {
+    let s = 0;
+    for (const o of this.orders) for (const l of o.lines) if (l.id === id && l.rem > 0) s += l.rem;
+    return s;
+  }
+
+  /** 갓 만든 물건 하나를 제일 오래 기다린 주문에 준다. 줄 곳이 없으면 false. */
+  _giveToOrder(id) {
+    for (const o of this.orders) {
+      for (const l of o.lines) {
+        if (l.id === id && l.rem > 0) { l.rem--; return true; }
+      }
+    }
+    return false;
   }
 
   /**
@@ -651,7 +704,7 @@ export class Sim {
    * 집어가야 가게가 살아있는 느낌이 난다.
    */
   _buy(g, rng = Math.random) {
-    const have = Object.keys(this.items).filter((id) => this.items[id].stock > 0);
+    const have = Object.keys(this.items);
     if (!have.length) return null;
 
     // 단골일수록 많이 사가고 값도 후하게 쳐준다
@@ -670,37 +723,99 @@ export class Sim {
     // 앞으로 생산·손님 수치를 만지면 다시 막힐 수 있어 보험으로 남긴다.
     // sort는 안정 정렬이라 같은 그룹 안에서는 위에서 섞은 순서가 유지된다.
     have.sort((a, b) =>
-      (this.items[b].stock >= STOCK_CAP) - (this.items[a].stock >= STOCK_CAP));
+      (this.items[b].stock >= this.capOf(b)) - (this.items[a].stock >= this.capOf(a)));
 
     // 손님마다 훑는 종류 수가 다르다. 곰·멧돼지는 1이라 한 종류를 쓸어간다.
     const per = Math.max(1, Math.ceil(qty / (g.spread || BASKET_SPREAD)));
-    const lines = [];
-    let left = qty, gain = 0;
+    const lines = [];      // { id, n(가져갈 총 개수), rem(아직 안 만들어진 것), unit(1개 값) }
+    const grumbles = [];   // 너무 오래 걸려서 포기한 것들 — 💢
+    let left = qty;
 
     for (const id of have) {
       if (left <= 0) break;
-      const n = Math.min(left, per, this.items[id].stock);
-      if (n <= 0) continue;
-      const got = Math.floor(this.price(id) * pay * n);
-      this.items[id].stock -= n;
-      left -= n; gain += got; this.sold += n;
-      lines.push({ item: itemById(id), n, gain: got });
-    }
-    if (!lines.length) return null;
+      const st = this.items[id];
+      const wantN = Math.min(left, per);
+      if (wantN <= 0) continue;
+      const take = Math.min(wantN, st.stock);
+      const rem = wantN - take;
 
+      if (rem > 0) {
+        /* 모자란 몫을 기다릴지 계산한다. 앞에 기다리는 다른 주문 몫까지
+         * 합쳐서 본다 — 안 그러면 다들 기다리다 다 같이 터진다. */
+        const waitT = (this._orderRem(id) + rem) * this.craftTime(id);
+        if (waitT > SERVICE.patience) {
+          if (take > 0) {
+            // 있는 것만 사간다 — 기다리기엔 너무 길다
+            st.stock -= take; left -= take;
+            lines.push({ id, n: take, rem: 0, unit: this.price(id) * pay });
+          } else {
+            // 빈손 — 💢 남기고 다른 매대를 본다. 만들던 것은 진열대로 간다.
+            grumbles.push({ item: itemById(id), n: wantN });
+          }
+          continue;
+        }
+        // 기다린다 — 있는 건 지금 집고, 나머지는 주문으로 건다
+        st.stock -= take; left -= wantN;
+        lines.push({ id, n: wantN, rem, unit: this.price(id) * pay });
+        continue;
+      }
+      if (take <= 0) continue;
+      st.stock -= take; left -= take;
+      lines.push({ id, n: take, rem: 0, unit: this.price(id) * pay });
+    }
+
+    if (!lines.length) {
+      if (!grumbles.length) return null;
+      // 사고 싶은 게 하나도 없었다 — 가게 앞까지 왔다가 💢 하고 돌아간다
+      return { guest: g, lines: [], gain: 0, n: 0, want: qty, grumbles };
+    }
+
+    if (lines.some((l) => l.rem > 0)) {
+      // 주문 — 돈도 장부도 물건이 다 나온 다음에 움직인다
+      const oid = ++this._oid;
+      this.orders.push({ id: oid, gid: g.id, lines, want: qty, grumbles, t: 0 });
+      return {
+        guest: g, orderId: oid, waiting: true, gain: 0, n: 0, want: qty, grumbles,
+        lines: lines.map((l) => ({ item: itemById(l.id), n: l.n, gain: Math.floor(l.unit * l.n) })),
+      };
+    }
+    return this._settle(g, lines, qty, grumbles, 0);
+  }
+
+  /**
+   * 계산대에서 실제로 돈이 오가는 순간. 즉시 판매든 기다린 주문이든
+   * 마지막엔 전부 여기를 지난다 — 매출·단골·계산 멈춤이 전부 이 안에 있다.
+   */
+  _settle(g, lines, want, grumbles, waited, orderId) {
+    let gain = 0, n = 0;
+    const out = [];
+    for (const l of lines) {
+      const got = l.n - (l.rem || 0);          // 시간 초과면 못 받은 몫이 남는다
+      if (got <= 0) continue;
+      const money = Math.floor(l.unit * got);
+      gain += money; n += got; this.sold += got;
+      out.push({ item: itemById(l.id), n: got, gain: money });
+    }
     this.money += gain;
     this.revenue += gain;
     if (this.auto) this._purse += gain * AUTO_SHARE;
 
-    // 단골 등급이 올랐으면 알린다 — 손님이 굳어 있지 않다는 신호다
-    const before = this.regularLv(g.id);
-    this.bought[g.id] = (this.bought[g.id] || 0) + (qty - left);
-    this.visits[g.id] = (this.visits[g.id] || 0) + 1;
-    const after = this.regularLv(g.id);
-    if (after > before) {
-      this._ev(`${josa(g.name, '이', '가')} ${after + 1}성 ${josa(REGULARS[after].name, '이', '가')} 되었다`, 'guest');
+    // 점장 혼자인 가게는 계산하는 동안 생산을 멈춘다
+    for (const ln of out) {
+      if (this.staffOf(ln.item.shop) === 0) this._hold[ln.item.shop] = SERVICE.servePause;
     }
-    return { guest: g, lines, gain, n: qty - left, want: qty };
+
+    if (n > 0) {
+      // 단골 등급이 올랐으면 알린다 — 손님이 굳어 있지 않다는 신호다
+      const before = this.regularLv(g.id);
+      this.bought[g.id] = (this.bought[g.id] || 0) + n;
+      this.visits[g.id] = (this.visits[g.id] || 0) + 1;
+      const after = this.regularLv(g.id);
+      if (after > before) {
+        this._ev(`${josa(g.name, '이', '가')} ${after + 1}성 ${josa(REGULARS[after].name, '이', '가')} 되었다`, 'guest');
+      }
+    }
+    return { guest: g, lines: out, gain, n, want, grumbles, waited, orderId };
   }
 
   /**

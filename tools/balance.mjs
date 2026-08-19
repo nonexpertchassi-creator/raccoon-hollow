@@ -66,6 +66,8 @@ let lastUnlock = 0, lastUnlockWhat = '시작';
 const pestLog = {};
 for (const P of PESTS) pestLog[P.id] = { seen: 0, loss: 0, worth: 0 };
 let pestHad = null;
+/* 계산대 규칙(SERVICE)이 실제로 어떻게 굴러가는지 — 기다림과 💢를 센다 */
+let visitsAll = 0, visitsWaited = 0, waitSum = 0, huffs = 0;
 
 for (let t = 0; t < HOURS * 3600; t += DT) {
   const r = s.tick(DT, rng);
@@ -78,9 +80,14 @@ for (let t = 0; t < HOURS * 3600; t += DT) {
   if (!s.pest && pestHad) pestHad = null;
 
   /* 매출을 품목별로 쪼개 적는다.
-   * 손님 한 명이 여러 품목을 사갈 수 있으므로 lines[]를 먼저 본다. */
-  for (const sale of r.sales) {
-    for (const ln of (sale.lines || [sale])) {
+   * 손님 한 명이 여러 품목을 사갈 수 있으므로 lines[]를 먼저 본다.
+   * 주문(waiting)은 만들어진 뒤 done으로 다시 오므로 여기선 안 센다 —
+   * 두 번 세면 매출이 부풀어 도구가 또 거짓말을 한다. */
+  for (const sale of [...r.sales.filter((x) => !x.waiting), ...(r.done || [])]) {
+    if (sale.n === 0) { huffs++; continue; }        // 빈손 💢
+    visitsAll++;
+    if (sale.waited > 0.01) { visitsWaited++; waitSum += sale.waited; }
+    for (const ln of sale.lines) {
       const p = seen(ln.item.id);
       p.rev += ln.gain; p.sold += ln.n;
     }
@@ -222,8 +229,16 @@ for (const r of timeline) {
     `  ${String(r.shops).padStart(4)}  ${String(r.items).padStart(4)}`);
 }
 
+console.log('\n■ 계산대  (기다림·빈손은 손님 방문 기준)');
+console.log(`   방문 ${visitsAll}회 · 기다렸다 받아감 ${visitsWaited}회` +
+  ` (${pct(visitsWaited, visitsAll).toFixed(1)}%` +
+  `${visitsWaited ? ` · 평균 ${(waitSum / visitsWaited).toFixed(1)}초` : ''})` +
+  ` · 빈손 💢 ${huffs}회 (${pct(huffs, visitsAll + huffs).toFixed(1)}%)`);
+
 console.log('\n■ 진단');
 const bad = [];
+/* 💢가 잦으면 "가게가 장사를 못 한다"로 보인다 — 참을성이나 생산 수치를 만질 것 */
+if (pct(huffs, visitsAll + huffs) > 8) bad.push(`빈손으로 돌아간 손님 ${pct(huffs, visitsAll + huffs).toFixed(1)}% — 8% 초과`);
 if (firstShop.size < 2) bad.push(`${HOURS}시간에 가게를 하나도 못 늘림 — 마을이 안 살아남`);
 if (w.length && w[Math.floor(w.length / 2)] > 60) bad.push('할 게 생기기까지 중앙 60초 초과 — 지루함');
 if (w.length && w[Math.floor(w.length / 2)] < 2) bad.push('간격 2초 미만 — 긴장이 없음');
