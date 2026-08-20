@@ -111,13 +111,22 @@ function workSpot(y, n) {
   const c = (v) => Math.max(1, Math.min(n - 2, v));
   return [c(y.kiln[0]), c(y.kiln[1])];
 }
-/** 직원 자리 — 담벼락에 붙지 않은 안쪽 칸들(작업대는 뺀다).
- *  예전엔 아래 담벼락 줄에 세워서, 그 변에 매대가 오는 생김새에서 겹쳤다. */
+/** 직원 자리 — 안쪽 빈칸을 먼저, 모자라면 담벼락 빈칸까지.
+ *
+ *  ★ 3×3 마당은 안쪽 칸이 딱 하나뿐이고 그걸 작업대가 쓴다. 그래서
+ *    무쇠급 가게는 **직원을 뽑아도 한 마리도 안 보였다** — 돈만 나가고
+ *    화면에는 아무 일도 안 일어나는, 제일 나쁜 종류의 고장이다.
+ *    매대·계산대·가마가 안 쓰는 담벼락 칸을 뒷자리로 내준다. */
 function staffSpots(y, n) {
   const w = workSpot(y, n), out = [];
   for (let b = 1; b <= n - 2; b++) for (let a = 1; a <= n - 2; a++) {
     if (a === w[0] && b === w[1]) continue;
     out.push([a, b]);
+  }
+  const taken = new Set([...y.stalls, y.counter, y.kiln, w].map((t) => `${t[0]},${t[1]}`));
+  for (let b = 0; b < n; b++) for (let a = 0; a < n; a++) {
+    if (a > 0 && a < n - 1 && b > 0 && b < n - 1) continue;      // 안쪽은 위에서 넣었다
+    if (!taken.has(`${a},${b}`)) out.push([a, b]);
   }
   return out;
 }
@@ -917,11 +926,17 @@ export class Village {
        * 얼굴로 서 있었다. 아직 묻지도 않았는데 화가 나 있는 셈이었다.
        *
        * 😠는 기다림이 4초를 넘겼을 때 — 줄에 선 뒤부터 센다. */
-      const gr = w.sale && w.sale.grumbles && w.sale.grumbles.length;
       const bob = Math.sin(this.t * 5.2) * 2;
-      if (gr && w.paid) {
+      /* 💢 = **빈손으로 돌아간다**(하나도 못 샀다). 몇 개 사고 한 종류를
+       * 포기한 정도로는 안 띄운다 — 물건을 받아 들고 돌아서는 순간 화를 내면
+       * '방금 샀는데 왜 화가 나지?'가 된다. */
+      const empty = w.sale && w.sale.n === 0 && w.sale.grumbles && w.sale.grumbles.length;
+      /* 😠 = **지금 기다리는 중**. 물건이 나와 계산이 시작되면 바로 푼다 —
+       * 다 받고 나서도 화난 얼굴이 남아 있으면 그것도 '왜 화났지?'가 된다. */
+      const waiting = w.state === 'buy' && !w.settled && w.waitT > SERVICE.patience * ANGRY_AT;
+      if (empty && w.paid) {
         G.text(c, '💢', w.x + 15, w.y - 46 + bob, { size: 19, fill: '#000' });
-      } else if (w.waitT > SERVICE.patience * ANGRY_AT) {
+      } else if (waiting) {
         G.text(c, '😠', w.x + 15, w.y - 44 + bob, { size: 17, fill: '#000' });
       }
     }

@@ -280,10 +280,9 @@ export class Sim {
    * 다섯 가지라 두 시간 가까이 걸린다 — 그동안 손님은 물건이 없어 빈손으로
    * 돌아간다. 일손이 필요한 건 바로 그 구간이다. 이제 돈만 있으면 뽑는다.
    *
-   * 자리 수만 등급이 늘린다(무쇠 2 · 참쇠 3 · 강철 4). 마당이 좁으면
-   * 설 데가 없기도 하고, 무엇보다 공급이 한꺼번에 넘치면 진열대가 꽉 찬 채
-   * 생산이 멈춘다 — 예전에 그렇게 망가뜨린 적이 있다. */
-  staffMax(shopId) { return Math.min(STAFF.max, 2 + this.rankOf(shopId)); }
+   * 몇 명까지 두는가는 재서 정했다 — **한 명**이다. 자세한 수치는
+   * content.js의 STAFF에 적어 뒀다(둘째부터는 매출도 기다림도 안 바뀐다). */
+  staffMax(shopId) { return this.shops.includes(shopId) ? STAFF.max : 0; }
 
   staffCost(shopId) {
     const shop = SHOPS.find((s) => s.id === shopId);
@@ -872,24 +871,14 @@ export class Sim {
   }
 }
 
-/* 숫자 표기 — 한국식(만·억)과 세계식(K·M) 둘 다 쓸 수 있다.
- *
- * 한국식이 기본이다: 이 게임은 조선 만물상이고, 한국말은 네 자리마다
- * 단위가 바뀐다(만 = 10⁴, 억 = 10⁸). '1.2억'은 한국 사람이 소리 내어
- * 읽는 그대로다. 다만 세 자리마다 끊는 K·M에 익숙한 사람도 있어서
- * 머리띠의 단추로 언제든 바꾼다. 저장은 소리 설정처럼 따로 남긴다. */
-let NUM_STYLE = 'ko';
-export function setNumStyle(v) { NUM_STYLE = v === 'intl' ? 'intl' : 'ko'; }
-export function numStyle() { return NUM_STYLE; }
-
-/** 큰 숫자. 방치형은 이게 없으면 화면이 터진다. */
+/** 큰 숫자. 방치형은 이게 없으면 화면이 터진다.
+ *  K·M·B 하나로 간다 — 만·억과 고를 수 있게 해 봤지만, 고르는 게 일이지
+ *  얻는 게 없었다. 세 자리마다 끊는 쪽이 게임에서 더 흔하다. */
 export function fmt(n) {
   n = Math.floor(n);
-  const intl = NUM_STYLE === 'intl';
-  const step = intl ? 1000 : 10000;
-  const U = intl ? ['', 'K', 'M', 'B', 'T', 'Qa'] : ['', '만', '억', '조', '경'];
-  if (n < step) return n.toLocaleString('ko-KR');
+  if (n < 1000) return String(n);
+  const U = ['', 'K', 'M', 'B', 'T', 'Qa'];
   let i = 0, v = n;
-  while (v >= step && i < U.length - 1) { v /= step; i++; }
+  while (v >= 1000 && i < U.length - 1) { v /= 1000; i++; }
   return (v < 10 ? v.toFixed(2) : v < 100 ? v.toFixed(1) : Math.floor(v)) + U[i];
 }
