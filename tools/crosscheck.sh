@@ -29,7 +29,9 @@ require('fs').writeFileSync('godot/cases.txt', n.filter(x => x >= 0 && Number.is
 "
 # class_name(전역 이름)은 프로젝트를 한 번 훑어야 등록된다.
 # 이 줄이 없으면 "Identifier \"Num\" not declared"로 죽는다.
-[ -d godot/.godot ] || godot --headless --path godot --import >/dev/null 2>&1
+# 늘 훑는다. 조건부로 건너뛰게 했더니 .gd를 고쳐도 옛 이름이 남아
+# 엉뚱한 결과가 나올 여지가 있었다. 0.5초짜리라 아낄 이유가 없다.
+godot --headless --path godot --import >/dev/null 2>&1 || true
 godot --headless --path godot --script tests/crosscheck.gd >/dev/null 2>&1
 node -e "
 import('./sim.js').then(m=>{

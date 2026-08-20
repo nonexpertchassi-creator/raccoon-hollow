@@ -10,7 +10,7 @@
 # 내 컴퓨터에 깔 때는 이 스크립트가 필요 없다 — https://godotengine.org/download
 # 에서 받아 압축만 풀면 된다. Godot은 설치 과정이 없는 단일 실행 파일이다.
 set -e
-V="${1:-4.7}"
+V="${1:-4.7.2}"
 DIR=/opt/godot
 URL="https://github.com/godotengine/godot/releases/download/${V}-stable/Godot_v${V}-stable_linux.x86_64.zip"
 mkdir -p "$DIR"
