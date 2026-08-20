@@ -633,6 +633,16 @@ export class Village {
     }
   }
 
+  /** 다진 흙마당 한 칸 — 작은 건물의 발밑. 이게 있어야 땅에 붙어 보인다. */
+  _pad(c, tx, ty) {
+    const N = iso(tx, ty), E = iso(tx + 1, ty), S = iso(tx + 1, ty + 1), W2 = iso(tx, ty + 1);
+    c.beginPath();
+    c.moveTo(N.x, N.y); c.lineTo(E.x, E.y); c.lineTo(S.x, S.y); c.lineTo(W2.x, W2.y);
+    c.closePath();
+    c.fillStyle = '#c2ad83'; c.fill();
+    c.strokeStyle = 'rgba(60,50,30,.28)'; c.lineWidth = 1.5; c.stroke();
+  }
+
   /** 건물 상자 — 윗면·왼면·오른면 */
   _box(c, tx, ty, w, d, h, topCol, sideCol) {
     const N = iso(tx, ty), E = iso(tx + w, ty), S = iso(tx + w, ty + d), W2 = iso(tx, ty + d);
@@ -812,11 +822,18 @@ export class Village {
       return;
     }
 
-    c.fillStyle = 'rgba(0,0,0,.13)';
-    c.beginPath(); c.ellipse(p.x, p.y + 3, TW * 0.42, TH * 0.32, 0, 0, 7); c.fill();
-    this._box(c, tx + 0.08, ty + 0.08, 0.84, 0.84, 30, '#e6dcc4', C.wood);
-    G.round(c, p.x - 34, p.y - 62, 68, 19, 6, 'rgba(43,36,27,.8)');
-    G.text(c, def.name, p.x, p.y - 52.5, { size: 11, fill: '#fff8ec', weight: 800 });
+    /* 건물이 '땅에 서 있다'는 인상은 이 순서가 만든다:
+     * 다진 흙마당(발 밑) → 벽 → 벽보다 넓게 나온 처마 지붕.
+     * 예전엔 상자 밑에 그림자 타원을 깔았는데, 그림자가 바닥 밖으로
+     * 삐져나오니 오히려 공중에 뜬 것처럼 보였다. 지붕도 길바닥과 같은
+     * 미색이라 윗면이 '떠 있는 땅 한 칸'으로 읽혔다. */
+    this._pad(c, tx, ty);
+    this._box(c, tx + 0.16, ty + 0.16, 0.68, 0.68, 19, C.paper2, C.wood);
+    c.save(); c.translate(0, -19);
+    this._box(c, tx + 0.02, ty + 0.02, 0.96, 0.96, 9, '#8a6647', '#6b4c33');
+    c.restore();
+    G.round(c, p.x - 30, p.y - 46, 60, 17, 6, 'rgba(43,36,27,.85)');
+    G.text(c, def.name, p.x, p.y - 37.5, { size: 10.5, fill: '#fff8ec', weight: 800 });
 
     if (this.sim.busy === i) {
       const bob = Math.sin(this.t * 5) * 4;
@@ -840,9 +857,13 @@ export class Village {
       G.text(c, `${fmt(GUARD.cost)}냥`, p.x, p.y - TH + 2.5, { size: 11, fill: can ? '#fff' : '#e6e0cf', weight: 800 });
       return;
     }
-    // 개집
-    this._box(c, DOG_T[0] + 0.15, DOG_T[1] + 0.15, 0.7, 0.7, 24, C.paper2, C.wood2);
-    G.circle(c, p.x, p.y - 22, 9, '#2b241b');
+    // 개집 — 작은 가게와 같은 문법: 흙마당 → 벽 → 처마
+    this._pad(c, DOG_T[0], DOG_T[1]);
+    this._box(c, DOG_T[0] + 0.18, DOG_T[1] + 0.18, 0.64, 0.64, 19, C.paper2, '#d8c9a3');
+    c.save(); c.translate(0, -19);
+    this._box(c, DOG_T[0] + 0.06, DOG_T[1] + 0.06, 0.88, 0.88, 8, '#8a6647', '#6b4c33');
+    c.restore();
+    G.circle(c, p.x, p.y - 13, 6.5, '#2b241b');
     const alert = !!this.sim.pest;
     const bob = alert ? Math.abs(Math.sin(this.t * 12)) * 3 : Math.sin(this.t * 2) * 1.2;
     if (!drawArt(c, 'pests', 'dog', p.x - 26, p.y + 8 - bob, 24, 24))
