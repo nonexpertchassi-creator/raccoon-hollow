@@ -18,7 +18,8 @@
 | `rules/sim.gd` | 경제 규칙 — sim.js를 옮긴 것 |
 | `view/iso.gd` | 마을의 **좌표와 배치** — 격자·길·마당 생김새·길찾기 |
 | `view/village.gd` | 마을 그리기 + 걸어다니는 손님 (경제 계산은 한 줄도 없다) |
-| `view/panel.gd` | 아래에서 올라오는 창 — 가게 · 마을 의뢰 · 손님 도감 |
+| `view/panel.gd` | 아래에서 올라오는 창 — 가게 · 마을 의뢰 · 손님 도감 · 장날 소식 |
+| `view/chart.gd` | 막대와 원형 그래프. 누군지는 색이 아니라 이모지가 말한다 |
 | `tests/taptest.gd` | 누르기가 먹는지 좌표로 두드려 확인 |
 | `tests/savefile.gd` · `precision.gd` | 저장이 파일까지 도는지 · 소수가 비트까지 돌아오는지 |
 | `tests/savedbg.gd` | 저장 시험이 빨간불일 때 **어느 칸이** 다른지 찍어 본다 |

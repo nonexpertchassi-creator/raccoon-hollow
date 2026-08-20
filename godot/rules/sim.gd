@@ -97,6 +97,12 @@ var _pestAcc: Dictionary = {}
 var _pestGap: Dictionary = {}
 var _askAcc: float = 0.0
 
+## ── 장날 소식 ──
+## 하루치씩 담는다: [{ "day": 3, "sales": { "rabbit>hoe": 12.0, … } }]
+## 누적 총계로 세면 처음 연 품목이 영원히 1등이라 순위가 굳는다.
+## 기간으로 세야 매번 새 소식이 된다(content.gd의 LEDGER 참고).
+var ledger: Array = []
+
 func _init() -> void:
 	_tables()
 	_qCool = Content.QUEST.first
@@ -940,6 +946,7 @@ func _settle(g: Dictionary, lines: Array, want: float, grumbles: Array, waited: 
 
 	for ln in out:
 		_quest_gain(g.id, ln.item.id, ln.n)
+		_ledger_add(g.id, ln.item.id, ln.n)   # 장날 소식에 쓸 기록
 
 	if n > 0.0:
 		var before: int = regular_lv(g.id)
@@ -999,6 +1006,7 @@ const SAVE_KEYS: Array[String] = [
 	"quests", "gems", "gemUp", "maxGem", "_qid", "_qCool", "rush",
 	"wall", "event", "skins", "cleared", "_evAt", "_evIdx",
 	"orders", "_oid", "_hold", "_guestAcc", "_guestGap", "pest", "_pestAcc", "_pestGap", "_askAcc",
+	"ledger",
 ]
 ## 글자로 저장했다 되돌리면 정수가 소수가 된다(-1 → -1.0). 자리를 세는 데
 ## 쓰는 것들은 도로 정수로 되돌린다 — 아니면 배열 자리를 못 찾는다.
@@ -1051,6 +1059,94 @@ func load_from(d: Dictionary) -> void:
 	for g in Content.GUESTS:
 		if not _guestAcc.has(g.id):
 			_guestAcc[g.id] = 0.0
+
+# ── 장날 소식 ──
+
+## 지금이 게임내 며칠째인가. **켜 둔 시간(t)**으로 센다 —
+## 자리를 비운 동안에는 물건이 팔린 기록이 없으니 날짜만 넘어가면 빈 장이 된다.
+func day() -> int:
+	return int(t / (Content.LEDGER.dayMinutes * 60.0))
+
+## 몇 번째 장인가 (닷새가 한 장)
+func fair_no() -> int:
+	return int(day() / Content.LEDGER.daysPerFair)
+
+## 오늘 장이 선 지 며칠째인가 (1~5일)
+func fair_day() -> int:
+	return day() % int(Content.LEDGER.daysPerFair) + 1
+
+func _ledger_add(gid: String, item_id: String, n: float) -> void:
+	var d: int = day()
+	if ledger.is_empty() or ledger[ledger.size() - 1].day != d:
+		ledger.append({"day": d, "sales": {}})
+		# 오래된 것은 버린다. 안 버리면 저장본이 끝없이 커진다.
+		while ledger.size() > int(Content.LEDGER.keepDays):
+			ledger.remove_at(0)
+	var box: Dictionary = ledger[ledger.size() - 1].sales
+	var key: String = gid + ">" + item_id
+	box[key] = box.get(key, 0.0) + n
+
+## 최근 며칠치를 하나로 합친다. days가 0이면 갖고 있는 전부.
+func _merge(days: int) -> Dictionary:
+	var out: Dictionary = {}
+	var from_day: int = day() - days + 1 if days > 0 else -1
+	for e in ledger:
+		if days > 0 and e.day < from_day:
+			continue
+		for k in e.sales.keys():
+			out[k] = out.get(k, 0.0) + e.sales[k]
+	return out
+
+## 큰 것부터 [[이름, 개수], …]. 정렬이 아니라 훑어서 뽑는다 —
+## Godot의 sort_custom은 같은 값끼리의 순서를 보장하지 않아서,
+## 개수가 같은 두 품목의 등수가 화면을 볼 때마다 뒤바뀐다.
+static func _rank(counts: Dictionary, top: int) -> Array:
+	var rows: Array = []
+	var left: Dictionary = counts.duplicate()
+	while rows.size() < top and not left.is_empty():
+		var best: String = ""
+		var best_n: float = -1.0
+		for k in left.keys():
+			if left[k] > best_n:
+				best_n = left[k]
+				best = k
+		rows.append([best, best_n])
+		left.erase(best)
+	return rows
+
+## 이번 장에 잘 나간 품목 [[itemId, 개수], …]
+func hot_items(days: int, top: int) -> Array:
+	var by_item: Dictionary = {}
+	for k in _merge(days).keys():
+		var it: String = k.split(">")[1]
+		by_item[it] = by_item.get(it, 0.0) + _merge(days)[k]
+	return _rank(by_item, top)
+
+## 이 품목을 누가 사갔나 [[guestId, 개수], …]
+func buyers_of(item_id: String, days: int, top: int) -> Array:
+	var by_guest: Dictionary = {}
+	var m: Dictionary = _merge(days)
+	for k in m.keys():
+		var parts: PackedStringArray = k.split(">")
+		if parts[1] == item_id:
+			by_guest[parts[0]] = by_guest.get(parts[0], 0.0) + m[k]
+	return _rank(by_guest, top)
+
+## 이 마을의 핫템 (없으면 빈 글자)
+func hot_for(gid: String, days: int) -> String:
+	var by_item: Dictionary = {}
+	var m: Dictionary = _merge(days)
+	for k in m.keys():
+		var parts: PackedStringArray = k.split(">")
+		if parts[0] == gid:
+			by_item[parts[1]] = by_item.get(parts[1], 0.0) + m[k]
+	var r: Array = _rank(by_item, 1)
+	return r[0][0] if not r.is_empty() else ""
+
+## 이 품목의 최고 단골 (없으면 빈 글자)
+func best_buyer(item_id: String, days: int) -> String:
+	var r: Array = buyers_of(item_id, days, 1)
+	return r[0][0] if not r.is_empty() else ""
 
 func _ev(msg: String, kind: String) -> void:
 	events.push_front({"t": t, "msg": msg, "kind": kind})

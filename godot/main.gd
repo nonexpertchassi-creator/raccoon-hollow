@@ -17,6 +17,7 @@ var _layer: CanvasLayer
 var _autobtn: Button
 var _guestbtn: Button
 var _questbtn: Button
+var _newsbtn: Button
 
 ## 끌기와 누르기를 가른다. 이걸 안 하면 마을을 둘러보려고 끌 때마다
 ## 손가락을 뗀 자리가 눌려서 엉뚱한 게 강화된다.
@@ -105,6 +106,10 @@ func _ready() -> void:
 	_questbtn = Button.new()
 	_questbtn.pressed.connect(func(): panel.open_kind("quests"))
 	bar.add_child(_questbtn)
+	_newsbtn = Button.new()
+	_newsbtn.text = "소식"
+	_newsbtn.pressed.connect(func(): panel.open_kind("ledger"))
+	bar.add_child(_newsbtn)
 	_autobtn = Button.new()
 	_autobtn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_autobtn.pressed.connect(func(): sim.buy_auto())

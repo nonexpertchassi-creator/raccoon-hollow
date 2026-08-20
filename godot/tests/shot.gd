@@ -23,7 +23,7 @@ func _ready() -> void:
 	main._paint()
 	if OS.has_environment("SHOT_PANEL"):
 		var k: String = OS.get_environment("SHOT_PANEL")
-		if k == "quests" or k == "guests":
+		if k == "quests" or k == "guests" or k == "ledger":
 			main.panel.open_kind(k)
 		else:
 			main.panel.open_for(k)

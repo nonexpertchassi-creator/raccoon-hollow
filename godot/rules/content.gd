@@ -309,6 +309,14 @@ const GUESTS := [
 	}
 ]
 
+const LEDGER := {
+	"dayMinutes": 8.0,
+	"daysPerFair": 5.0,
+	"keepDays": 10.0,
+	"topItems": 6.0,
+	"topBuyers": 4.0
+}
+
 const LEVEL := {
 	"costGrowth": 1.09,
 	"priceStep": 0.12,

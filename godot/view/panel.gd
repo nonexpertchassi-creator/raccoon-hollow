@@ -130,6 +130,7 @@ func rebuild() -> void:
 		"shop": _shop_body()
 		"quests": _quests_body()
 		"guests": _guests_body()
+		"ledger": _ledger_body()
 
 ## ── 마을 의뢰와 젬 ──
 func _quests_body() -> void:
@@ -212,6 +213,67 @@ func _guests_body() -> void:
 		_box.add_child(_label("%s · %d초마다 %d개 · 값 ×%s · 누적 %s개 / %s번" % [
 			g.desc, int(g.every), int(g.qty), str(g.pay),
 			Num.fmt(sim.bought.get(g.id, 0.0)), Num.fmt(sim.visits.get(g.id, 0.0))], 11, Color("8a7a63"), true))
+
+## ── 장날 소식 ──
+##
+## ★ 그래프가 주인공이 아니라 **한 줄 소식**이 주인공이다.
+##   "이번 장 핫템 — 호미!"가 먼저 읽히고, 그래프는 그 말의 근거일 뿐이다.
+##   그래프를 먼저 놓으면 숫자를 읽어야 뜻을 알게 되는데, 그건 재미가 아니다.
+func _ledger_body() -> void:
+	_head("장날 소식")
+	var days: int = int(Content.LEDGER.daysPerFair)
+	_box.add_child(_label("%d번째 장 · %d일차 (게임내 %d일째)" % [
+		sim.fair_no() + 1, sim.fair_day(), sim.day()], 12, Color("8a7a63")))
+
+	var hot: Array = sim.hot_items(days, int(Content.LEDGER.topItems))
+	if hot.is_empty():
+		_box.add_child(_label("아직 이번 장에 판 것이 없다", 14, Color("8a7a63")))
+		return
+
+	# 한 줄 소식 둘 — 이게 사람들이 보러 오는 것이다
+	var best_item: String = hot[0][0]
+	_box.add_child(_label("이번 장 핫템 — %s!" % sim.item_name(best_item), 19, Color("a8763e")))
+	var bb: String = sim.best_buyer(best_item, days)
+	if bb != "":
+		var g: Dictionary = Sim.guest_by_id(bb)
+		_box.add_child(_label("제일 많이 사간 건 %s %s!" % [g.face, g.name], 15, Color("4a7c59")))
+
+	# 막대 — 무엇이 잘 나갔나
+	_box.add_child(_label("이번 장에 잘 나간 것", 13, Color("5a4e3d")))
+	var bars: Array = []
+	for r in hot:
+		bars.append([Sim.item_by_id(r[0]).icon, Sim.item_by_id(r[0]).name, r[1]])
+	var c1 := Chart.new()
+	_box.add_child(c1)
+	c1.setup(Chart.Kind.BAR, bars, hot.size() * 26.0 + 6.0)
+
+	# 원형 — 그 물건의 몫을 누가 가져갔나
+	_box.add_child(_label("%s를 사간 동물" % Sim.item_by_id(best_item).name, 13, Color("5a4e3d")))
+	var who: Array = sim.buyers_of(best_item, days, int(Content.LEDGER.topBuyers))
+	var slices: Array = []
+	var shown: float = 0.0
+	var all: Array = sim.buyers_of(best_item, days, 99)
+	for r in who:
+		slices.append([Sim.guest_by_id(r[0]).face, Sim.guest_by_id(r[0]).name, r[1]])
+		shown += float(r[1])
+	var rest: float = 0.0
+	for r in all:
+		rest += float(r[1])
+	rest -= shown
+	if rest > 0.0:
+		slices.append(["🐾", "그 밖에", rest])
+	var c2 := Chart.new()
+	_box.add_child(c2)
+	c2.setup(Chart.Kind.PIE, slices, 160.0)
+
+	# 마을별 핫템 — "토끼들의 핫템은 호미!"
+	_box.add_child(_label("마을마다 잘 나가는 것", 13, Color("5a4e3d")))
+	for gid in sim.guests:
+		var h: String = sim.hot_for(gid, days)
+		if h == "":
+			continue
+		var gg: Dictionary = Sim.guest_by_id(gid)
+		_box.add_child(_label("%s %s마을 — %s" % [gg.face, gg.name, sim.item_name(h)], 13))
 
 ## ── 가게 ──
 func _shop_body() -> void:
