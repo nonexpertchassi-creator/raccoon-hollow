@@ -220,7 +220,9 @@ import { Engine } from './core/engine.js';
 import { Village } from './iso.js';
 
 const $ = (s) => document.querySelector(s);
-const SAVE = 'rs:save';
+/* 저장 열쇠 v2 — 돈 단위 개편(경→억)으로 옛 저장과 물가가 안 맞는다.
+ * 조냥이 든 지갑으로 새 물가에 들어오면 전부 공짜가 되므로 새로 시작한다. */
+const SAVE = 'rs:save2';
 
 const saved = Store.get(SAVE);
 const sim = new Sim(saved?.state || null);

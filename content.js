@@ -22,65 +22,65 @@ export const SHOPS = [
      * 무쇠(부어 만든 거친 쇠) → 참쇠(두드려 단련한 쇠) → 강철.
      * 실제 조선의 쇠 등급이라 시대 콘셉트에도 맞는다. */
     ranks: ['무쇠', '참쇠', '강철'],
-    promote: [10_000_000_000, 1_200_000_000_000_000],
+    promote: [8_000_000, 10_000_000_000],
     items: [
       { id: 'pick',   name: '곡괭이', price: 12,     time: 3.0, cost: 0 },
-      { id: 'sickle', name: '낫',     price: 34,     time: 3.8, cost: 260 },
-      { id: 'hoe',    name: '호미',   price: 95,     time: 4.6, cost: 2_200 },
-      { id: 'axe',    name: '도끼',   price: 260,    time: 5.6, cost: 18_000 },
+      { id: 'sickle', name: '낫',     price: 34,     time: 3.8, cost: 80 },
+      { id: 'hoe',    name: '호미',   price: 95,     time: 4.6, cost: 300 },
+      { id: 'axe',    name: '도끼',   price: 260,    time: 5.6, cost: 900 },
       /* 다섯째 칸부터는 승급해야 매대가 생긴다(참쇠급 6칸, 강철급 8칸).
        * 대장간이 연장 네 가지만 파는 건 섭섭하다 — 살림살이로 넓힌다. */
-      { id: 'shears', name: '가위',   price: 700,    time: 6.4, cost: 120_000_000 },
-      { id: 'knife',  name: '부엌칼', price: 1_900,  time: 7.2, cost: 2_500_000_000 },
+      { id: 'shears', name: '가위',   price: 700,    time: 6.4, cost: 100_000 },
+      { id: 'knife',  name: '부엌칼', price: 1_900,  time: 7.2, cost: 1_000_000 },
     ],
   },
   {
-    id: 'brush', name: '필방', sign: '筆', cost: 9_000,
+    id: 'brush', name: '필방', sign: '筆', cost: 900,
     desc: '붓과 먹을 다룬다',
     color: '#3f6f4a',
     ranks: ['거친', '고운', '명품'],
-    promote: [150_000_000_000, 4_000_000_000_000_000],
+    promote: [90_000_000, 20_000_000_000],
     items: [
-      { id: 'brush',    name: '붓',   price: 700,    time: 4.2, cost: 0 },
-      { id: 'ink',      name: '먹',   price: 1_900,  time: 5.0, cost: 60_000 },
-      { id: 'inkstone', name: '벼루', price: 5_200,  time: 6.2, cost: 420_000 },
+      { id: 'brush',    name: '붓',   price: 500,    time: 4.2, cost: 0 },
+      { id: 'ink',      name: '먹',   price: 1_300,  time: 5.0, cost: 2_500 },
+      { id: 'inkstone', name: '벼루', price: 3_400,  time: 6.2, cost: 15_000 },
     ],
   },
   {
-    id: 'paper', name: '지물포', sign: '紙', cost: 900_000,
+    id: 'paper', name: '지물포', sign: '紙', cost: 20_000,
     desc: '닥나무를 떠서 종이를 만든다',
     color: '#8a7440',
     ranks: ['막', '고운', '진상'],
-    promote: [400_000_000_000, 8_000_000_000_000_000],
+    promote: [450_000_000, 35_000_000_000],
     items: [
-      { id: 'hanji',  name: '한지',   price: 14_000,  time: 5.0, cost: 0 },
-      { id: 'fan',    name: '부채',   price: 38_000,  time: 6.0, cost: 5_000_000 },
-      { id: 'window', name: '창호지', price: 105_000, time: 7.2, cost: 34_000_000 },
+      { id: 'hanji',  name: '한지',   price: 1_100,   time: 5.0, cost: 0 },
+      { id: 'fan',    name: '부채',   price: 2_800,   time: 6.0, cost: 65_000 },
+      { id: 'window', name: '창호지', price: 7_000,   time: 7.2, cost: 350_000 },
     ],
   },
   {
-    id: 'pot', name: '옹기점', sign: '甕', cost: 120_000_000,
+    id: 'pot', name: '옹기점', sign: '甕', cost: 1_000_000,
     desc: '흙을 빚어 항아리를 굽는다',
     color: '#6b4a3a',
     ranks: ['질', '오지', '왕실'],
-    promote: [3_000_000_000_000, 50_000_000_000_000_000],
+    promote: [2_000_000_000, 60_000_000_000],
     items: [
-      { id: 'jar',   name: '옹기',   price: 280_000,   time: 5.4, cost: 0 },
-      { id: 'bowl',  name: '사발',   price: 760_000,   time: 6.4, cost: 700_000_000 },
-      { id: 'celad', name: '청자',   price: 2_100_000, time: 8.0, cost: 5_000_000_000 },
+      { id: 'jar',   name: '옹기',   price: 2_400,     time: 5.4, cost: 0 },
+      { id: 'bowl',  name: '사발',   price: 6_000,     time: 6.4, cost: 3_000_000 },
+      { id: 'celad', name: '청자',   price: 15_000,    time: 8.0, cost: 18_000_000 },
     ],
   },
   {
-    id: 'herb', name: '약재상', sign: '藥', cost: 20_000_000_000,
+    id: 'herb', name: '약재상', sign: '藥', cost: 45_000_000,
     desc: '산에서 캔 것을 말리고 썬다',
     color: '#4a5f7a',
     ranks: ['햇', '묵은', '천년'],
-    promote: [30_000_000_000_000, 400_000_000_000_000_000],
+    promote: [3_000_000_000, 100_000_000_000],
     items: [
-      { id: 'root',    name: '도라지', price: 5_600_000,   time: 5.6, cost: 0 },
-      { id: 'ginseng', name: '산삼',   price: 15_000_000,  time: 7.0, cost: 120_000_000_000 },
-      { id: 'antler',  name: '녹용',   price: 42_000_000,  time: 8.4, cost: 1_500_000_000_000 },
-      { id: 'bezoar',  name: '우황',   price: 115_000_000, time: 9.5, cost: 12_000_000_000_000 },
+      { id: 'root',    name: '도라지', price: 5_000,       time: 5.6, cost: 0 },
+      { id: 'ginseng', name: '산삼',   price: 12_000,      time: 7.0, cost: 100_000_000 },
+      { id: 'antler',  name: '녹용',   price: 28_000,      time: 8.4, cost: 1_000_000_000 },
+      { id: 'bezoar',  name: '우황',   price: 65_000,      time: 9.5, cost: 1_500_000_000 },
     ],
   },
 ];
@@ -117,27 +117,27 @@ export const GUESTS = [
   { id: 'rabbit',   name: '토끼',   face: '🐰', every: 4.6,  qty: 3,  pay: 1.0,  spread: 3, speed: 1.4, wild: 0,
     at: 0,             desc: '발이 빠르지만 조금씩만 산다' },
   { id: 'magpie',   name: '까치',   face: '🐦', every: 3.1,  qty: 2,  pay: 0.85, spread: 2, speed: 1.7, wild: 0,
-    at: 60_000,        desc: '쉴 새 없이 들르는 대신 값을 깎는다' },
+    at: 6_000,        desc: '쉴 새 없이 들르는 대신 값을 깎는다' },
   { id: 'squirrel', name: '다람쥐', face: '🐿️', every: 4.2,  qty: 2,  pay: 1.15, spread: 2, speed: 1.5, wild: 0.15,
-    at: 2_500_000,     desc: '자주 오지만 한두 개면 족하다' },
+    at: 100_000,     desc: '자주 오지만 한두 개면 족하다' },
   { id: 'badger',   name: '오소리', face: '🦡', every: 17,   qty: 5,  pay: 1.5,  spread: 3, speed: 0.9, wild: 0.3,
-    at: 400_000_000,   desc: '느긋하게 두루 산다' },
+    at: 3_000_000,   desc: '느긋하게 두루 산다' },
   { id: 'fox',      name: '여우',   face: '🦊', every: 32,   qty: 8,  pay: 1.2,  spread: 3, speed: 1.35, wild: 0.4,
-    at: 15_000_000_000, desc: '재빠르지만 값을 깎는 데 능하다' },
+    at: 35_000_000, desc: '재빠르지만 값을 깎는 데 능하다' },
   { id: 'deer',     name: '사슴',   face: '🦌', every: 50,   qty: 9,  pay: 2.8,  spread: 3, speed: 1.2, wild: 0.5,
-    at: 500_000_000_000, desc: '값을 후하게 쳐준다' },
+    at: 400_000_000, desc: '값을 후하게 쳐준다' },
   { id: 'boar',     name: '멧돼지', face: '🐗', every: 80,   qty: 12, pay: 2.2,  spread: 1, speed: 1.1, wild: 0.6,
-    at: 1_500_000_000_000, desc: '한 종류를 통째로 쓸어간다' },
+    at: 1_000_000_000, desc: '한 종류를 통째로 쓸어간다' },
   { id: 'bear',     name: '곰',     face: '🐻', every: 120,  qty: 16, pay: 4.0,  spread: 1, speed: 0.8, wild: 0.7,
-    at: 3_000_000_000_000, desc: '진열대를 품절 내고 간다' },
+    at: 2_000_000_000, desc: '진열대를 품절 내고 간다' },
   { id: 'turtle',   name: '거북',   face: '🐢', every: 110,  qty: 14, pay: 7.0,  spread: 3, speed: 0.45, wild: 0.8,
-    at: 8_000_000_000_000, desc: '걸음은 느리나 씀씀이가 크다' },
+    at: 4_000_000_000, desc: '걸음은 느리나 씀씀이가 크다' },
   { id: 'crane',    name: '두루미', face: '🦢', every: 145,  qty: 16, pay: 6.0,  spread: 4, speed: 1.1, wild: 0.8,
-    at: 14_000_000_000_000, desc: '이것저것 골고루 챙긴다' },
+    at: 4_500_000_000, desc: '이것저것 골고루 챙긴다' },
   { id: 'ox',       name: '소',     face: '🐂', every: 260,  qty: 26, pay: 5.0,  spread: 3, speed: 0.4, wild: 0.9,
-    at: 60_000_000_000_000, desc: '느릿느릿 오지만 수레가 가득 찬다' },
+    at: 8_000_000_000, desc: '느릿느릿 오지만 수레가 가득 찬다' },
   { id: 'tiger',    name: '호랑이', face: '🐯', every: 400,  qty: 34, pay: 13.0, spread: 2, speed: 0.95, wild: 1.0,
-    at: 400_000_000_000_000, desc: '어쩌다 오지만 한 번에 어마어마하게 산다' },
+    at: 10_000_000_000, desc: '어쩌다 오지만 한 번에 어마어마하게 산다' },
 ];
 
 /* ───────────── 단골 20성 ─────────────
@@ -202,8 +202,8 @@ export const LEVEL = {
    *
    * 그래서 가격은 **선형**으로만 올린다. 레벨업은 갈수록 손해가 되고,
    * 그 벽을 넘는 방법은 **새 품목과 새 가게**뿐이다 — 그게 이 게임의 진행이니까. */
-  costGrowth: 1.12,    // 레벨업 비용: 지수
-  priceStep: 0.5,      // 판매가: 레벨당 기본가의 50%씩 선형 증가
+  costGrowth: 1.09,    // 레벨업 비용: 지수
+  priceStep: 0.12,     // 판매가: 레벨당 기본가의 12%씩 선형 증가
   timeReduce: 0.985,   // 제작 시간 (하한 있음)
   timeFloor: 0.40,
 };
@@ -234,10 +234,10 @@ export const FAIR = {
  * 잡은 값이라 그림 쪽에 둔다. 개수는 서로 같아야 한다.
  */
 export const SMALL_SHOPS = [
-  { id: 'store1', name: '점포',     k: 'store', cost: 4_000 },
-  { id: 'inn',    name: '주막',     k: 'inn',   cost: 400_000 },
-  { id: 'cart',   name: '포장마차', k: 'cart',  cost: 50_000_000 },
-  { id: 'store2', name: '점포',     k: 'store', cost: 8_000_000_000 },
+  { id: 'store1', name: '점포',     k: 'store', cost: 400 },
+  { id: 'inn',    name: '주막',     k: 'inn',   cost: 12_000 },
+  { id: 'cart',   name: '포장마차', k: 'cart',  cost: 300_000 },
+  { id: 'store2', name: '점포',     k: 'store', cost: 12_000_000 },
 ];
 
 /** 자동 강화를 여는 값.
@@ -246,7 +246,7 @@ export const SMALL_SHOPS = [
  * 붙여봤지만 1804번으로 9%밖에 안 줄었다 — 10레벨을 한꺼번에 살 돈이
  * 애초에 안 모이기 때문이다(클릭당 평균 1.09레벨). 버튼 크기의 문제가 아니라
  * 손으로 누르는 구조 자체의 문제였다. 그래서 아예 손을 뗀다. */
-export const AUTO_COST = 5_000_000;
+export const AUTO_COST = 45_000;
 
 /** 자동 강화가 한 틱에 올릴 수 있는 최대 레벨. 폭주 방지용. */
 export const AUTO_PER_TICK = 40;
@@ -294,8 +294,11 @@ export const MAX_BULK = 1000;
  */
 export const STAFF = {
   capAdd: 10,      // 한 명당 진열대 +10칸 — 만드는 손이 늘면 쌓을 수 있는 양이 는다
-  costDiv: 4,      // 첫 직원 = 첫 승급값 ÷ 4 — 일손은 싸지 않다
   max: 4,          // 가게당 최대 직원. 참쇠 2 · 강철 4 (등급 × 2)
+  /* n번째 직원 값. 첫째는 첫 승급값의 3배, 둘째부터는 둘째 승급값 기준.
+   * 예전엔 승급값 ÷ 4였는데 실측하니 수입 36초치 — 사람을 들이는데
+   * 물건 하나 값도 안 됐다. 일손은 이 게임에서 제일 비싼 물건이어야 한다. */
+  costMul: [3, 0.5, 3, 9],
 };
 
 /* ───────────── 장사의 손 ─────────────
@@ -344,7 +347,7 @@ export const SERVICE = {
 export const PESTS = [
   {
     id: 'rat', name: '쥐', face: '🐀',
-    at: 20_000,          // 누적 매출 이 정도는 돼야 나타난다. 첫 10분은 헷갈리기만 한다
+    at: 4_000,          // 누적 매출 이 정도는 돼야 나타난다. 첫 10분은 헷갈리기만 한다
     every: 75, wild: 1, life: 5.5,
     steal: 'goods', take: 0.12, max: 8, fine: 20,
     say: '진열대에 손을 댔다',
@@ -354,7 +357,7 @@ export const PESTS = [
      * 쥐는 땅에서 가게 앞을 뛰고, 까마귀는 하늘을 가로질러 난다 —
      * 길도 건물도 무시하고 화면을 대각선으로 지나간다. 그래서 더 급하다. */
     id: 'crow', name: '까마귀', face: '🐦‍⬛',
-    at: 5_000_000,
+    at: 200_000,
     every: 110, wild: 1, life: 4.0,
     steal: 'money', take: 2, fine: 13,   // 초당수입 2초치를 채가고, 잡으면 그 13배
     say: '전대를 노린다',
@@ -378,7 +381,7 @@ export const PESTS = [
  */
 export const GUARD = {
   id: 'dog', name: '삽살개', face: '🐕',
-  cost: 2_000_000,
+  cost: 25_000,
   rate: 0.6,     // 이 확률로 물어 잡는다. 1로 두면 화면을 볼 이유가 없어진다
   fine: 3,       // 직접 잡을 때가 20·13이다. 개는 거들 뿐이다
   desc: '자리를 비운 사이 나쁜 놈을 대신 잡는다',
@@ -386,8 +389,8 @@ export const GUARD = {
 
 export const RANKS = [
   { maxLv: 30,  priceMul: 1,     guests: 0, ips: 0 },
-  { maxLv: 60,  priceMul: 40,    guests: 32,  ips: 1_000_000 },
-  { maxLv: 100, priceMul: 6_000, guests: 135, ips: 10_000_000_000 },
+  { maxLv: 60,  priceMul: 4,     guests: 32,  ips: 15_000 },
+  { maxLv: 100, priceMul: 16,    guests: 135, ips: 800_000 },
 ];
 
 /** 25레벨마다 그 품목의 **판매가**가 2배가 된다. 24→25가 제일 신나야 한다.
@@ -398,7 +401,7 @@ export const RANKS = [
  * 반대로 생산 쪽에 붙여보기도 했는데 훨씬 나빴다 — 생산만 무한히 2배씩
  * 뛰고 수요에는 상한이 있어서, 8시간째 진열대가 91% 꽉 찼다. */
 export const MILESTONE_EVERY = 25;
-export const MILESTONE_MULT = 2;
+export const MILESTONE_MULT = 1.25;
 
 /** 손님이 새 물건을 물어보기까지의 간격(초) = 새 칸이 열리는 속도.
  *

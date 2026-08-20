@@ -282,8 +282,8 @@ export class Sim {
   staffCost(shopId) {
     const shop = SHOPS.find((s) => s.id === shopId);
     const n = this.staffOf(shopId);            // 다음이 n+1번째
-    if (n === 0) return Math.floor(shop.promote[0] / STAFF.costDiv);
-    return Math.floor(shop.promote[1] * Math.pow(30, n - 1) / STAFF.costDiv);
+    const base = n === 0 ? shop.promote[0] : shop.promote[1];
+    return Math.floor(base * STAFF.costMul[n]);
   }
 
   canHireStaff(shopId) {
