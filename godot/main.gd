@@ -12,6 +12,13 @@ var _hud: Label
 var _sub: Label
 var _log: Label
 var _acc: float = 0.0
+var panel: ShopPanel
+var _autobtn: Button
+
+## 끌기와 누르기를 가른다. 이걸 안 하면 마을을 둘러보려고 끌 때마다
+## 손가락을 뗀 자리가 눌려서 엉뚱한 게 강화된다.
+var _press_at: Vector2 = Vector2.ZERO
+var _dragged: bool = false
 
 func _ready() -> void:
 	RenderingServer.set_default_clear_color(Color("6f8159"))
@@ -46,6 +53,20 @@ func _ready() -> void:
 	_log = Label.new()
 	_log.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	box.add_child(_log)
+	# 아래 단추 줄 — 지도에서 못 누르는 것들
+	var bar := HBoxContainer.new()
+	bar.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	bar.offset_left = 12; bar.offset_right = -12; bar.offset_top = -56; bar.offset_bottom = -12
+	layer.add_child(bar)
+	_autobtn = Button.new()
+	_autobtn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_autobtn.pressed.connect(func(): sim.buy_auto())
+	bar.add_child(_autobtn)
+
+	panel = ShopPanel.new()
+	panel.sim = sim
+	layer.add_child(panel)
+
 	_paint()
 
 func _process(delta: float) -> void:
@@ -54,7 +75,7 @@ func _process(delta: float) -> void:
 		village.on_sale(s)
 	for d in r.done:
 		village.on_sale(d)
-	RunSim.act(sim, rng)          # 눌러줄 손이 아직 없어서 가상 플레이어가 대신 누른다
+	village.cam_center = cam.position
 	_acc += delta
 	if _acc < 0.12:
 		return
@@ -67,17 +88,101 @@ func _paint() -> void:
 	_sub.text = "초당 🪙%s · 가게 %d/%d · 품목 %d · 손님 %d · 💎%d" % [
 		Num.fmt(sim.income_per_sec()), sim.shops.size(), Content.SHOPS.size(),
 		sim.items.size(), sim.guests.size(), int(sim.gems)]
+	_autobtn.visible = not sim.auto
+	if not sim.auto:
+		_autobtn.text = "장부 정리 🪙" + Num.fmt(Content.AUTO_COST) + "  (사면 알아서 강화된다)"
+		_autobtn.disabled = sim.money < Content.AUTO_COST
 	var lines: Array[String] = []
 	for i in range(min(3, sim.events.size())):
 		lines.append("· " + String(sim.events[i].msg))
 	_log.text = "\n".join(lines)
 
-## 화면을 끌어서 마을을 둘러본다. 마을 밖으로는 못 나간다 —
-## 끝없는 초록 벌판이 나오면 길을 잃는다.
+## 화면을 끌어서 마을을 둘러보고, 눌러서 논다.
+## 마을 밖으로는 못 나간다 — 끝없는 초록 벌판이 나오면 길을 잃는다.
 func _unhandled_input(e: InputEvent) -> void:
-	if e is InputEventMouseMotion and (e as InputEventMouseMotion).button_mask & MOUSE_BUTTON_MASK_LEFT:
-		cam.position -= (e as InputEventMouseMotion).relative / cam.zoom.x
+	if e is InputEventMouseButton and (e as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
+		var mb := e as InputEventMouseButton
+		if mb.pressed:
+			_press_at = mb.position
+			_dragged = false
+		elif not _dragged:
+			_tap(_to_world(mb.position))
+	elif e is InputEventMouseMotion and (e as InputEventMouseMotion).button_mask & MOUSE_BUTTON_MASK_LEFT:
+		var mm := e as InputEventMouseMotion
+		if mm.position.distance_to(_press_at) > 8.0:
+			_dragged = true                    # 8px 넘게 움직였으면 끈 것이다
+		cam.position -= mm.relative / cam.zoom.x
 		_clamp_cam()
+
+func _to_world(screen: Vector2) -> Vector2:
+	return cam.position + (screen - get_viewport_rect().size * 0.5) / cam.zoom.x
+
+## 누른 자리에 무엇이 있나. 급한 것부터 본다.
+func _tap(p: Vector2) -> void:
+	# 1) 나쁜 놈 — 제일 급하다. 몇 초 안에 사라진다.
+	var th: Dictionary = village.pest_at(cam.position)
+	if not th.is_empty() and p.distance_to(th.pos + Vector2(0, -6)) < th.r + 8.0:
+		if sim.catch_pest(rng) != null:
+			return
+
+	# 2) 삽살개 자리
+	var dp: Vector2 = Iso.w(Iso.DOG_T.x + 1, Iso.DOG_T.y + 1)
+	if not sim.guard and absf(p.x - dp.x) < 60.0 and p.y > dp.y - 80.0 and p.y < dp.y + 26.0:
+		sim.buy_guard()
+		return
+
+	# 3) 작은 건물 — 세우거나, 북적일 때 눌러 장을 연다
+	for i in range(Iso.SMALL_T.size()):
+		var sp: Vector2 = Iso.w(Iso.SMALL_T[i].x + 1, Iso.SMALL_T[i].y + 1)
+		if absf(p.x - sp.x) < 62.0 and p.y > sp.y - 92.0 and p.y < sp.y + 24.0:
+			if not sim.smalls.has(i):
+				sim.build_small(i)
+			else:
+				sim.tap_small(i)
+			return
+
+	# 4) 가게 — 매대는 그 자리에서 강화, 나머지는 창
+	for i in range(Content.SHOPS.size()):
+		var shop: Dictionary = Content.SHOPS[i]
+		var o: Vector2i = Iso.org(sim, i)
+		var open: bool = sim.shops.has(String(shop.id))
+		if open:
+			# 이웃 칸은 화면에서 48px밖에 안 떨어진다. '먼저 맞은 것'을 고르면
+			# 뒤 매대가 앞 매대의 몫을 삼킨다 — **제일 가까운 매대**를 고른다.
+			var best: int = -1
+			var best_d: float = INF
+			var y: Dictionary = Iso.yard(Iso.YARD_KIND[i], Iso.plot_dim(sim, i))
+			var cap: int = min(sim.stall_cap(String(shop.id)), shop.items.size())
+			for k in range(cap):
+				var sp2: Vector2i = y.stalls[k]
+				var q: Vector2 = Iso.w(o.x + sp2.x + 0.5, o.y + sp2.y + 0.5)
+				if absf(p.x - q.x) > 52.0 or p.y < q.y - 64.0 or p.y > q.y + 28.0:
+					continue
+				var d: float = Vector2(p.x - q.x, (p.y - (q.y - 18.0)) * 1.4).length()
+				if d < best_d:
+					best_d = d
+					best = k
+			if best >= 0:
+				var it: Dictionary = shop.items[best]
+				if not sim.is_open(it.id):
+					sim.open_item(it.id)
+				else:
+					# 매대를 누르면 그 품목을 살 수 있는 만큼 강화한다
+					sim.level_up_many(it.id, sim.affordable_levels(it.id))
+				return
+		# 마당 나머지(현판 포함) — 가게 창을 연다
+		var n: int = Iso.plot_dim(sim, i) if open else 3
+		var M: Vector2 = Iso.w(o.x + n * 0.5, o.y + n * 0.5)
+		var in_plot: bool = absf(p.x - M.x) / (n * 50.0 + 4.0) + absf(p.y - M.y) / (n * 25.0 + 4.0) <= 1.0
+		var N: Vector2 = Iso.w(o.x, o.y)
+		var on_sign: bool = absf(p.x - N.x) < 90.0 and p.y > N.y - 72.0 and p.y < N.y - 40.0
+		if in_plot or on_sign:
+			if open:
+				panel.open_for(String(shop.id))
+			else:
+				sim.open_shop(String(shop.id))
+			return
+	panel.close()
 
 func _clamp_cam() -> void:
 	var lo := Vector2(INF, INF)

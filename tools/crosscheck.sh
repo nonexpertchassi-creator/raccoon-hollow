@@ -16,7 +16,15 @@ SUBJECTS="${*:-fmt rng content sim}"
 # 조건부로 건너뛰게 했더니 .gd를 고쳐도 옛 이름이 남을 여지가 있었다. 늘 훑는다.
 godot --headless --path godot --import >/dev/null 2>&1 || true
 
+# 누르기가 먹는지도 여기서 본다 — 좌표는 눈으로 못 믿는다
 FAIL=0
+if godot --headless --path godot tests/taptest.tscn 2>&1 | grep -q "TAPTEST OK"; then
+  printf "✅ %-8s 누르기 여섯 가지 다 먹는다\n" "tap"
+else
+  FAIL=1
+  printf "❌ %-8s\n" "tap"
+  godot --headless --path godot tests/taptest.tscn 2>&1 | grep "TAPTEST FAIL" | sed 's/^/     /'
+fi
 for S in $SUBJECTS; do
   node tools/answers.mjs "$S"
   godot --headless --path godot --script tests/crosscheck.gd -- "$S" >/dev/null 2>&1

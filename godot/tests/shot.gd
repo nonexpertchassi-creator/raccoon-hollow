@@ -21,6 +21,8 @@ func _ready() -> void:
 		RunSim.act(s, rng)
 		main.village._advance(0.25)
 	main._paint()
+	if OS.has_environment("SHOT_PANEL"):
+		main.panel.open_for(OS.get_environment("SHOT_PANEL"))
 
 func _process(_delta: float) -> void:
 	if _done:

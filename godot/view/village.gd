@@ -23,6 +23,8 @@ var _props: Array = []
 ## 걸어다니는 손님. sim이 "팔았다"고 알려오면 한 마리 생겨서 길로 들어온다.
 ## 화면은 늘 sim보다 조금 늦다 — 돈은 이미 들어왔지만 손님은 아직 걷고 있다.
 var walkers: Array = []
+## 카메라 한가운데(세계 좌표). 까마귀가 화면을 가로지르는 데 쓴다.
+var cam_center: Vector2 = Vector2.ZERO
 const WALK := 95.0          # 손님 걸음(세계 px/초)
 const BUY_TIME := 2.3       # 가게 앞에 서 있는 시간
 const ENTRY := Vector2i(6, 0)
@@ -414,6 +416,44 @@ func _walker(wk: Dictionary) -> void:
 		_chip(wk.pos + Vector2(0, -78), 20.0 + txt.length() * 11.0, 21, Color(0.17, 0.14, 0.11, 0.82))
 		_text(wk.pos + Vector2(0, -63), txt, 12, Color("ffe9a8"))
 
+## 나쁜 놈이 지금 어디 있나. 없으면 빈 딕셔너리.
+##
+## 까마귀는 **카메라 한가운데를 기준으로** 가로지른다. 마을 어디를 보고 있든
+## 눈에 들어와야 누를 수 있기 때문이다 — 화면 밖에서 훔쳐 가면 장치를 넣은
+## 이유가 사라진다. 쥐는 반대로 **훔치는 가게 앞**에 나온다. 어느 가게가
+## 털리는지가 보여야 한다.
+func pest_at(cam_center: Vector2) -> Dictionary:
+	if sim == null or sim.pest == null:
+		return {}
+	var t: Dictionary = sim.pest
+	var p: float = 1.0 - max(0.0, t.left) / t.life
+	if t.kind == "crow":
+		var dir: float = 1.0 if int(t.get("amount", 0)) % 2 == 1 else -1.0
+		var u: float = p * 2.0 - 1.0
+		var e: float = 0.5 + 0.5 * (u * 0.3 + u * u * u * 0.7)
+		return {"kind": "crow", "face": "🐦‍⬛", "r": 30.0,
+			"pos": cam_center + Vector2(dir * (e - 0.5) * 760.0, -160.0 + sin(p * PI * 2.4) * 70.0)}
+	var idx: int = 0
+	for i in range(Content.SHOPS.size()):
+		for it in Content.SHOPS[i].items:
+			if it.id == t.get("itemId", ""):
+				idx = i
+	var f: Dictionary = Iso.foot(sim, idx)
+	var heart: Vector2 = Iso.w(Iso.GW * 0.5, Iso.GH * 0.5)
+	return {"kind": "rat", "face": "🐀", "r": 32.0,
+		"pos": f.stand + (heart - f.stand) * p * 0.5}
+
+func _pest(t: Dictionary) -> void:
+	var fly: bool = t.kind == "crow"
+	var bob: float = sin(_t * 11.0) * 5.0 if fly else absf(sin(_t * 16.0)) * 4.0
+	var at: Vector2 = t.pos + Vector2(0, -6 - bob)
+	draw_circle(at, t.r - 3.0, Color(1, 0.96, 0.91, 0.55))
+	# 남은 시간이 줄어드는 테두리 — 언제까지 누를 수 있는지가 보여야 한다
+	draw_arc(at, t.r, 0, TAU, 28, Color(0.64, 0.29, 0.23, 0.28), 4.0)
+	var left: float = clampf(sim.pest.left / sim.pest.life, 0.0, 1.0)
+	draw_arc(at, t.r, -PI / 2, -PI / 2 + TAU * left, 28, C.red, 4.0)
+	_text(at + Vector2(0, 9), t.face, 26, Color.WHITE)
+
 # ── 한 판 ──
 func _draw() -> void:
 	if sim == null:
@@ -469,3 +509,7 @@ func _draw() -> void:
 	layer.sort_custom(func(a, b): return a.z < b.z if a.z != b.z else a.i < b.i)
 	for e in layer:
 		e.f.call()
+	# 나쁜 놈은 **늘 맨 앞**에 그린다. 지붕 뒤에 숨으면 누를 수가 없다.
+	var th: Dictionary = pest_at(cam_center)
+	if not th.is_empty():
+		_pest(th)
