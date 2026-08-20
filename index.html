@@ -243,7 +243,7 @@ function showOffline(r) {
     <p>${h ? h + '시간 ' : ''}${m}분 동안 너구리들이 계속 만들었습니다.<br>
     ${r.capped ? '<b>(최대 4시간까지만 쌓입니다)</b>' : ''}</p>
     <div style="font-size:26px;font-weight:800;color:var(--gold);margin-bottom:16px">
-      ${fmt(r.earned)}냥</div>
+      🪙${fmt(r.earned)}</div>
     <button id="ok">받기</button></div>`;
   document.body.appendChild(el);
   el.querySelector('#ok').onclick = () => { Sfx.coin(); el.remove(); };
@@ -301,12 +301,12 @@ function shopHTML(s) {
         <div class="row">
           <div><div class="nm">${sim.itemName(it.id)}</div><div class="lv">Lv.${lv}/${max}${
             atMax ? ' · 만렙' : ms ? ` · ${toMs}레벨 뒤 값이 2배` : ''}</div></div>
-          <div class="stat"><b>${fmt(sim.price(it.id))}냥</b><br>
+          <div class="stat"><b>🪙${fmt(sim.price(it.id))}</b><br>
             재고 <span class="stk">${st.stock}</span>/${sim.capOf(it.id)} · ${sim.craftTime(it.id).toFixed(1)}초</div>
         </div>
         ${atMax ? '<div class="maxed">더 올릴 수 없다 — 가게를 승급해야 한다</div>' : `<div class="ups">
           <button class="up ${ms ? 'ms' : ''}" data-up="${it.id}" data-n="1"
-            ${sim.money >= cost ? '' : 'disabled'}>레벨업 ${fmt(cost)}냥</button>
+            ${sim.money >= cost ? '' : 'disabled'}>레벨업 🪙${fmt(cost)}</button>
           <button class="up bulk" data-up="${it.id}" data-n="10"
             ${sim.money >= sim.levelCostMany(it.id, 10) ? '' : 'disabled'}>×10</button>
           <button class="up bulk" data-up="${it.id}" data-n="max"
@@ -318,7 +318,7 @@ function shopHTML(s) {
       return `<div class="item locked-item"><div class="row">
         <div><div class="nm">${sim.itemName(it.id)}</div><div class="lv">손님이 찾던 물건</div></div></div>
         <button class="up open-btn" data-open="${it.id}"
-          ${sim.money >= it.cost ? '' : 'disabled'}>칸 열기 ${fmt(it.cost)}냥</button></div>`;
+          ${sim.money >= it.cost ? '' : 'disabled'}>칸 열기 🪙${fmt(it.cost)}</button></div>`;
     }
     return `<div class="item locked-item"><div class="row">
       <div><div class="nm">? ? ?</div><div class="lv">아직 아무도 찾지 않았다</div></div></div></div>`;
@@ -341,7 +341,7 @@ function staffHTML(s) {
     <div><div class="nm">일손 ${'🦝'.repeat(n + 1)}</div>
     <div class="lv">점장 1 + 직원 ${n}/${max} · 직원마다 진열대 +10칸</div></div></div>
     ${full ? '' : `<button class="up" data-hire="${s.id}"
-      ${sim.money >= cost ? '' : 'disabled'}>직원 들이기 ${fmt(cost)}냥</button>`}
+      ${sim.money >= cost ? '' : 'disabled'}>직원 들이기 🪙${fmt(cost)}</button>`}
   </div>`;
 }
 
@@ -358,7 +358,7 @@ function guestsHTML() {
     if (!sim.guests.includes(g.id)) {
       return `<div class="grow off"><span class="gf">?</span>
         <span class="gn">? ? ?</span>
-        <span class="gl">누적 매출 ${fmt(g.at)}냥에 온다</span></div>`;
+        <span class="gl">누적 매출 🪙${fmt(g.at)}에 온다</span></div>`;
     }
     const lv = sim.regularLv(g.id), left = sim.regularLeft(g.id);
     const carry = g.qty <= 5 ? '맨손' : g.qty <= 9 ? '봇짐' : g.qty <= 12 ? '지게' : '달구지';
@@ -394,7 +394,7 @@ function promoteHTML(s) {
     <div class="pd">${s.items.map((it) => nextName + it.name).join(' · ')}</div>
     ${lines}
     <button class="up ${ok ? 'ms' : ''}" data-promote="${s.id}" ${ok ? '' : 'disabled'}>
-      ${ok ? `승급하기 ${fmt(r.cost)}냥` : '조건을 채워야 한다'}</button>
+      ${ok ? `승급하기 🪙${fmt(r.cost)}` : '조건을 채워야 한다'}</button>
   </div>`;
 }
 
@@ -432,7 +432,7 @@ function renderAuto() {
   bar.innerHTML =
     `<button id="openguests" class="ghost">손님 ${sim.guests.length}/${GUESTS.length}</button>` +
     (sim.auto ? '' : `<button id="buyauto" ${sim.money >= AUTO_COST ? '' : 'disabled'}>
-      장부 정리 ${fmt(AUTO_COST)}냥</button>`);
+      장부 정리 🪙${fmt(AUTO_COST)}</button>`);
   $('#openguests').onclick = openGuests;
   const ba = $('#buyauto');
   if (ba) ba.onclick = () => {
@@ -462,7 +462,7 @@ village.onDelivered = (s) => {
   $('#guest').innerHTML =
     `<span class="face">${s.guest.face}</span><span class="say">` +
     `${sim.regularLv(s.guest.id) ? sim.regularName(s.guest.id) + ' ' : ''}${s.guest.name}가 ` +
-    `<b>${head}${more}</b> ${s.n}개를 사갔다 · <b>${fmt(s.gain)}냥</b>${waited}</span>`;
+    `<b>${head}${more}</b> ${s.n}개를 사갔다 · <b>🪙${fmt(s.gain)}</b>${waited}</span>`;
 };
 /* '가게 안' 화면은 은퇴했다. 마당 방식이 되면서 안이 지도에서 다 보인다 —
  * 매대를 누르면 그 자리에서 강화되고, 마당을 누르면 가게 창이 열린다. */
@@ -530,10 +530,10 @@ function paint() {
   /* 계산 연출이 아직 안 끝난 몫은 빼고 보여준다 — 손님이 오기도 전에
    * 돈이 오르면 버그로 보인다. sim의 진짜 돈은 그대로다(버튼 계산엔 그걸 쓴다). */
   const shown = Math.max(0, sim.money - village.inTransit());
-  m.textContent = fmt(shown) + '냥';
+  m.textContent = '🪙 ' + fmt(shown);
   if (shown !== lastMoney) { m.classList.add('pop'); setTimeout(() => m.classList.remove('pop'), 120); }
   lastMoney = shown;
-  $('#ips').textContent = '초당 ' + fmt(sim.incomePerSec()) + '냥';
+  $('#ips').textContent = '초당 🪙' + fmt(sim.incomePerSec());
   $('#shopcount').textContent = `가게 ${sim.shops.length}/${SHOPS.length} · 손님 ${sim.guests.length}`;
 
   const canAuto = !sim.auto && sim.money >= AUTO_COST;

@@ -677,7 +677,7 @@ export class Village {
     if (isNext) {
       const can = this.sim.money >= shop.cost;
       G.round(c, M.x - 50, M.y + 4, 100, 25, 9, can ? C.jade : '#77775f');
-      G.text(c, `${fmt(shop.cost)}냥`, M.x, M.y + 16.5, { size: 12.5, fill: '#fff', weight: 800 });
+      G.text(c, `🪙${fmt(shop.cost)}`, M.x, M.y + 16.5, { size: 12.5, fill: '#fff', weight: 800 });
     }
   }
 
@@ -760,7 +760,7 @@ export class Village {
         const can = this.sim.money >= itemById(it.id).cost;
         G.text(c, itemById(it.id).name, p.x, p.y - 26, { size: 12.5, fill: C.ink2, weight: 800 });
         G.round(c, p.x - 36, p.y - 16, 72, 21, 7, can ? C.jade : 'rgba(60,52,36,.32)');
-        G.text(c, `${fmt(itemById(it.id).cost)}냥`, p.x, p.y - 5.5, { size: 11, fill: '#fff', weight: 800 });
+        G.text(c, `🪙${fmt(itemById(it.id).cost)}`, p.x, p.y - 5.5, { size: 11, fill: '#fff', weight: 800 });
       } else {
         G.text(c, '? ? ?', p.x, p.y - 8, { size: 12, fill: 'rgba(60,52,36,.5)', weight: 800 });
       }
@@ -818,7 +818,7 @@ export class Village {
       G.text(c, `${def.name} 자리`, p.x, p.y - TH - 16, { size: 11, fill: C.ruin, weight: 800 });
       const can = this.sim.money >= def.cost;
       G.round(c, p.x - 40, p.y - TH - 8, 80, 21, 7, can ? C.jade : 'rgba(60,52,36,.30)');
-      G.text(c, `${fmt(def.cost)}냥`, p.x, p.y - TH + 2.5, { size: 11, fill: can ? '#fff' : '#e6e0cf', weight: 800 });
+      G.text(c, `🪙${fmt(def.cost)}`, p.x, p.y - TH + 2.5, { size: 11, fill: can ? '#fff' : '#e6e0cf', weight: 800 });
       return;
     }
 
@@ -854,7 +854,7 @@ export class Village {
       G.text(c, '삽살개 자리', p.x, p.y - TH - 16, { size: 11, fill: C.ruin, weight: 800 });
       const can = this.sim.money >= GUARD.cost;
       G.round(c, p.x - 38, p.y - TH - 8, 76, 21, 7, can ? C.jade : 'rgba(60,52,36,.30)');
-      G.text(c, `${fmt(GUARD.cost)}냥`, p.x, p.y - TH + 2.5, { size: 11, fill: can ? '#fff' : '#e6e0cf', weight: 800 });
+      G.text(c, `🪙${fmt(GUARD.cost)}`, p.x, p.y - TH + 2.5, { size: 11, fill: can ? '#fff' : '#e6e0cf', weight: 800 });
       return;
     }
     // 개집 — 작은 가게와 같은 문법: 흙마당 → 벽 → 처마
@@ -1080,7 +1080,7 @@ export class Village {
   /* ── 떠 있는 글자들 ── */
   _takings(c, idx) {
     const tk = this.takings[idx];
-    const label = `+${fmt(tk.amount)}냥`;
+    const label = `+🪙${fmt(tk.amount)}`;
     const bw = 26 + label.length * 8.4;
     /* 마당의 현판이 뒤 꼭짓점 위에 있으니 매상 표도 그 위로 띄운다 */
     const N = iso(SHOP_T[idx][0], SHOP_T[idx][1]);

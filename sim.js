@@ -158,7 +158,7 @@ export class Sim {
     const amount = Math.floor(this.incomePerSec() * P.take);
     if (amount < 1) return null;
     return { kind: P.id, amount, left: P.life, life: P.life,
-             what: `엽전 ${fmt(amount)}냥을 노린다` };
+             what: `엽전 ${fmt(amount)}닢을 노린다` };
   }
 
   /* ── 삽살개 ── */
@@ -183,7 +183,7 @@ export class Sim {
       const gain = Math.floor(worth * GUARD.fine);
       this.money += gain;
       this.revenue += gain;
-      this._ev(`${GUARD.name}가 ${josa(P.name, '을', '를')} 물었다 — 벌금 ${fmt(gain)}냥`, 'guard');
+      this._ev(`${GUARD.name}가 ${josa(P.name, '을', '를')} 물었다 — 벌금 엽전 ${fmt(gain)}닢`, 'guard');
       return;
     }
     if (P.steal === 'goods') {
@@ -194,7 +194,7 @@ export class Sim {
     } else {
       const n = Math.min(this.money, t.amount);
       this.money -= n;
-      this._ev(`${josa(P.name, '이', '가')} ${fmt(n)}냥을 채 갔다`, 'pest');
+      this._ev(`${josa(P.name, '이', '가')} 엽전 ${fmt(n)}닢을 채 갔다`, 'pest');
     }
   }
 
@@ -210,7 +210,7 @@ export class Sim {
     const gain = Math.floor(worth * P.fine);
     this.money += gain;
     this.revenue += gain;
-    this._ev(`${josa(P.name, '을', '를')} 잡았다 — 벌금 ${fmt(gain)}냥`, 'catch');
+    this._ev(`${josa(P.name, '을', '를')} 잡았다 — 벌금 엽전 ${fmt(gain)}닢`, 'catch');
     return { kind: t.kind, gain };
   }
 
@@ -505,8 +505,8 @@ export class Sim {
         { ok: !after || this.shops.includes(after.id), text: after ? `${after.name} 열기` : '—' },
         { ok: this.regularSum() >= next.guests,
           text: `손님 단골 등급 합계 ${next.guests} (지금 ${this.regularSum()})` },
-        { ok: ips >= next.ips, text: `초당 ${fmt(next.ips)}냥 (지금 ${fmt(ips)})` },
-        { ok: this.money >= cost, text: `승급값 ${fmt(cost)}냥` },
+        { ok: ips >= next.ips, text: `초당 🪙${fmt(next.ips)} (지금 🪙${fmt(ips)})` },
+        { ok: this.money >= cost, text: `승급값 🪙${fmt(cost)}` },
       ].filter((x) => x.text !== '—'),
     };
   }
