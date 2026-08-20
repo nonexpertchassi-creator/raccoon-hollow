@@ -10,7 +10,7 @@
 import {
   SHOPS, GUESTS, LEVEL, MILESTONE_EVERY, MILESTONE_MULT, STOCK_CAP, OFFLINE, ASK_LINES,
   BASKET_SPREAD, MAX_BULK, AUTO_COST, AUTO_PER_TICK, AUTO_SHARE, ASK_EVERY, FAIR, SMALL_SHOPS, RANKS, REGULARS, PESTS, GUARD, STAFF, SERVICE,
-  QUEST, GEM, GEM_UPGRADES,
+  QUEST, GEM, GEM_UPGRADES, EVENTS, EVENT,
 } from './content.js';
 
 const ALL_ITEMS = SHOPS.flatMap((s) => s.items.map((i) => ({ ...i, shop: s.id })));
@@ -60,6 +60,16 @@ export class Sim {
     this._qid = 0;
     this._qCool = QUEST.first;           // 다음 의뢰가 붙기까지 남은 시간
     this.rush = 0;                       // 삯꾼이 남아 있는 시간(초)
+
+    /* 기간제 이벤트. 마감이 **실제 시간**이라 흐르는 초를 따로 센다 —
+     * this.t는 게임을 켜 둔 시간이고, this.wall은 껐던 시간까지 포함한다. */
+    this.wall = 0;
+    this.event = null;                   // { id, ends, got }
+    this.skins = [];                     // 깬 이벤트가 남긴 것. 그림은 나중에 붙는다
+    this.cleared = {};                   // 이벤트별 깬 횟수
+    this._evAt = 0;                      // 이 실제 시각(wall)이 지나면 다음 이벤트
+    this._evIdx = 0;                     // 차례로 돌아가며 열린다
+    this._evDone = null;                 // 이번 틱에 깬 이벤트 (화면 표시용)
     this._questDone = [];                // 이번 틱에 끝난 의뢰 (화면 표시용)
 
     /* 기다리는 주문. 재고가 모자라도 곧 나올 것 같으면 손님이 기다린다.
@@ -95,6 +105,14 @@ export class Sim {
     if (typeof this._qid !== 'number') this._qid = 0;
     if (typeof this._qCool !== 'number') this._qCool = QUEST.first;
     if (typeof this.rush !== 'number') this.rush = 0;
+    if (typeof this.wall !== 'number') this.wall = this.t || 0;
+    if (this.event === undefined) this.event = null;
+    if (!Array.isArray(this.skins)) this.skins = [];
+    if (!this.cleared || typeof this.cleared !== 'object') this.cleared = {};
+    if (typeof this._evAt !== 'number') this._evAt = 0;
+    delete this._evGap;
+    if (typeof this._evIdx !== 'number') this._evIdx = 0;
+    this._evDone = null;
     this._questDone = [];
 
     /* 저장본에 없는 손님은 **영원히 안 온다.**
@@ -244,6 +262,7 @@ export class Sim {
     let gem = 0;
     if (rng() < GEM.catchRate) { gem = 1; this.gems += 1; }
     this._ev(`${josa(P.name, '을', '를')} 잡았다 — 벌금 엽전 ${fmt(gain)}닢${gem ? ' · 💎1' : ''}`, 'catch');
+    this._eventGain('catch');
     return { kind: t.kind, gain, gem };
   }
 
@@ -610,6 +629,7 @@ export class Sim {
     this.busy = -1;
     this.fair = FAIR.boost;
     this._ev('장이 섰다 — 손님이 몰린다!', 'shop');
+    this._eventGain('fair');
     return true;
   }
 
@@ -654,6 +674,56 @@ export class Sim {
     this.rush = GEM.rush.secs;
     this._ev(`삯꾼을 불렀다 — ${GEM.rush.secs}초 동안 생산 ${GEM.rush.mult}배`, 'gem');
     return true;
+  }
+
+  /* ── 기간제 이벤트 ── */
+
+  eventDef() { return this.event ? EVENTS.find((e) => e.id === this.event.id) : null; }
+  /** 마감까지 남은 실제 초. 이벤트가 없으면 0 */
+  eventLeft() { return this.event ? Math.max(0, this.event.ends - this.wall) : 0; }
+  /** 다음 이벤트가 열리기까지 남은 실제 초 */
+  eventWait() { return this.event ? 0 : Math.max(0, this._evAt - this.wall); }
+
+  /** 이벤트 시계. **실제 시간**으로 돈다 — 껐다 켜도 마감은 다가온다. */
+  _events(dt) {
+    if (this.event) {
+      if (this.wall >= this.event.ends) {
+        const e = this.eventDef();
+        /* 실패해도 **아무것도 안 잃는다.** 벌칙을 붙이는 순간 이벤트는
+         * 숙제가 되고, 숙제가 되면 사람이 떠난다. 그냥 다음 것이 온다. */
+        this._ev(`${e.name}이(가) 끝났다 — 다음 장을 기다리자`, 'event');
+        this.event = null;
+        this._evAt = this.wall + EVENT.gapHours * 3600;
+      }
+      return;
+    }
+    if (this.shops.length < EVENT.afterShops) return;
+    /* ★ 남은 시간을 깎지 않고 **시각**으로 잰다. 깎는 방식이면 게임을 꺼둔
+     * 동안 시계가 멈춘다 — 마감은 실제 시간으로 다가오는데 다음 이벤트는
+     * 안 오는, 앞뒤가 안 맞는 상태가 된다. */
+    if (this.wall < this._evAt) return;
+    const e = EVENTS[this._evIdx % EVENTS.length];
+    this._evIdx++;
+    this.event = { id: e.id, ends: this.wall + e.hours * 3600, got: 0 };
+    this._ev(`${e.face} ${e.name} — ${e.desc} (${e.hours}시간)`, 'event');
+  }
+
+  /** 이벤트가 세는 일이 일어났다. quest·catch·fair 세 가지뿐이다 —
+   *  **이미 도는 것만 센다.** 새 콘텐츠 없이 이벤트를 만드는 방법이다. */
+  _eventGain(kind, n = 1) {
+    if (!this.event) return;
+    const e = this.eventDef();
+    if (!e || e.goal !== kind) return;
+    this.event.got += n;
+    if (this.event.got < e.need) return;
+
+    this.gems += e.gems;
+    if (!this.skins.includes(e.skin)) this.skins.push(e.skin);
+    this.cleared[e.id] = (this.cleared[e.id] || 0) + 1;
+    this._ev(`${e.face} ${e.name}을(를) 깼다 — 💎${e.gems} · ${e.skinName}`, 'event');
+    this._evDone = { ...e };
+    this.event = null;
+    this._evAt = this.wall + EVENT.gapHours * 3600;
   }
 
   /* ── 마을 의뢰 ── */
@@ -738,6 +808,7 @@ export class Sim {
     this.gems += q.gems;
     const g = GUESTS.find((x) => x.id === gid);
     this._ev(`${g.name}마을 의뢰를 마쳤다 — 🪙${fmt(coin)} · 💎${q.gems}`, 'quest');
+    this._eventGain('quest');
     this._questDone.push({ ...q, coin, guest: g, item: itemById(itemId) });
   }
 
@@ -758,6 +829,8 @@ export class Sim {
   /* ── 한 틱 ── */
   tick(dt, rng = Math.random) {
     this.t += dt;
+    this.wall += dt;
+    this._events(dt);
 
     // 0) 장 — 북적임이 떴다 사라지고, 장이 서 있으면 시간이 줄어든다
     if (this.fair > 0) this.fair = Math.max(0, this.fair - dt);
@@ -862,8 +935,13 @@ export class Sim {
       this._ev(`${josa(ng.name, '이', '가')} 마을에 왔다`, 'guest');
     }
 
-    return { sales, done, ask, newGuest, autoLv, pests: this._pestEvents,
-             quests: this._questDone };
+    /* ★ 이벤트 완료 신호는 **틱 끝에서** 비운다. 나쁜 놈 잡기와 장 열기는
+     * 화면에서 직접 부르는 것이라 틱 밖에서 일어난다 — 틱 머리에서 비우면
+     * 그 사이에 깬 이벤트가 화면에 한 번도 안 뜨고 사라진다. */
+    const out = { sales, done, ask, newGuest, autoLv, pests: this._pestEvents,
+                  quests: this._questDone, event: this._evDone };
+    this._evDone = null;
+    return out;
   }
 
   /** 이 품목을 기다리는 주문이 모두 몇 개나 남았나 */
@@ -910,12 +988,19 @@ export class Sim {
       [have[i], have[j]] = [have[j], have[i]];
     }
 
-    // 안전장치: 진열대가 꽉 찬 품목만 맨 앞으로 당긴다. 꽉 찬 품목은 생산이
-    // 멈춰 있으므로 먼저 비워야 다시 돈다. 지금 수치로는 없어도 안 막히지만,
-    // 앞으로 생산·손님 수치를 만지면 다시 막힐 수 있어 보험으로 남긴다.
-    // sort는 안정 정렬이라 같은 그룹 안에서는 위에서 섞은 순서가 유지된다.
-    have.sort((a, b) =>
-      (this.items[b].stock >= this.capOf(b)) - (this.items[a].stock >= this.capOf(a)));
+    /* ★ 여기 '꽉 찬 품목을 맨 앞으로 당기는' 보험이 있었는데 **뺐다.**
+     *
+     * 원래는 죽은 품목을 되살리는 장치였다. 품목이 15개이던 시절, 손님이
+     * 제일 비싼 한 종류만 사가던 때에 필요했다. 그런데 매대를 40칸으로
+     * 늘리자 정반대로 굴러갔다 — 싼 품목 아홉 개가 늘 꽉 차 있으니
+     * **모든 손님이 매번 싸구려부터 집어갔다.**
+     *
+     * 실측(12시간 × 씨앗 3개): 보험을 끄니 누적매출 2.7T → 4.2T (+60%).
+     * 그러고도 안 팔린 품목은 0개다 — 40칸 전부 4,400개 이상 팔렸다.
+     *
+     * 죽음을 막는 진짜 장치는 이 정렬이 아니라 손님의 spread(여러 종류를
+     * 집는 것)였다. 그게 있는 한 어떤 품목도 영영 안 팔리지 않는다.
+     * 되살리려면 먼저 '죽음 0개'가 깨지는지부터 확인할 것. */
 
     /* 의뢰를 건 마을은 청한 물건을 **맨 먼저** 집는다.
      * 위 정렬 다음에 놓는 이유: 정렬이 안정 정렬이라 먼저 당겨 놓아도
@@ -1047,6 +1132,9 @@ export class Sim {
 
   /** 오프라인 수익. 껐다 켰을 때 쌓여 있어야 다시 켠다. */
   offline(seconds) {
+    /* 수익은 4시간까지만 쌓이지만 **이벤트 마감은 그대로 흐른다.**
+     * 안 그러면 하루 껐다 켜도 48시간이 4시간밖에 안 준다. */
+    this.wall += seconds;
     const real = Math.min(seconds, OFFLINE.capHours * 3600);
     if (real < 60) return null;
     const earned = Math.floor(this.incomePerSec() * real * OFFLINE.efficiency);
@@ -1062,7 +1150,7 @@ export class Sim {
   }
 
   save() {
-    const { events, _pestEvents, _questDone, ...rest } = this;
+    const { events, _pestEvents, _questDone, _evDone, ...rest } = this;
     return JSON.parse(JSON.stringify(rest));
   }
 }

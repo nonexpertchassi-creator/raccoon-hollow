@@ -153,6 +153,18 @@ main{flex:1;overflow-y:auto;padding:10px 12px 16px;border-top:1.5px solid var(--
 .qrow .qw{font-weight:800;color:var(--gold)}
 .qrow .qg{margin-left:auto;font-weight:800;color:var(--jade)}
 .qrow .qn{position:relative;margin-top:4px;font-size:11px;color:var(--ink3);font-weight:700}
+/* 기간제 이벤트 — 의뢰 창 맨 위 */
+.evt{position:relative;overflow:hidden;border:1.5px solid var(--gold);border-radius:12px;
+  background:var(--paper2);padding:11px 12px;margin-bottom:10px}
+.evt .ebar{position:absolute;left:0;top:0;bottom:0;background:rgba(168,118,62,.17);transition:width .3s}
+.evt .eh{position:relative;display:flex;align-items:center;gap:8px;font:800 14px inherit}
+.evt .eh .et{margin-left:auto;font-size:11.5px;color:var(--gold)}
+.evt .ed{position:relative;font-size:12px;color:var(--ink2);margin-top:3px}
+.evt .er{position:relative;font-size:11px;color:var(--ink3);font-weight:700;margin-top:4px}
+.evt.off{border-style:dashed;border-color:var(--line);text-align:center;color:var(--ink3);
+  font:700 12px inherit;padding:14px}
+.skins{font-size:11.5px;color:var(--ink3);font-weight:700;margin:-3px 0 10px}
+.skins b{color:var(--jade)}
 .qempty{border:1.5px dashed var(--line);border-radius:10px;padding:12px;text-align:center;
   font:700 12px inherit;color:var(--ink3);margin-bottom:7px}
 .gup{display:flex;align-items:center;gap:9px;border:1.5px solid var(--line);border-radius:10px;
@@ -249,7 +261,7 @@ main{flex:1;overflow-y:auto;padding:10px 12px 16px;border-top:1.5px solid var(--
 <script type="module">
 import { Sim, fmt, josa, itemById, shopById } from './sim.js';
 import { SHOPS, GUESTS, STOCK_CAP, MILESTONE_EVERY, AUTO_COST,
-         QUEST, GEM, GEM_UPGRADES } from './content.js';
+         QUEST, GEM, GEM_UPGRADES, EVENTS } from './content.js';
 import { Store } from './core/store.js';
 import { Juice, Sfx } from './core/juice.js';
 import { Engine } from './core/engine.js';
@@ -335,7 +347,15 @@ $('#pclose').onclick = () => { Sfx.click(); closePanel(); };
 $('#panel').onclick = (e) => { if (e.target.id === 'panel') closePanel(); };
 
 function shopHTML(s) {
-  const rows = s.items.map((it) => {
+  /* ★ 지금 매대가 있는 칸까지만 보여준다.
+   *
+   * 매대를 가게마다 8칸으로 늘리자 "? ? ?"가 네 줄씩 늘어섰다. 그중 절반은
+   * 승급하기 전엔 아예 못 여는 칸이라, 똑같이 생긴 수수께끼 줄이 화면만
+   * 채우고 알려주는 건 없었다. 못 여는 칸은 줄 하나로 접고, 여는 방법
+   * (승급)은 아래 승급 칸이 이미 말하고 있다. */
+  const cap = sim.stallCap(s.id);
+  const hidden = s.items.length - cap;
+  const rows = s.items.slice(0, cap).map((it) => {
     if (sim.isOpen(it.id)) {
       const lv = sim.lv(it.id), st = sim.items[it.id];
       const cost = sim.levelCost(it.id);
@@ -369,7 +389,9 @@ function shopHTML(s) {
     return `<div class="item locked-item"><div class="row">
       <div><div class="nm">? ? ?</div><div class="lv">아직 아무도 찾지 않았다</div></div></div></div>`;
   }).join('');
-  return `<div class="shopnote">${s.desc}</div>${rows}${staffHTML(s)}${promoteHTML(s)}`;
+  const more = hidden > 0
+    ? `<div class="maxed" style="margin:7px 0">승급하면 매대 ${hidden}칸이 더 생긴다</div>` : '';
+  return `<div class="shopnote">${s.desc}</div>${rows}${more}${staffHTML(s)}${promoteHTML(s)}`;
 }
 
 /* 직원 — 점장 혼자 만들고 팔다가, 마당이 커지면(승급) 일손을 들인다.
@@ -469,7 +491,7 @@ function questsHTML() {
         '−' + (lv * u.step).toFixed(1) + '초'}` : ''}</span></div>`;
   }).join('');
 
-  return `<div class="gh2">가진 젬 <b>💎${sim.gems}</b>
+  return eventHTML() + `<div class="gh2">가진 젬 <b>💎${sim.gems}</b>
     · 의뢰를 마치거나, 품목을 만렙까지 올리거나, 나쁜 놈을 잡으면 모인다</div>
     ${rows}${blank}
     <div class="gh2" style="margin-top:14px">젬 쓰는 곳</div>
@@ -480,6 +502,37 @@ function questsHTML() {
         `${GEM.rush.secs}초 동안 만드는 속도가 ${GEM.rush.mult}배`}</span></div>
     ${ups}
     <div class="qempty" style="margin-top:10px">뽑기 · 룰렛 · 스킨 상점은 다음 판에 붙는다</div>`;
+}
+
+/* 기간제 이벤트 카드.
+ * 마감은 **실제 시간**이라 게임을 꺼도 줄어든다. 그게 "오늘 안에"라는
+ * 말을 뜻있게 만드는 유일한 방법이다.
+ * 못 깨도 잃는 게 없다 — 그래서 남은 시간을 빨갛게 쓰지 않는다. */
+function hhmm(sec) {
+  const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60);
+  return h ? `${h}시간 ${m}분` : `${m}분`;
+}
+
+function eventHTML() {
+  const skins = sim.skins.length
+    ? `<div class="skins">받은 것: <b>${sim.skins.map((k) =>
+        (EVENTS.find((e) => e.skin === k) || {}).skinName || k).join(' · ')}</b>
+        <span style="font-weight:600">(그림은 나중에 붙는다)</span></div>` : '';
+  const e = sim.eventDef();
+  if (!e) {
+    const w = sim.eventWait();
+    return `<div class="evt off">${sim.shops.length < 2
+      ? '가게를 둘 열면 장이 선다'
+      : `다음 장까지 ${hhmm(w)}`}</div>${skins}`;
+  }
+  const got = Math.min(sim.event.got, e.need);
+  return `<div class="evt">
+    <div class="ebar" style="width:${(got / e.need) * 100}%"></div>
+    <div class="eh"><span>${e.face}</span><span>${e.name}</span>
+      <span class="et">${hhmm(sim.eventLeft())} 남음</span></div>
+    <div class="ed">${e.desc} — <b>${fmt(got)} / ${fmt(e.need)}</b></div>
+    <div class="er">깨면 💎${e.gems} · ${e.skinName} · 못 깨도 잃는 것은 없다</div>
+  </div>${skins}`;
 }
 
 function bindQuests() {
@@ -506,7 +559,8 @@ function promoteHTML(s) {
   const nextName = s.ranks[r.rank];
   return `<div class="promo">
     <div class="ph">${s.ranks[sim.rankOf(s.id)]} → <b>${nextName}</b> 등급으로 승급</div>
-    <div class="pd">${s.items.map((it) => nextName + it.name).join(' · ')}</div>
+    <div class="pd">${s.items.slice(0, 4 + 2 * Math.min(2, r.rank))
+      .map((it) => nextName + it.name).join(' · ')}</div>
     ${lines}
     <button class="up ${ok ? 'ms' : ''}" data-promote="${s.id}" ${ok ? '' : 'disabled'}>
       ${ok ? `승급하기 🪙${fmt(r.cost)}` : '조건을 채워야 한다'}</button>
@@ -601,6 +655,13 @@ eng.add('village', {
         `"<b>${r.ask.line}</b>" — 없다고 하자 돌아갔다</span>`;
     }
     if (r.newGuest) Sfx.reward();
+
+    if (r.event) {
+      Sfx.win(); Juice.shake(10);
+      $('#guest').className = 'catch';
+      $('#guest').innerHTML = `<span class="face">${r.event.face}</span><span class="say">` +
+        `<b>${r.event.name}</b>을(를) 깼다 — <b>💎${r.event.gems}</b> · <b>${r.event.skinName}</b></span>`;
+    }
 
     /* 의뢰 완료 — 위쪽 띠로 알린다. 아래 버튼의 숫자만 바뀌면
      * 안 보고 있을 때 끝난 걸 알 방법이 없다. */

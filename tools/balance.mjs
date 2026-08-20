@@ -200,12 +200,24 @@ for (const g of GUESTS) {
 console.log('\n■ 품목별 성적   (죽음 = 안 팔려서 생산이 멈춘 것)');
 console.log('      품목    레벨    열린시점      판매    매출기여   생산정지   상태');
 const dead = [], stuck = [];
+/* ★ '정체' 판정에 **판매량 조건**을 더한다.
+ *
+ * 원래는 '재고 상한에 절반 넘게 박혀 있으면 정체'였다. 매대가 15칸이던
+ * 시절엔 그게 곧 죽음이었다. 그런데 40칸이 되자 곡괭이가 26,003개나 팔리고도
+ * 정체로 잡혔다 — 싸고 빨리 만들어지는 물건은 팔리는 속도보다 만들어지는
+ * 속도가 빨라서 늘 진열대가 차 있는 게 **정상**이다.
+ * 열두 개씩 경고를 뱉는 도구는 아무도 안 읽는다. 늑대소년이 되면 끝이다.
+ *
+ * 진짜 정체는 '박혀 있고 **게다가** 안 팔리는 것'이다. 제일 많이 팔린
+ * 품목의 10분의 1도 못 팔았을 때만 잡는다. */
+const topSold = Math.max(1, ...Object.keys(s.items).map((id) => seen(id).sold));
 for (const id of Object.keys(s.items)) {
   const p = seen(id), name = itemById(id).name;
   const rev = pct(p.rev, s.revenue), stall = pct(p.stall, p.live);
   let mark = '✓';
   if (!p.sold) { dead.push(name); mark = '✗ 죽음'; }
-  else if (stall > 50) { stuck.push(name); mark = '△ 정체'; }
+  else if (stall > 50 && p.sold < topSold / 10) { stuck.push(name); mark = '△ 정체'; }
+  else if (stall > 50) mark = '· 여유';
   console.log(`   ${name.padEnd(5)} ${String(s.lv(id)).padStart(6)}  ${
     mm(firstItem.get(id)).padStart(9)}  ${String(p.sold).padStart(8)}  ${
     (rev.toFixed(1) + '%').padStart(8)}  ${
@@ -305,7 +317,7 @@ if (dead.length) {
   bad.push(`품목 ${dead.length}/${Object.keys(s.items).length}개가 한 개도 안 팔림 — ${dead.join('·')}`);
 }
 if (stuck.length) {
-  bad.push(`품목 ${stuck.length}개가 재고 상한에 박혀 절반 이상 생산 정지 — ${stuck.join('·')}`);
+  bad.push(`품목 ${stuck.length}개가 박힌 채 거의 안 팔림 — ${stuck.join('·')}`);
 }
 if (leftover > 1800) bad.push(`${mm(lastUnlock)}에 콘텐츠 소진 — 남은 ${mm(leftover)}은 레벨업뿐`);
 if (Object.keys(s.items).length < 3) bad.push('열린 품목이 3개 미만 — 요청 흐름이 막힘');

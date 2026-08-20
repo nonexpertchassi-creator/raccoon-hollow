@@ -32,6 +32,10 @@ export const SHOPS = [
        * 대장간이 연장 네 가지만 파는 건 섭섭하다 — 살림살이로 넓힌다. */
       { id: 'shears', name: '가위',   price: 700,    time: 6.4, cost: 100_000, icon: '✂️' },
       { id: 'knife',  name: '부엌칼', price: 1_900,  time: 7.2, cost: 1_000_000, icon: '🔪' },
+      /* 일곱·여덟째 칸은 강철급에서 열린다. 연장에서 살림살이로 넘어온
+       * 흐름을 이어간다 — 대장장이가 만드는 것 중 제일 큰 물건들이다. */
+      { id: 'lock',   name: '자물쇠', price: 5_000,  time: 8.0, cost: 15_000_000_000, icon: '🔒' },
+      { id: 'cauldr', name: '가마솥', price: 13_000, time: 8.8, cost: 40_000_000_000, icon: '🍲' },
     ],
   },
   {
@@ -44,6 +48,11 @@ export const SHOPS = [
       { id: 'brush',    name: '붓',   price: 500,    time: 4.2, cost: 0, icon: '🖌️' },
       { id: 'ink',      name: '먹',   price: 1_300,  time: 5.0, cost: 2_500, icon: '🖋️' },
       { id: 'inkstone', name: '벼루', price: 3_400,  time: 6.2, cost: 15_000, icon: '🪨' },
+      { id: 'waterp',   name: '연적',   price: 5_300,  time: 6.9, cost: 60_000, icon: '💧' },
+      { id: 'brushpot', name: '필통',   price: 8_200,  time: 7.6, cost: 250_000_000, icon: '🗃️' },
+      { id: 'bookmk',   name: '서산',   price: 12_700, time: 8.3, cost: 900_000_000, icon: '🔖' },
+      { id: 'brushrk',  name: '붓걸이', price: 19_400, time: 9.0, cost: 70_000_000_000, icon: '🪝' },
+      { id: 'album',    name: '화첩',   price: 30_000, time: 9.8, cost: 130_000_000_000, icon: '📖' },
     ],
   },
   {
@@ -56,6 +65,11 @@ export const SHOPS = [
       { id: 'hanji',  name: '한지',   price: 1_100,   time: 5.0, cost: 0, icon: '📜' },
       { id: 'fan',    name: '부채',   price: 2_800,   time: 6.0, cost: 65_000, icon: '🪭' },
       { id: 'window', name: '창호지', price: 7_000,   time: 7.2, cost: 350_000, icon: '🪟' },
+      { id: 'floorp', name: '장지',   price: 10_800,  time: 7.9, cost: 800_000, icon: '🟫' },
+      { id: 'kite',   name: '연',     price: 16_600,  time: 8.6, cost: 1_200_000_000, icon: '🪁' },
+      { id: 'umbrel', name: '지우산', price: 25_500,  time: 9.3, cost: 2_500_000_000, icon: '☂️' },
+      { id: 'lantrn', name: '지등',   price: 39_000,  time: 10.1, cost: 200_000_000_000, icon: '🏮' },
+      { id: 'screen', name: '병풍',   price: 60_000,  time: 10.9, cost: 320_000_000_000, icon: '🖼️' },
     ],
   },
   {
@@ -68,6 +82,11 @@ export const SHOPS = [
       { id: 'jar',   name: '옹기',   price: 2_400,     time: 5.4, cost: 0, icon: '🏺' },
       { id: 'bowl',  name: '사발',   price: 6_000,     time: 6.4, cost: 3_000_000, icon: '🥣' },
       { id: 'celad', name: '청자',   price: 15_000,    time: 8.0, cost: 18_000_000, icon: '🫖' },
+      { id: 'steamr', name: '시루',     price: 22_700,  time: 8.7, cost: 40_000_000, icon: '🫕' },
+      { id: 'bottle', name: '술병',     price: 34_500,  time: 9.4, cost: 3_000_000_000, icon: '🍶' },
+      { id: 'teaset', name: '다기',     price: 52_300,  time: 10.2, cost: 5_000_000_000, icon: '🍵' },
+      { id: 'censer', name: '향로',     price: 79_000,  time: 11.0, cost: 500_000_000_000, icon: '🪔' },
+      { id: 'moonjr', name: '달항아리', price: 120_000, time: 11.8, cost: 800_000_000_000, icon: '🌕' },
     ],
   },
   {
@@ -81,6 +100,10 @@ export const SHOPS = [
       { id: 'ginseng', name: '산삼',   price: 12_000,      time: 7.0, cost: 100_000_000, icon: '🌱' },
       { id: 'antler',  name: '녹용',   price: 28_000,      time: 8.4, cost: 1_000_000_000, icon: '🦌' },
       { id: 'bezoar',  name: '우황',   price: 65_000,      time: 9.5, cost: 1_500_000_000, icon: '💊' },
+      { id: 'danggui', name: '당귀',   price: 95_000,   time: 10.3, cost: 6_000_000_000, icon: '🍂' },
+      { id: 'reishi',  name: '영지',   price: 139_000,  time: 11.1, cost: 9_000_000_000, icon: '🍄' },
+      { id: 'agar',    name: '침향',   price: 204_000,  time: 12.0, cost: 1_300_000_000_000, icon: '🪵' },
+      { id: 'elixir',  name: '경옥고', price: 300_000,  time: 12.9, cost: 2_000_000_000_000, icon: '🍯' },
     ],
   },
 ];
@@ -117,27 +140,27 @@ export const GUESTS = [
   { id: 'rabbit',   name: '토끼',   face: '🐰', every: 4.6,  qty: 3,  pay: 1.0,  spread: 3, speed: 1.4, wild: 0,
     at: 0,             desc: '발이 빠르지만 조금씩만 산다' },
   { id: 'magpie',   name: '까치',   face: '🐦', every: 3.1,  qty: 2,  pay: 0.85, spread: 2, speed: 1.7, wild: 0,
-    at: 6_000,        desc: '쉴 새 없이 들르는 대신 값을 깎는다' },
+    at: 5_800,        desc: '쉴 새 없이 들르는 대신 값을 깎는다' },
   { id: 'squirrel', name: '다람쥐', face: '🐿️', every: 4.2,  qty: 2,  pay: 1.15, spread: 2, speed: 1.5, wild: 0.15,
-    at: 100_000,     desc: '자주 오지만 한두 개면 족하다' },
+    at: 180_000,     desc: '자주 오지만 한두 개면 족하다' },
   { id: 'badger',   name: '오소리', face: '🦡', every: 17,   qty: 5,  pay: 1.5,  spread: 3, speed: 0.9, wild: 0.3,
-    at: 3_000_000,   desc: '느긋하게 두루 산다' },
+    at: 10_000_000,   desc: '느긋하게 두루 산다' },
   { id: 'fox',      name: '여우',   face: '🦊', every: 32,   qty: 8,  pay: 1.2,  spread: 3, speed: 1.35, wild: 0.4,
-    at: 35_000_000, desc: '재빠르지만 값을 깎는 데 능하다' },
+    at: 120_000_000, desc: '재빠르지만 값을 깎는 데 능하다' },
   { id: 'deer',     name: '사슴',   face: '🦌', every: 50,   qty: 9,  pay: 2.8,  spread: 3, speed: 1.2, wild: 0.5,
-    at: 400_000_000, desc: '값을 후하게 쳐준다' },
+    at: 1_700_000_000, desc: '값을 후하게 쳐준다' },
   { id: 'boar',     name: '멧돼지', face: '🐗', every: 80,   qty: 12, pay: 2.2,  spread: 1, speed: 1.1, wild: 0.6,
-    at: 1_000_000_000, desc: '한 종류를 통째로 쓸어간다' },
+    at: 5_400_000_000, desc: '한 종류를 통째로 쓸어간다' },
   { id: 'bear',     name: '곰',     face: '🐻', every: 120,  qty: 16, pay: 4.0,  spread: 1, speed: 0.8, wild: 0.7,
-    at: 2_000_000_000, desc: '진열대를 품절 내고 간다' },
+    at: 17_000_000_000, desc: '진열대를 품절 내고 간다' },
   { id: 'turtle',   name: '거북',   face: '🐢', every: 110,  qty: 14, pay: 7.0,  spread: 3, speed: 0.45, wild: 0.8,
-    at: 4_000_000_000, desc: '걸음은 느리나 씀씀이가 크다' },
+    at: 44_000_000_000, desc: '걸음은 느리나 씀씀이가 크다' },
   { id: 'crane',    name: '두루미', face: '🦢', every: 145,  qty: 16, pay: 6.0,  spread: 4, speed: 1.1, wild: 0.8,
-    at: 4_500_000_000, desc: '이것저것 골고루 챙긴다' },
+    at: 69_000_000_000, desc: '이것저것 골고루 챙긴다' },
   { id: 'ox',       name: '소',     face: '🐂', every: 260,  qty: 26, pay: 5.0,  spread: 3, speed: 0.4, wild: 0.9,
-    at: 8_000_000_000, desc: '느릿느릿 오지만 수레가 가득 찬다' },
+    at: 160_000_000_000, desc: '느릿느릿 오지만 수레가 가득 찬다' },
   { id: 'tiger',    name: '호랑이', face: '🐯', every: 400,  qty: 34, pay: 13.0, spread: 2, speed: 0.95, wild: 1.0,
-    at: 10_000_000_000, desc: '어쩌다 오지만 한 번에 어마어마하게 산다' },
+    at: 300_000_000_000, desc: '어쩌다 오지만 한 번에 어마어마하게 산다' },
 ];
 
 /* ───────────── 단골 20성 ─────────────
@@ -566,3 +589,44 @@ export const GEM_UPGRADES = [
  *
  * 파는 물건이 사는 사람을 손해 보게 만들면 안 된다 — 직원 상한을 4명에서
  * 1명으로 내렸던 것과 같은 이유다(STAFF 주석 참고). */
+
+/* ───────────── 기간제 이벤트 ─────────────
+ * "48시간 안에 깨면 스킨을 준다."
+ *
+ * ★ 왜 2장·3장(영구 진행)이 아니라 기간제인가.
+ *
+ * 영구 진행으로 만들면 콘텐츠를 **한 번 쓰고 버린다.** 기간제로 만들면
+ * 같은 것을 몇 달마다 다시 돌릴 수 있고, 돌 때마다 "이번엔 깨야지"가 생긴다.
+ * 그리고 **끝나는 시각이 있다는 것 자체가 켤 이유**가 된다 — 방치형에서
+ * 제일 구하기 어려운 게 그것이다.
+ *
+ * ★ 규칙 하나만 지킨다: **놓쳐도 손해가 없어야 한다.**
+ *
+ * 기간제는 숙제가 되는 순간 사람이 떠난다. 그래서 실패해도 잃는 게 없다 —
+ * 스킨을 못 받을 뿐이고 본편 진행은 조금도 안 뒤처진다. 벌칙도, 밀린 숙제도
+ * 없다. 다음 이벤트가 얼마 뒤에 그냥 또 온다.
+ *
+ * ★ 지금은 **있는 것만으로 만든다.**
+ *
+ * 도깨비 시장·모험가 길드는 아직 기획이 없다. 그래서 목표를 새로 만들지 않고
+ * 이미 도는 것 셋을 센다 — 마을 의뢰, 나쁜 놈 잡기, 장 열기. 나중에 도깨비
+ * 물건이 생기면 goal 하나만 늘리면 된다. 이벤트 틀은 그대로 쓴다.
+ *
+ * 48시간은 **실제 시간**이다(게임을 켜 둔 시간이 아니라). 껐다 켜도 흐른다 —
+ * 그래야 "오늘 안에"라는 말이 뜻을 갖는다. */
+export const EVENTS = [
+  { id: 'moonfair', name: '달빛 장터', face: '🌙', hours: 48,
+    goal: 'quest', need: 35, desc: '마을 의뢰를 35건 마친다',
+    gems: 30, skin: 'moon', skinName: '달빛 너구리' },
+  { id: 'ratchase', name: '쥐잡이 대회', face: '🐭', hours: 48,
+    goal: 'catch', need: 45, desc: '나쁜 놈을 45마리 잡는다',
+    gems: 25, skin: 'straw', skinName: '도롱이 너구리' },
+  { id: 'bigfair', name: '큰 장', face: '🎪', hours: 48,
+    goal: 'fair', need: 40, desc: '장을 40번 연다',
+    gems: 25, skin: 'red', skinName: '홍의 너구리' },
+];
+
+export const EVENT = {
+  gapHours: 12,     // 하나 끝나고 다음까지 쉬는 시간. 늘 켜져 있으면 특별하지 않다
+  afterShops: 2,    // 가게 둘은 열고 나서 시작한다 — 처음부터 던지면 뭐가 뭔지 모른다
+};
