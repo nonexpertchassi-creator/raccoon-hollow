@@ -6,7 +6,7 @@
  * 절반이 죽어 있는데도 "문제 없음"을 보고했다. 그래서 품목별로 따로 센다.
  */
 import { Sim, fmt, itemById } from '../sim.js';
-import { SHOPS, GUESTS, STOCK_CAP, PESTS, GUARD } from '../content.js';
+import { SHOPS, GUESTS, STOCK_CAP, PESTS, GUARD, GEM_UPGRADES } from '../content.js';
 
 const HOURS = Number(process.argv[2] || 4);
 const SEED = Number(process.argv[3] || 1);
@@ -28,6 +28,13 @@ const rng = ((a) => () => {
 /* 보통 사람이 할 법한 판단:
  * 새 가게 > 손님이 물어본 새 품목 > 제일 싼 레벨업 */
 function act(s) {
+  /* 북적이면 바로 누른다 — 12초짜리 창이라 제일 먼저 봐야 한다.
+   *
+   * 이게 없던 동안 이 도구는 **장을 한 번도 안 열었다.** 그래서 장에 붙은
+   * 수치(FAIR, 젬 강화 두 가지)를 아무리 키우고 줄여도 결과가 안 변했고,
+   * 나는 그걸 '이 손잡이는 효과가 없다'로 읽을 뻔했다. 안 쓰는 기능은
+   * 효과가 없는 게 당연하다 — 도구가 또 거짓말을 한 것이다. */
+  if (s.busy >= 0 && s.tapSmall(s.busy)) return 'fair';
   const ns = s.nextShop();
   if (ns && s.money >= ns.cost) { s.openShop(ns.id); return 'shop'; }
   for (const id of s.asked) if (s.canOpenItem(id)) { s.openItem(id); return 'item'; }
@@ -35,6 +42,20 @@ function act(s) {
   if (s.canBuyAuto()) { s.buyAuto(); return 'auto'; }
   if (s.canBuyGuard()) { s.buyGuard(); return 'item'; }
   for (const sh of s.shops) if (s.canHireStaff(sh)) { s.hireStaff(sh); return 'item'; }
+  /* 젬은 모아두면 아무 일도 안 일어난다. 제일 싼 것부터 바로 쓴다고 본다 —
+   * 이래야 젬 강화가 경제에 주는 영향이 최대치로 잡히고, 그 최대치가
+   * 견딜 만해야 수치를 내보낼 수 있다. */
+  const up = GEM_UPGRADES.map((u) => u.id).filter((id) => s.canBuyGemUp(id))
+    .sort((a, b) => s.gemCost(a) - s.gemCost(b))[0];
+  if (up) { s.buyGemUp(up); return 'item'; }
+  /* 영구 강화를 **다 산 뒤에만** 남는 젬을 삯꾼으로 쓴다.
+   *
+   * 처음엔 아무 때나 쓰게 했더니 8시간 내내 삯꾼만 부르고 영구 강화는
+   * 벼린 연장 2단계에서 멈췄다 — 삯꾼이 3알로 제일 싸서, 다음 강화값
+   * (5·7·11알)을 모으기 전에 젬이 계속 빠져나간 것이다. 그러면 도구가
+   * 영구 강화를 한 번도 제대로 못 재본다. */
+  const anyLeft = GEM_UPGRADES.some((u) => s.gemCost(u.id) !== null);
+  if (!anyLeft && s.canRush()) { s.callRush(); return 'fair'; }
   const sm = s.nextSmall();
   if (sm >= 0 && s.canBuildSmall(sm)) { s.buildSmall(sm); return 'item'; }
   /* 자동 강화를 산 뒤로는 손으로 안 누른다 — 그게 산 이유다.
@@ -54,7 +75,7 @@ function act(s) {
 
 const firstShop = new Map(), firstGuest = new Map(), firstItem = new Map();
 const firstRank = new Map();
-const waits = []; const counts = { shop: 0, item: 0, level: 0, auto: 0 };
+const waits = []; const counts = { shop: 0, item: 0, level: 0, auto: 0, fair: 0 };
 let last = 0, samples = 0, timeline = [];
 
 /* 품목별 성적표. 죽은 품목을 찾아내는 게 이 도구의 존재 이유다. */
@@ -68,6 +89,11 @@ for (const P of PESTS) pestLog[P.id] = { seen: 0, loss: 0, worth: 0 };
 let pestHad = null;
 /* 계산대 규칙(SERVICE)이 실제로 어떻게 굴러가는지 — 기다림과 💢를 센다 */
 let visitsAll = 0, visitsWaited = 0, waitSum = 0, huffs = 0;
+/* 마을 의뢰 — 몇 건이 끝났고 젬이 얼마나 들어왔나. 시간당으로 봐야 한다:
+ * 총합만 보면 후반에 몰린 건지 고르게 들어온 건지 구분이 안 된다. */
+let qDone = 0, qCoin = 0, qGem = 0, gemMax = 0, gemCatch = 0;
+const qByHour = [];
+const qByVillage = {};
 
 for (let t = 0; t < HOURS * 3600; t += DT) {
   const r = s.tick(DT, rng);
@@ -114,6 +140,18 @@ for (let t = 0; t < HOURS * 3600; t += DT) {
       const S = SHOPS.find((x) => x.id === sh);
       lastUnlockWhat = `${S.name} ${S.ranks[s.rankOf(sh)]}급`;
     }
+  }
+
+  for (const q of r.quests || []) {
+    qDone++; qCoin += q.coin; qGem += q.gems;
+    const h = Math.floor(s.t / 3600);
+    (qByHour[h] ??= { n: 0, gem: 0, coin: 0 });
+    qByHour[h].n++; qByHour[h].gem += q.gems; qByHour[h].coin += q.coin;
+    const v = (qByVillage[q.gid] ??= { n: 0, gem: 0, secs: 0 });
+    v.n++; v.gem += q.gems; v.secs += q.t;
+  }
+  for (const e of s.events) {
+    if (e.t <= s.t - DT || e.kind !== 'gem') break;
   }
 
   const a = act(s);
@@ -188,8 +226,29 @@ console.log('\n■ 뭔가 할 수 있게 되기까지 기다린 시간');
 if (w.length) {
   console.log(`   총 ${waits.length}회 · 중앙값 ${w[Math.floor(w.length / 2)].toFixed(1)}초 · ` +
     `상위10% ${w[Math.floor(w.length * 0.9)].toFixed(1)}초 · 최장 ${w[w.length - 1].toFixed(1)}초`);
-  console.log(`   가게 ${counts.shop} · 새 품목 ${counts.item} · 강화 클릭 ${counts.level}` +
+  console.log(`   가게 ${counts.shop} · 새 품목 ${counts.item} · 장 열기 ${counts.fair} · 강화 클릭 ${counts.level}` +
     (s.auto ? ' (자동 강화 구입 후로는 0)' : ''));
+}
+
+console.log('\n■ 마을 의뢰와 젬');
+console.log(`   끝낸 의뢰 ${qDone}건 · 받은 젬 💎${qGem} · 보상 엽전 ${fmt(qCoin)} (누적매출의 ${
+  pct(qCoin, s.revenue).toFixed(1)}%)`);
+console.log(`   지금 가진 젬 💎${s.gems} · 산 강화 ${
+  GEM_UPGRADES.map((u) => `${u.name} ${s.upLv(u.id)}/${u.max}`).join(' · ')}`);
+console.log('   시간대별   끝낸 의뢰 / 젬 / 보상');
+for (let h = 0; h < Math.ceil(HOURS); h++) {
+  const q = qByHour[h] || { n: 0, gem: 0, coin: 0 };
+  console.log(`   ${String(h + 1).padStart(6)}시간째  ${String(q.n).padStart(6)}건 ${
+    String('💎' + q.gem).padStart(7)} ${fmt(q.coin).padStart(9)}`);
+}
+if (qDone) {
+  console.log('   마을별   끝낸 의뢰 / 평균 걸린 시간   (시간이 마을마다 비슷해야 한다)');
+  for (const g of GUESTS) {
+    const v = qByVillage[g.id];
+    if (!v) continue;
+    console.log(`   ${(g.face + ' ' + g.name + '마을').padEnd(12)} ${
+      String(v.n).padStart(4)}건   ${mm(v.secs / v.n).padStart(9)}`);
+  }
 }
 
 if (PESTS.some((P) => pestLog[P.id].seen)) {

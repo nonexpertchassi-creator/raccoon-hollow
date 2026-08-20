@@ -10,6 +10,7 @@
 import {
   SHOPS, GUESTS, LEVEL, MILESTONE_EVERY, MILESTONE_MULT, STOCK_CAP, OFFLINE, ASK_LINES,
   BASKET_SPREAD, MAX_BULK, AUTO_COST, AUTO_PER_TICK, AUTO_SHARE, ASK_EVERY, FAIR, SMALL_SHOPS, RANKS, REGULARS, PESTS, GUARD, STAFF, SERVICE,
+  QUEST, GEM, GEM_UPGRADES,
 } from './content.js';
 
 const ALL_ITEMS = SHOPS.flatMap((s) => s.items.map((i) => ({ ...i, shop: s.id })));
@@ -23,6 +24,7 @@ export function josa(word, withJong, without) {
   return word + (jong ? withJong : without);
 }
 export const shopById = (id) => SHOPS.find((s) => s.id === id);
+const GU = Object.fromEntries(GEM_UPGRADES.map((u) => [u.id, u]));
 
 export class Sim {
   constructor(save = null) {
@@ -49,6 +51,17 @@ export class Sim {
     this._purse = 0;                     // 자동 강화가 쓸 수 있는 몫
     this.events = [];                    // 화면에 띄울 최근 사건
 
+    /* 마을 의뢰와 젬. 의뢰는 마을 단위로 걸린다(손님 한 마리가 아니라).
+     * { id, gid, itemId, need, got, gems, t } */
+    this.quests = [];
+    this.gems = 0;
+    this.gemUp = {};                     // 젬으로 산 영구 강화 (id → 레벨)
+    this.maxGem = {};                    // 만렙 젬을 이미 준 품목 ('id@등급')
+    this._qid = 0;
+    this._qCool = QUEST.first;           // 다음 의뢰가 붙기까지 남은 시간
+    this.rush = 0;                       // 삯꾼이 남아 있는 시간(초)
+    this._questDone = [];                // 이번 틱에 끝난 의뢰 (화면 표시용)
+
     /* 기다리는 주문. 재고가 모자라도 곧 나올 것 같으면 손님이 기다린다.
      * { id, gid, lines:[{id,n,rem,unit}], want, grumbles, t } */
     this.orders = [];
@@ -72,6 +85,17 @@ export class Sim {
     if (!Array.isArray(this.orders)) this.orders = [];
     if (!this._hold || typeof this._hold !== 'object') this._hold = {};
     if (typeof this._oid !== 'number') this._oid = 0;
+
+    /* 의뢰·젬도 나중에 생겼다. 옛 저장본엔 칸이 없어서 그냥 두면
+     * quests.length가 터지고 gems가 NaN이 된다. */
+    if (!Array.isArray(this.quests)) this.quests = [];
+    if (typeof this.gems !== 'number') this.gems = 0;
+    if (!this.gemUp || typeof this.gemUp !== 'object') this.gemUp = {};
+    if (!this.maxGem || typeof this.maxGem !== 'object') this.maxGem = {};
+    if (typeof this._qid !== 'number') this._qid = 0;
+    if (typeof this._qCool !== 'number') this._qCool = QUEST.first;
+    if (typeof this.rush !== 'number') this.rush = 0;
+    this._questDone = [];
 
     /* 저장본에 없는 손님은 **영원히 안 온다.**
      *
@@ -206,7 +230,7 @@ export class Sim {
   /** 잡았다. 훔치려던 것은 그대로 남고 벌금을 받는다.
    *  손해를 막는 게 아니라 이득을 줍는 구조여야 한다 — 안 보고 있어도
    *  잃는 건 작고, 보고 있으면 버는 게 크다. */
-  catchPest() {
+  catchPest(rng = Math.random) {
     const t = this.pest;
     if (!t) return null;
     const P = PESTS.find((p) => p.id === t.kind);
@@ -215,8 +239,12 @@ export class Sim {
     const gain = Math.floor(worth * P.fine);
     this.money += gain;
     this.revenue += gain;
-    this._ev(`${josa(P.name, '을', '를')} 잡았다 — 벌금 엽전 ${fmt(gain)}닢`, 'catch');
-    return { kind: t.kind, gain };
+    /* 잡을 때 가끔 젬 한 알. 도둑질 자체는 게임 안의 자잘한 몸짓이라
+     * 그것만으로는 목표가 못 된다 — 젬이 붙어야 잡을 이유가 생긴다. */
+    let gem = 0;
+    if (rng() < GEM.catchRate) { gem = 1; this.gems += 1; }
+    this._ev(`${josa(P.name, '을', '를')} 잡았다 — 벌금 엽전 ${fmt(gain)}닢${gem ? ' · 💎1' : ''}`, 'catch');
+    return { kind: t.kind, gain, gem };
   }
 
   /* ── 단골 20성 ── */
@@ -339,13 +367,13 @@ export class Sim {
     const it = itemById(id);
     // 선형 증가 × 이정표 × 등급. 지수로 올리면 비용 곡선을 추월해 폭주한다.
     return Math.floor(it.price * RANKS[this.rankOfItem(id)].priceMul
-      * (1 + LEVEL.priceStep * (this.lv(id) - 1)) * this.milestone(id));
+      * (1 + LEVEL.priceStep * (this.lv(id) - 1)) * this.milestone(id) * this.haggle());
   }
 
   craftTime(id) {
     const it = itemById(id);
     const f = Math.max(LEVEL.timeFloor, Math.pow(LEVEL.timeReduce, this.lv(id) - 1));
-    return it.time * f;
+    return it.time * f * this.forgeMul();
   }
 
   /** 이 품목의 진열대 상한. 직원 한 명이 진열대 10칸을 더 본다.
@@ -412,6 +440,7 @@ export class Sim {
     this.items[id].lv += n;
     const after = Math.floor(this.lv(id) / MILESTONE_EVERY);
     if (after > before) this._ev(`${itemById(id).name} ${this.lv(id)}레벨 — 값이 2배!`, 'milestone');
+    this._checkMax(id);
     return n;
   }
 
@@ -474,6 +503,7 @@ export class Sim {
       if (Math.floor(this.lv(best) / MILESTONE_EVERY) > before) {
         this._ev(`${itemById(best).name} ${this.lv(best)}레벨 — 값이 2배!`, 'milestone');
       }
+      this._checkMax(best);
       done++;
     }
     return done;
@@ -583,6 +613,148 @@ export class Sim {
     return true;
   }
 
+
+  /* ── 젬 강화 ──
+   * 지금은 화면을 새로 안 만들어도 되는 것만 판다. 뽑기·룰렛·스킨은
+   * 새 화면이 필요해서 엔진을 옮긴 뒤로 미뤘다(PLAN.md 참고). */
+  upLv(id) { return this.gemUp[id] || 0; }
+  /** 다음 한 단계의 젬 값. 다 올렸으면 null */
+  gemCost(id) {
+    const u = GU[id]; const lv = this.upLv(id);
+    return !u || lv >= u.max ? null : u.cost[lv];
+  }
+  canBuyGemUp(id) { const c = this.gemCost(id); return c != null && this.gems >= c; }
+  buyGemUp(id) {
+    if (!this.canBuyGemUp(id)) return false;
+    this.gems -= this.gemCost(id);
+    this.gemUp[id] = this.upLv(id) + 1;
+    this._ev(`${GU[id].name} ${this.upLv(id)}단계`, 'gem');
+    return true;
+  }
+
+  /** 모든 물건 값에 곱한다. **레벨업 비용에는 안 곱한다** —
+   *  값이 오르는 만큼 비용도 오르면 아무것도 안 산 것과 같아진다. */
+  haggle() { return 1 + GU.haggle.step * this.upLv('haggle'); }
+  /** 만드는 시간을 줄인다. 곱으로만 줄이므로 0에 못 닿는다. */
+  forgeMul() { return 1 - GU.forge.step * this.upLv('forge'); }
+  /** 점장 혼자인 가게가 계산하느라 망치를 놓는 시간.
+   *
+   *  여기 붙인 이유: 장을 자주 열어 손님을 두 배로 부르면 매출이 오히려
+   *  **떨어졌다.** 계산 횟수가 두 배가 되면서 이 멈춤도 두 배가 됐기
+   *  때문이다(content.js의 ★ 참고). 이 게임의 진짜 병목이 여기다. */
+  servePause() { return Math.max(0.2, SERVICE.servePause - GU.hands.step * this.upLv('hands')); }
+
+  /** 삯꾼을 부른다 — 잠깐 생산이 두 배가 된다.
+   *  이미 부려 놓았으면 못 부른다. 겹쳐 쓰면 시간만 덮어써서 손해인데
+   *  유저는 그걸 모른 채 잃는다. */
+  canRush() { return this.rush <= 0 && this.gems >= GEM.rush.cost; }
+  callRush() {
+    if (!this.canRush()) return false;
+    this.gems -= GEM.rush.cost;
+    this.rush = GEM.rush.secs;
+    this._ev(`삯꾼을 불렀다 — ${GEM.rush.secs}초 동안 생산 ${GEM.rush.mult}배`, 'gem');
+    return true;
+  }
+
+  /* ── 마을 의뢰 ── */
+
+  /** 의뢰를 건 마을은 **그 물건을 먼저 집는다.** _buy에서 쓴다.
+   *
+   *  이게 없으면 의뢰가 마을마다 터무니없이 불공평해진다. 곰은 한 종류를
+   *  통째로 쓸어가는(spread 1) 손님이라, 열린 칸이 15개면 원하는 물건을
+   *  집을 확률이 15분의 1이다. 실제로 재보니 토끼마을 의뢰는 6분,
+   *  곰마을은 25분, 소마을은 37분이 걸렸다 — 개수를 아무리 줄여도
+   *  '언제 그 물건을 집느냐'가 시간을 정해버리기 때문에 안 고쳐진다.
+   *
+   *  먼저 집게 하면 개수가 곧 시간이 되고, 무엇보다 말이 된다 —
+   *  토끼마을이 호미를 청했으면 토끼들이 호미를 사가야 한다. */
+  questItemFor(gid) {
+    const q = this.quests.find((x) => x.gid === gid);
+    return q && this.items[q.itemId] ? q.itemId : null;
+  }
+
+  /** 의뢰를 건 마을이 그 품목을 **초당 몇 개** 사가는가.
+   *
+   *  먼저 집으므로 한 번 올 때 가져가는 개수는 '한 매대에서 집는 몫'
+   *  (= 한 번에 사는 개수 ÷ 훑는 종류 수)이다. 오는 간격으로 나누면 속도다.
+   *
+   *  이 한 줄이 의뢰 설계의 전부다 — 개수를 손으로 정하는 대신 여기서
+   *  뽑아내기 때문에, 까치마을이든 호랑이마을이든 걸리는 시간이 비슷해진다. */
+  questRate(gid, itemId) {
+    const g = GUESTS.find((x) => x.id === gid);
+    if (!g || !this.items[itemId]) return 0;
+    const qty = Math.max(1, Math.round(g.qty * REGULARS[this.regularLv(gid)].qty));
+    return Math.max(1, Math.ceil(qty / (g.spread || BASKET_SPREAD))) / g.every;
+  }
+
+  /** 청하는 개수는 눈에 보기 좋게 끊는다. 계산해서 나온 195개보다
+   *  200개가 낫다 — 숫자가 목표처럼 읽혀야 한다. */
+  _roundNeed(n) {
+    if (n < 20) return n;
+    if (n < 100) return Math.round(n / 5) * 5;
+    if (n < 500) return Math.round(n / 10) * 10;
+    return Math.round(n / 50) * 50;
+  }
+
+  /** 한 마을에 하나씩만 건다. 같은 마을에 둘을 걸면 어느 쪽이 차는지 헷갈린다. */
+  _newQuest(rng = Math.random) {
+    const open = Object.keys(this.items);
+    const taken = this.quests.map((q) => q.gid);
+    const free = this.guests.filter((id) => !taken.includes(id));
+    if (!open.length || !free.length) return null;
+
+    const gid = free[Math.floor(rng() * free.length)];
+    const itemId = open[Math.floor(rng() * open.length)];
+    const rate = this.questRate(gid, itemId);
+    if (rate <= 0) return null;
+
+    const need = Math.max(QUEST.min, this._roundNeed(Math.round(QUEST.seconds * rate)));
+    /* 젬은 **단골 등급**을 따른다. 걸리는 시간은 위에서 이미 마을마다
+     * 같게 맞춰 놨으므로 시간으로 정하면 전부 똑같은 한 알이 된다.
+     * 오래 사귄 마을이 더 크게 갚는 편이 '관계'라는 축과도 맞는다. */
+    const gems = Math.max(1, Math.min(QUEST.gemCap,
+      1 + Math.floor(this.regularLv(gid) / QUEST.gemPerStar)));
+    const q = { id: ++this._qid, gid, itemId, need, got: 0, gems, t: 0 };
+    this.quests.push(q);
+    const g = GUESTS.find((x) => x.id === gid);
+    this._ev(`${g.name}마을에서 ${this.itemName(itemId)} ${need}개를 청했다`, 'quest');
+    return q;
+  }
+
+  /** 판 물건을 의뢰 눈금에 더한다. _settle에서만 부른다 —
+   *  즉시 판매든 기다린 주문이든 돈이 오가는 곳은 거기 하나뿐이다. */
+  _questGain(gid, itemId, n) {
+    const q = this.quests.find((x) => x.gid === gid && x.itemId === itemId);
+    if (!q) return;
+    q.got += n;
+    if (q.got < q.need) return;
+
+    this.quests.splice(this.quests.indexOf(q), 1);
+    this._qCool = QUEST.every;
+    const coin = Math.floor(this.price(itemId) * q.need * QUEST.payMul);
+    this.money += coin;
+    this.revenue += coin;
+    if (this.auto) this._purse += coin * AUTO_SHARE;
+    this.gems += q.gems;
+    const g = GUESTS.find((x) => x.id === gid);
+    this._ev(`${g.name}마을 의뢰를 마쳤다 — 🪙${fmt(coin)} · 💎${q.gems}`, 'quest');
+    this._questDone.push({ ...q, coin, guest: g, item: itemById(itemId) });
+  }
+
+  /** 몇 개 남았나 (화면용) */
+  questLeft(q) { return Math.max(0, q.need - q.got); }
+
+  /** 지금 등급의 만렙에 닿았으면 젬 한 알. 등급이 오르면 상한도 올라가므로
+   *  '품목@등급'으로 따로 센다 — 승급할 때마다 다시 한 번 받는다. */
+  _checkMax(id) {
+    if (!this.atMax(id)) return;
+    const key = `${id}@${this.rankOfItem(id)}`;
+    if (this.maxGem[key]) return;
+    this.maxGem[key] = 1;
+    this.gems += GEM.onMax;
+    this._ev(`${josa(this.itemName(id), '이', '가')} 만렙 — 💎${GEM.onMax}`, 'gem');
+  }
+
   /* ── 한 틱 ── */
   tick(dt, rng = Math.random) {
     this.t += dt;
@@ -609,13 +781,15 @@ export class Sim {
       this._hold[k] -= dt;
       if (this._hold[k] <= 0) delete this._hold[k];
     }
+    if (this.rush > 0) this.rush = Math.max(0, this.rush - dt);
+    const speed = this.rush > 0 ? GEM.rush.mult : 1;
     for (const id of Object.keys(this.items)) {
       const st = this.items[id];
       const shop = itemById(id).shop;
       if (this.staffOf(shop) === 0 && (this._hold[shop] || 0) > 0) continue;  // 계산 중
       // 진열대가 꽉 차면 멈춘다 — 기다리는 주문이 있으면 그 몫은 계속 만든다
       if (st.stock >= this.capOf(id) && !this._orderRem(id)) continue;
-      st.prog += dt;
+      st.prog += dt * speed;
       const need = this.craftTime(id);
       while (st.prog >= need && (this._orderRem(id) > 0 || st.stock < this.capOf(id))) {
         st.prog -= need;
@@ -642,6 +816,7 @@ export class Sim {
     /* 1.5) 나쁜 놈들 — 물건이나 엽전을 집어 들고 도망친다.
      * 이번 틱에 실제로 나가고 들어온 돈을 모아 화면에 넘긴다(−/+ 표). */
     this._pestEvents = [];
+    this._questDone = [];
     this._pests(dt, rng);
 
     // 2) 손님 — 재고에서 여러 종류를 무작위로 담아간다
@@ -670,6 +845,14 @@ export class Sim {
       ask = this._ask(rng);
     }
 
+    // 4.5) 마을 의뢰 — 한 자리가 비면 잠시 뒤 새 의뢰가 붙는다
+    for (const q of this.quests) q.t += dt;
+    this._qCool -= dt;
+    if (this._qCool <= 0) {
+      if (this.quests.length < QUEST.slots) this._newQuest(rng);
+      this._qCool = QUEST.every;
+    }
+
     // 5) 새 손님이 마을에 온다
     let newGuest = null;
     const ng = GUESTS.find((g) => !this.guests.includes(g.id) && this.revenue >= g.at);
@@ -679,7 +862,8 @@ export class Sim {
       this._ev(`${josa(ng.name, '이', '가')} 마을에 왔다`, 'guest');
     }
 
-    return { sales, done, ask, newGuest, autoLv, pests: this._pestEvents };
+    return { sales, done, ask, newGuest, autoLv, pests: this._pestEvents,
+             quests: this._questDone };
   }
 
   /** 이 품목을 기다리는 주문이 모두 몇 개나 남았나 */
@@ -732,6 +916,15 @@ export class Sim {
     // sort는 안정 정렬이라 같은 그룹 안에서는 위에서 섞은 순서가 유지된다.
     have.sort((a, b) =>
       (this.items[b].stock >= this.capOf(b)) - (this.items[a].stock >= this.capOf(a)));
+
+    /* 의뢰를 건 마을은 청한 물건을 **맨 먼저** 집는다.
+     * 위 정렬 다음에 놓는 이유: 정렬이 안정 정렬이라 먼저 당겨 놓아도
+     * 다시 뒤로 밀린다. 여기서 마지막으로 한 번 더 당긴다. */
+    const wantQ = this.questItemFor(g.id);
+    if (wantQ) {
+      const i = have.indexOf(wantQ);
+      if (i > 0) { have.splice(i, 1); have.unshift(wantQ); }
+    }
 
     // 손님마다 훑는 종류 수가 다르다. 곰·멧돼지는 1이라 한 종류를 쓸어간다.
     const per = Math.max(1, Math.ceil(qty / (g.spread || BASKET_SPREAD)));
@@ -810,8 +1003,11 @@ export class Sim {
 
     // 점장 혼자인 가게는 계산하는 동안 생산을 멈춘다
     for (const ln of out) {
-      if (this.staffOf(ln.item.shop) === 0) this._hold[ln.item.shop] = SERVICE.servePause;
+      if (this.staffOf(ln.item.shop) === 0) this._hold[ln.item.shop] = this.servePause();
     }
+
+    // 이 마을에 건 의뢰가 있으면 판 만큼 눈금이 오른다
+    for (const ln of out) this._questGain(g.id, ln.item.id, ln.n);
 
     if (n > 0) {
       // 단골 등급이 올랐으면 알린다 — 손님이 굳어 있지 않다는 신호다
@@ -866,7 +1062,7 @@ export class Sim {
   }
 
   save() {
-    const { events, _pestEvents, ...rest } = this;
+    const { events, _pestEvents, _questDone, ...rest } = this;
     return JSON.parse(JSON.stringify(rest));
   }
 }
