@@ -167,7 +167,7 @@ func _quests_body() -> void:
 		_box.add_child(_label("%d / %d · %d성 %s · 마치면 🪙%s" % [
 			int(q.got), int(q.need), sim.regular_star(q.gid), sim.regular_name(q.gid),
 			Num.fmt(floor(sim.price(q.itemId) * q.need * Content.QUEST.payMul))], 11, Color("8a7a63")))
-	if sim.quests.size() < int(Content.QUEST.slots):
+	if sim.quests.size() < sim.quest_slots():
 		_box.add_child(_label("다음 의뢰가 오는 중… (%d초)" % int(ceil(max(0.0, sim._qCool))), 12, Color("8a7a63")))
 
 	_box.add_child(_label("젬 쓰는 곳", 15, Color("5a4e3d")))
@@ -329,6 +329,19 @@ func _shop_body() -> void:
 			int(sim.staff_of(shop_id)), int(smax)], 13))
 		_box.add_child(_btn("직원 들이기 🪙" + Num.fmt(sc), sim.can_hire_staff(shop_id),
 			func(): sim.hire_staff(shop_id); rebuild()))
+
+	# 이 가게만의 강화 — 가게마다 다른 한 가지. 왜 좋은지가 한 줄로 보여야 고민이 된다
+	var ud: Variant = sim.shop_up_def(shop_id)
+	if ud != null:
+		var ulv: int = sim.shop_up_lv(shop_id)
+		_box.add_child(_label("%s %s  %d/%d — %s" % [
+			ud.face, ud.name, ulv, int(ud.max), ud.desc], 14))
+		var uc: Variant = sim.shop_up_cost(shop_id)
+		if uc == null:
+			_box.add_child(_label("끝까지 올렸다", 12, Color("4a7c59")))
+		else:
+			_box.add_child(_btn("올리기 🪙" + Num.fmt(uc), sim.can_buy_shop_up(shop_id),
+				func(): sim.buy_shop_up(shop_id); rebuild()))
 
 	# 승급 — 못 하는 이유가 보여야 목표가 된다
 	var r: Variant = sim.promote_reqs(shop_id)

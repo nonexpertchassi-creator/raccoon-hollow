@@ -96,12 +96,18 @@ var pest: Variant = null
 var _pestAcc: Dictionary = {}
 var _pestGap: Dictionary = {}
 var _askAcc: float = 0.0
+## 이번 틱의 주사위. _settle은 rng를 안 받는데 '약재 말리기'가 필요해서
+## 여기 담아 둔다. _settle은 언제나 틱 안에서만 불리므로 늘 이번 것이 맞다.
+var _rng: Rng = null
 
 ## ── 장날 소식 ──
 ## 하루치씩 담는다: [{ "day": 3, "sales": { "rabbit>hoe": 12.0, … } }]
 ## 누적 총계로 세면 처음 연 품목이 영원히 1등이라 순위가 굳는다.
 ## 기간으로 세야 매번 새 소식이 된다(content.gd의 LEDGER 참고).
 var ledger: Array = []
+
+## 가게마다의 고유 강화 (가게id → 단계). 엽전으로 산다.
+var shopUp: Dictionary = {}
 
 func _init() -> void:
 	_tables()
@@ -314,6 +320,60 @@ func _no_stall(item: Dictionary) -> bool:
 			break
 	return idx >= stall_cap(item.shop)
 
+# ── 가게마다의 고유 강화 ──
+#
+# ★ 확률을 쓰는 강화(약재 말리기)는 **안 샀으면 주사위를 굴리지 않는다.**
+#   0% 확률이라도 굴리면 난수 순서가 밀려서, 이 기능을 넣기만 해도 옛 판과
+#   다른 게임이 된다 — 대조 시험이 그 자리에서 빨간불이 난다.
+
+func shop_up_lv(shop_id: String) -> int: return int(shopUp.get(shop_id, 0))
+
+func shop_up_def(shop_id: String) -> Variant:
+	return Content.SHOP_UP.get(shop_id, null)
+
+## 다음 한 단계 값. 다 올렸으면 null
+func shop_up_cost(shop_id: String) -> Variant:
+	var d: Variant = shop_up_def(shop_id)
+	var lv: int = shop_up_lv(shop_id)
+	if d == null or lv >= int(d.max):
+		return null
+	return floor(shop_by_id(shop_id).promote[0] * Content.SHOP_UP_COST[lv])
+
+func can_buy_shop_up(shop_id: String) -> bool:
+	var c: Variant = shop_up_cost(shop_id)
+	return shops.has(shop_id) and c != null and money >= float(c)
+
+func buy_shop_up(shop_id: String) -> bool:
+	if not can_buy_shop_up(shop_id):
+		return false
+	money -= float(shop_up_cost(shop_id))
+	shopUp[shop_id] = shop_up_lv(shop_id) + 1
+	_ev("%s에 %s %d단계" % [shop_by_id(shop_id).name,
+		Content.SHOP_UP[shop_id].name, shop_up_lv(shop_id)], "shop")
+	return true
+
+## 이 가게가 만드는 시간 배수 (풀무)
+func _forge_of(shop_id: String) -> float:
+	if shop_id != "smith":
+		return 1.0
+	return 1.0 - Content.SHOP_UP.smith.step * shop_up_lv("smith")
+
+## 이 가게 물건값 배수 (먹 갈기)
+func _price_of(shop_id: String) -> float:
+	if shop_id != "brush":
+		return 1.0
+	return 1.0 + Content.SHOP_UP.brush.step * shop_up_lv("brush")
+
+## 이 가게 물건을 한 번에 몇 배로 사가나 (질그릇 한 벌)
+func _basket_of(shop_id: String) -> float:
+	if shop_id != "pot":
+		return 1.0
+	return 1.0 + Content.SHOP_UP.pot.step * shop_up_lv("pot")
+
+## 동시에 걸리는 의뢰 자리 (의뢰방)
+func quest_slots() -> int:
+	return int(Content.QUEST.slots) + int(Content.SHOP_UP.paper.step) * shop_up_lv("paper")
+
 # ── 가게 등급 ──
 func rank_of(shop_id: String) -> int: return int(rank.get(shop_id, 0))
 func rank_of_item(id: String) -> int: return rank_of(item_by_id(id).shop)
@@ -328,12 +388,13 @@ func at_max(id: String) -> bool: return lv(id) >= max_lv(id)
 func price(id: String) -> float:
 	var it: Dictionary = item_by_id(id)
 	return floor(it.price * Content.RANKS[rank_of_item(id)].priceMul
-		* (1.0 + Content.LEVEL.priceStep * (lv(id) - 1.0)) * milestone(id) * haggle())
+		* (1.0 + Content.LEVEL.priceStep * (lv(id) - 1.0)) * milestone(id) * haggle()
+		* _price_of(it.shop))
 
 func craft_time(id: String) -> float:
 	var it: Dictionary = item_by_id(id)
 	var f: float = max(Content.LEVEL.timeFloor, pow(Content.LEVEL.timeReduce, lv(id) - 1.0))
-	return it.time * f * forge_mul()
+	return it.time * f * forge_mul() * _forge_of(it.shop)
 
 func cap_of(id: String) -> float:
 	return Content.STOCK_CAP + Content.STAFF.capAdd * staff_of(item_by_id(id).shop)
@@ -710,6 +771,7 @@ func _check_max(id: String) -> void:
 
 # ── 한 틱 ──
 func tick(dt: float, rng: Rng) -> Dictionary:
+	_rng = rng
 	t += dt
 	wall += dt
 	_events(dt)
@@ -805,7 +867,7 @@ func tick(dt: float, rng: Rng) -> Dictionary:
 		q.t += dt
 	_qCool -= dt
 	if _qCool <= 0.0:
-		if quests.size() < int(Content.QUEST.slots):
+		if quests.size() < quest_slots():
 			_new_quest(rng)
 		_qCool = Content.QUEST.every
 
@@ -876,7 +938,8 @@ func _buy(g: Dictionary, rng: Rng) -> Variant:
 		if left <= 0.0:
 			break
 		var st: Dictionary = items[id]
-		var want_n: float = min(left, per)
+		# 질그릇 한 벌 — 이 가게 물건은 한 번에 더 집는다
+		var want_n: float = min(left, ceil(per * _basket_of(item_by_id(id).shop)))
 		if want_n <= 0.0:
 			continue
 		var take: float = min(want_n, st.stock)
@@ -931,6 +994,10 @@ func _settle(g: Dictionary, lines: Array, want: float, grumbles: Array, waited: 
 		if got <= 0.0:
 			continue
 		var m: float = floor(l.unit * got)
+		# 약재 말리기 — 안 샀으면 주사위를 굴리지 않는다
+		var dry_lv: int = shop_up_lv("herb") if item_by_id(l.id).shop == "herb" else 0
+		if dry_lv > 0 and _rng != null and _rng.next() < Content.SHOP_UP.herb.step * dry_lv:
+			m *= 2.0
 		gain += m
 		n += got
 		sold += got
@@ -1006,7 +1073,7 @@ const SAVE_KEYS: Array[String] = [
 	"quests", "gems", "gemUp", "maxGem", "_qid", "_qCool", "rush",
 	"wall", "event", "skins", "cleared", "_evAt", "_evIdx",
 	"orders", "_oid", "_hold", "_guestAcc", "_guestGap", "pest", "_pestAcc", "_pestGap", "_askAcc",
-	"ledger",
+	"ledger", "shopUp",
 ]
 ## 글자로 저장했다 되돌리면 정수가 소수가 된다(-1 → -1.0). 자리를 세는 데
 ## 쓰는 것들은 도로 정수로 되돌린다 — 아니면 배열 자리를 못 찾는다.

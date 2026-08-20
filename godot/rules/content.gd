@@ -944,6 +944,52 @@ const SHOPS := [
 	}
 ]
 
+const SHOP_UP := {
+	"smith": {
+		"name": "풀무",
+		"face": "🔥",
+		"max": 5.0,
+		"step": 0.06,
+		"desc": "이 가게가 만드는 시간 −6%"
+	},
+	"brush": {
+		"name": "먹 갈기",
+		"face": "⚫",
+		"max": 5.0,
+		"step": 0.08,
+		"desc": "이 가게 물건값 +8%"
+	},
+	"paper": {
+		"name": "의뢰방",
+		"face": "📜",
+		"max": 3.0,
+		"step": 1.0,
+		"desc": "마을 의뢰가 한 자리 더 걸린다"
+	},
+	"pot": {
+		"name": "질그릇 한 벌",
+		"face": "🏺",
+		"max": 5.0,
+		"step": 0.15,
+		"desc": "이 가게 물건을 한 번에 15% 더 사간다"
+	},
+	"herb": {
+		"name": "약재 말리기",
+		"face": "🌾",
+		"max": 5.0,
+		"step": 0.05,
+		"desc": "5% 확률로 판 값을 두 배로 쳐준다"
+	}
+}
+
+const SHOP_UP_COST := [
+	0.05,
+	0.12,
+	0.25,
+	0.5,
+	1.0
+]
+
 const SMALL_SHOPS := [
 	{
 		"id": "store1",
