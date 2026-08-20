@@ -464,7 +464,7 @@ export class Village {
       exitTile: [5, fromTop ? GH - 1 : 0],        // 반대쪽 끝 길칸
       tile: [5, fromTop ? 0 : GH - 1],            // 지금 서 있는 길칸
       path: null, pi: 0,
-      state: 'in', wait: 0, paid: false, served: false, waitT: 0, bob: Math.random() * 6,
+      state: 'in', wait: 0, paid: false, served: false, waitT: 0, lineT: 0, bob: Math.random() * 6,
       lane: (Math.random() - 0.5) * 34,
     });
     const w = this.walkers[this.walkers.length - 1];
@@ -565,7 +565,8 @@ export class Village {
        *   늘 꽉 차 있고, 그래서 '줄 시간'은 가게 사정이 아니라 **연출의 한계**를
        *   재는 셈이 된다. 그렇게 뜬 화남은 신호가 아니라 소음이다.
        *   지금 뜨는 😠는 하나만 뜻한다: **물건을 제때 못 만들고 있다.** */
-      if (w.state === 'buy' && !w.settled) w.waitT += dt;
+      if (w.state === 'line') w.lineT += dt;
+      else if (w.state === 'buy' && !w.settled) w.waitT += dt;
       if (w.state === 'in' && stop) {
         /* 길을 따라 걷는다. 예전엔 목적지까지 직선이라 남의 마당을 뚫고
          * 지나갔다 — 대장간에서 필방으로 갈 땐 대장간을 관통해서 나갔다. */
@@ -592,8 +593,16 @@ export class Village {
         }
       } else if (w.state === 'buy') {
         /* 주문한 물건이 아직 안 나왔다 — 점장은 만드는 중, 손님은 서서 기다린다.
-         * 계산 연출은 sim이 onOrderDone으로 깨워줄 때 시작한다. */
-        if (!w.settled) continue;
+         * 계산 연출은 sim이 onOrderDone으로 깨워줄 때 시작한다.
+         *
+         * ★ 안전 빗장: 그 신호를 어떤 이유로든 놓치면 이 손님이 계산대를
+         *   영원히 막고, 뒤에 선 사람들도 다 같이 갇힌다. sim은 아무리 늦어도
+         *   참을성의 두 배(12초) 안에 주문을 끝내므로, 그보다 넉넉히 지나면
+         *   신호가 없었어도 진행시킨다. 줄은 무슨 일이 있어도 흘러야 한다. */
+        if (!w.settled) {
+          if (w.waitT > SERVICE.patience * 2 + 4) w.settled = true;
+          else continue;
+        }
         if (!w.served) {
           w.served = true; w.wait = BUY_TIME * (w.rush || 1);
           this.busyShop[stop.idx] = w.wait + 1.2;
@@ -631,7 +640,7 @@ export class Village {
           const q = this.line[stop.idx];
           const at = q.indexOf(w);
           if (at >= 0) q.splice(at, 1);                  // 뒷사람이 한 칸씩 당겨 선다
-          w.waitT = 0;                                   // 다음 가게에선 새로 센다
+          w.waitT = 0; w.lineT = 0;                      // 다음 가게에선 새로 센다
           w.si++;
           w.state = w.si < w.stops.length ? 'in' : 'out';
           if (w.state === 'in') {
@@ -932,8 +941,10 @@ export class Village {
        * '방금 샀는데 왜 화가 나지?'가 된다. */
       const empty = w.sale && w.sale.n === 0 && w.sale.grumbles && w.sale.grumbles.length;
       /* 😠 = **지금 기다리는 중**. 물건이 나와 계산이 시작되면 바로 푼다 —
-       * 다 받고 나서도 화난 얼굴이 남아 있으면 그것도 '왜 화났지?'가 된다. */
-      const waiting = w.state === 'buy' && !w.settled && w.waitT > SERVICE.patience * ANGRY_AT;
+       * 다 받고 나서도 화난 얼굴이 남아 있으면 그것도 '왜 화났지?'가 된다.
+       * 줄에서는 9초, 계산대 앞(물건 기다림)에서는 6초의 3/4인 4.5초부터. */
+      const waiting = (w.state === 'line' && w.lineT > SERVICE.linePatience)
+        || (w.state === 'buy' && !w.settled && w.waitT > SERVICE.patience * ANGRY_AT);
       if (empty && w.paid) {
         G.text(c, '💢', w.x + 15, w.y - 46 + bob, { size: 19, fill: '#000' });
       } else if (waiting) {
