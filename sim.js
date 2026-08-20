@@ -274,15 +274,16 @@ export class Sim {
   /* 무쇠급엔 직원 자리가 없다 — 매대 4칸은 점장 혼자로 충분하고,
    * 실제로 무쇠급부터 고용을 열었더니 초반 공급이 넘쳐 진열대 절반이
    * 꽉 찬 채 생산이 멈췄다. 마당이 6칸으로 커지는 순간이 '혼자서는
-   * 벅차지는' 순간이고, 고용은 그때 열린다. */
-  staffMax(shopId) { return this.rankOf(shopId); }
+   * 벅차지는' 순간이고, 고용은 그때 열린다.
+   * 참쇠 2명 · 강철 4명. 3·4번째는 값이 30배씩 뛰어서 사실상
+   * 콘텐츠가 다 열린 뒤의 장기 목표다 — 끝나고도 살 게 남는다. */
+  staffMax(shopId) { return Math.min(STAFF.max, this.rankOf(shopId) * 2); }
 
   staffCost(shopId) {
     const shop = SHOPS.find((s) => s.id === shopId);
     const n = this.staffOf(shopId);            // 다음이 n+1번째
     if (n === 0) return Math.floor(shop.promote[0] / STAFF.costDiv);
-    if (n === 1) return Math.floor(shop.promote[1] / STAFF.costDiv);
-    return Math.floor(shop.promote[1] * 30 / STAFF.costDiv);
+    return Math.floor(shop.promote[1] * Math.pow(30, n - 1) / STAFF.costDiv);
   }
 
   canHireStaff(shopId) {
