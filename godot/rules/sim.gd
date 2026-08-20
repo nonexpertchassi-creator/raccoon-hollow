@@ -259,6 +259,23 @@ func regular_sum() -> int:
 		s += regular_lv(g)
 	return s
 
+## 이 가게에 **지금 들어가서 할 일**이 몇 개인가.
+## 들어갈 이유가 없으면 안 들어가게 하는 것 — 표가 그 역할이다.
+## 강화는 안 센다. 늘 할 수 있어서 표가 항상 켜져 있게 되고,
+## 항상 켜진 표는 없는 것과 같다.
+func shop_todo(shop_id: String) -> int:
+	if not _shop_by_id.has(shop_id) or not shops.has(shop_id):
+		return 0
+	var n: int = 0
+	for it in shop_by_id(shop_id).items:
+		if can_open_item(it.id):
+			n += 1
+	if can_promote(shop_id):
+		n += 1
+	if can_hire_staff(shop_id):
+		n += 1
+	return n
+
 # ── 직원 ──
 func staff_of(shop_id: String) -> float: return staff.get(shop_id, 0.0)
 func staff_max(shop_id: String) -> float: return Content.STAFF.max if shops.has(shop_id) else 0.0

@@ -1,0 +1,471 @@
+extends Node2D
+class_name Village
+## 격자 마을을 그린다. **경제 계산이 한 줄도 없다** — sim을 읽기만 하고
+## 절대 고치지 않는다. iso.js와 같은 규칙이다.
+##
+## 지금은 Godot의 _draw()로 도형을 직접 그린다. 그림(스프라이트)이 나오면
+## 이 자리에 하나씩 갈아 끼우면 된다 — 배치와 깊이 순서는 그대로 쓴다.
+
+var sim: Sim
+
+const C := {
+	"grass": Color("8b9e74"), "grass2": Color("849668"), "road": Color("d9cba9"),
+	"paper": Color("ece2cb"), "paper2": Color("dccfb2"), "wood": Color("8a6a45"),
+	"wood2": Color("6d5236"), "ink": Color("2b241b"), "ink2": Color("5a4e3d"),
+	"gold": Color("a8763e"), "jade": Color("4a7c59"), "red": Color("c7563f"),
+	"ruin": Color("5f6b4e"), "dirt": Color("c2ad83"), "yardfloor": Color("d3c5a4"),
+}
+
+var _font: Font
+var _t: float = 0.0
+var _props: Array = []
+
+## 걸어다니는 손님. sim이 "팔았다"고 알려오면 한 마리 생겨서 길로 들어온다.
+## 화면은 늘 sim보다 조금 늦다 — 돈은 이미 들어왔지만 손님은 아직 걷고 있다.
+var walkers: Array = []
+const WALK := 95.0          # 손님 걸음(세계 px/초)
+const BUY_TIME := 2.3       # 가게 앞에 서 있는 시간
+const ENTRY := Vector2i(6, 0)
+const EXIT := Vector2i(6, 17)
+const LINE_MAX := 4          # 한 가게 앞에 세우는 손님 수
+
+## 가게 앞 줄. 손님이 겹쳐 서면 서로를 덮어서 몇 마리인지도 안 보인다.
+## 먼저 온 손님이 0번(계산대 앞), 나머지는 길을 따라 뒤로 선다.
+var line: Array = []
+
+## 가게별 점장 — 평소엔 작업대, 팔릴 땐 계산대 뒤로 간다
+var clerks: Array = []
+const CLERK_SPEED := 130.0
+
+func _ready() -> void:
+	_font = ThemeDB.fallback_font
+	_props = _make_props()
+
+func setup(s: Sim) -> void:
+	sim = s
+	clerks = []
+	line = []
+	for i in range(Content.SHOPS.size()):
+		clerks.append({"pos": Iso.foot(sim, i).work, "at": "work", "busy": 0.0})
+		line.append([])
+
+## sim이 판 것을 화면에 들여보낸다. **sim을 고치지 않는다** — 읽고 흉내만 낸다.
+func on_sale(sale: Dictionary) -> void:
+	if sale.lines.is_empty():
+		return
+	var shop_id: String = String(sale.lines[0].item.shop)
+	var idx: int = -1
+	for i in range(Content.SHOPS.size()):
+		if Content.SHOPS[i].id == shop_id:
+			idx = i
+	if idx < 0:
+		return
+	# 줄이 다 차면 이번 손님은 화면에 안 들여보낸다. 돈은 이미 들어왔고,
+	# 화면은 어차피 sim의 그림자일 뿐이다 — 그림자가 넘칠 필요는 없다.
+	if line[idx].size() >= LINE_MAX:
+		clerks[idx].busy = 1.4
+		return
+	var door: Vector2i = Iso.door(sim, idx)
+	var path: Array = Iso.route(ENTRY, Iso.nearest_road(door))
+	if path.is_empty():
+		return
+	walkers.append({
+		"face": String(sale.guest.face), "shop": idx, "state": "in",
+		"pos": Iso.w(ENTRY.x + 0.5, ENTRY.y + 0.5),
+		"path": path, "step": 1, "wait": 0.0,
+		"n": int(sale.n), "gain": float(sale.gain),
+	})
+	line[idx].append(walkers[walkers.size() - 1])
+	clerks[idx].busy = 1.4
+
+func _walk(wk: Dictionary, delta: float) -> bool:
+	var target: Vector2
+	if wk.state == "buy":
+		target = Iso.line_spot(sim, wk.shop, maxi(0, line[wk.shop].find(wk)))
+	elif wk.step < wk.path.size():
+		var t: Vector2i = wk.path[wk.step]
+		target = Iso.w(t.x + 0.5, t.y + 0.5)
+	else:
+		return true
+	var d: Vector2 = target - wk.pos
+	var step: float = WALK * delta
+	if d.length() <= step:
+		wk.pos = target
+		if wk.state != "buy":
+			wk.step += 1
+		return true
+	wk.pos += d.normalized() * step
+	return false
+
+func _advance(delta: float) -> void:
+	var keep: Array = []
+	for wk in walkers:
+		match wk.state:
+			"in":
+				if _walk(wk, delta) and wk.step >= wk.path.size():
+					wk.state = "buy"
+			"buy":
+				if _walk(wk, delta):
+					# 맨 앞에 설 때까지는 시계가 안 돈다 — 줄은 기다리는 곳이다
+					if line[wk.shop].find(wk) == 0:
+						wk.wait += delta
+					if wk.wait >= BUY_TIME:
+						wk.state = "out"
+						line[wk.shop].erase(wk)
+						wk.path = Iso.route(Iso.nearest_road(Iso.door(sim, wk.shop)), EXIT)
+						wk.step = 1
+			"out":
+				if _walk(wk, delta) and wk.step >= wk.path.size():
+					continue                      # 마을을 떠났다
+		keep.append(wk)
+	walkers = keep
+	# 점장 — 팔린 여운이 있으면 계산대 뒤, 아니면 작업대
+	for i in range(Content.SHOPS.size()):
+		var c: Dictionary = clerks[i]
+		c.busy = max(0.0, c.busy - delta)
+		var f: Dictionary = Iso.foot(sim, i)
+		var goal: Vector2 = f.serve if c.busy > 0.0 else f.work
+		var d: Vector2 = goal - c.pos
+		var step: float = CLERK_SPEED * delta
+		c.pos = goal if d.length() <= step else c.pos + d.normalized() * step
+
+func _process(delta: float) -> void:
+	_t += delta
+	if sim != null:
+		_advance(delta)
+	queue_redraw()
+
+## 풀밭에 흩어 놓는 나무·바위·꽃. 길과 가게 자리는 피한다.
+func _make_props() -> Array:
+	var rng := Rng.new(20260820)
+	var out: Array = []
+	for ty in range(Iso.GH):
+		for tx in range(Iso.GW):
+			if Iso.is_road(tx, ty):
+				continue
+			var near_shop: bool = false
+			for st in Iso.SHOP_T:
+				if absi(st.x - tx) <= 5 and absi(st.y - ty) <= 5:
+					near_shop = true
+			for st in Iso.SMALL_T:
+				if absi(st.x - tx) <= 1 and absi(st.y - ty) <= 1:
+					near_shop = true
+			if near_shop or (absi(Iso.DOG_T.x - tx) <= 1 and absi(Iso.DOG_T.y - ty) <= 1):
+				continue
+			if rng.next() > 0.30:
+				continue
+			var r: float = rng.next()
+			out.append({"t": Vector2i(tx, ty), "k": "tree" if r < 0.5 else ("rock" if r < 0.75 else "flower"),
+				"o": rng.next()})
+	return out
+
+# ── 그리기 도구 ──
+func _quad(a: Vector2, b: Vector2, c2: Vector2, d: Vector2, col: Color) -> void:
+	draw_colored_polygon(PackedVector2Array([a, b, c2, d]), col)
+
+func _outline(a: Vector2, b: Vector2, c2: Vector2, d: Vector2, col: Color, wd: float) -> void:
+	draw_polyline(PackedVector2Array([a, b, c2, d, a]), col, wd)
+
+func _text(pos: Vector2, s: String, size: int, col: Color) -> void:
+	var wd: float = _font.get_string_size(s, HORIZONTAL_ALIGNMENT_LEFT, -1, size).x
+	draw_string(_font, pos - Vector2(wd * 0.5, 0), s, HORIZONTAL_ALIGNMENT_LEFT, -1, size, col)
+
+func _chip(center: Vector2, wd: float, h: float, col: Color) -> void:
+	draw_rect(Rect2(center - Vector2(wd * 0.5, 0), Vector2(wd, h)), col)
+
+static func _shade(col: Color, d: float) -> Color:
+	return Color(clampf(col.r + d, 0, 1), clampf(col.g + d, 0, 1), clampf(col.b + d, 0, 1), col.a)
+
+## 건물 상자 — 왼면·오른면·윗면
+func _box(tx: float, ty: float, bw: float, bd: float, h: float, top: Color, side: Color, lift: float = 0.0) -> void:
+	var off := Vector2(0, -lift)
+	var N: Vector2 = Iso.w(tx, ty) + off
+	var E: Vector2 = Iso.w(tx + bw, ty) + off
+	var S: Vector2 = Iso.w(tx + bw, ty + bd) + off
+	var W: Vector2 = Iso.w(tx, ty + bd) + off
+	var up := Vector2(0, -h)
+	_quad(W + up, S + up, S, W, side)
+	_quad(E + up, S + up, S, E, _shade(side, -0.07))
+	_quad(N + up, E + up, S + up, W + up, top)
+
+func _tile(tx: int, ty: int, road: bool) -> void:
+	var N: Vector2 = Iso.w(tx, ty)
+	var E: Vector2 = Iso.w(tx + 1, ty)
+	var S: Vector2 = Iso.w(tx + 1, ty + 1)
+	var W: Vector2 = Iso.w(tx, ty + 1)
+	var col: Color = C.road if road else (C.grass if (tx + ty) % 2 == 1 else C.grass2)
+	_quad(N, E, S, W, col)
+	_outline(N, E, S, W, Color(0, 0, 0, 0.05 if road else 0.03), 1.0)
+
+## 다진 흙마당 한 칸 — 작은 건물의 발밑. 이게 있어야 땅에 붙어 보인다.
+func _pad(tx: int, ty: int) -> void:
+	var N: Vector2 = Iso.w(tx, ty)
+	var E: Vector2 = Iso.w(tx + 1, ty)
+	var S: Vector2 = Iso.w(tx + 1, ty + 1)
+	var W: Vector2 = Iso.w(tx, ty + 1)
+	_quad(N, E, S, W, C.dirt)
+	_outline(N, E, S, W, Color(0.24, 0.2, 0.12, 0.28), 1.5)
+
+func _prop(p: Dictionary) -> void:
+	var at: Vector2 = Iso.w(p.t.x + 0.5, p.t.y + 0.5)
+	match p.k:
+		"tree":
+			draw_rect(Rect2(at + Vector2(-3, -10), Vector2(6, 12)), C.wood2)
+			draw_circle(at + Vector2(0, -22), 16.0 + p.o * 5.0, Color("6f8a5c"))
+			draw_circle(at + Vector2(-7, -15), 10.0, Color("7fa070"))
+		"rock":
+			draw_circle(at + Vector2(0, -4), 8.0 + p.o * 4.0, Color("8f8f7a"))
+		_:
+			for k in range(3):
+				draw_circle(at + Vector2((k - 1) * 9, -4 - (k % 2) * 5), 3.0,
+					Color("e5b8c4") if k % 2 == 1 else Color("efe3a8"))
+
+# ── 가게 ──
+func _ruin(i: int) -> void:
+	var shop: Dictionary = Content.SHOPS[i]
+	var o: Vector2i = Iso.org(sim, i)
+	var N: Vector2 = Iso.w(o.x, o.y)
+	var E: Vector2 = Iso.w(o.x + 3, o.y)
+	var S: Vector2 = Iso.w(o.x + 3, o.y + 3)
+	var W: Vector2 = Iso.w(o.x, o.y + 3)
+	_outline(N, E, S, W, Color(0.2, 0.17, 0.12, 0.45), 2.0)
+	var M: Vector2 = Iso.w(o.x + 1.5, o.y + 1.5)
+	for k in range(3):
+		draw_rect(Rect2(M + Vector2(-34 + k * 28, -14 + (k % 2) * 6), Vector2(8, 22 - k * 5)), Color("6a6a55"))
+	var next: Variant = sim.next_shop()
+	var is_next: bool = next != null and next.id == shop.id
+	_text(M + Vector2(0, -34), shop.name if is_next else "무너진 집", 15,
+		Color("4a4232") if is_next else C.ruin)
+	if is_next:
+		var can: bool = sim.money >= shop.cost
+		_chip(M + Vector2(0, 4), 104, 25, C.jade if can else Color(0.47, 0.47, 0.37))
+		_text(M + Vector2(0, 21), "🪙" + Num.fmt(shop.cost), 13, Color.WHITE)
+
+## 마당 바닥·담·현판 — 항상 맨 뒤에 깔린다
+func _plot_base(i: int, n: int) -> void:
+	var shop: Dictionary = Content.SHOPS[i]
+	var col := Color(shop.color)
+	var o: Vector2i = Iso.org(sim, i)
+	var N: Vector2 = Iso.w(o.x, o.y)
+	var E: Vector2 = Iso.w(o.x + n, o.y)
+	var S: Vector2 = Iso.w(o.x + n, o.y + n)
+	var W: Vector2 = Iso.w(o.x, o.y + n)
+	_quad(N, E, S, W, C.yardfloor)
+	_outline(N, E, S, W, _shade(col, 0.16), 2.0)
+
+	# 담은 뒤 두 변에만. 앞에 세우면 마당 안이 가려진다.
+	for pair in [[W, N], [N, E]]:
+		var A: Vector2 = pair[0]
+		var B: Vector2 = pair[1]
+		_quad(A, B, B + Vector2(0, -16), A + Vector2(0, -16), _shade(col, -0.03))
+		draw_line(A + Vector2(0, -16), B + Vector2(0, -16), _shade(col, 0.10), 3.0)
+
+	# 현판 — 등급은 여기에만 적는다
+	var rk: int = sim.rank_of(shop.id)
+	var s_txt: String = "%s %s" % [shop.sign, shop.name]
+	if rk > 0:
+		s_txt += " · " + String(shop.ranks[rk])
+	var sw: float = 30.0 + s_txt.length() * 13.0
+	draw_rect(Rect2(N + Vector2(-3, -44), Vector2(6, 44)), C.wood2)
+	_chip(N + Vector2(0, -66), sw, 26, col)
+	_text(N + Vector2(0, -48), s_txt, 15, Color("fff8ec"))
+
+	var cap: int = sim.stall_cap(shop.id)
+	if shop.items.size() > cap:
+		_text(S + Vector2(0, 20), "승급하면 매대 +2", 12, Color(0.17, 0.14, 0.11, 0.55))
+
+	# 들어가서 좋은 일이 있을 때만 표 — 숙제가 아니라 초대장
+	if sim.shop_todo(shop.id) > 0:
+		var bob: float = sin(_t * 4.0) * 3.0
+		var promo: bool = sim.can_promote(shop.id)
+		var txt: String = "승급!" if promo else ("일손!" if sim.can_hire_staff(shop.id) else "새 칸!")
+		_chip(N + Vector2(0, -100 + bob), 26.0 + txt.length() * 14.0, 25, C.red if promo else C.jade)
+		_text(N + Vector2(0, -82 + bob), txt, 15, Color("fff3dd"))
+
+func _kiln(i: int) -> void:
+	var shop: Dictionary = Content.SHOPS[i]
+	var col := Color(shop.color)
+	var o: Vector2i = Iso.org(sim, i)
+	var k: Vector2i = Iso.yard(Iso.YARD_KIND[i], Iso.plot_dim(sim, i)).kiln
+	var p: Vector2 = Iso.w(o.x + k.x + 0.5, o.y + k.y + 0.5)
+	_box(o.x + k.x + 0.22, o.y + k.y + 0.22, 0.56, 0.56, 26, _shade(col, 0.10), _shade(col, -0.07))
+	var fl: float = 0.6 + absf(sin(_t * 3.0 + i)) * 0.4
+	draw_circle(p + Vector2(0, -30), 5.0 * fl, Color("f0a24b"))
+	draw_circle(p + Vector2(0, -36), 3.0 * fl, Color("f6d27a"))
+
+## 매대 한 칸 = 좌대 + 재고·진행 계기 + 이름패
+func _stall(i: int, k: int, spot: Vector2i) -> void:
+	var shop: Dictionary = Content.SHOPS[i]
+	var o: Vector2i = Iso.org(sim, i)
+	var p: Vector2 = Iso.w(o.x + spot.x + 0.5, o.y + spot.y + 0.5)
+	var it: Dictionary = shop.items[k]
+
+	if not sim.is_open(it.id):
+		var N: Vector2 = Iso.w(o.x + spot.x, o.y + spot.y)
+		var E: Vector2 = Iso.w(o.x + spot.x + 1, o.y + spot.y)
+		var S: Vector2 = Iso.w(o.x + spot.x + 1, o.y + spot.y + 1)
+		var W: Vector2 = Iso.w(o.x + spot.x, o.y + spot.y + 1)
+		_outline(N, E, S, W, Color(0.24, 0.2, 0.14, 0.45), 1.6)
+		if sim.asked.has(it.id):
+			var can: bool = sim.money >= it.cost
+			_text(p + Vector2(0, -26), String(it.name), 13, C.ink2)
+			_chip(p + Vector2(0, -16), 76, 21, C.jade if can else Color(0.24, 0.2, 0.14, 0.32))
+			_text(p + Vector2(0, -1), "🪙" + Num.fmt(it.cost), 12, Color.WHITE)
+		else:
+			_text(p + Vector2(0, -8), "? ? ?", 13, Color(0.24, 0.2, 0.14, 0.5))
+		return
+
+	var st: Dictionary = sim.items[it.id]
+	var cap: float = sim.cap_of(it.id)
+	var shown: float = min(cap, st.stock)
+	var capped: bool = shown >= cap
+
+	_box(o.x + spot.x + 0.14, o.y + spot.y + 0.14, 0.72, 0.72, 14, C.paper, C.wood)
+	_text(p + Vector2(0, -6), String(it.icon), 22, Color.WHITE)
+
+	# 재고·진행 계기
+	var ry: Vector2 = p + Vector2(12, -46)
+	var pr: float = 1.0 if capped else clampf(st.prog / sim.craft_time(it.id), 0.0, 1.0)
+	draw_circle(ry, 12.0, Color(0.99, 0.96, 0.91, 0.95))
+	draw_arc(ry, 15.0, 0, TAU, 24, Color(0.17, 0.14, 0.11, 0.30), 3.5)
+	if pr > 0.01:
+		draw_arc(ry, 15.0, -PI / 2, -PI / 2 + TAU * pr, 24,
+			Color("ff8a63") if capped else Color("e8b93f"), 3.5)
+	_text(ry + Vector2(0, 6), str(int(shown)), 16, C.ink)
+
+	var nm: String = String(it.name)
+	_chip(p + Vector2(0, 8), 14.0 + nm.length() * 12.0, 18, Color(0.17, 0.14, 0.11, 0.78))
+	_text(p + Vector2(0, 21), nm, 12, Color("fff8ec"))
+
+func _counter(i: int) -> void:
+	var o: Vector2i = Iso.org(sim, i)
+	var ct: Vector2i = Iso.yard(Iso.YARD_KIND[i], Iso.plot_dim(sim, i)).counter
+	_box(o.x + ct.x + 0.16, o.y + ct.y + 0.3, 0.68, 0.4, 18, C.paper2, C.wood2)
+	var p: Vector2 = Iso.w(o.x + ct.x + 0.5, o.y + ct.y + 0.5)
+	draw_circle(p + Vector2(8, -24), 4.5, Color("c9a227"))
+
+func _small(i: int) -> void:
+	var t: Vector2i = Iso.SMALL_T[i]
+	var def: Dictionary = Content.SMALL_SHOPS[i]
+	var p: Vector2 = Iso.w(t.x + 1, t.y + 1)
+	if not sim.smalls.has(i):
+		var N: Vector2 = Iso.w(t.x, t.y)
+		var E: Vector2 = Iso.w(t.x + 1, t.y)
+		var W: Vector2 = Iso.w(t.x, t.y + 1)
+		_outline(N, E, p, W, Color(0.24, 0.2, 0.14, 0.4), 2.0)
+		_text(p + Vector2(0, -Iso.TH - 16), String(def.name) + " 자리", 12, C.ruin)
+		var can: bool = sim.money >= def.cost
+		_chip(p + Vector2(0, -Iso.TH - 8), 84, 21, C.jade if can else Color(0.24, 0.2, 0.14, 0.3))
+		_text(p + Vector2(0, -Iso.TH + 7), "🪙" + Num.fmt(def.cost), 12,
+			Color.WHITE if can else Color("e6e0cf"))
+		return
+	# 흙마당(발 밑) → 벽 → 벽보다 넓게 나온 처마. 이 순서가 '땅에 서 있다'를 만든다.
+	_pad(t.x, t.y)
+	_box(t.x + 0.16, t.y + 0.16, 0.68, 0.68, 19, C.paper2, C.wood)
+	_box(t.x + 0.02, t.y + 0.02, 0.96, 0.96, 9, Color("8a6647"), Color("6b4c33"), 19)
+	_chip(p + Vector2(0, -46), 64, 17, Color(0.17, 0.14, 0.11, 0.85))
+	_text(p + Vector2(0, -33), String(def.name), 11, Color("fff8ec"))
+	if sim.busy == i:
+		var bob: float = sin(_t * 5.0) * 4.0
+		_chip(p + Vector2(0, -96 + bob), 68, 24, C.red)
+		_text(p + Vector2(0, -79 + bob), "장 서다!", 13, Color("fff3dd"))
+
+func _dog() -> void:
+	var t: Vector2i = Iso.DOG_T
+	var p: Vector2 = Iso.w(t.x + 1, t.y + 1)
+	if not sim.guard:
+		var N: Vector2 = Iso.w(t.x, t.y)
+		var E: Vector2 = Iso.w(t.x + 1, t.y)
+		var W: Vector2 = Iso.w(t.x, t.y + 1)
+		_outline(N, E, p, W, Color(0.24, 0.2, 0.14, 0.4), 2.0)
+		_text(p + Vector2(0, -Iso.TH - 16), "삽살개 자리", 12, C.ruin)
+		var can: bool = sim.money >= Content.GUARD.cost
+		_chip(p + Vector2(0, -Iso.TH - 8), 80, 21, C.jade if can else Color(0.24, 0.2, 0.14, 0.3))
+		_text(p + Vector2(0, -Iso.TH + 7), "🪙" + Num.fmt(Content.GUARD.cost), 12,
+			Color.WHITE if can else Color("e6e0cf"))
+		return
+	_pad(t.x, t.y)
+	_box(t.x + 0.18, t.y + 0.18, 0.64, 0.64, 19, C.paper2, Color("d8c9a3"))
+	_box(t.x + 0.06, t.y + 0.06, 0.88, 0.88, 8, Color("8a6647"), Color("6b4c33"), 19)
+	draw_circle(p + Vector2(0, -13), 6.5, C.ink)
+	var bob: float = absf(sin(_t * 12.0)) * 3.0 if sim.pest != null else sin(_t * 2.0) * 1.2
+	_text(p + Vector2(-26, 4 - bob), "🐕", 24, Color.WHITE)
+
+## 너구리 한 마리 — 몸통·귀·눈가 무늬. 그림이 나오면 이 자리에 스프라이트를 끼운다.
+func _raccoon(p: Vector2, size: float, tint: Color) -> void:
+	var bob: float = sin(_t * 6.0 + p.x * 0.05) * 1.5
+	var at: Vector2 = p + Vector2(0, bob)
+	draw_circle(at + Vector2(0, -2), size * 0.42, Color(0, 0, 0, 0.16))     # 발밑 그림자
+	draw_circle(at + Vector2(0, -size * 0.42), size * 0.34, tint)            # 몸통
+	draw_circle(at + Vector2(0, -size * 0.86), size * 0.30, _shade(tint, 0.06))  # 머리
+	draw_circle(at + Vector2(-size * 0.22, -size * 1.06), size * 0.11, tint)     # 귀
+	draw_circle(at + Vector2(size * 0.22, -size * 1.06), size * 0.11, tint)
+	draw_circle(at + Vector2(-size * 0.11, -size * 0.90), size * 0.09, Color(0.17, 0.14, 0.11, 0.85))
+	draw_circle(at + Vector2(size * 0.11, -size * 0.90), size * 0.09, Color(0.17, 0.14, 0.11, 0.85))
+
+func _clerk(i: int) -> void:
+	_raccoon(clerks[i].pos, 33.0, Color("a8815a"))
+
+func _walker(wk: Dictionary) -> void:
+	_raccoon(wk.pos, 34.0, Color("9c8f7a"))
+	_text(wk.pos + Vector2(0, -46), wk.face, 20, Color.WHITE)
+	if wk.state == "buy":
+		var txt: String = "🪙%s" % Num.fmt(wk.gain)
+		_chip(wk.pos + Vector2(0, -78), 20.0 + txt.length() * 11.0, 21, Color(0.17, 0.14, 0.11, 0.82))
+		_text(wk.pos + Vector2(0, -63), txt, 12, Color("ffe9a8"))
+
+# ── 한 판 ──
+func _draw() -> void:
+	if sim == null:
+		return
+	# 바닥
+	for ty in range(Iso.GH):
+		for tx in range(Iso.GW):
+			_tile(tx, ty, Iso.is_road(tx, ty))
+
+	# 깊이 순서대로 — 아래 꼭짓점 y가 큰 것이 앞이다
+	var layer: Array = []
+	var seq: int = 0
+	for p in _props:
+		layer.append({"z": Iso.w(p.t.x + 1, p.t.y + 1).y, "i": seq, "f": _prop.bind(p)})
+		seq += 1
+	for i in range(Content.SHOPS.size()):
+		var o: Vector2i = Iso.org(sim, i)
+		var n: int = Iso.plot_dim(sim, i)
+		if not sim.shops.has(String(Content.SHOPS[i].id)):
+			layer.append({"z": Iso.w(o.x + 3, o.y + 3).y, "i": seq, "f": _ruin.bind(i)})
+			seq += 1
+			continue
+		# 마당 바닥은 맨 뒤로, 가구는 하나하나 자기 발끝 z로 따로 세운다 —
+		# 한 덩어리로 그리면 가구가 마당 안에 선 손님·점장을 덮는다.
+		layer.append({"z": Iso.w(o.x, o.y).y + 2.0, "i": seq, "f": _plot_base.bind(i, n)})
+		seq += 1
+		var y: Dictionary = Iso.yard(Iso.YARD_KIND[i], n)
+		layer.append({"z": Iso.w(o.x + y.kiln.x + 1, o.y + y.kiln.y + 1).y, "i": seq, "f": _kiln.bind(i)})
+		seq += 1
+		var cap: int = min(sim.stall_cap(String(Content.SHOPS[i].id)), Content.SHOPS[i].items.size())
+		for k in range(cap):
+			var sp: Vector2i = y.stalls[k]
+			layer.append({"z": Iso.w(o.x + sp.x + 1, o.y + sp.y + 1).y, "i": seq, "f": _stall.bind(i, k, sp)})
+			seq += 1
+		layer.append({"z": Iso.w(o.x + y.counter.x + 0.84, o.y + y.counter.y + 0.7).y, "i": seq,
+			"f": _counter.bind(i)})
+		seq += 1
+	for i in range(Content.SMALL_SHOPS.size()):
+		layer.append({"z": Iso.w(Iso.SMALL_T[i].x + 1, Iso.SMALL_T[i].y + 1).y, "i": seq, "f": _small.bind(i)})
+		seq += 1
+	layer.append({"z": Iso.w(Iso.DOG_T.x + 1, Iso.DOG_T.y + 1).y, "i": seq, "f": _dog})
+	seq += 1
+	# 너구리들 — 발끝 y로 선다. 그래야 계산대 뒤에 서면 가려지고 앞에 서면 가린다.
+	for i in range(Content.SHOPS.size()):
+		if sim.shops.has(String(Content.SHOPS[i].id)):
+			layer.append({"z": clerks[i].pos.y + 0.5, "i": seq, "f": _clerk.bind(i)})
+			seq += 1
+	for wk in walkers:
+		layer.append({"z": wk.pos.y, "i": seq, "f": _walker.bind(wk)})
+		seq += 1
+
+	# 같은 z일 때 순서가 흔들리면 화면이 깜빡인다 — 넣은 차례로 못 박는다
+	layer.sort_custom(func(a, b): return a.z < b.z if a.z != b.z else a.i < b.i)
+	for e in layer:
+		e.f.call()

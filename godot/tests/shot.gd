@@ -7,10 +7,19 @@ func _ready() -> void:
 	var main: Node = $Main
 	var s: Sim = main.sim
 	var rng: Rng = main.rng
-	# 30분어치를 미리 돌려 놓는다. 갓 켠 화면은 볼 것이 없다.
-	for i in range(30 * 60 * 4):
-		s.tick(0.25, rng)
+	# 미리 돌려 놓는다. 갓 켠 화면은 볼 것이 없다.
+	var mins: int = int(OS.get_environment("SHOT_MINUTES")) if OS.has_environment("SHOT_MINUTES") else 30
+	# ★ main._process가 하는 일을 그대로 한다. 예전엔 sim.tick만 돌렸는데
+	#   그러면 판매가 화면으로 안 넘어가서 **손님이 한 마리도 안 나왔다.**
+	#   빨리 감기는 게임을 그대로 감아야지, 반만 감으면 딴것이 된다.
+	for i in range(mins * 60 * 4):
+		var r: Dictionary = s.tick(0.25, rng)
+		for sale in r.sales:
+			main.village.on_sale(sale)
+		for d in r.done:
+			main.village.on_sale(d)
 		RunSim.act(s, rng)
+		main.village._advance(0.25)
 	main._paint()
 
 func _process(_delta: float) -> void:
