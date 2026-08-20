@@ -24,14 +24,14 @@ export const SHOPS = [
     ranks: ['무쇠', '참쇠', '강철'],
     promote: [8_000_000, 10_000_000_000],
     items: [
-      { id: 'pick',   name: '곡괭이', price: 12,     time: 3.0, cost: 0 },
-      { id: 'sickle', name: '낫',     price: 34,     time: 3.8, cost: 80 },
-      { id: 'hoe',    name: '호미',   price: 95,     time: 4.6, cost: 300 },
-      { id: 'axe',    name: '도끼',   price: 260,    time: 5.6, cost: 900 },
+      { id: 'pick',   name: '곡괭이', price: 12,     time: 3.0, cost: 0, icon: '⛏️' },
+      { id: 'sickle', name: '낫',     price: 34,     time: 3.8, cost: 80, icon: '🌾' },
+      { id: 'hoe',    name: '호미',   price: 95,     time: 4.6, cost: 300, icon: '🪴' },
+      { id: 'axe',    name: '도끼',   price: 260,    time: 5.6, cost: 900, icon: '🪓' },
       /* 다섯째 칸부터는 승급해야 매대가 생긴다(참쇠급 6칸, 강철급 8칸).
        * 대장간이 연장 네 가지만 파는 건 섭섭하다 — 살림살이로 넓힌다. */
-      { id: 'shears', name: '가위',   price: 700,    time: 6.4, cost: 100_000 },
-      { id: 'knife',  name: '부엌칼', price: 1_900,  time: 7.2, cost: 1_000_000 },
+      { id: 'shears', name: '가위',   price: 700,    time: 6.4, cost: 100_000, icon: '✂️' },
+      { id: 'knife',  name: '부엌칼', price: 1_900,  time: 7.2, cost: 1_000_000, icon: '🔪' },
     ],
   },
   {
@@ -41,9 +41,9 @@ export const SHOPS = [
     ranks: ['거친', '고운', '명품'],
     promote: [90_000_000, 20_000_000_000],
     items: [
-      { id: 'brush',    name: '붓',   price: 500,    time: 4.2, cost: 0 },
-      { id: 'ink',      name: '먹',   price: 1_300,  time: 5.0, cost: 2_500 },
-      { id: 'inkstone', name: '벼루', price: 3_400,  time: 6.2, cost: 15_000 },
+      { id: 'brush',    name: '붓',   price: 500,    time: 4.2, cost: 0, icon: '🖌️' },
+      { id: 'ink',      name: '먹',   price: 1_300,  time: 5.0, cost: 2_500, icon: '🖋️' },
+      { id: 'inkstone', name: '벼루', price: 3_400,  time: 6.2, cost: 15_000, icon: '🪨' },
     ],
   },
   {
@@ -53,9 +53,9 @@ export const SHOPS = [
     ranks: ['막', '고운', '진상'],
     promote: [450_000_000, 35_000_000_000],
     items: [
-      { id: 'hanji',  name: '한지',   price: 1_100,   time: 5.0, cost: 0 },
-      { id: 'fan',    name: '부채',   price: 2_800,   time: 6.0, cost: 65_000 },
-      { id: 'window', name: '창호지', price: 7_000,   time: 7.2, cost: 350_000 },
+      { id: 'hanji',  name: '한지',   price: 1_100,   time: 5.0, cost: 0, icon: '📜' },
+      { id: 'fan',    name: '부채',   price: 2_800,   time: 6.0, cost: 65_000, icon: '🪭' },
+      { id: 'window', name: '창호지', price: 7_000,   time: 7.2, cost: 350_000, icon: '🪟' },
     ],
   },
   {
@@ -65,9 +65,9 @@ export const SHOPS = [
     ranks: ['질', '오지', '왕실'],
     promote: [2_000_000_000, 60_000_000_000],
     items: [
-      { id: 'jar',   name: '옹기',   price: 2_400,     time: 5.4, cost: 0 },
-      { id: 'bowl',  name: '사발',   price: 6_000,     time: 6.4, cost: 3_000_000 },
-      { id: 'celad', name: '청자',   price: 15_000,    time: 8.0, cost: 18_000_000 },
+      { id: 'jar',   name: '옹기',   price: 2_400,     time: 5.4, cost: 0, icon: '🏺' },
+      { id: 'bowl',  name: '사발',   price: 6_000,     time: 6.4, cost: 3_000_000, icon: '🥣' },
+      { id: 'celad', name: '청자',   price: 15_000,    time: 8.0, cost: 18_000_000, icon: '🫖' },
     ],
   },
   {
@@ -77,10 +77,10 @@ export const SHOPS = [
     ranks: ['햇', '묵은', '천년'],
     promote: [3_000_000_000, 100_000_000_000],
     items: [
-      { id: 'root',    name: '도라지', price: 5_000,       time: 5.6, cost: 0 },
-      { id: 'ginseng', name: '산삼',   price: 12_000,      time: 7.0, cost: 100_000_000 },
-      { id: 'antler',  name: '녹용',   price: 28_000,      time: 8.4, cost: 1_000_000_000 },
-      { id: 'bezoar',  name: '우황',   price: 65_000,      time: 9.5, cost: 1_500_000_000 },
+      { id: 'root',    name: '도라지', price: 5_000,       time: 5.6, cost: 0, icon: '🌿' },
+      { id: 'ginseng', name: '산삼',   price: 12_000,      time: 7.0, cost: 100_000_000, icon: '🌱' },
+      { id: 'antler',  name: '녹용',   price: 28_000,      time: 8.4, cost: 1_000_000_000, icon: '🦌' },
+      { id: 'bezoar',  name: '우황',   price: 65_000,      time: 9.5, cost: 1_500_000_000, icon: '💊' },
     ],
   },
 ];

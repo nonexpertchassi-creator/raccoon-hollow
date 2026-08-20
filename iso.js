@@ -72,6 +72,7 @@ const anvilAt = (n) => Math.floor((n - 1) / 2);
 const SMALL_T = [[12, 14], [12, 8], [2, 6], [0, 13]];
 const DOG_T = [3, 14];
 
+const TAKE_LIFE = 1.5;                // 엽전 표가 떠 있는 시간(초)
 const BUY_TIME = 2.3;                 // 손님이 가게 앞에 서 있는 시간
 const HAND_OVER = 1.1;                // 이 시점에 물건이 건네진다
 const WALK = 95;                      // 손님 걸음(세계 px/초)
@@ -103,6 +104,9 @@ export class Village {
     this.walkers = [];
     this.coins = [];
     this.takings = {};
+    /* 한 번짜리 엽전 표 — 도둑맞은 손해(−)와 잡아서 받은 벌금(+).
+     * 매상(takings)은 가게마다 한 장으로 합치지만, 이건 그때그때 한 장씩 뜬다. */
+    this.floats = [];
     /* 아직 손님이 도착하지 않은 판매량 — sim은 사는 순간 재고를 깎지만
      * 화면에선 손님이 걸어오는 시간이 있다. 그릴 때만 도로 더한다. */
     this.pending = {};
@@ -133,7 +137,10 @@ export class Village {
       n, S,
       stand: { x: cc.x + 44, y: cc.y + 22 },             // 손님 — 계산대 앞
       work: iso(tx + a + 0.5, ty + a + 0.5),             // 작업대 칸
-      serve: { x: cc.x - 34, y: cc.y + 12 },             // 점장 — 계산대 뒤
+      /* 점장 — 계산대 **뒤, 마당 안**. 예전 자리(cc + -34,+12)는 계산대 앞이라
+       * 점장이 제 가게 밖 길가에 나와 서 있었다. 손님이 서는 자리(+44,+22)의
+       * 정반대에 두면 계산대를 사이에 두고 마주 보는 그림이 된다. */
+      serve: { x: cc.x - 32, y: cc.y - 16 },
     };
   }
 
@@ -247,6 +254,32 @@ export class Village {
     return s;
   }
 
+  /**
+   * 도둑이 일을 끝냈다 — 나간 돈(−)과 물어온 벌금(+)을 눈에 보이게 한다.
+   *
+   * 아래 띠에 글로도 뜨지만, 글은 읽어야 알고 표는 보면 안다. 특히 손해는
+   * '언제 얼마나 빠졌는지'가 안 보이면 도둑을 잡을 이유도 안 생긴다.
+   */
+  onPestGone(info) {
+    if (!info || !info.amount) return;
+    let x, y;
+    const idx = info.itemId
+      ? SHOPS.findIndex((sh) => sh.items.some((it) => it.id === info.itemId)) : -1;
+    if (idx >= 0) {
+      // 물건을 털렸다 — 그 가게 지붕 위에 뜬다
+      const r = this._roofBase(idx);
+      x = r.N.x; y = r.y - 32;                 // 매상 표와 안 겹치게 한 층 위
+    } else {
+      // 엽전을 털렸다 — 훔쳐 달아난 그 자리에 뜬다
+      const p = this._pestPos;
+      if (!p) return;
+      x = p.screen ? p.x + this.cam.x : p.x;
+      y = (p.screen ? p.y + this.cam.y : p.y) - 30;
+    }
+    // 손해는 조금 더 오래 남긴다 — 드물게 일어나고, 놓치면 안 되는 소식이다
+    this.floats.push({ x, y, amount: info.amount, t: info.amount < 0 ? 2.1 : TAKE_LIFE });
+  }
+
   onAsk(ask) {
     const idx = SHOPS.findIndex((s) => s.id === ask.item.shop);
     if (idx < 0) return;
@@ -309,7 +342,7 @@ export class Village {
               });
             }
             const tk = (this.takings[stop.idx] ||= { amount: 0, t: 0 });
-            tk.amount += stop.gain; tk.t = 1.7;
+            tk.amount += stop.gain; tk.t = TAKE_LIFE;
             const sy = w.y - this.cam.y, sx = w.x - this.cam.x;
             if (sy > -20 && sy < this.viewH + 20 && sx > -20 && sx < VW + 20) {
               Juice.burst(sx, sy - 14, { n: 4, color: ['#f0d98b'], size: 2, speed: 52, life: 0.34 });
@@ -371,6 +404,8 @@ export class Village {
       this.takings[k].t -= dt;
       if (this.takings[k].t <= 0) delete this.takings[k];
     }
+    for (const f of this.floats) { f.t -= dt; f.y -= 17 * dt; }
+    this.floats = this.floats.filter((f) => f.t > 0);
 
     this._camera(dt, pointer);
   }
@@ -430,6 +465,7 @@ export class Village {
           Sfx.win(); Juice.shake(7);
           const cx = th.screen ? th.x + this.cam.x : th.x;
           const cy = th.screen ? th.y + this.cam.y : th.y;
+          this.floats.push({ x: cx, y: cy - 34, amount: got.gain, t: TAKE_LIFE });
           for (let i = 0; i < 6; i++) {
             this.coins.push({
               x: cx + (Math.random() - 0.5) * 14, y: cy - 8,
@@ -551,7 +587,10 @@ export class Village {
         const kk = k;
         layer.push({ z: iso(tx + lx + 1, ty + ly + 1).y, d: () => this._stall(c, i, kk, spots[kk]) });
       }
-      layer.push({ z: S.y, d: () => this._counter(c, i, n) });
+      /* 계산대도 자기 발끝으로 선다. 마당 끝(S.y)에 세워 두면 마당 **안**에 있는
+       * 점장·손님보다 항상 앞이 되어 너구리를 덮었다 — 가구를 따로 세운 이유가
+       * 바로 이건데 계산대만 옛 z가 남아 있었다. */
+      layer.push({ z: iso(tx + n - 0.16, ty + n - 0.3).y, d: () => this._counter(c, i, n) });
       /* 직원 — 늘 작업대 줄에 붙어 만든다. 점장이 계산대로 불려가도
        * 이쪽은 계속 만든다. '한 마리는 생산, 한 마리는 판매'가 이 그림이다. */
       const nst = this.sim.staffOf(SHOPS[i].id);
@@ -594,6 +633,7 @@ export class Village {
       }
     }
     for (const k of Object.keys(this.takings)) this._takings(c, Number(k));
+    for (const f of this.floats) if (vis(f, 90)) this._chip(c, f.x, f.y, f.amount, f.t);
     if (this.bubble) this._bubble(c);
     for (const co of this.coins) if (vis(co, 30)) this._coin(c, co);
 
@@ -1002,21 +1042,49 @@ export class Village {
     }
   }
 
+  /**
+   * 손님 머리 위 주문표.
+   *
+   * 예전엔 '5개 · 2종'이라고 적었다. 그런데 **2종이 뭐였는지는 안 알려준다** —
+   * 알려면 아래 장부를 봐야 하고, 그러면 머리 위에 띄운 뜻이 없어진다.
+   * 지금은 물건 그림과 개수를 그대로 적는다: ⛏️3 🪓2.
+   * 그림이 준비되면 이모지 자리에 그 그림이 들어간다(같은 자리, 같은 크기).
+   */
   _order(c, w) {
     const stop = w.stops[w.si];
     if (!stop || !stop.sold.length) return;
-    const n = stop.sold.reduce((a, s) => a + s.n, 0);
-    const kinds = stop.sold.length;
-    // 아직 만드는 중이면 🔨를 붙인다 — '기다리는 중'이 눈에 보인다
-    const txt = (w.settled ? '' : '🔨 ') + (kinds > 1 ? `${n}개 · ${kinds}종` : `${n}개`);
-    const tw = 12 + txt.length * 7.2;
-    const bx = w.x + 24, by = w.y - 38 + Math.sin(this.t * 3.4) * 1.6;
-    G.round(c, bx - tw / 2, by - 11, tw, 19, 7, 'rgba(252,246,232,.96)');
+
+    /* 세 가지까지만 적고 나머지는 +N으로 줄인다 — 넷을 넘기면 말풍선이
+     * 손님보다 커져서 길을 덮는다. */
+    const segs = stop.sold.slice(0, 3).map((x) => {
+      const it = itemById(x.id);
+      return { id: x.id, icon: it.icon || '📦', n: x.n, w: 19 + String(x.n).length * 7.8 };
+    });
+    const more = stop.sold.length - segs.length;
+    const wait = !w.settled;                     // 아직 만드는 중이면 🔨
+
+    const inner = segs.reduce((a, x) => a + x.w, 0) + (more > 0 ? 20 : 0) + (wait ? 17 : 0);
+    const tw = inner + 16;
+    const bx = w.x + 26, by = w.y - 40 + Math.sin(this.t * 3.4) * 1.6;
+    G.round(c, bx - tw / 2, by - 12, tw, 22, 8, 'rgba(252,246,232,.96)');
     c.fillStyle = 'rgba(252,246,232,.96)';
     c.beginPath();
-    c.moveTo(bx - 16, by + 7); c.lineTo(bx - 22, by + 13); c.lineTo(bx - 10, by + 7);
+    c.moveTo(bx - 16, by + 9); c.lineTo(bx - 23, by + 16); c.lineTo(bx - 9, by + 9);
     c.closePath(); c.fill();
-    G.text(c, txt, bx, by - 1, { size: 12.5, fill: C.ink, weight: 800 });
+
+    let x = bx - inner / 2;                      // 왼쪽부터 차곡차곡
+    if (wait) {
+      G.text(c, '🔨', x + 8, by + 1, { size: 13, fill: '#000' });
+      x += 17;
+    }
+    for (const sg of segs) {
+      if (!drawArt(c, 'items', sg.id, x + 8, by + 6, 15, 15))
+        G.text(c, sg.icon, x + 8, by + 1, { size: 13, fill: '#000' });
+      G.text(c, String(sg.n), x + 19 + String(sg.n).length * 3.9, by + 1,
+        { size: 12.5, fill: C.ink, weight: 800 });
+      x += sg.w;
+    }
+    if (more > 0) G.text(c, `+${more}`, x + 10, by + 1, { size: 11.5, fill: C.ink3, weight: 800 });
   }
 
   /* ── 나쁜 놈 ── */
@@ -1025,28 +1093,29 @@ export class Village {
     if (!t) return null;
     const p = 1 - Math.max(0, t.left) / t.life;
 
+    this._pestPos = null;
     if (t.kind === 'crow') {
       // 까마귀는 화면 기준으로 가로지른다 — 마을 어디를 보고 있든 눈에 들어온다
       const dir = t.amount % 2 ? 1 : -1;
       const u = p * 2 - 1;
       const e = 0.5 + 0.5 * (u * 0.3 + u * u * u * 0.7);
       const x = dir > 0 ? -40 + e * 560 : 520 - e * 560;
-      return {
+      return (this._pestPos = {
         kind: 'crow', face: '🐦‍⬛', screen: true,
         x, y: this.viewH * 0.3 + Math.sin(p * Math.PI * 2.4) * 46,
         left: t.left, life: t.life, r: 30, flip: dir < 0,
-      };
+      });
     }
 
     const idx = SHOPS.findIndex((sh) => sh.items.some((it) => it.id === t.itemId));
     const f = this._foot(Math.max(0, idx));
     const heart = iso(GW / 2, GH / 2);           // 마을 안쪽으로 달아난다
-    return {
+    return (this._pestPos = {
       kind: 'rat', face: '🐀', screen: false,
       x: f.stand.x + (heart.x - f.stand.x) * p * 0.5,
       y: f.stand.y + (heart.y - f.stand.y) * p * 0.5,
       left: t.left, life: t.life, r: 32, flip: false,
-    };
+    });
   }
 
   _pest(c, t) {
@@ -1078,24 +1147,59 @@ export class Village {
   }
 
   /* ── 떠 있는 글자들 ── */
+  /**
+   * 매상 표 — **계산대에서 피어오른다.**
+   *
+   * 예전엔 지붕 위에 띄웠는데 거기엔 이미 현판과 '새 칸!/승급!' 표가 산다.
+   * 가게가 다섯이 되면 지붕마다 표가 두 겹씩 쌓여 어느 것도 안 읽힌다.
+   * 자리를 나눴다 — **지붕은 이름과 할 일(계속 있는 것), 계산대는 지금
+   * 벌어지는 일(잠깐 있는 것).** 게다가 손님 주문표가 사라지는 그 자리에서
+   * 매상이 피어오르니 '주문 → 계산 → 돈'이 한 자리에서 이어져 읽힌다.
+   *
+   * 같은 가게의 연속 판매는 **한 장으로 합친다**(tk.amount에 더한다).
+   * 이게 화면이 안 복잡해지는 진짜 이유다 — 표가 늘지 않고 숫자만 커진다.
+   */
   _takings(c, idx) {
     const tk = this.takings[idx];
-    const label = `+🪙${fmt(tk.amount)}`;
-    const bw = 26 + label.length * 8.4;
-    /* 마당의 현판이 뒤 꼭짓점 위에 있으니 매상 표도 그 위로 띄운다 */
+    const r = this._roofBase(idx);
+    this._chip(c, r.N.x, r.y - (TAKE_LIFE - tk.t) * 13, tk.amount, tk.t);
+  }
+
+  /**
+   * 지붕 위 **층 정하기**.
+   *
+   * 지붕 위 빈 하늘은 표를 놓기 제일 좋은 자리다 — 매대도 동물도 안 가린다.
+   * 그런데 여태 현판·'새 칸!' 배지·매상 표·손님 질문이 **전부 같은 높이**를
+   * 노려서 서로 덮었다. 가게가 다섯이 되면 그게 다섯 배가 된다.
+   * 그래서 순서를 못 박는다 — 아래에서 위로:
+   *
+   *     현판(이름)  →  배지(할 일)  →  매상 표(방금 번 돈)  →  손님 질문
+   *
+   * 계속 있는 것이 아래, 잠깐 있는 것이 위. 한 층이 비면 위층이 내려온다.
+   */
+  _roofBase(idx) {
     const N = iso(SHOP_T[idx][0], SHOP_T[idx][1]);
-    const y = N.y - 100 - (1.7 - tk.t) * 11;
-    c.globalAlpha = Math.min(1, tk.t / 0.45);
-    G.round(c, N.x - bw / 2, y, bw, 25, 9, '#3d3327');
-    G.text(c, label, N.x, y + 13, { size: 13.5, fill: '#f2d88c', weight: 800 });
+    const shop = SHOPS[idx];
+    const todo = this.sim.shops.includes(shop.id) && this.sim.shopTodo(shop.id) > 0;
+    return { N, y: N.y - 100 - (todo ? 34 : 0) };
+  }
+
+  /** 엽전 표 한 장. 엽전 → 부호 → 숫자 순 (🪙 +1,234 / 🪙 −900) */
+  _chip(c, x, y, amount, t) {
+    const neg = amount < 0;
+    const label = `🪙 ${neg ? '−' : '+'}${fmt(Math.abs(amount))}`;
+    const bw = 22 + label.length * 8.2;
+    c.globalAlpha = Math.min(1, t / 0.4);
+    G.round(c, x - bw / 2, y, bw, 24, 9, neg ? '#5e2a24' : '#3d3327');
+    G.text(c, label, x, y + 12.5, { size: 13, fill: neg ? '#f2b3a6' : '#f2d88c', weight: 800 });
     c.globalAlpha = 1;
   }
 
   _bubble(c) {
     const b = this.bubble;
-    const N = iso(SHOP_T[b.idx][0], SHOP_T[b.idx][1]);
-    const lift = this.takings[b.idx] ? 30 : 0;
-    const bw = 112, y = N.y - 98 - lift;
+    const r = this._roofBase(b.idx);
+    const N = r.N;
+    const bw = 112, y = r.y + 2 - (this.takings[b.idx] ? 32 : 0);
     c.globalAlpha = Math.min(1, b.t);
     G.round(c, N.x - bw / 2, y, bw, 28, 9, '#fff6d8');
     c.fillStyle = '#fff6d8';

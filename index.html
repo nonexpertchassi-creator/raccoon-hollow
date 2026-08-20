@@ -474,6 +474,7 @@ eng.add('village', {
 
     for (const s of r.sales) village.onSale(s);
     for (const d of r.done || []) village.onOrderDone(d);
+    for (const p of r.pests || []) village.onPestGone(p);
     if (r.ask) {
       village.onAsk(r.ask);
       Sfx.deny();

@@ -54,6 +54,7 @@ export class Sim {
     this.orders = [];
     this._oid = 0;
     this._hold = {};                     // 계산 중이라 생산이 멈춘 가게 (점장 혼자일 때만)
+    this._pestEvents = [];               // 이번 틱에 도둑이 벌인 일 (화면 표시용)
 
     this._guestAcc = {};
     this._guestGap = {};
@@ -174,6 +175,7 @@ export class Sim {
   _pestEscape(rng = Math.random) {
     const t = this.pest;
     const P = PESTS.find((p) => p.id === t.kind);
+    const where = { kind: t.kind, itemId: t.itemId || null };
     this.pest = null;
 
     /* 삽살개가 대신 문다. 직접 잡을 때보다 벌금이 훨씬 적고, 놓치기도 한다 —
@@ -184,6 +186,7 @@ export class Sim {
       this.money += gain;
       this.revenue += gain;
       this._ev(`${GUARD.name}가 ${josa(P.name, '을', '를')} 물었다 — 벌금 엽전 ${fmt(gain)}닢`, 'guard');
+      this._pestEvents.push({ ...where, result: 'guard', amount: gain });
       return;
     }
     if (P.steal === 'goods') {
@@ -191,10 +194,12 @@ export class Sim {
       const n = it ? Math.min(it.stock, t.qty) : 0;
       if (it) it.stock -= n;
       this._ev(`${josa(P.name, '이', '가')} ${this.itemName(t.itemId)} ${n}개를 훔쳐 달아났다`, 'pest');
+      this._pestEvents.push({ ...where, result: 'stolen', amount: -Math.floor(this.price(t.itemId) * n) });
     } else {
       const n = Math.min(this.money, t.amount);
       this.money -= n;
       this._ev(`${josa(P.name, '이', '가')} 엽전 ${fmt(n)}닢을 채 갔다`, 'pest');
+      this._pestEvents.push({ ...where, result: 'stolen', amount: -n });
     }
   }
 
@@ -634,7 +639,9 @@ export class Sim {
       }
     }
 
-    // 1.5) 나쁜 놈들 — 물건이나 엽전을 집어 들고 도망친다
+    /* 1.5) 나쁜 놈들 — 물건이나 엽전을 집어 들고 도망친다.
+     * 이번 틱에 실제로 나가고 들어온 돈을 모아 화면에 넘긴다(−/+ 표). */
+    this._pestEvents = [];
     this._pests(dt, rng);
 
     // 2) 손님 — 재고에서 여러 종류를 무작위로 담아간다
@@ -672,7 +679,7 @@ export class Sim {
       this._ev(`${josa(ng.name, '이', '가')} 마을에 왔다`, 'guest');
     }
 
-    return { sales, done, ask, newGuest, autoLv };
+    return { sales, done, ask, newGuest, autoLv, pests: this._pestEvents };
   }
 
   /** 이 품목을 기다리는 주문이 모두 몇 개나 남았나 */
