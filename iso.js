@@ -154,6 +154,8 @@ const LINE_OFF  = { x: { gx: -42, gy: 21 }, y: { gx: 42, gy: 21 } };
 const SMALL_T = [[7, 7], [10, 6], [8, 10], [11, 9]];
 const DOG_T = [14, 9];
 
+const LINE_MAX = 4;                   // 한 가게 앞에 세우는 손님 수(줄+오는 중)
+const ANGRY_AT = 0.75;                // 참을성의 이만큼을 넘기면 😠 (6초 중 4.5초)
 const TAKE_LIFE = 1.5;                // 엽전 표가 떠 있는 시간(초)
 const BUY_TIME = 2.3;                 // 손님이 가게 앞에 서 있는 시간
 const HAND_OVER = 1.1;                // 이 시점에 물건이 건네진다
@@ -309,6 +311,31 @@ export class Village {
     return pts;
   }
 
+  /** 이 가게는 그냥 지나친다(줄이 꽉 찼다). 계산은 이미 끝났으니
+   *  장부만 빠뜨리지 않게 챙기고 다음 목적지로 보낸다. */
+  _skip(w) {
+    /* 도로 더해 둔 재고를 반드시 풀어 준다 — 안 풀면 그 몫이 진열대 숫자에
+     * 영원히 얹혀 있어, 실제로는 빈 매대가 꽉 찬 것처럼 보인다. */
+    const stop = w.stops[w.si];
+    if (stop && stop.pend) {
+      for (const it of stop.sold) {
+        this.pending[it.id] = Math.max(0, (this.pending[it.id] || 0) - it.n);
+      }
+      stop.pend = false;
+    }
+    w.si++;
+    if (w.si < w.stops.length) {
+      const nx = w.stops[w.si];
+      this._send(w, this._door(nx.idx), this._foot(nx.idx).stand);
+      w.state = 'in'; w.paid = false; w.served = false;
+    } else {
+      if (!w.paid && w.sale && w.sale.n > 0 && this.onDelivered) this.onDelivered(w.sale);
+      w.paid = true;
+      this._send(w, w.exitTile, w.exitGate);
+      w.state = 'out';
+    }
+  }
+
   /** 정해 준 길을 한 걸음 따라간다. 끝까지 갔으면 true. */
   _follow(w, speed) {
     if (!w.path || w.pi >= w.path.length) return true;
@@ -357,6 +384,15 @@ export class Village {
 
   /* ── 바깥에서 알려주는 사건 ── */
 
+  /** 이 가게로 향하는 손님 수 — 줄에 선 사람 + 오는 중인 사람. */
+  _load(idx) {
+    let n = this.line[idx].length;
+    for (const w of this.walkers) {
+      if (w.state === 'in' && w.stops[w.si] && w.stops[w.si].idx === idx) n++;
+    }
+    return n;
+  }
+
   onSale(sale) {
     /* 걸음이 느려 한 명이 10초쯤 머문다. 실측으로 열넷이면 거래의 96%가
      * 화면에 나온다. 넘치면 그 거래는 화면에 안 나온다(계산은 끝났다). */
@@ -382,8 +418,21 @@ export class Village {
       const idx = SHOPS.findIndex((s) => s.id === sale.grumbles[0].item.shop);
       if (idx >= 0) byShop.set(idx, { idx, sold: [], gain: 0 });
     }
-    const stops = [...byShop.values()];
-    if (!stops.length) return;
+    /* 줄이 이미 긴 가게는 이번 손님을 **화면에 안 세운다.**
+     *
+     * 계산대는 한 명에 1.4~2.3초가 걸리는데 잘되는 가게는 그보다 빨리 팔린다.
+     * 그대로 두면 줄이 열넷까지 밀려서, 뒷사람은 십 초 넘게 기다리다 전부
+     * 성난 얼굴이 된다(실측 44%). 화남이 그 지경이면 신호가 아니라 소음이다.
+     * 줄은 눈에 보이라고 만든 연출이지 장부가 아니다 — 넘치는 몫은 조용히
+     * 뺀다(돈은 이미 들어왔다). */
+    const stops = [...byShop.values()].filter((x) => this._load(x.idx) < LINE_MAX);
+    if (!stops.length) {
+      if (!sale.waiting && sale.n > 0 && this.onDelivered) this.onDelivered(sale);
+      for (const ln of sale.lines) {         // 도로 더해 둔 재고를 되돌린다
+        if (!sale.waiting) this.pending[ln.item.id] = Math.max(0, (this.pending[ln.item.id] || 0) - ln.n);
+      }
+      return;
+    }
 
     /* 큰길(세로, 5·6열) 양끝 중 첫 가게에 가까운 쪽에서 들어와, 가게들을
      * 훑고 반대쪽으로 나간다. 들어온 뒤로는 길칸만 밟는다. */
@@ -498,13 +547,15 @@ export class Village {
     // 손님 — 큰길을 따라 내려오다 가게 앞으로 꺾는다
     for (const w of this.walkers) {
       const stop = w.stops[w.si];
-      /* 기다린 시간 — **물건이 아직 안 나온 시간**만 센다.
-       * 참을성의 2/3(4초)을 넘기면 얼굴이 굳는다(😠). 예전엔 아예 포기할 때만
-       * 💢가 떠서, 그전까지는 아무 일 없는 것처럼 보였다.
+      /* 기다린 시간 — **제 차례가 왔는데 물건이 안 나온 시간**만 센다.
+       * 4초(참을성 6초의 2/3)를 넘기면 얼굴이 굳는다(😠).
        *
-       * 줄 서서 기다리는 시간은 안 센다 — 줄은 눈에 보이라고 만든 연출이지
-       * 손해가 아니다(계산은 이미 끝나 있다). 그것까지 화를 내게 했더니
-       * 가게 앞 손님의 29%가 성난 얼굴이 됐다. 붐비는 건 잘되는 거지 탈이 아니다. */
+       * ★ 줄 서서 기다린 시간은 안 센다. 줄까지 세어 재 봤더니 초반 4% ·
+       *   중반 79% · 후반 97.5%가 성난 얼굴이 됐다. 이유는 단순하다 —
+       *   잘되는 가게는 화면에 세울 수 있는 것보다 훨씬 빨리 팔린다. 줄은
+       *   늘 꽉 차 있고, 그래서 '줄 시간'은 가게 사정이 아니라 **연출의 한계**를
+       *   재는 셈이 된다. 그렇게 뜬 화남은 신호가 아니라 소음이다.
+       *   지금 뜨는 😠는 하나만 뜻한다: **물건을 제때 못 만들고 있다.** */
       if (w.state === 'buy' && !w.settled) w.waitT += dt;
       if (w.state === 'in' && stop) {
         /* 길을 따라 걷는다. 예전엔 목적지까지 직선이라 남의 마당을 뚫고
@@ -512,6 +563,7 @@ export class Village {
         if (this._follow(w, WALK * 1.3 * dt)) {
           // 길 끝 = 가게 앞. 줄에 서고, 제 차례가 오면 그때 계산한다.
           const q = this.line[stop.idx];
+          if (q.length >= LINE_MAX) { this._skip(w); continue; }   // 줄이 꽉 찼다
           if (!q.includes(w)) q.push(w);
           w.state = 'line';
         }
@@ -526,7 +578,7 @@ export class Village {
         }
         if (k === 0 && d < 4) {
           // 뒤에 줄이 섰으면 손이 빨라진다 — 줄이 끝없이 길어지지 않게
-          w.rush = q.length > 2 ? 0.62 : 1;
+          w.rush = q.length > 2 ? 0.5 : q.length > 1 ? 0.7 : 1;
           w.state = 'buy'; w.wait = BUY_TIME * w.rush; w.paid = false; w.served = false;
         }
       } else if (w.state === 'buy') {
@@ -858,12 +910,18 @@ export class Village {
       /* 주문표는 **맨 앞사람만**. 줄이 길 때 전부 띄우면 말풍선끼리 겹쳐
        * 어느 것도 안 읽힌다 — 줄을 세운 이유의 절반이 이것이다. */
       if (w.state === 'buy' && !w.paid) this._order(c, w);
-      /* 빈손이거나 일부를 포기했다 — 💢. 기다리다 지쳐가는 중이면 😠 */
+      /* 💢 = **볼일이 끝났는데 못 샀다.** 반드시 계산이 끝난 뒤에만 띄운다.
+       *
+       * 예전엔 '살 게 하나도 없는 손님'을 sold가 비었다는 이유로 곧장 💢로
+       * 그렸다. 그래서 그 손님은 마을에 **화난 채로 걸어 들어와** 줄까지 화난
+       * 얼굴로 서 있었다. 아직 묻지도 않았는데 화가 나 있는 셈이었다.
+       *
+       * 😠는 기다림이 4초를 넘겼을 때 — 줄에 선 뒤부터 센다. */
       const gr = w.sale && w.sale.grumbles && w.sale.grumbles.length;
       const bob = Math.sin(this.t * 5.2) * 2;
-      if (gr && (w.paid || !w.stops[w.si] || !w.stops[w.si].sold.length)) {
+      if (gr && w.paid) {
         G.text(c, '💢', w.x + 15, w.y - 46 + bob, { size: 19, fill: '#000' });
-      } else if (w.waitT > SERVICE.patience * 0.65) {
+      } else if (w.waitT > SERVICE.patience * ANGRY_AT) {
         G.text(c, '😠', w.x + 15, w.y - 44 + bob, { size: 17, fill: '#000' });
       }
     }
