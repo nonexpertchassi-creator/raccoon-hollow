@@ -22,7 +22,11 @@ func _ready() -> void:
 		main.village._advance(0.25)
 	main._paint()
 	if OS.has_environment("SHOT_PANEL"):
-		main.panel.open_for(OS.get_environment("SHOT_PANEL"))
+		var k: String = OS.get_environment("SHOT_PANEL")
+		if k == "quests" or k == "guests":
+			main.panel.open_kind(k)
+		else:
+			main.panel.open_for(k)
 
 func _process(_delta: float) -> void:
 	if _done:

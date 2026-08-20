@@ -6,6 +6,9 @@ class_name ShopPanel
 ## **지도에서 못 하는 것**만 맡는다 — 자세한 숫자와 승급.
 
 var sim: Sim
+## 창 한 틀에 세 가지를 담는다 — 가게 · 의뢰 · 손님 도감.
+## 창을 세 개 만들면 여닫는 규칙도 세 벌이 되고, 그중 하나는 반드시 어긋난다.
+var kind: String = ""
 var shop_id: String = ""
 var _box: VBoxContainer
 var _acc: float = 0.0
@@ -38,12 +41,24 @@ func _ready() -> void:
 	scroll.add_child(_box)
 
 func open_for(id: String) -> void:
+	kind = "shop"
 	shop_id = id
+	visible = true
+	rebuild()
+
+func open_kind(k: String) -> void:
+	# 같은 것을 다시 누르면 닫힌다 — 닫기 단추를 찾아 누르는 수고를 던다
+	if visible and kind == k:
+		close()
+		return
+	kind = k
+	shop_id = ""
 	visible = true
 	rebuild()
 
 func close() -> void:
 	visible = false
+	kind = ""
 	shop_id = ""
 
 func _process(delta: float) -> void:
@@ -79,13 +94,130 @@ func _label(text: String, size: int, col: Color = Color("2b241b"), wrap: bool = 
 		l.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	return l
 
+## 제목 줄 — 어느 창이든 같은 자리에 같은 모양으로
+func _head(title_text: String) -> void:
+	var head := HBoxContainer.new()
+	var title := _label(title_text, 21)
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	head.add_child(title)
+	head.add_child(_btn("닫기", true, close, false))
+	_box.add_child(head)
+
+## 눈금 — 얼마나 찼는지가 숫자보다 먼저 읽혀야 한다
+func _bar(ratio: float, col: Color) -> void:
+	var p := ProgressBar.new()
+	p.min_value = 0.0
+	p.max_value = 1.0
+	p.value = clampf(ratio, 0.0, 1.0)
+	p.show_percentage = false
+	p.custom_minimum_size = Vector2(0, 10)
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = col
+	fill.corner_radius_top_left = 5; fill.corner_radius_top_right = 5
+	fill.corner_radius_bottom_left = 5; fill.corner_radius_bottom_right = 5
+	var bg := StyleBoxFlat.new()
+	bg.bg_color = Color(0.17, 0.14, 0.11, 0.13)
+	bg.corner_radius_top_left = 5; bg.corner_radius_top_right = 5
+	bg.corner_radius_bottom_left = 5; bg.corner_radius_bottom_right = 5
+	p.add_theme_stylebox_override("fill", fill)
+	p.add_theme_stylebox_override("background", bg)
+	_box.add_child(p)
+
 func rebuild() -> void:
 	for c in _box.get_children():
 		c.queue_free()
+	match kind:
+		"shop": _shop_body()
+		"quests": _quests_body()
+		"guests": _guests_body()
+
+## ── 마을 의뢰와 젬 ──
+func _quests_body() -> void:
+	_head("마을 의뢰")
+
+	# 기간제 이벤트 — 마감은 실제 시간이라 게임을 꺼도 줄어든다
+	var e: Variant = sim.event_def()
+	if e == null:
+		var w: float = sim.event_wait()
+		_box.add_child(_label("가게를 둘 열면 장이 선다" if sim.shops.size() < 2
+			else "다음 장까지 %s" % _hhmm(w), 13, Color("8a7a63")))
+	else:
+		var got: float = min(sim.event.got, e.need)
+		_box.add_child(_label("%s %s — %s 남음" % [e.face, e.name, _hhmm(sim.event_left())], 17, Color("a8763e")))
+		_box.add_child(_label("%s — %d / %d" % [e.desc, int(got), int(e.need)], 13))
+		_bar(got / e.need, Color("a8763e"))
+		_box.add_child(_label("깨면 💎%d · %s · 못 깨도 잃는 것은 없다" % [int(e.gems), e.skinName], 11, Color("8a7a63")))
+	if not sim.skins.is_empty():
+		var names: Array[String] = []
+		for k in sim.skins:
+			for ev in Content.EVENTS:
+				if ev.skin == k:
+					names.append(String(ev.skinName))
+		_box.add_child(_label("받은 것: %s  (그림은 나중에 붙는다)" % ", ".join(names), 11, Color("4a7c59")))
+
+	_box.add_child(_label("가진 젬 💎%d · 의뢰를 마치거나, 품목을 만렙까지 올리거나, 나쁜 놈을 잡으면 모인다"
+		% int(sim.gems), 13, Color("5a4e3d"), true))
+
+	for q in sim.quests:
+		var g: Dictionary = Sim.guest_by_id(q.gid)
+		_box.add_child(_label("%s %s마을 — %s %d개  💎%d" % [
+			g.face, g.name, sim.item_name(q.itemId), int(q.need), int(q.gems)], 14))
+		_bar(q.got / q.need, Color("4a7c59"))
+		_box.add_child(_label("%d / %d · %d성 %s · 마치면 🪙%s" % [
+			int(q.got), int(q.need), sim.regular_star(q.gid), sim.regular_name(q.gid),
+			Num.fmt(floor(sim.price(q.itemId) * q.need * Content.QUEST.payMul))], 11, Color("8a7a63")))
+	if sim.quests.size() < int(Content.QUEST.slots):
+		_box.add_child(_label("다음 의뢰가 오는 중… (%d초)" % int(ceil(max(0.0, sim._qCool))), 12, Color("8a7a63")))
+
+	_box.add_child(_label("젬 쓰는 곳", 15, Color("5a4e3d")))
+	_box.add_child(_label("👷 삯꾼 부르기 — %s" % ("삯꾼이 일하는 중… %d초" % int(ceil(sim.rush))
+		if sim.rush > 0.0 else "%d초 동안 만드는 속도가 %d배"
+		% [int(Content.GEM.rush.secs), int(Content.GEM.rush.mult)]), 13))
+	_box.add_child(_btn("💎%d" % int(Content.GEM.rush.cost), sim.can_rush(),
+		func(): sim.call_rush(); rebuild()))
+	for u in Content.GEM_UPGRADES:
+		var lv: int = int(sim.up_lv(u.id))
+		var cost: Variant = sim.gem_cost(u.id)
+		_box.add_child(_label("%s %s %d/%d — %s" % [u.face, u.name, lv, int(u.max), u.desc], 13))
+		if cost == null:
+			_box.add_child(_label("끝까지 올렸다", 11, Color("4a7c59")))
+		else:
+			_box.add_child(_btn("💎%d" % int(cost), sim.can_buy_gem_up(u.id),
+				func(): sim.buy_gem_up(u.id); rebuild()))
+	_box.add_child(_label("뽑기 · 룰렛 · 스킨 상점은 다음 판에 붙는다", 11, Color("8a7a63")))
+
+func _hhmm(sec: float) -> String:
+	var h: int = int(sec / 3600.0)
+	var m: int = int(fmod(sec, 3600.0) / 60.0)
+	return "%d시간 %d분" % [h, m] if h > 0 else "%d분" % m
+
+## ── 손님 도감 ──
+## 아직 안 온 손님도 자리를 비워 보여준다 — 몇이 더 남았는지, 무엇을 하면
+## 오는지가 보여야 모으는 재미가 생긴다.
+func _guests_body() -> void:
+	_head("손님 도감")
+	_box.add_child(_label("마을에 온 손님 %d / %d · 단골 등급 합계 %d" % [
+		sim.guests.size(), Content.GUESTS.size(), sim.regular_sum()], 13, Color("5a4e3d")))
+	for g in Content.GUESTS:
+		if not sim.guests.has(String(g.id)):
+			_box.add_child(_label("?  ? ? ?   누적 매출 🪙%s에 온다" % Num.fmt(g.at), 13, Color("8a7a63")))
+			continue
+		var lv: int = sim.regular_lv(String(g.id))
+		var left: Variant = null
+		if lv < Content.REGULARS.size() - 1:
+			left = sim.regular_need(String(g.id), lv + 1) - sim.visits.get(g.id, 0.0)
+		_box.add_child(_label("%s %s   %d성 %s   %s" % [
+			g.face, g.name, lv + 1, Content.REGULARS[lv].name,
+			"최고 등급" if left == null else "다음까지 %s번" % Num.fmt(float(left))], 14))
+		_box.add_child(_label("%s · %d초마다 %d개 · 값 ×%s · 누적 %s개 / %s번" % [
+			g.desc, int(g.every), int(g.qty), str(g.pay),
+			Num.fmt(sim.bought.get(g.id, 0.0)), Num.fmt(sim.visits.get(g.id, 0.0))], 11, Color("8a7a63"), true))
+
+## ── 가게 ──
+func _shop_body() -> void:
 	if shop_id == "":
 		return
 	var shop: Dictionary = Sim.shop_by_id(shop_id)
-
 	var head := HBoxContainer.new()
 	var title := _label("%s %s" % [shop.sign, shop.name], 21)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL

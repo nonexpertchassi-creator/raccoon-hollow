@@ -14,6 +14,8 @@ var _log: Label
 var _acc: float = 0.0
 var panel: ShopPanel
 var _autobtn: Button
+var _guestbtn: Button
+var _questbtn: Button
 
 ## 끌기와 누르기를 가른다. 이걸 안 하면 마을을 둘러보려고 끌 때마다
 ## 손가락을 뗀 자리가 눌려서 엉뚱한 게 강화된다.
@@ -58,6 +60,12 @@ func _ready() -> void:
 	bar.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
 	bar.offset_left = 12; bar.offset_right = -12; bar.offset_top = -56; bar.offset_bottom = -12
 	layer.add_child(bar)
+	_guestbtn = Button.new()
+	_guestbtn.pressed.connect(func(): panel.open_kind("guests"))
+	bar.add_child(_guestbtn)
+	_questbtn = Button.new()
+	_questbtn.pressed.connect(func(): panel.open_kind("quests"))
+	bar.add_child(_questbtn)
 	_autobtn = Button.new()
 	_autobtn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_autobtn.pressed.connect(func(): sim.buy_auto())
@@ -88,9 +96,11 @@ func _paint() -> void:
 	_sub.text = "초당 🪙%s · 가게 %d/%d · 품목 %d · 손님 %d · 💎%d" % [
 		Num.fmt(sim.income_per_sec()), sim.shops.size(), Content.SHOPS.size(),
 		sim.items.size(), sim.guests.size(), int(sim.gems)]
+	_guestbtn.text = "손님 %d/%d" % [sim.guests.size(), Content.GUESTS.size()]
+	_questbtn.text = "의뢰 %d" % sim.quests.size()
 	_autobtn.visible = not sim.auto
 	if not sim.auto:
-		_autobtn.text = "장부 정리 🪙" + Num.fmt(Content.AUTO_COST) + "  (사면 알아서 강화된다)"
+		_autobtn.text = "장부 정리 🪙" + Num.fmt(Content.AUTO_COST)
 		_autobtn.disabled = sim.money < Content.AUTO_COST
 	var lines: Array[String] = []
 	for i in range(min(3, sim.events.size())):
