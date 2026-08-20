@@ -20,37 +20,42 @@ import { drawArt } from './art.js';
 
 const VW = 480;                       // 화면 가상 폭 (엔진이 가로를 여기에 맞춘다)
 const TW = 96, TH = 48;               // 바닥 한 칸
-const GW = 13, GH = 18;                // 마을 크기(칸)
+const GW = 15, GH = 18;                // 마을 크기(칸)
 
 /** 칸 좌표 → 세계 좌표. 정수는 칸의 모서리다. */
 const iso = (tx, ty) => ({ x: (tx - ty) * TW / 2, y: (tx + ty) * TH / 2 });
+/** 세계 좌표 → 칸 좌표 (iso의 역). 길찾기에 쓴다. */
+const unIso = (x, y) => ({ tx: (x / (TW / 2) + y / (TH / 2)) / 2, ty: (y / (TH / 2) - x / (TW / 2)) / 2 });
 
-/* 길 — 세로 큰길(3~4열) 하나와 가로 골목(4·10행) 둘.
- * 손님은 큰길 양끝에서 들어온다. */
-/* 길이 마을을 네 마당으로 가른다. 가게 마당이 5×5까지 자라도
- * 길을 밟지 않도록 4분면 하나에 가게 하나씩이다. */
-const isRoad = (tx, ty) => (tx === 5 || tx === 6) || ty === 5 || ty === 12;
+/* ───────────── 길 ─────────────
+ * 큰길 둘(세로, 두 칸 폭)과 골목 둘(가로, 한 칸 폭)이 마을을 여섯 구획으로 가른다.
+ * 손님은 **길로만 다닌다** — 예전엔 목적지까지 직선으로 걸어서 남의 가게
+ * 마당을 뚫고 지나갔다.
+ */
+const isRoad = (tx, ty) => tx === 5 || tx === 6 || tx === 12 || tx === 13 || ty === 5 || ty === 11;
 
-/* 가게는 3×3칸짜리 **마당**이다. 지붕 덮인 상자였던 것을 열어젖혔다 —
- * 안이 다 보이니 들어갈 필요가 없고, '가게 안' 화면 자체가 사라진다.
+/* ───────────── 가게 자리 ─────────────
+ * ★ 여기 적는 칸은 마당의 **길 쪽 모서리**(계산대가 있는 앞 모서리)다.
+ *   마당은 이 모서리를 붙박이로 두고 **길 반대쪽(뒤)으로 자란다.**
  *
- * 마당 아홉 칸의 쓰임 (마당 안 좌표):
- *   (0,0) 가마 — 가게마다 다른 분위기 소품
- *   (0,1) 작업대 — 점장이 여기서 만든다
- *   (1,0)(2,0)(1,1)(2,1) 매대 — 품목마다 한 칸. 책상+학생이 한 칸인 것과 같다
- *   (1,2) 계산대 — 점장이 나와서 계산하고, 손님은 그 앞에 선다
- *   나머지는 빈 바닥 — 사람이 오가는 자리
+ * 왜 뒤로 자라나: 예전엔 이 값이 마당의 뒷 모서리였고 마당이 앞으로 자랐다.
+ * 그래서 승급할 때마다 계산대가 길에서 한 칸씩 멀어졌고, 3칸 마당에서는
+ * 계산대가 아예 길에 닿지도 않았다. 가게를 넓힌다고 가게 앞이 옮겨 다니면
+ * 안 된다 — 넓어지는 건 **뒷마당**이다.
  *
  * ★ 화면의 가로 위치는 tx가 아니라 (tx−ty)다. 이걸 놓치면 두 가게가
- * 같은 세로줄에 포개진다. 세 세로줄에 번갈아 놓고 같은 줄에선 세로로
- * 260px 이상 벌린다. */
+ * 같은 세로줄에 포개진다. 아래 배치는 같은 줄에 놓이는 짝(약재상·필방,
+ * 대장간·옹기점)이 세로로 14칸(336px) 떨어지게 잡았다.
+ */
 const SHOP_T = [
-  [7, 13],   // 대장간 — 시작 화면(아래 오른 분면)
-  [7, 7],    // 필방 — 가운데 오른 분면
-  [8, 0],    // 지물포 — 위 오른 분면
-  [0, 7],    // 옹기점 — 가운데 왼 분면
-  [0, 0],    // 약재상 — 위 왼 분면
+  [5, 17],   // 대장간 — 시작 화면(아래 왼 구획, 왼 큰길가)
+  [12, 17],  // 필방 — 아래 오른 구획
+  [5, 11],   // 지물포 — 가운데 왼 구획
+  [12, 5],   // 옹기점 — 위 오른 구획
+  [5, 5],    // 약재상 — 위 왼 구획
 ];
+/** 손님이 서는 길칸 — 계산대 바로 앞. 마당이 커져도 안 움직인다. */
+const doorTile = (i) => [SHOP_T[i][0], SHOP_T[i][1] - 1];
 
 /** 마당 안 배치 — 등급이 오르면 마당이 커지고 매대가 늘어난다.
  *
@@ -69,8 +74,12 @@ function stallSpots(n) {
 }
 const anvilAt = (n) => Math.floor((n - 1) / 2);
 
-const SMALL_T = [[12, 14], [12, 8], [2, 6], [0, 13]];
-const DOG_T = [3, 14];
+/* 작은 건물 넷은 가운데 빈 구획(7~11열, 6~10행) — 사방이 길로 둘린 **장터**다.
+ * 가게 마당 옆에 붙이면 화면에서 마당 모서리와 겹쳐 붙어 보인다(실제로 점포가
+ * 대장간 마당에 얹힌 것처럼 나왔다). 네 채가 화면에서 136px 이상 벌어지도록
+ * 스물다섯 칸을 전부 재서 골랐다. 삽살개는 마을 오른쪽 끝 풀밭. */
+const SMALL_T = [[7, 7], [10, 6], [8, 10], [11, 9]];
+const DOG_T = [14, 9];
 
 const TAKE_LIFE = 1.5;                // 엽전 표가 떠 있는 시간(초)
 const BUY_TIME = 2.3;                 // 손님이 가게 앞에 서 있는 시간
@@ -126,9 +135,16 @@ export class Village {
     this.trees = this._trees();
   }
 
+  /** 마당의 **뒷 모서리** 칸. SHOP_T는 앞(길 쪽) 모서리라 마당 크기만큼 뺀다.
+   *  마당이 커져도 앞은 그대로, 뒤로만 밀린다. */
+  _org(i) {
+    const n = plotDim(this.sim, i);
+    return [SHOP_T[i][0] - n, SHOP_T[i][1] - n];
+  }
+
   /** 가게 i의 요지(세계 좌표). 마당 크기는 등급이 정하므로 sim을 읽는다. */
   _foot(i) {
-    const [tx, ty] = SHOP_T[i];
+    const [tx, ty] = this._org(i);
     const n = plotDim(this.sim, i);
     const S = iso(tx + n, ty + n);
     const a = anvilAt(n);
@@ -144,13 +160,96 @@ export class Village {
     };
   }
 
+  /* ── 길찾기 ──
+   * 손님은 **길칸만 밟는다.** 예전엔 목적지까지 직선으로 걸어서 남의 가게
+   * 마당을 뚫고, 대장간에서 필방으로 갈 땐 대장간을 관통해 나갔다.
+   *
+   * 길칸은 60칸 남짓이라 너비우선탐색이면 충분하다(A*까지 갈 일이 아니다).
+   * 길 모양은 절대 안 변하므로 한 번 찾은 길은 그대로 넣어 두고 다시 쓴다.
+   */
+  _walkable(tx, ty) {
+    return tx >= 0 && ty >= 0 && tx < GW && ty < GH && isRoad(tx, ty);
+  }
+
+  /** 길칸 a에서 b까지의 칸 목록. 못 가면 null. */
+  _route(a, b) {
+    const key = `${a[0]},${a[1]}>${b[0]},${b[1]}`;
+    if (!this._routes) this._routes = new Map();
+    if (this._routes.has(key)) return this._routes.get(key);
+
+    const K = (tx, ty) => tx * 1000 + ty;
+    const prev = new Map([[K(a[0], a[1]), null]]);
+    const q = [a];
+    let head = 0, found = a[0] === b[0] && a[1] === b[1];
+    while (head < q.length && !found) {
+      const [cx, cy] = q[head++];
+      for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const nx = cx + dx, ny = cy + dy;
+        if (!this._walkable(nx, ny) || prev.has(K(nx, ny))) continue;
+        prev.set(K(nx, ny), [cx, cy]);
+        if (nx === b[0] && ny === b[1]) { found = true; break; }
+        q.push([nx, ny]);
+      }
+    }
+    let out = null;
+    if (prev.has(K(b[0], b[1]))) {
+      out = [];
+      for (let cur = b; cur; cur = prev.get(K(cur[0], cur[1]))) out.push(cur);
+      out.reverse();
+    }
+    this._routes.set(key, out);
+    return out;
+  }
+
+  /** 길칸 목록을 걸어갈 점 목록으로. 곧게 이어지는 칸은 하나로 합친다. */
+  _points(route, lane) {
+    const pts = [];
+    for (let i = 0; i < route.length; i++) {
+      // 꺾이는 칸과 끝 칸만 남긴다 — 한 칸씩 찍으면 걸음이 잘게 끊긴다
+      const a = route[i - 1], b = route[i], c = route[i + 1];
+      const turn = !a || !c || (c[0] - b[0]) !== (b[0] - a[0]) || (c[1] - b[1]) !== (b[1] - a[1]);
+      if (!turn) continue;
+      const p = iso(b[0] + 0.5, b[1] + 0.5);
+      pts.push({ x: p.x + lane, y: p.y });
+    }
+    return pts;
+  }
+
+  /** 정해 준 길을 한 걸음 따라간다. 끝까지 갔으면 true. */
+  _follow(w, speed) {
+    if (!w.path || w.pi >= w.path.length) return true;
+    let left = speed * w.speed;
+    while (left > 0 && w.pi < w.path.length) {
+      const t = w.path[w.pi];
+      const dx = t.x - w.x, dy = t.y - w.y;
+      const d = Math.hypot(dx, dy);
+      if (d <= Math.max(2, left)) {            // 이번 걸음에 닿는다 → 다음 점으로
+        w.x = t.x; w.y = t.y; w.pi++; left -= d;
+        continue;
+      }
+      w.x += dx / d * left; w.y += dy / d * left;
+      left = 0;
+    }
+    return w.pi >= w.path.length;
+  }
+
+  /** 손님에게 '여기까지 이 길로 가라'고 일러 준다. */
+  _send(w, toTile, last) {
+    const route = this._route(w.tile, toTile);
+    w.path = route ? this._points(route, w.lane * 0.5) : [];
+    if (last) w.path.push(last);
+    if (!w.path.length) w.path = [last || { x: w.x, y: w.y }];
+    w.pi = 0;
+    w.tile = toTile;
+  }
+
   /* 나무 — 빈 풀칸에 심는다. 매 프레임 난수를 쓰면 떨리므로 한 번만. */
   _trees() {
     let s = 20250819;
     const rng = () => (s = (s * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
     const used = new Set();
     // 마당은 최대 5×5까지 자라니 나무는 처음부터 그 밖에만 심는다
-    for (const [tx, ty] of SHOP_T) for (let a = 0; a < 5; a++) for (let b = 0; b < 5; b++) used.add(`${tx + a},${ty + b}`);
+    for (const [mx, my] of SHOP_T) for (let a = 1; a <= 5; a++) for (let b = 1; b <= 5; b++) used.add(`${mx - a},${my - b}`);
     for (const [tx, ty] of SMALL_T) used.add(`${tx},${ty}`);
     used.add(`${DOG_T[0]},${DOG_T[1]}`);
     const out = [];
@@ -192,8 +291,8 @@ export class Village {
     const stops = [...byShop.values()];
     if (!stops.length) return;
 
-    /* 큰길 양끝 중 첫 가게에 가까운 쪽에서 들어와, 가게들을 훑고
-     * 반대쪽으로 나간다. */
+    /* 큰길(세로, 5·6열) 양끝 중 첫 가게에 가까운 쪽에서 들어와, 가게들을
+     * 훑고 반대쪽으로 나간다. 들어온 뒤로는 길칸만 밟는다. */
     const gate = (top) => iso(6, top ? -1.6 : GH + 1.6);
     const avgY = stops.reduce((a, x) => a + this._foot(x.idx).S.y, 0) / stops.length;
     const fromTop = Math.abs(gate(true).y - avgY) < Math.abs(gate(false).y - avgY);
@@ -210,9 +309,14 @@ export class Village {
       sale, orderId: sale.orderId, settled: !sale.waiting,
       x: g0.x + (Math.random() - 0.5) * 40, y: g0.y,
       exitGate: gate(!fromTop),
+      exitTile: [5, fromTop ? GH - 1 : 0],        // 반대쪽 끝 길칸
+      tile: [5, fromTop ? 0 : GH - 1],            // 지금 서 있는 길칸
+      path: null, pi: 0,
       state: 'in', wait: 0, paid: false, served: false, bob: Math.random() * 6,
       lane: (Math.random() - 0.5) * 34,
     });
+    const w = this.walkers[this.walkers.length - 1];
+    this._send(w, doorTile(stops[0].idx), this._foot(stops[0].idx).stand);
   }
 
   /** 기다리던 주문이 다 나왔다 — sim이 방금 돈을 움직였다. 손님을 깨운다. */
@@ -301,18 +405,9 @@ export class Village {
     for (const w of this.walkers) {
       const stop = w.stops[w.si];
       if (w.state === 'in' && stop) {
-        /* 직선으로 걷는다. 세로 두루마리에선 큰길을 따라가다 꺾었지만,
-         * 격자에선 그 규칙이 마을 반대편까지 도는 우회를 만들었다.
-         * 아이소메트릭에서 직선은 어차피 비스듬한 길로 보인다. */
-        const f = this._foot(stop.idx);
-        const tgt = { x: f.stand.x + w.lane * 0.4, y: f.stand.y };
-        const dx = tgt.x - w.x, dy = tgt.y - w.y;
-        const d = Math.hypot(dx, dy);
-        if (d > 2) {
-          const step = Math.min(d, WALK * 1.3 * w.speed * dt);
-          w.x += dx / d * step; w.y += dy / d * step;
-        }
-        if (d < 4) {
+        /* 길을 따라 걷는다. 예전엔 목적지까지 직선이라 남의 마당을 뚫고
+         * 지나갔다 — 대장간에서 필방으로 갈 땐 대장간을 관통해서 나갔다. */
+        if (this._follow(w, WALK * 1.3 * dt)) {
           w.state = 'buy'; w.wait = BUY_TIME; w.paid = false; w.served = false;
         }
       } else if (w.state === 'buy') {
@@ -352,13 +447,18 @@ export class Village {
           /* 장부는 마지막 계산이 끝난 이 순간에 쓴다 — 미리 쓰면 버그로 보인다 */
           if (w.si === w.stops.length - 1 && this.onDelivered) this.onDelivered(w.sale);
         }
-        if (w.wait <= 0) { w.si++; w.state = w.si < w.stops.length ? 'in' : 'out'; }
+        if (w.wait <= 0) {
+          w.si++;
+          w.state = w.si < w.stops.length ? 'in' : 'out';
+          if (w.state === 'in') {
+            const nx = w.stops[w.si];
+            this._send(w, doorTile(nx.idx), this._foot(nx.idx).stand);
+          } else {
+            this._send(w, w.exitTile, w.exitGate);
+          }
+        }
       } else {
-        const dx = w.exitGate.x + w.lane - w.x, dy = w.exitGate.y - w.y;
-        const d = Math.hypot(dx, dy);
-        const step = Math.min(d, WALK * 1.25 * w.speed * dt);
-        if (d > 1) { w.x += dx / d * step; w.y += dy / d * step; }
-        if (d < 30) w.gone = true;
+        if (this._follow(w, WALK * 1.25 * dt)) w.gone = true;
       }
     }
     this.walkers = this.walkers.filter((w) => !w.gone);
@@ -378,7 +478,8 @@ export class Village {
         const spots = stallSpots(plotDim(this.sim, i));
         if (k >= 0 && k < spots.length) {
           const [lx, ly] = spots[k];
-          const sp = iso(SHOP_T[i][0] + lx + 0.5, SHOP_T[i][1] + ly + 0.5);
+          const og = this._org(i);
+        const sp = iso(og[0] + lx + 0.5, og[1] + ly + 0.5);
           const near = Math.hypot(sp.x + 26 - m.x, sp.y + 14 - m.y) < 5;
           if (near) delete this.fetch[i];            // 집었다 — 이제 계산대로
           else t = { x: sp.x + 26, y: sp.y + 14 };
@@ -501,7 +602,7 @@ export class Village {
 
     // 가게 마당 — 매대는 그 자리에서 바로 강화/열기, 나머지는 가게 창
     for (let i = 0; i < SHOPS.length; i++) {
-      const [tx, ty] = SHOP_T[i];
+      const [tx, ty] = this._org(i);
       const shop = SHOPS[i];
       const open = this.sim.shops.includes(shop.id);
       if (open) {
@@ -566,7 +667,7 @@ export class Village {
     // 깊이 순서대로 — 아래 꼭짓점 y가 큰 것이 앞이다
     const layer = [];
     for (let i = 0; i < SHOPS.length; i++) {
-      const [tx, ty] = SHOP_T[i];
+      const [tx, ty] = this._org(i);
       const n = plotDim(this.sim, i);
       const S = iso(tx + n, ty + n);
       if (!vis(S, TW * 3)) continue;
@@ -699,7 +800,7 @@ export class Village {
 
   _ruin(c, i) {
     const shop = SHOPS[i];
-    const [tx, ty] = SHOP_T[i];
+    const [tx, ty] = this._org(i);
     const S = iso(tx + 3, ty + 3);
     const N = iso(tx, ty), E = iso(tx + 3, ty), W2 = iso(tx, ty + 3);
     c.save();
@@ -724,7 +825,7 @@ export class Village {
   /** 마당 바닥·담·현판·표 — 항상 맨 뒤에 깔린다 */
   _plotBase(c, i, n) {
     const shop = SHOPS[i];
-    const [tx, ty] = SHOP_T[i];
+    const [tx, ty] = this._org(i);
     const N = iso(tx, ty), E = iso(tx + n, ty), S = iso(tx + n, ty + n), W2 = iso(tx, ty + n);
 
     c.beginPath();
@@ -771,7 +872,7 @@ export class Village {
 
   _kiln(c, i) {
     const shop = SHOPS[i];
-    const [tx, ty] = SHOP_T[i];
+    const [tx, ty] = this._org(i);
     const p = iso(tx + 0.5, ty + 0.5);
     this._box(c, tx + 0.22, ty + 0.22, 0.56, 0.56, 26,
       shade(shop.color, 24), shade(shop.color, -16));
@@ -783,7 +884,7 @@ export class Village {
   /** 매대 한 칸 = 좌대 + 물건 + 재고·진행 계기 + 이름패 */
   _stall(c, i, k, spot) {
     const shop = SHOPS[i];
-    const [tx, ty] = SHOP_T[i];
+    const [tx, ty] = this._org(i);
     const [lx, ly] = spot;
     const p = iso(tx + lx + 0.5, ty + ly + 0.5);
     const it = shop.items[k];
@@ -838,7 +939,7 @@ export class Village {
   }
 
   _counter(c, i, n) {
-    const [tx, ty] = SHOP_T[i];
+    const [tx, ty] = this._org(i);
     this._box(c, tx + n - 1 + 0.16, ty + n - 1 + 0.3, 0.68, 0.4, 18, C.paper2, C.wood2);
     const p = iso(tx + n - 0.5, ty + n - 0.5);
     G.circle(c, p.x + 8, p.y - 24, 4.5, '#c9a227');    // 엽전 접시
@@ -1178,7 +1279,8 @@ export class Village {
    * 계속 있는 것이 아래, 잠깐 있는 것이 위. 한 층이 비면 위층이 내려온다.
    */
   _roofBase(idx) {
-    const N = iso(SHOP_T[idx][0], SHOP_T[idx][1]);
+    const og = this._org(idx);
+    const N = iso(og[0], og[1]);
     const shop = SHOPS[idx];
     const todo = this.sim.shops.includes(shop.id) && this.sim.shopTodo(shop.id) > 0;
     return { N, y: N.y - 100 - (todo ? 34 : 0) };
