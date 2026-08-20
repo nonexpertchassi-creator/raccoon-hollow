@@ -984,6 +984,74 @@ func offline(seconds: float) -> Variant:
 		_purse += earned * Content.AUTO_SHARE
 	return {"earned": earned, "seconds": real, "capped": seconds > Content.OFFLINE.capHours * 3600.0}
 
+## ── 저장 ──
+##
+## ★ 방치형에서 저장은 잔재미가 아니라 **뼈대**다. 껐다 켜면 처음부터인 게임은
+##   "잠깐 두고 나중에 본다"가 아예 성립하지 않는다. 오프라인 수익도 여기 얹힌다.
+##
+## 담을 칸을 손으로 적는다. 자바스크립트는 "이 셋만 빼고 전부"라고 쓸 수 있지만
+## GDScript는 그게 안 된다. 그래서 **빠뜨리기 쉽다** — 칸 하나를 빠뜨리면 껐다
+## 켤 때마다 그것만 조용히 0으로 돌아간다. tools/crosscheck.sh의 save 시험이
+## 저장했다 불러온 판과 안 껐던 판을 끝까지 대조해 그걸 잡는다.
+const SAVE_KEYS: Array[String] = [
+	"money", "revenue", "t", "shops", "rank", "items", "asked", "guests", "bought", "visits",
+	"sold", "auto", "smalls", "guard", "staff", "fair", "busy", "_busyT", "_fairAcc", "_purse",
+	"quests", "gems", "gemUp", "maxGem", "_qid", "_qCool", "rush",
+	"wall", "event", "skins", "cleared", "_evAt", "_evIdx",
+	"orders", "_oid", "_hold", "_guestAcc", "_guestGap", "pest", "_pestAcc", "_pestGap", "_askAcc",
+]
+## 글자로 저장했다 되돌리면 정수가 소수가 된다(-1 → -1.0). 자리를 세는 데
+## 쓰는 것들은 도로 정수로 되돌린다 — 아니면 배열 자리를 못 찾는다.
+const INT_KEYS: Array[String] = ["busy", "_qid", "_evIdx", "_oid"]
+
+func save() -> Dictionary:
+	var d: Dictionary = {}
+	for k in SAVE_KEYS:
+		var v: Variant = get(k)
+		d[k] = v.duplicate(true) if v is Array or v is Dictionary else v
+	return d
+
+## ★ 글자(JSON)로 저장하지 않는다. **소수가 정확히 안 돌아온다.**
+##
+## 처음엔 JSON으로 만들었다가 두 번 데었다:
+##
+## 1. `sort_keys`가 기본으로 **켜져** 있다. 그러면 items의 순서가 넣은 차례가
+##    아니라 가나다순으로 바뀐다. 손님은 items의 순서를 섞어서 물건을
+##    고르므로(_buy), 순서가 달라지면 **같은 주사위로도 다른 물건을 집는다.**
+##    저장했다 켰을 뿐인데 30분 만에 매출이 갈라졌다.
+##
+## 2. 그걸 끄고 `full_precision`을 켜도 **비트 하나가 어긋났다.**
+##    (1.43984302427218668896 → 1.43984302427218691101)
+##    지금 당장은 티가 안 나지만, 만드는 진행도가 문턱을 넘느냐 마느냐가
+##    한 틱 갈리면 거기서부터 판이 달라진다.
+##
+## 그래서 **이진 저장**을 쓴다. Godot이 소수를 8바이트 그대로 담고 그대로
+## 꺼내므로 어긋날 자리가 없다. 정수와 소수도 구분해서 보존한다.
+## 사람이 열어볼 수 없게 되지만, 게임 저장본은 원래 그래도 된다.
+func to_blob() -> PackedByteArray:
+	return var_to_bytes(save())
+
+static func from_blob(b: PackedByteArray) -> Variant:
+	return bytes_to_var(b)
+
+func load_from(d: Dictionary) -> void:
+	for k in SAVE_KEYS:
+		if not d.has(k):
+			continue
+		var v: Variant = d[k]
+		set(k, v.duplicate(true) if v is Array or v is Dictionary else v)
+	for k in INT_KEYS:
+		set(k, int(get(k)))
+	var fixed: Array = []
+	for i in smalls:
+		fixed.append(int(i))
+	smalls = fixed
+	# 저장한 뒤에 손님이 늘어났으면 그 칸이 없다. 없는 칸에 dt를 더하면
+	# 값이 망가져서 **그 손님은 영영 안 온다** — 찾기 아주 나쁜 종류의 고장이다.
+	for g in Content.GUESTS:
+		if not _guestAcc.has(g.id):
+			_guestAcc[g.id] = 0.0
+
 func _ev(msg: String, kind: String) -> void:
 	events.push_front({"t": t, "msg": msg, "kind": kind})
 	if events.size() > 40:

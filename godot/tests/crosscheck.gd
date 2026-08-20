@@ -18,6 +18,9 @@ func _init() -> void:
 			# 문제 파일 첫 줄이 "씨앗 초 틱"
 			var a: PackedStringArray = _lines()[0].split(" ")
 			out = RunSim.run(a[0].to_int(), a[1].to_float(), a[2].to_float())
+		"save":
+			var b: PackedStringArray = _lines()[0].split(" ")
+			out = RunSim.save_test(b[0].to_int(), b[1].to_float(), b[2].to_float())
 		_:
 			push_error("모르는 조각: " + subject)
 			quit(1)

@@ -50,6 +50,19 @@ const SUBJECTS = {
     for (const s of seeds) { const r = mulberry32(s); for (let i = 0; i < 20; i++) out.push(r()); }
     W('out_js.txt', out);
   },
+  /* ★ 저장 시험만은 JS와 대조하지 않는다.
+   *
+   * 저장은 Godot 쪽에만 있는 기능이다(자바스크립트판은 브라우저 저장을 쓴다).
+   * 그래서 답안지는 '안 껐을 때의 나 자신'이다 — 저장했다 켠 판이 안 껐던 판과
+   * 끝까지 같은 숫자를 내면 통과다. 문제 파일만 만들어 주고, 정답은 Godot이
+   * 뱉은 것을 그대로 정답으로 삼는다(어긋난 줄에는 두 값이 같이 찍힌다). */
+  save() {
+    const SEED = Number(process.env.SIM_SEED || 7);
+    const SECONDS = Number(process.env.SIM_HOURS || 1) * 3600, DT = 0.25;
+    W('cases.txt', [`${SEED} ${SECONDS} ${DT}`]);
+    W('out_js.txt', ['__SELF__']);
+  },
+
   /* content.gd에 담긴 숫자 전부. 뽑아내는 도구가 틀렸는지, 누가 손으로
    * 고쳤는지를 잡는다. 열쇠 순서는 양쪽 다 가나다순으로 맞춘다. */
   content() {

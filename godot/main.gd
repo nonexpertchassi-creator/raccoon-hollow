@@ -13,6 +13,7 @@ var _sub: Label
 var _log: Label
 var _acc: float = 0.0
 var panel: ShopPanel
+var _layer: CanvasLayer
 var _autobtn: Button
 var _guestbtn: Button
 var _questbtn: Button
@@ -22,10 +23,48 @@ var _questbtn: Button
 var _press_at: Vector2 = Vector2.ZERO
 var _dragged: bool = false
 
+## ── 저장 ──
+## 방치형에서 저장은 잔재미가 아니라 뼈대다. 껐다 켜면 처음부터인 게임은
+## "잠깐 두고 나중에 본다"가 아예 성립하지 않는다.
+const SAVE_PATH := "user://save.dat"
+var _save_acc: float = 0.0
+var _away: Variant = null       # 다녀온 동안 번 것 (있으면 창을 띄운다)
+
+func _load() -> Variant:
+	if not FileAccess.file_exists(SAVE_PATH):
+		return null
+	var f: FileAccess = FileAccess.open(SAVE_PATH, FileAccess.READ)
+	if f == null:
+		return null
+	var blob: PackedByteArray = f.get_buffer(f.get_length())
+	var box: Variant = Sim.from_blob(blob)
+	if typeof(box) != TYPE_DICTIONARY or not box.has("state"):
+		return null
+	sim.load_from(box.state)
+	# 껐던 시간만큼 벌어 둔다. 실제 시계로 잰다 — 게임을 켜 둔 시간이 아니라.
+	var away: float = Time.get_unix_time_from_system() - float(box.get("at", 0.0))
+	if away > 0.0:
+		return sim.offline(away)
+	return null
+
+func _save() -> void:
+	var f: FileAccess = FileAccess.open(SAVE_PATH, FileAccess.WRITE)
+	if f == null:
+		return
+	# 시각을 함께 담는다. 이게 없으면 얼마나 자리를 비웠는지 알 길이 없다.
+	f.store_buffer(var_to_bytes({"state": sim.save(), "at": Time.get_unix_time_from_system()}))
+
+func _notification(what: int) -> void:
+	# 창을 닫거나 화면을 벗어날 때 마지막으로 한 번 더 담는다
+	if what == NOTIFICATION_WM_CLOSE_REQUEST or what == NOTIFICATION_APPLICATION_PAUSED:
+		if sim != null:
+			_save()
+
 func _ready() -> void:
 	RenderingServer.set_default_clear_color(Color("6f8159"))
 	sim = Sim.new()
 	rng = Rng.new(int(Time.get_unix_time_from_system()))
+	_away = _load()
 
 	village = Village.new()
 	village.setup(sim)
@@ -40,12 +79,12 @@ func _ready() -> void:
 	cam.make_current()
 	_clamp_cam()
 
-	var layer := CanvasLayer.new()
-	add_child(layer)
+	_layer = CanvasLayer.new()
+	add_child(_layer)
 	var box := VBoxContainer.new()
 	box.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	box.offset_left = 16; box.offset_top = 12; box.offset_right = -16
-	layer.add_child(box)
+	_layer.add_child(box)
 	_hud = Label.new()
 	_hud.add_theme_font_size_override("font_size", 27)
 	box.add_child(_hud)
@@ -59,7 +98,7 @@ func _ready() -> void:
 	var bar := HBoxContainer.new()
 	bar.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
 	bar.offset_left = 12; bar.offset_right = -12; bar.offset_top = -56; bar.offset_bottom = -12
-	layer.add_child(bar)
+	_layer.add_child(bar)
 	_guestbtn = Button.new()
 	_guestbtn.pressed.connect(func(): panel.open_kind("guests"))
 	bar.add_child(_guestbtn)
@@ -73,9 +112,52 @@ func _ready() -> void:
 
 	panel = ShopPanel.new()
 	panel.sim = sim
-	layer.add_child(panel)
+	_layer.add_child(panel)
 
+	if _away != null:
+		_show_away(_away)
 	_paint()
+
+## "다녀오신 동안" — 방치형에서 다시 켤 이유는 이 창 하나에 걸려 있다.
+func _show_away(r: Dictionary) -> void:
+	var box := PanelContainer.new()
+	box.set_anchors_preset(Control.PRESET_CENTER)
+	box.offset_left = -160; box.offset_right = 160
+	box.offset_top = -90; box.offset_bottom = 90
+	var bg := StyleBoxFlat.new()
+	bg.bg_color = Color("f3e9d2")
+	bg.border_color = Color("a8763e")
+	bg.set_border_width_all(2)
+	bg.set_corner_radius_all(14)
+	bg.set_content_margin_all(16)
+	box.add_theme_stylebox_override("panel", bg)
+	var v := VBoxContainer.new()
+	v.add_theme_constant_override("separation", 8)
+	box.add_child(v)
+	var h: int = int(r.seconds / 3600.0)
+	var m: int = int(fmod(r.seconds, 3600.0) / 60.0)
+	for line in [
+		["다녀오신 동안", 19, Color("2b241b")],
+		["%s%d분 동안 너구리들이 계속 만들었습니다." % ["%d시간 " % h if h > 0 else "", m], 13, Color("5a4e3d")],
+		["🪙 " + Num.fmt(r.earned), 30, Color("a8763e")],
+	]:
+		var l := Label.new()
+		l.text = String(line[0])
+		l.add_theme_font_size_override("font_size", int(line[1]))
+		l.add_theme_color_override("font_color", line[2])
+		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		v.add_child(l)
+	if r.capped:
+		var c := Label.new()
+		c.text = "(최대 %d시간까지만 쌓입니다)" % int(Content.OFFLINE.capHours)
+		c.add_theme_font_size_override("font_size", 11)
+		c.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		v.add_child(c)
+	var ok := Button.new()
+	ok.text = "받기"
+	ok.pressed.connect(func(): box.queue_free())
+	v.add_child(ok)
+	_layer.add_child(box)
 
 func _process(delta: float) -> void:
 	var r: Dictionary = sim.tick(delta, rng)
@@ -84,6 +166,11 @@ func _process(delta: float) -> void:
 	for d in r.done:
 		village.on_sale(d)
 	village.cam_center = cam.position
+	_save_acc += delta
+	if _save_acc > 5.0:
+		_save_acc = 0.0
+		_save()
+
 	_acc += delta
 	if _acc < 0.12:
 		return

@@ -113,6 +113,48 @@ static func snapshot(s: Sim) -> String:
 	]
 	return "\t".join(f)
 
+## ★ 저장 시험 — 담을 칸을 하나라도 빠뜨렸으면 여기서 잡힌다.
+##
+## 반쯤 돌린 뒤 저장하고, 그 저장본을 **글자로 만들었다가 도로 읽어**
+## 새 Sim에 넣는다(진짜 파일에 쓰는 것과 같은 길을 지나게 하려고).
+## 그리고 안 껐던 판과 저장했다 켠 판을 **같은 주사위로 끝까지 나란히 돌린다.**
+##
+## 칸 하나를 빠뜨리면 그 순간엔 티가 안 난다 — 몇 분 뒤에 곡선이 갈라진다.
+## 그래서 저장 직후가 아니라 **한참 더 돌려서** 대조한다.
+static func save_test(seed_value: int, seconds: float, dt: float) -> String:
+	var a := Sim.new()
+	var rng_a := Rng.new(seed_value)
+	var half: float = seconds * 0.5
+	var el: float = 0.0
+	while el < half:
+		a.tick(dt, rng_a)
+		act(a, rng_a)
+		el += dt
+
+	# 저장 → 글자 → 다시 읽기 → 새 Sim
+	var blob: PackedByteArray = a.to_blob()
+	var b := Sim.new()
+	b.load_from(Sim.from_blob(blob))
+
+	# 이제부터 둘을 같은 주사위로 나란히 돌린다
+	var ra := Rng.new(seed_value + 991)
+	var rb := Rng.new(seed_value + 991)
+	var out: Array[String] = []
+	var next_mark: float = 60.0
+	var el2: float = 0.0
+	while el2 < half:
+		a.tick(dt, ra)
+		act(a, ra)
+		b.tick(dt, rb)
+		act(b, rb)
+		el2 += dt
+		if el2 >= next_mark:
+			next_mark += 60.0
+			var sa: String = snapshot(a)
+			var sb: String = snapshot(b)
+			out.append(sa if sa == sb else "안 껐을 때: %s\n저장했다 켰을 때: %s" % [sa, sb])
+	return "\n".join(out) + "\n"
+
 ## seconds초를 돌리고 1분마다 한 줄씩
 static func run(seed_value: int, seconds: float, dt: float) -> String:
 	var s := Sim.new()
