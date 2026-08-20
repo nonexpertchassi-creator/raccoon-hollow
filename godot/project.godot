@@ -3,7 +3,7 @@ config_version=5
 [application]
 config/name="너구리 만물상"
 config/features=PackedStringArray("4.7", "GL Compatibility")
-run/main_scene=""
+run/main_scene="res://main.tscn"
 
 [rendering]
 renderer/rendering_method="gl_compatibility"

@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3 uid="uid://bnogurshot01"]
+
+[ext_resource type="PackedScene" path="res://main.tscn" id="1_main"]
+[ext_resource type="Script" path="res://tests/shot.gd" id="2_shot"]
+
+[node name="Shot" type="Node"]
+script = ExtResource("2_shot")
+
+[node name="Main" parent="." instance=ExtResource("1_main")]

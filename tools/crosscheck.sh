@@ -10,7 +10,7 @@
 # 같은 입력을 양쪽에 넣고 한 글자라도 다르면 여기서 잡는다.
 set -e
 cd "$(dirname "$0")/.."
-SUBJECTS="${*:-fmt rng content}"
+SUBJECTS="${*:-fmt rng content sim}"
 
 # class_name(전역 이름)은 프로젝트를 한 번 훑어야 등록된다.
 # 조건부로 건너뛰게 했더니 .gd를 고쳐도 옛 이름이 남을 여지가 있었다. 늘 훑는다.

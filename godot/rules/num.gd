@@ -28,3 +28,12 @@ static func _cut(x: float, d: int) -> String:
 	var p: float = pow(10.0, d)
 	var t: float = floor(x * p) / p
 	return ("%.2f" % t) if d == 2 else ("%.1f" % t)
+
+## 조사 붙이기. '쥐이(가)'처럼 나오면 글이 삭는다.
+## 한글 마지막 글자에 받침이 있으면 앞쪽, 없으면 뒤쪽을 쓴다.
+static func josa(word: String, with_jong: String, without: String) -> String:
+	if word.is_empty():
+		return word
+	var c: int = word.unicode_at(word.length() - 1) - 0xac00
+	var jong: bool = c >= 0 and c <= 11171 and c % 28 != 0
+	return word + (with_jong if jong else without)

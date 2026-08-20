@@ -1,21 +1,35 @@
 # godot/ — 이관 작업방
 
-아직 게임이 아니다. **JS판을 답안지로 쓰는 방법이 진짜 되는지** 확인한 자리다.
+**경제 규칙이 전부 여기로 넘어왔다.** 그리는 코드는 아직 안 넘어왔다 —
+그건 그림이 나온 뒤에 만든다.
+
+넘어온 것이 맞는지는 눈으로 안 본다. `sim.js`를 답안지로 두고
+같은 씨앗으로 양쪽을 돌려 1분마다 대조한다.
 
 ## 지금 있는 것
 
 | | |
 |---|---|
-| `project.godot` | 빈 프로젝트 (Godot 4.7.2) |
-| `rules/num.gd` | sim.js의 `fmt()`를 옮긴 것 — 옮긴 첫 조각 |
-| `tests/crosscheck.gd` | 같은 입력을 GDScript로 통과시킨다 |
+| `project.godot` | Godot 4.7.2 프로젝트 |
+| `rules/num.gd` | 숫자 줄여 쓰기 · 조사 붙이기 |
+| `rules/rng.gd` | 씨앗 고정 난수 (mulberry32) |
+| `rules/content.gd` | **뽑아낸** 숫자 전부. 손으로 고치지 말 것 |
+| `rules/sim.gd` | 경제 규칙 — sim.js를 옮긴 것 |
+| `main.gd` · `main.tscn` | 못생긴 확인용 화면 (Play를 누르면 이게 뜬다) |
+| `tests/crosscheck.gd` | 대조 시험의 GDScript 쪽 |
+| `tests/runsim.gd` | 가상 플레이어 + 1분마다 상태 적기 |
 
 ## 돌리는 법
 
 ```sh
-tools/godot-install.sh     # 이 작업방에 Godot을 깐다 (일회용 상자라 세션마다)
-tools/crosscheck.sh        # JS판과 대조 → "✅ 5004개 전부 일치"
+tools/godot-install.sh        # 이 작업방에 Godot을 깐다 (일회용 상자라 세션마다)
+node tools/gen-content.mjs    # content.js → rules/content.gd 다시 뽑기
+tools/crosscheck.sh           # JS판과 대조 (fmt · rng · content · sim)
+SIM_HOURS=4 tools/crosscheck.sh sim   # 길게 돌려 어긋남이 쌓이는지 본다
 ```
+
+**맥에서 열 때**는 Godot을 켜고 `Import` → 이 `godot` 폴더의 `project.godot`을
+고르면 된다. `Play`(▶)를 누르면 못생긴 화면에 돈이 올라간다.
 
 ## 왜 이렇게 하는가
 
@@ -26,7 +40,22 @@ JS판(`sim.js`)은 몇 달간 실제로 돌아갔고 `tools/balance.mjs`로 수�
 재본 코드다. 그러니 정답으로 취급할 수 있다. 옮긴 조각마다 같은 입력을
 양쪽에 넣고 대조하면, 어긋난 그 순간에 잡힌다.
 
-**첫 조각부터 실제로 걸렸다.** 옮긴 함수가 딱 하나였는데도:
+### 지금까지의 성적
+
+```
+✅ fmt      5004개 전부 일치      숫자 줄여 쓰기
+✅ rng       160개 전부 일치      씨앗 고정 난수 (32비트 정수로 대조)
+✅ content   678개 전부 일치      숫자 전부
+✅ sim       240개 전부 일치      4시간치를 1분마다 · 씨앗 1·2·3·7
+```
+
+`sim`이 진짜 시험이다. 규칙이 서로를 부르고 결과가 다음 틱의 입력이 되니까,
+한 곳만 어긋나도 시간이 갈수록 벌어진다. 1분마다 32가지 값을 통째로 적어
+대조하면 **몇 분째에 어느 값부터** 갈라졌는지가 바로 나온다.
+
+### 첫 조각부터 실제로 걸렸다
+
+옮긴 함수가 딱 하나였는데도:
 
 ```
 입력 5625 · JS 5.63K · Godot 5.62K
