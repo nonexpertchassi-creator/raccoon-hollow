@@ -1,9 +1,36 @@
 config_version=5
 
 [application]
+
 config/name="너구리 만물상"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 run/main_scene="res://main.tscn"
 
+; ── 화면 ──
+; ★ 이걸 지금 잡아 두는 이유: 나중에 잡으면 화면을 통째로 다시 짜야 한다.
+;   폰마다 가로세로 비율이 다른데(길쭉한 것도 있고 뭉툭한 것도 있다),
+;   기준 크기와 늘리는 방식을 안 정해두면 어떤 폰에서는 글자가 잘리고
+;   어떤 폰에서는 여백만 크다. 그걸 나중에 고치려면 모든 자리를 다시 잰다.
+;
+;   430×932는 요즘 아이폰의 화면 크기다. 이걸 기준으로 두고,
+;   실제 폰이 더 길거나 짧으면 canvas_items 방식으로 늘렸다 줄인다.
+;   expand는 남는 자리를 잘라내지 않고 더 보여준다 — 마을이 조금 더 보일 뿐,
+;   단추가 화면 밖으로 나가지 않는다.
+[display]
+
+window/size/viewport_width=430
+window/size/viewport_height=932
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/handheld/orientation=1
+
+; ── 손가락 ──
+; 손가락으로 누른 것을 마우스 누름처럼 다뤄준다. 이게 켜져 있어야
+; 지금 짜 둔 누르기·끌기가 폰에서 그대로 돈다(기본값이지만 못 박아 둔다).
+[input_devices]
+
+pointing/emulate_mouse_from_touch=true
+
 [rendering]
+
 renderer/rendering_method="gl_compatibility"
