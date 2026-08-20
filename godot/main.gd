@@ -41,6 +41,12 @@ func _load() -> Variant:
 	var box: Variant = Sim.from_blob(blob)
 	if typeof(box) != TYPE_DICTIONARY or not box.has("state"):
 		return null
+	# 새 판에서 만든 저장본을 옛 게임이 읽으면 모르는 칸을 만난다.
+	# 억지로 읽어 망가뜨리느니 **안 읽고 그대로 두는** 쪽이 낫다 —
+	# 그 사람이 게임을 최신으로 올리면 저장본이 그대로 살아난다.
+	if int(box.get("ver", 0)) > Sim.SAVE_VER:
+		push_warning("더 새 판에서 만든 저장본이다 — 건드리지 않는다")
+		return null
 	sim.load_from(box.state)
 	# 껐던 시간만큼 벌어 둔다. 실제 시계로 잰다 — 게임을 켜 둔 시간이 아니라.
 	var away: float = Time.get_unix_time_from_system() - float(box.get("at", 0.0))
@@ -53,7 +59,11 @@ func _save() -> void:
 	if f == null:
 		return
 	# 시각을 함께 담는다. 이게 없으면 얼마나 자리를 비웠는지 알 길이 없다.
-	f.store_buffer(var_to_bytes({"state": sim.save(), "at": Time.get_unix_time_from_system()}))
+	f.store_buffer(var_to_bytes({
+		"ver": Sim.SAVE_VER,
+		"state": sim.save(),
+		"at": Time.get_unix_time_from_system(),
+	}))
 
 func _notification(what: int) -> void:
 	# 창을 닫거나 화면을 벗어날 때 마지막으로 한 번 더 담는다
