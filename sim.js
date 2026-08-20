@@ -866,7 +866,7 @@ export class Sim {
   }
 
   save() {
-    const { events, ...rest } = this;
+    const { events, _pestEvents, ...rest } = this;
     return JSON.parse(JSON.stringify(rest));
   }
 }

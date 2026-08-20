@@ -230,8 +230,8 @@ export const FAIR = {
  * 값은 다음 가게 값의 절반쯤에 두어, 가게를 열지 장터를 세울지가
  * 매번 진짜 선택이 되게 했다.
  *
- * 자리(x·y)는 scene.js의 SMALL_POS에 있다 — 길과 가게를 피해 계산으로
- * 잡은 값이라 그림 쪽에 둔다. 개수는 서로 같아야 한다.
+ * 자리는 iso.js의 SMALL_T에 있다 — 길과 가게를 피해 계산으로 고른 칸이라
+ * 그림 쪽에 둔다. 개수는 서로 같아야 한다.
  */
 export const SMALL_SHOPS = [
   { id: 'store1', name: '점포',     k: 'store', cost: 400 },
