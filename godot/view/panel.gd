@@ -18,6 +18,8 @@ var _acc: float = 0.0
 ## 지도를 이 가게로 옮겨 달라고 부탁하는 줄. main이 꽂아 준다 —
 ## 창이 카메라를 직접 만지면 화면 규칙이 두 군데로 흩어진다.
 var on_focus: Callable = Callable()
+## 카드 한 장이 열렸다고 알리는 줄. 승급은 이 창에서 일어난다.
+var on_card: Callable = Callable()
 ## 꾹 누르고 있는 품목. 누르는 동안 계속 오른다.
 ##
 ## ★ 단추의 button_up을 안 쓰는 이유: 이 창은 0.3초마다 통째로 다시 그린다.
@@ -105,6 +107,8 @@ func open_kind(k: String) -> void:
 	if visible and kind == k:
 		close()
 		return
+	if kind != k:
+		tab = "items"           # 갈피는 늘 첫 장부터. 남의 갈피가 남아 있으면 헷갈린다
 	kind = k
 	shop_id = ""
 	visible = true
@@ -300,8 +304,52 @@ func _hhmm(sec: float) -> String:
 ## ── 손님 도감 ──
 ## 아직 안 온 손님도 자리를 비워 보여준다 — 몇이 더 남았는지, 무엇을 하면
 ## 오는지가 보여야 모으는 재미가 생긴다.
+## 도감 — **한 창에 갈피 둘**(손님 · 점장 카드).
+## 창을 따로 만들면 아래 단추가 넷이 되고, 폰에서 넷은 누르다 틀린다.
+## 가게 창에서 쓴 수법을 그대로 쓴다.
 func _guests_body() -> void:
-	_head("손님 도감")
+	_head("도감")
+	var bar := HBoxContainer.new()
+	for t in [["items", "손님"], ["work", "점장 카드"]]:
+		var key: String = String(t[0])
+		var b := _btn(String(t[1]), true, func(): tab = key; rebuild())
+		b.disabled = tab == key
+		bar.add_child(b)
+	_box.add_child(bar)
+	if tab == "work":
+		_cards_body()
+		return
+	_guest_list()
+
+## 점장 카드 — **가진 것에서 계산한다.** 따로 담아 두지 않는다.
+## 가게가 열렸으면 그 가게 0등급 카드가 있는 것이고, 승급했으면 그만큼 더 있다.
+func _cards_body() -> void:
+	var have: int = 0
+	var all: int = 0
+	for sh in Content.SHOPS:
+		all += (sh.ranks as Array).size()
+		if sim.shops.has(String(sh.id)):
+			have += sim.rank_of(String(sh.id)) + 1
+	_box.add_child(_label("모은 카드 %d / %d" % [have, all], 13, Color("5a4e3d")))
+	_box.add_child(_label("가게를 되살리거나 승급하면 한 장씩 열린다", 11, Color("8a7a63")))
+	for sh in Content.SHOPS:
+		var open: bool = sim.shops.has(String(sh.id))
+		var got: int = (sim.rank_of(String(sh.id)) + 1) if open else 0
+		_box.add_child(_label("%s %s   %d / %d" % [sh.sign, sh.name, got, (sh.ranks as Array).size()], 15))
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 6)
+		for k in range((sh.ranks as Array).size()):
+			var mine: bool = k < got
+			var slot := _label(("%s %s" % [sh.ranks[k], sh.name]) if mine else "? ? ?", 12,
+				Color("4a7c59") if mine else Color("b3a992"))
+			slot.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			slot.custom_minimum_size = Vector2(0, 46)
+			slot.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			slot.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			row.add_child(slot)
+		_box.add_child(row)
+
+func _guest_list() -> void:
 	_box.add_child(_label("마을에 온 손님 %d / %d · 단골 등급 합계 %d" % [
 		sim.guests.size(), Content.GUESTS.size(), sim.regular_sum()], 13, Color("5a4e3d")))
 	for g in Content.GUESTS:
@@ -564,4 +612,7 @@ func _tab_rank(shop: Dictionary) -> void:
 			% [int(round(g.dip * 100.0)), int(g.even), g.top], 13, Color("5a4e3d"), true))
 	var ok: bool = sim.can_promote(shop_id)
 	_box.add_child(_btn("승급하기 🪙" + Num.fmt(r.cost) if ok else "조건을 채워야 한다", ok,
-		func(): sim.promote(shop_id); rebuild()))
+		func():
+			if sim.promote(shop_id) and on_card.is_valid():
+				on_card.call(shop_id, sim.rank_of(shop_id))
+			rebuild()))

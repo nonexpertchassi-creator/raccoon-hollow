@@ -12,6 +12,7 @@ var _sub: Label
 var _log: Label
 var _acc: float = 0.0
 var panel: ShopPanel
+var card: CardPopup
 var sfx: Sfx
 var _layer: CanvasLayer
 var _guestbtn: Button
@@ -147,7 +148,11 @@ func _ready() -> void:
 	panel = ShopPanel.new()
 	panel.sim = sim
 	panel.on_focus = _focus_shop
+	panel.on_card = _show_card
 	_layer.add_child(panel)
+	card = CardPopup.new()
+	card.sim = sim
+	_layer.add_child(card)
 
 	if _away != null:
 		_show_away(_away)
@@ -296,6 +301,11 @@ func _unhandled_input(e: InputEvent) -> void:
 		cam.position -= mm.relative / cam.zoom.x
 		_clamp_cam()
 
+## 카드 한 장이 열린다 — 가게를 되살렸거나, 승급했거나.
+func _show_card(shop_id: String, rank: int) -> void:
+	card.show_card(shop_id, rank)
+	sfx.play("open")
+
 ## 가게 창을 열면 지도도 그 가게로 간다.
 ##
 ## ★ 화면 한가운데가 아니라 **창 위에 남는 자리**의 한가운데에 놓는다.
@@ -411,7 +421,7 @@ func _tap(p: Vector2) -> void:
 			if open:
 				panel.open_for(String(shop.id))
 			elif sim.open_shop(String(shop.id)):
-				sfx.play("open")
+				_show_card(String(shop.id), sim.rank_of(String(shop.id)))
 			return
 	panel.close()
 

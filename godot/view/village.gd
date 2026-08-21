@@ -373,6 +373,16 @@ func _ruin(i: int) -> void:
 		var can: bool = sim.money >= shop.cost
 		_chip(M + Vector2(0, 4), 104, 25, C.jade if can else Color(0.47, 0.47, 0.37))
 		_text(M + Vector2(0, 21), "🪙" + Num.fmt(shop.cost), 13, Color.WHITE)
+	# 아직 아무 가게도 없다 = **막 시작한 사람**이다.
+	# 이 한 칸이 튜토리얼의 전부다 — 어디를 눌러야 하는지만 알려주면
+	# 나머지는 누르면서 알게 된다. 열리는 순간 이 표는 사라진다.
+	if is_next and sim.shops.is_empty():
+		var bob: float = absf(sin(_t * 3.2)) * 7.0
+		_chip(M + Vector2(0, -96 - bob), 168, 27, C.red)
+		_text(M + Vector2(0, -77 - bob), "여기부터 되살리세!", 14, Color("fff3dd"))
+		# 아래를 가리키는 삼각형 — 글자만 있으면 어디를 누르라는 건지 애매하다
+		draw_colored_polygon(PackedVector2Array([
+			M + Vector2(-9, -69 - bob), M + Vector2(9, -69 - bob), M + Vector2(0, -56 - bob)]), C.red)
 
 ## 마당 바닥·담·현판 — 항상 맨 뒤에 깔린다
 func _plot_base(i: int, n: int) -> void:

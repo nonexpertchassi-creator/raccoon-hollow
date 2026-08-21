@@ -50,9 +50,16 @@ static func guest_by_id(id: String) -> Dictionary: return _guest_by_id[id]
 var money: float = 0.0
 var revenue: float = 0.0
 var t: float = 0.0
-var shops: Array = ["smith"]
+## 되살린 가게. **처음엔 비어 있다.**
+## 예전엔 대장간이 켜진 채로 시작했는데, 그러면 '가게를 연다'는 이 게임의
+## 첫 동작을 아무도 해 보지 않는다 — 제일 좋은 첫 순간을 코드가 미리
+## 써 버리는 셈이다. 대장간은 값이 0이라 켜자마자 누르면 열린다.
+var shops: Array = []
 var rank: Dictionary = {}
-var items: Dictionary = {"pick": {"lv": 1.0, "stock": 0.0, "prog": 0.0}}
+## 열린 품목. **처음엔 비어 있다** — 가게가 하나도 없으니 팔 것도 없다.
+## 예전엔 곡괭이가 열린 채로 시작했는데, 대장간을 잠그고 나니
+## '가게는 없는데 곡괭이는 팔린다'가 됐다. 가게를 열면 그때 들어온다.
+var items: Dictionary = {}
 var asked: Array = []
 var guests: Array = ["rabbit"]
 var bought: Dictionary = {}
