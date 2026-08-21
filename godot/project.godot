@@ -13,6 +13,9 @@ config_version=5
 config/name="너구리 만물상"
 run/main_scene="res://main.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")
+# 앱 아이콘. **없으면 아이폰 내보내기가 도중에 멈춘다** — 그러면 Xcode 파일이
+# 아예 안 만들어지고, Xcode는 "프로젝트가 손상됐다"고 말한다(사실은 '없다'는 뜻).
+config/icon="res://art/icon.png"
 
 [display]
 
