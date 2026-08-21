@@ -389,14 +389,23 @@ func _shop_body() -> void:
 
 ## 한 줄에 그림 하나 + 글 뭉치. 그림이 없으면 이모지가 그 자리에 선다
 ## (art/items/<id>.png가 들어오면 여기만 갈아 끼운다).
-func _item_row(icon: String) -> HBoxContainer:
+func _item_row(icon: String, id: String) -> HBoxContainer:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
-	var ic := _label(icon, 30)
-	ic.custom_minimum_size = Vector2(42, 46)
-	ic.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	ic.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	row.add_child(ic)
+	var t: Texture2D = Art.tex("items", id)
+	if t != null:
+		var tr := TextureRect.new()
+		tr.texture = t
+		tr.custom_minimum_size = Vector2(42, 52)
+		tr.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		tr.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		row.add_child(tr)
+	else:
+		var ic := _label(icon, 30)
+		ic.custom_minimum_size = Vector2(42, 46)
+		ic.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		ic.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		row.add_child(ic)
 	var col := VBoxContainer.new()
 	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	col.add_theme_constant_override("separation", 2)
@@ -407,7 +416,7 @@ func _tab_items(shop: Dictionary) -> void:
 	var cap: int = sim.stall_cap(shop_id)
 	for k in range(min(cap, shop.items.size())):
 		var it: Dictionary = shop.items[k]
-		var row: HBoxContainer = _item_row(String(it.icon))
+		var row: HBoxContainer = _item_row(String(it.icon), String(it.id))
 		var col: VBoxContainer = row.get_child(1)
 		if sim.is_open(it.id):
 			col.add_child(_label("%s   Lv.%d/%d   🪙%s" % [

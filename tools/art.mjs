@@ -11,7 +11,11 @@ import { readdirSync, existsSync, readFileSync, writeFileSync } from 'fs';
 import { SHOPS, GUESTS, PESTS } from '../content.js';
 
 const ROOT = new URL('..', import.meta.url).pathname;
-const has = (dir, id) => existsSync(`${ROOT}art/${dir}/${id}.png`);
+/* ★ 그림은 **godot/art/** 안에 산다. 저장소 뿌리(art/)가 아니다.
+ *   Godot은 제 프로젝트 폴더(godot/) 밖의 파일을 못 읽는다 — 밖에 두면
+ *   목록은 채워지는데 화면에는 영영 안 나오는, 제일 나쁜 종류가 된다. */
+const DIR = 'godot/art';
+const has = (dir, id) => existsSync(`${ROOT}${DIR}/${dir}/${id}.png`);
 
 /* 점장 포즈. work·sell만 있으면 나머지는 코드가 돌려 쓴다 — 그래서 순서가 이렇다. */
 const HERO = [
@@ -23,16 +27,16 @@ const HERO = [
 ];
 
 const GROUPS = [
-  { dir: 'hero', size: '72×72', title: '점장 너구리',
+  { dir: 'hero', size: '144×144', title: '점장 너구리',
     rows: HERO.map(([id, why]) => ({ id, why })) },
-  { dir: 'items', size: '64×112', title: '물건',
+  { dir: 'items', size: '128×224', title: '물건',
     note: '**두 군데에 쓰인다** — 매대 위(원래 크기)와 가게 창의 목록 썸네일(작게 줄여서).\n' +
           '그래서 작게 줄여도 뭔지 알아볼 수 있어야 한다 — 잔무늬보다 **실루엣**이 중요하다.',
     rows: SHOPS.flatMap((s) => s.items.map((i) =>
       ({ id: i.id, why: `${s.name} · ${i.name} (지금 ${i.icon})` }))) },
-  { dir: 'guests', size: '64×64', title: '손님',
+  { dir: 'guests', size: '128×128', title: '손님',
     rows: GUESTS.map((g) => ({ id: g.id, why: `${g.name} — ${g.desc}` })) },
-  { dir: 'pests', size: '64×64', title: '나쁜 놈',
+  { dir: 'pests', size: '128×128', title: '나쁜 놈',
     rows: [...PESTS.map((p) => ({ id: p.id, why: `${p.name} — 눌러서 잡는다` })),
            { id: 'dog', why: '삽살개 — 앉아서 지킨다' }] },
 ];
@@ -42,7 +46,7 @@ const lines = [];
 for (const g of GROUPS) {
   const left = g.rows.filter((r) => !has(g.dir, r.id));
   done += g.rows.length - left.length; total += g.rows.length;
-  lines.push(`### ${g.title} — \`art/${g.dir}/\` · ${g.size} · **${left.length}장 남음**`, '');
+  lines.push(`### ${g.title} — \`${DIR}/${g.dir}/\` · ${g.size} · **${left.length}장 남음**`, '');
   if (g.note) lines.push(g.note, '');
   if (!left.length) lines.push('전부 들어왔다. ✅', '');
   else {

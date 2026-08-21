@@ -98,7 +98,7 @@ func on_sale(sale: Dictionary) -> void:
 	if path.is_empty():
 		return
 	walkers.append({
-		"face": String(sale.guest.face), "shop": idx, "state": "in",
+		"face": String(sale.guest.face), "id": String(sale.guest.id), "shop": idx, "state": "in",
 		"pos": Iso.w(enter.x + 0.5, enter.y + 0.5), "out_gate": _gate(),
 		"path": path, "step": 1, "wait": 0.0, "qwait": 0.0, "empty": empty,
 		"n": int(sale.n), "gain": float(sale.gain),
@@ -358,7 +358,11 @@ func _stall(i: int, k: int, spot: Vector2i) -> void:
 	var capped: bool = shown >= cap
 
 	_box(o.x + spot.x + 0.14, o.y + spot.y + 0.14, 0.72, 0.72, 14, C.paper, C.wood)
-	_text(p + Vector2(0, -6), String(it.icon), 22, Color.WHITE)
+	var pic: Texture2D = Art.tex("items", String(it.id))
+	if pic != null:
+		_sprite(pic, p + Vector2(0, -6), "items")
+	else:
+		_text(p + Vector2(0, -6), String(it.icon), 22, Color.WHITE)
 
 	# 재고·진행 계기
 	var ry: Vector2 = p + Vector2(12, -46)
@@ -426,9 +430,27 @@ func _dog() -> void:
 	_box(t.x + 0.06, t.y + 0.06, 0.88, 0.88, 8, Color("8a6647"), Color("6b4c33"), 19)
 	draw_circle(p + Vector2(0, -13), 6.5, C.ink)
 	var bob: float = absf(sin(_t * 12.0)) * 3.0 if sim.pest != null else sin(_t * 2.0) * 1.2
-	_text(p + Vector2(-26, 4 - bob), "🐕", 24, Color.WHITE)
+	var pic: Texture2D = Art.tex("pests", "dog")
+	if pic != null:
+		_sprite(pic, p + Vector2(-18, 6 - bob), "pests")
+	else:
+		_text(p + Vector2(-26, 4 - bob), "🐕", 24, Color.WHITE)
 
-## 너구리 한 마리 — 몸통·귀·눈가 무늬. 그림이 나오면 이 자리에 스프라이트를 끼운다.
+## 그림 한 장을 **발끝 기준**으로 놓는다. 그림 주문서에도 "발끝이 아래 변에
+## 닿게"라고 적어 둔 이유가 이것이다 — 발끝이 곧 그 물건이 서 있는 자리이고,
+## 앞뒤 가리기(깊이)도 발끝 높이로 정한다.
+func _sprite(t: Texture2D, foot: Vector2, kind: String, flip: bool = false) -> void:
+	var sz: Vector2 = Art.SIZE[kind]
+	var r := Rect2(foot - Vector2(sz.x * 0.5, sz.y), sz)
+	if flip:
+		# 그림은 오른쪽 보는 것 한 장만 받는다. 왼쪽은 여기서 뒤집는다 —
+		# 두 장씩 그리게 하면 장수가 두 배가 되고, 둘이 미묘하게 달라진다.
+		draw_texture_rect_region(t, Rect2(r.position + Vector2(sz.x, 0), Vector2(-sz.x, sz.y)),
+			Rect2(Vector2.ZERO, t.get_size()))
+	else:
+		draw_texture_rect(t, r, false)
+
+## 너구리 한 마리 — 몸통·귀·눈가 무늬. 그림이 없을 때 그리는 임시 도형이다.
 func _raccoon(p: Vector2, size: float, tint: Color) -> void:
 	var bob: float = sin(_t * 6.0 + p.x * 0.05) * 1.5
 	var at: Vector2 = p + Vector2(0, bob)
@@ -441,11 +463,20 @@ func _raccoon(p: Vector2, size: float, tint: Color) -> void:
 	draw_circle(at + Vector2(size * 0.11, -size * 0.90), size * 0.09, Color(0.17, 0.14, 0.11, 0.85))
 
 func _clerk(i: int) -> void:
+	# 파는 중이면 파는 자세, 아니면 만드는 자세. 두 장만 있으면 나머지는 돌려 쓴다.
+	var t: Texture2D = Art.tex("hero", "raccoon-sell" if clerks[i].busy > 0.0 else "raccoon-make")
+	if t != null:
+		_sprite(t, clerks[i].pos, "hero")
+		return
 	_raccoon(clerks[i].pos, 33.0, Color("a8815a"))
 
 func _walker(wk: Dictionary) -> void:
-	_raccoon(wk.pos, 34.0, Color("9c8f7a"))
-	_text(wk.pos + Vector2(0, -46), wk.face, 20, Color.WHITE)
+	var t: Texture2D = Art.tex("guests", String(wk.get("id", "")))
+	if t != null:
+		_sprite(t, wk.pos, "guests")
+	else:
+		_raccoon(wk.pos, 34.0, Color("9c8f7a"))
+		_text(wk.pos + Vector2(0, -46), wk.face, 20, Color.WHITE)
 	if wk.state != "buy":
 		return
 	var bob: float = sin(_t * 5.2) * 2.0
@@ -512,7 +543,11 @@ func _pest(t: Dictionary) -> void:
 	draw_arc(at, t.r, 0, TAU, 28, Color(0.64, 0.29, 0.23, 0.28), 4.0)
 	var left: float = clampf(sim.pest.left / sim.pest.life, 0.0, 1.0)
 	draw_arc(at, t.r, -PI / 2, -PI / 2 + TAU * left, 28, C.red, 4.0)
-	_text(at + Vector2(0, 9), t.face, 26, Color.WHITE)
+	var pic: Texture2D = Art.tex("pests", String(sim.pest.kind))
+	if pic != null:
+		_sprite(pic, at + Vector2(0, 22), "pests")
+	else:
+		_text(at + Vector2(0, 9), t.face, 26, Color.WHITE)
 
 # ── 한 판 ──
 func _draw() -> void:
