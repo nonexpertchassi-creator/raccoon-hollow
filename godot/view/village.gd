@@ -30,6 +30,13 @@ const BUY_TIME := 2.3       # 가게 앞에 서 있는 시간
 ## 손님이 들어오고 나가는 목은 **매번 고른다**(Iso.GATES).
 ## 여기 쓰는 주사위는 화면 전용이다 — sim의 주사위를 한 번이라도 굴리면
 ## 대조 시험이 그 자리에서 어긋난다. 화면은 sim을 읽기만 한다.
+## 그림이 아직 없는 자리에 그리는 도형의 크기.
+##
+## ★ 그림 상자가 72px이라고 60으로 맞췄다가 되돌렸다 — **그림은 상자를 꽉
+##   채우지 않는다.** 너구리 둘레에 투명한 여백이 있어서, 상자 크기에 맞추면
+##   도형만 두 배로 커져 가게를 덮어 버린다. 실제로 찍어 보고 40으로 잡았다.
+##   짐작으로 맞춘 숫자는 이렇게 한 번에 틀린다.
+const SHAPE := 40.0
 var _grng: Rng = Rng.new(20260821)
 func _gate() -> Vector2i:
 	return Iso.GATES[int(_grng.next() * Iso.GATES.size()) % Iso.GATES.size()]
@@ -500,7 +507,7 @@ func _clerk(i: int) -> void:
 	if t != null:
 		_sprite(t, c.pos, "clerks" if Art.tex("clerks", "%s-%s" % [id, pose]) != null else "hero")
 		return
-	_raccoon(c.pos, 33.0, Color("a8815a"))
+	_raccoon(c.pos, SHAPE, Color("a8815a"))
 
 ## 직원 — 작업대 옆에 서서 계속 만든다.
 ##
@@ -542,15 +549,16 @@ func _staff(i: int, k: int) -> void:
 	if t != null:
 		_sprite(t, p + Vector2(0, -bob), "staff")
 		return
-	_raccoon(p + Vector2(0, -bob), 26.0, Color("bfa987"))
+	# 그림이 오기 전 임시 도형. 점장과 **같은 크기**로, 털빛만 조금 다르게.
+	_raccoon(p + Vector2(0, -bob), SHAPE, Color("bfa987"))
 
 func _walker(wk: Dictionary) -> void:
 	var t: Texture2D = Art.tex("guests", String(wk.get("id", "")))
 	if t != null:
 		_sprite(t, wk.pos, "guests")
 	else:
-		_raccoon(wk.pos, 34.0, Color("9c8f7a"))
-		_text(wk.pos + Vector2(0, -46), wk.face, 20, Color.WHITE)
+		_raccoon(wk.pos, SHAPE * 0.9, Color("9c8f7a"))
+		_text(wk.pos + Vector2(0, -58), wk.face, 20, Color.WHITE)
 	if wk.state != "buy":
 		return
 	var bob: float = sin(_t * 5.2) * 2.0
