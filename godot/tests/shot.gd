@@ -33,20 +33,17 @@ func _ready() -> void:
 			main.panel.open_for(k)
 	# 찍은 화면에 무엇이 들어 있는지 말해 준다 — 그림만 보면 "말풍선이 원래
 	# 안 뜨는 건지, 이번에만 없는 건지"를 못 가른다.
-	print("SHOT 손님 %d · 빈손💢 %d · 말풍선 %s" % [main.village.walkers.size(),
-		_grumpy(main), ("없음" if main.village.bubble.is_empty() else String(main.village.bubble.text))])
+	print("SHOT 손님 %d · 빈손💢 %d · 말풍선 %s · 소리 %s" % [main.village.walkers.size(),
+		_grumpy(main), ("없음" if main.village.bubble.is_empty() else String(main.village.bubble.text)),
+		main.sfx.summary()])
 
-## ★ main._process가 하는 일을 그대로 한다. 예전엔 sim.tick만 돌렸는데
-##   그러면 판매가 화면으로 안 넘어가서 **손님이 한 마리도 안 나왔다.**
-##   빨리 감기는 게임을 그대로 감아야지, 반만 감으면 딴것이 된다.
+## ★ 게임 한 걸음을 **베껴 적지 않는다** — main.step을 그대로 부른다.
+##   예전에 여기서 sim.tick만 돌렸을 때는 판매가 화면으로 안 넘어가
+##   손님이 한 마리도 안 나왔고, 소리를 붙였을 때는 게임에서만 울리고
+##   여기서는 안 울렸다. 두 번 다 원인이 같다 — 베낀 것은 반드시 뒤처진다.
+##   손님 걸음(_advance)만 따로 부른다. 빨리 감기는 _process가 안 돌기 때문이다.
 func _step(main: Node, s: Sim, rng: Rng) -> void:
-	var r: Dictionary = s.tick(0.25, rng)
-	for sale in r.sales:
-		main.village.on_sale(sale)
-	for d in r.done:
-		main.village.on_sale(d)
-	if r.ask != null:
-		main.village.on_ask(r.ask)
+	main.step(0.25)
 	RunSim.act(s, rng)
 	main.village._advance(0.25)
 

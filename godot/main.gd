@@ -12,6 +12,7 @@ var _sub: Label
 var _log: Label
 var _acc: float = 0.0
 var panel: ShopPanel
+var sfx: Sfx
 var _layer: CanvasLayer
 var _autobtn: Button
 var _guestbtn: Button
@@ -124,6 +125,9 @@ func _ready() -> void:
 	_autobtn.pressed.connect(func(): sim.buy_auto())
 	bar.add_child(_autobtn)
 
+	sfx = Sfx.new()
+	add_child(sfx)
+
 	panel = ShopPanel.new()
 	panel.sim = sim
 	_layer.add_child(panel)
@@ -173,7 +177,14 @@ func _show_away(r: Dictionary) -> void:
 	v.add_child(ok)
 	_layer.add_child(box)
 
-func _process(delta: float) -> void:
+## 게임 한 걸음 — sim을 돌리고, 그 결과를 화면과 소리에 넘긴다.
+##
+## ★ 이걸 따로 뺀 이유. 빨리 감기 도구(shot·balance)가 이 일을 **베껴 적고**
+##   있었는데, 그러면 여기에 뭘 하나 더 붙일 때마다 도구는 그걸 못 본다.
+##   실제로 소리를 붙이자마자 30분을 감아도 "소리 없음"이 나왔다 —
+##   게임에서는 울리는데 도구에게만 안 울린 것이다. 한 자리에 모아 둔다.
+##   (손님 걸음은 여기 없다. village가 제 _process에서 스스로 걷는다.)
+func step(delta: float) -> void:
 	var r: Dictionary = sim.tick(delta, rng)
 	for s in r.sales:
 		village.on_sale(s)
@@ -181,6 +192,15 @@ func _process(delta: float) -> void:
 		village.on_sale(d)
 	if r.ask != null:
 		village.on_ask(r.ask)
+	# 소리는 **드물게 일어나는 일**에만 준다. 파는 순간은 일부러 뺐다 —
+	# 후반에는 초당 수십 번이라 소리가 아니라 소음이 된다.
+	if r.newGuest != null:
+		sfx.play("guest")
+	if not r.quests.is_empty():
+		sfx.play("quest")
+
+func _process(delta: float) -> void:
+	step(delta)
 	village.cam_center = cam.position
 	_save_acc += delta
 	if _save_acc > 5.0:
@@ -236,12 +256,14 @@ func _tap(p: Vector2) -> void:
 	var th: Dictionary = village.pest_at(cam.position)
 	if not th.is_empty() and p.distance_to(th.pos + Vector2(0, -6)) < th.r + 8.0:
 		if sim.catch_pest(rng) != null:
+			sfx.play("catch")
 			return
 
 	# 2) 삽살개 자리
 	var dp: Vector2 = Iso.w(Iso.DOG_T.x + 1, Iso.DOG_T.y + 1)
 	if not sim.guard and absf(p.x - dp.x) < 60.0 and p.y > dp.y - 80.0 and p.y < dp.y + 26.0:
-		sim.buy_guard()
+		if sim.buy_guard():
+			sfx.play("open")
 		return
 
 	# 3) 작은 건물 — 세우거나, 북적일 때 눌러 장을 연다
@@ -249,9 +271,10 @@ func _tap(p: Vector2) -> void:
 		var sp: Vector2 = Iso.w(Iso.SMALL_T[i].x + 1, Iso.SMALL_T[i].y + 1)
 		if absf(p.x - sp.x) < 62.0 and p.y > sp.y - 92.0 and p.y < sp.y + 24.0:
 			if not sim.smalls.has(i):
-				sim.build_small(i)
-			else:
-				sim.tap_small(i)
+				if sim.build_small(i):
+					sfx.play("open")
+			elif sim.tap_small(i):
+				sfx.play("fair")
 			return
 
 	# 4) 가게 — 매대는 그 자리에서 강화, 나머지는 창
@@ -278,10 +301,11 @@ func _tap(p: Vector2) -> void:
 			if best >= 0:
 				var it: Dictionary = shop.items[best]
 				if not sim.is_open(it.id):
-					sim.open_item(it.id)
-				else:
-					# 매대를 누르면 그 품목을 살 수 있는 만큼 강화한다
-					sim.level_up_many(it.id, sim.affordable_levels(it.id))
+					if sim.open_item(it.id):
+						sfx.play("open")
+				# 매대를 누르면 그 품목을 살 수 있는 만큼 강화한다
+				elif sim.level_up_many(it.id, sim.affordable_levels(it.id)) > 0:
+					sfx.play("tap")
 				return
 		# 마당 나머지(현판 포함) — 가게 창을 연다
 		var n: int = Iso.plot_dim(sim, i) if open else 3
@@ -292,8 +316,8 @@ func _tap(p: Vector2) -> void:
 		if in_plot or on_sign:
 			if open:
 				panel.open_for(String(shop.id))
-			else:
-				sim.open_shop(String(shop.id))
+			elif sim.open_shop(String(shop.id)):
+				sfx.play("open")
 			return
 	panel.close()
 

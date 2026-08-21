@@ -88,6 +88,12 @@ func _process(_d: float) -> void:
 	if s.money != money_before:
 		fails.append("빈 풀밭을 눌렀는데 돈이 움직였다")
 
+	# 소리도 여기서 본다. 소리는 안 나는 게 고장인지 원래 그런 건지 귀로 못 가르고,
+	# 지금은 더미라 **아예 안 들린다** — 셈으로 볼 수밖에 없다.
+	# 위에서 매대를 눌렀으니 강화 소리가 한 번은 울렸어야 한다.
+	if int(main.sfx.counts.get("tap", 0)) == 0:
+		fails.append("매대를 눌렀는데 강화 소리를 안 울렸다")
+
 	if fails.is_empty():
 		print("TAPTEST OK")
 	else:
