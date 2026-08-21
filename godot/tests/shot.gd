@@ -5,7 +5,8 @@ extends Node
 ##   SHOT_MINUTES=30           얼마나 감을지
 ##   SHOT_UNTIL=bubble|grumpy  그 장면이 나올 때까지 더 감는다
 ##   SHOT_ZOOM=1.0             그 크기로 찍는다(기본은 게임이 정한 값)
-##   SHOT_PANEL=quests|guests|<가게id>   창을 열어 놓고 찍는다
+##   SHOT_PANEL=quests|guests|ledger|<가게id>   창을 열어 놓고 찍는다
+##   SHOT_TAB=items|work|rank  가게 창의 갈피를 골라서 찍는다
 var _done: bool = false
 
 func _ready() -> void:
@@ -37,6 +38,9 @@ func _ready() -> void:
 			main.panel.open_kind(k)
 		else:
 			main.panel.open_for(k)
+			if OS.has_environment("SHOT_TAB"):
+				main.panel.tab = OS.get_environment("SHOT_TAB")
+				main.panel.rebuild()
 	# 찍은 화면에 무엇이 들어 있는지 말해 준다 — 그림만 보면 "말풍선이 원래
 	# 안 뜨는 건지, 이번에만 없는 건지"를 못 가른다.
 	print("SHOT 손님 %d · 빈손💢 %d · 말풍선 %s · 소리 %s" % [main.village.walkers.size(),

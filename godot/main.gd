@@ -143,6 +143,7 @@ func _ready() -> void:
 
 	panel = ShopPanel.new()
 	panel.sim = sim
+	panel.on_focus = _focus_shop
 	_layer.add_child(panel)
 
 	if _away != null:
@@ -295,6 +296,29 @@ func _unhandled_input(e: InputEvent) -> void:
 			_dragged = true                    # 8px 넘게 움직였으면 끈 것이다
 		cam.position -= mm.relative / cam.zoom.x
 		_clamp_cam()
+
+## 가게 창을 열면 지도도 그 가게로 간다.
+##
+## ★ 화면 한가운데가 아니라 **창 위에 남는 자리**의 한가운데에 놓는다.
+##   창이 아래 540px을 덮으니, 가운데에 맞추면 방금 연 그 가게가 창 뒤로 숨는다.
+##   창을 열어 놓고 지도를 손으로 끌어 찾는 것은 순전한 수고다.
+const ZOOM_SHOP := 1.25
+func _focus_shop(id: String) -> void:
+	var i: int = -1
+	for k in range(Content.SHOPS.size()):
+		if Content.SHOPS[k].id == id:
+			i = k
+	if i < 0:
+		return
+	var o: Vector2i = Iso.org(sim, i)
+	var n: int = Iso.plot_dim(sim, i)
+	var c: Vector2 = Iso.w(o.x + n * 0.5, o.y + n * 0.5)
+	var z: float = clampf(ZOOM_SHOP, ZOOM_MIN, ZOOM_MAX)
+	cam.zoom = Vector2(z, z)
+	var vh: float = get_viewport_rect().size.y
+	var band: float = maxf(140.0, vh - absf(panel.offset_top))
+	cam.position = c + Vector2(0, (vh * 0.5 - band * 0.5) / z)
+	_clamp_cam()
 
 ## 누른 자리를 붙잡고 크게·작게. 화면 한가운데를 기준으로 하면 보고 있던
 ## 가게가 손 밑에서 도망간다 — 손가락 밑의 땅은 그대로 있어야 한다.
