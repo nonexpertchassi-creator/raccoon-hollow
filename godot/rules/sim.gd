@@ -532,6 +532,52 @@ func promote_reqs(shop_id: String) -> Variant:
 	list.append({"ok": money >= cost, "text": "승급값 🪙%s" % Num.fmt(cost)})
 	return {"rank": r + 1, "cost": cost, "list": list}
 
+## 승급하면 이 가게가 어떻게 되나. **화면이 보여주려고 묻는 것**이라
+## 상태를 바꾸지 않는다(잠깐 바꿔 재고 그대로 되돌린다).
+##
+## ★ 값 계산을 여기서 다시 쓰지 않는 이유: 베낀 식은 반드시 뒤처진다.
+##   값 규칙을 고치면 이 미리보기만 조용히 옛말을 하게 된다.
+##   그래서 진짜 price()·craft_time()에게 물어본다.
+func promote_gain(shop_id: String) -> Variant:
+	var r: int = rank_of(shop_id)
+	if r + 1 >= Content.RANKS.size():
+		return null
+	var shop: Dictionary = shop_by_id(shop_id)
+	var id: String = ""
+	for it in shop.items:
+		if is_open(it.id):
+			id = String(it.id)
+			break
+	var out: Dictionary = {
+		"rank": r + 1,
+		"priceMul": Content.RANKS[r + 1].priceMul / Content.RANKS[r].priceMul,
+		"maxLv": [Content.RANKS[r].maxLv, Content.RANKS[r + 1].maxLv],
+		"stalls": [stall_cap(shop_id), 4 + 2 * min(2, r + 1)],
+		"staff": [staff_max(shop_id), Content.STAFF.max],
+		"dip": 1.0, "even": 1, "top": 1.0,
+	}
+	if id == "":
+		return out
+	var keep_lv: float = lv(id)
+	var had_rank: bool = rank.has(shop_id)      # 없던 칸을 만들어 놓고 가면 저장본이 달라진다
+	var before: float = price(id) / craft_time(id)
+	rank[shop_id] = r + 1
+	items[id].lv = 1.0
+	out.dip = (price(id) / craft_time(id)) / before
+	for l in range(1, int(max_lv(id)) + 1):
+		items[id].lv = float(l)
+		out.even = l
+		if price(id) / craft_time(id) >= before:
+			break
+	items[id].lv = max_lv(id)
+	out.top = (price(id) / craft_time(id)) / before
+	items[id].lv = keep_lv        # 재 봤으면 도로 갖다 놓는다
+	if had_rank:
+		rank[shop_id] = r
+	else:
+		rank.erase(shop_id)
+	return out
+
 func can_promote(shop_id: String) -> bool:
 	var r: Variant = promote_reqs(shop_id)
 	if r == null:

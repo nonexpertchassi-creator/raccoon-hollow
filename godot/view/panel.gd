@@ -472,7 +472,11 @@ func _tab_work(_shop: Dictionary) -> void:
 		_box.add_child(_btn("직원 들이기 🪙" + Num.fmt(sc), sim.can_hire_staff(shop_id),
 			func(): sim.hire_staff(shop_id); rebuild()))
 	else:
-		_box.add_child(_label("이 등급에서 쓸 수 있는 일손은 다 찼다", 12, Color("4a7c59")))
+		# 왜 더 못 뽑는지를 적어 준다. 안 적으면 "승급하면 늘겠지" 하고
+		# 기다리게 되는데, 그런 날은 오지 않는다.
+		_box.add_child(_label("일손은 여기까지다 — 승급해도 안 늘어난다", 13, Color("4a7c59")))
+		_box.add_child(_label("둘째 직원부터는 아무것도 안 바뀐다. 재 봤다 — 계산하느라 생산이 멈추는 일은 한 명이면 이미 사라지고, 그다음 병목은 만드는 손이 아니라 손님 수다.",
+			11, Color("8a7a63"), true))
 
 	var ud: Variant = sim.shop_up_def(shop_id)
 	if ud == null:
@@ -504,7 +508,20 @@ func _tab_rank(shop: Dictionary) -> void:
 	for x in r.list:
 		_box.add_child(_label(("✅ " if x.ok else "⬜ ") + String(x.text), 13,
 			Color("4a7c59") if x.ok else Color("5a4e3d"), true))
+	# 승급하면 뭐가 좋아지는가. 조건만 늘어놓고 좋은 점을 안 적으면
+	# "이걸 왜 해야 하지"가 된다 — 목표는 조건이 아니라 그 뒤에 오는 것이다.
+	var g: Variant = sim.promote_gain(shop_id)
+	if g != null:
+		_box.add_child(_label("승급하면", 15, Color("a8763e")))
+		_box.add_child(_label("· 값이 ×%d — 물건 이름도 '%s'로 바뀐다" % [
+			int(g.priceMul), shop.ranks[g.rank]], 13))
+		_box.add_child(_label("· 레벨 상한 %d → %d" % [int(g.maxLv[0]), int(g.maxLv[1])], 13))
+		_box.add_child(_label("· 매대 %d칸 → %d칸" % [int(g.stalls[0]), int(g.stalls[1])], 13))
+		# ★ 나쁜 소식도 같은 크기로 적는다. 승급은 레벨을 1로 되돌리기 때문에
+		#   누르고 나면 벌이가 잠깐 떨어진다. 이걸 안 적으면 누른 사람이
+		#   "고장 났나" 하고, 그게 이 게임을 끄는 이유가 된다.
+		_box.add_child(_label("· 레벨은 1로 되돌아간다 — 벌이가 잠깐 %d%%로 떨어졌다가, %d레벨이면 본전이고 상한까지 올리면 %.0f배다"
+			% [int(round(g.dip * 100.0)), int(g.even), g.top], 13, Color("5a4e3d"), true))
 	var ok: bool = sim.can_promote(shop_id)
 	_box.add_child(_btn("승급하기 🪙" + Num.fmt(r.cost) if ok else "조건을 채워야 한다", ok,
 		func(): sim.promote(shop_id); rebuild()))
-	_box.add_child(_label("승급하면 매대가 늘고, 값이 오르고, 일손을 더 쓸 수 있다", 11, Color("8a7a63"), true))
