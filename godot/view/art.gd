@@ -24,6 +24,16 @@ const SIZE := {
 
 static var _cache: Dictionary = {}
 
+## 등급이 있는 그림(물건)은 **등급 것부터 찾는다.** `pick-1.png`가 있으면
+## 참쇠곡괭이는 그걸 쓰고, 없으면 기본 `pick.png`를 쓴다.
+## 40종 × 3등급 = 120장을 다 그릴 이유는 없다 — 그리고 싶은 것만 그리면 된다.
+static func ranked(dir: String, id: String, rank: int) -> Texture2D:
+	if rank > 0:
+		var t: Texture2D = tex(dir, "%s-%d" % [id, rank])
+		if t != null:
+			return t
+	return tex(dir, id)
+
 ## 없으면 null. 한 번 찾아본 것은 **없다는 사실까지** 기억한다 —
 ## 매 프레임 파일이 있나 물어보면 그리는 것보다 그 일이 더 비싸진다.
 static func tex(dir: String, id: String) -> Texture2D:

@@ -23,6 +23,8 @@ var _props: Array = []
 ## 걸어다니는 손님. sim이 "팔았다"고 알려오면 한 마리 생겨서 길로 들어온다.
 ## 화면은 늘 sim보다 조금 늦다 — 돈은 이미 들어왔지만 손님은 아직 걷고 있다.
 var walkers: Array = []
+## 한 번 뜨고 사라지는 표 — 팔린 값. 위로 떠오르며 옅어진다.
+var floats: Array = []
 ## 카메라 한가운데(세계 좌표). 까마귀가 화면을 가로지르는 데 쓴다.
 var cam_center: Vector2 = Vector2.ZERO
 const WALK := 95.0          # 손님 걸음(세계 px/초)
@@ -37,6 +39,9 @@ const BUY_TIME := 2.3       # 가게 앞에 서 있는 시간
 ##   도형만 두 배로 커져 가게를 덮어 버린다. 실제로 찍어 보고 40으로 잡았다.
 ##   짐작으로 맞춘 숫자는 이렇게 한 번에 틀린다.
 const SHAPE := 40.0
+## 등급 테 — 물건이 몇 급인지 매대에서 바로 보이게. 0급(기본)은 안 두른다.
+## 값을 색으로 말하는 것이라 물건이 쇠든 종이든 상관없이 통한다.
+const RANK_RING := [Color(0, 0, 0, 0), Color("cfd6dd"), Color("e8b93f")]
 var _grng: Rng = Rng.new(20260821)
 func _gate() -> Vector2i:
 	return Iso.GATES[int(_grng.next() * Iso.GATES.size()) % Iso.GATES.size()]
@@ -108,10 +113,18 @@ func on_sale(sale: Dictionary) -> void:
 		"face": String(sale.guest.face), "id": String(sale.guest.id), "shop": idx, "state": "in",
 		"pos": Iso.w(enter.x + 0.5, enter.y + 0.5), "out_gate": _gate(),
 		"path": path, "step": 1, "wait": 0.0, "qwait": 0.0, "empty": empty,
-		"n": int(sale.n), "gain": float(sale.gain),
+		"n": int(sale.n), "gain": float(sale.gain), "sold": _order_of(sale),
 	})
 	line[idx].append(walkers[walkers.size() - 1])
 	clerks[idx].busy = 1.4
+
+## 이 손님이 무엇을 몇 개 사러 왔나. 머리 위에 띄울 주문표다.
+## 셋까지만 담는다 — 넷을 넘기면 말풍선이 손님보다 커져서 길을 덮는다.
+func _order_of(sale: Dictionary) -> Array:
+	var out: Array = []
+	for l in sale.lines:
+		out.append({"id": String(l.item.id), "icon": String(l.item.icon), "n": int(l.n)})
+	return out
 
 func _walk(wk: Dictionary, delta: float) -> bool:
 	var target: Vector2
@@ -139,6 +152,13 @@ func _advance(delta: float) -> void:
 		bubble.t -= delta
 		if bubble.t <= 0.0:
 			bubble = {}
+	var live: Array = []
+	for f in floats:
+		f.t -= delta
+		f.pos.y -= delta * 26.0
+		if f.t > 0.0:
+			live.append(f)
+	floats = live
 	var keep: Array = []
 	for wk in walkers:
 		match wk.state:
@@ -155,6 +175,11 @@ func _advance(delta: float) -> void:
 						wk.qwait += delta
 					if wk.wait >= BUY_TIME:
 						wk.state = "out"
+						if not wk.empty and wk.gain > 0.0:
+							# 엽전은 **팔린 순간**에만 뜬다. 손님 머리 위에 계속
+							# 붙여 두면 "얼마 낼 손님"이 되는데, 그건 아직 안 일어난 일이다.
+							floats.append({"pos": Iso.foot(sim, wk.shop).serve + Vector2(0, -40),
+								"text": "🪙" + Num.fmt(wk.gain), "t": 1.3})
 						line[wk.shop].erase(wk)
 						wk.path = Iso.route(Iso.nearest_road(Iso.door(sim, wk.shop)), wk.out_gate)
 						wk.step = 1
@@ -184,6 +209,16 @@ func _process(delta: float) -> void:
 func _make_props() -> Array:
 	var rng := Rng.new(20260820)
 	var out: Array = []
+	# 마을 밖 테두리 — **나무만** 빽빽하게. 마을이 벌판 한가운데 뚝 떨어져
+	# 있는 것보다, 숲으로 둘러싸인 편이 "여기가 골짜기"라는 말이 된다.
+	# (길은 비운다 — 길은 숲 사이로 이어져 나가는 것처럼 보여야 한다.)
+	for ty in range(-Iso.EDGE, Iso.GH + Iso.EDGE):
+		for tx in range(-Iso.EDGE, Iso.GW + Iso.EDGE):
+			if tx >= 0 and ty >= 0 and tx < Iso.GW and ty < Iso.GH:
+				continue
+			if Iso.is_road(tx, ty) or rng.next() > 0.62:
+				continue
+			out.append({"t": Vector2i(tx, ty), "k": "tree", "o": 0.7 + rng.next() * 0.9})
 	for ty in range(Iso.GH):
 		for tx in range(Iso.GW):
 			if Iso.is_road(tx, ty):
@@ -239,6 +274,10 @@ func _tile(tx: int, ty: int, road: bool) -> void:
 	var S: Vector2 = Iso.w(tx + 1, ty + 1)
 	var W: Vector2 = Iso.w(tx, ty + 1)
 	var col: Color = C.road if road else (C.grass if (tx + ty) % 2 == 1 else C.grass2)
+	# 마을 밖은 한 톤 어둡다. 같은 색으로 깔면 어디까지가 마을인지 안 보이고,
+	# 밀 수 있는 데까지 밀어 놓고 "여긴 뭐지" 하게 된다.
+	if tx < 0 or ty < 0 or tx >= Iso.GW or ty >= Iso.GH:
+		col = _shade(col, -0.06)
 	_quad(N, E, S, W, col)
 	_outline(N, E, S, W, Color(0, 0, 0, 0.05 if road else 0.03), 1.0)
 
@@ -366,7 +405,12 @@ func _stall(i: int, k: int, spot: Vector2i) -> void:
 	var capped: bool = shown >= cap
 
 	_box(o.x + spot.x + 0.14, o.y + spot.y + 0.14, 0.72, 0.72, 14, C.paper, C.wood)
-	var pic: Texture2D = Art.tex("items", String(it.id))
+	# 등급이 오르면 그림도 바뀐다 — 그 등급 그림이 있으면 그것,
+	# 없으면 기본 그림에 **등급 테**를 둘러 표시한다(무쇠→참쇠→강철).
+	var rk: int = sim.rank_of(String(shop.id))
+	if rk > 0:
+		draw_arc(p + Vector2(0, -8), 21.0, 0, TAU, 26, RANK_RING[min(rk, RANK_RING.size() - 1)], 3.0)
+	var pic: Texture2D = Art.ranked("items", String(it.id), rk)
 	if pic != null:
 		_sprite(pic, p + Vector2(0, -6), "items")
 	else:
@@ -572,9 +616,39 @@ func _walker(wk: Dictionary) -> void:
 	# 받아 들고도 화난 얼굴이 남아 있으면 그것도 '왜 화났지'가 된다.
 	if wk.qwait > Content.SERVICE.linePatience:
 		_text(wk.pos + Vector2(15, -44 + bob), "😠", 17, Color.WHITE)
-	var txt: String = "🪙%s" % Num.fmt(wk.gain)
-	_chip(wk.pos + Vector2(0, -78), 20.0 + txt.length() * 11.0, 21, Color(0.17, 0.14, 0.11, 0.82))
-	_text(wk.pos + Vector2(0, -63), txt, 12, Color("ffe9a8"))
+	_order(wk)
+
+## 주문표 — **무엇을 몇 개 사러 왔는지.**
+##
+## ★ 여기에 값(🪙)을 띄우고 있었다. 그런데 그건 아직 안 일어난 일이다 —
+##   줄에 선 손님 머리 위의 돈은 "얼마 낼 사람"이라는 뜻이 되고, 정작
+##   "무엇을 원하는지"는 어디에도 안 보였다. 원하는 것을 띄우고,
+##   값은 팔린 순간에 계산대 위로 띄운다(floats).
+func _order(wk: Dictionary) -> void:
+	var sold: Array = wk.sold
+	if sold.is_empty():
+		return
+	# 줄이 길 때 전부 띄우면 주문표끼리 겹쳐 어느 것도 안 읽힌다.
+	# **맨 앞사람만** — 줄을 세운 이유의 절반이 이것이다(자바스크립트판에서 얻은 답).
+	if line[wk.shop].find(wk) != 0:
+		return
+	var show: int = min(3, sold.size())
+	var more: int = sold.size() - show
+	var wd: float = 18.0 + show * 40.0 + (26.0 if more > 0 else 0.0)
+	var y: Vector2 = wk.pos + Vector2(0, -78 + sin(_t * 3.4) * 1.6)
+	_chip(y, wd, 24, Color(0.99, 0.96, 0.91, 0.95))
+	var x: float = y.x - wd * 0.5 + 12.0
+	for i in range(show):
+		var sg: Dictionary = sold[i]
+		var pic: Texture2D = Art.ranked("items", String(sg.id), sim.rank_of(String(Content.SHOPS[wk.shop].id)))
+		if pic != null:
+			draw_texture_rect(pic, Rect2(Vector2(x - 2, y.y + 2), Vector2(16, 18)), false)
+		else:
+			_text(Vector2(x + 6, y.y + 18), String(sg.icon), 14, Color.WHITE)
+		_text(Vector2(x + 26, y.y + 18), str(int(sg.n)), 13, C.ink)
+		x += 40.0
+	if more > 0:
+		_text(Vector2(x + 10, y.y + 18), "+%d" % more, 12, C.ink2)
 
 ## 물어보는 말풍선 — 현판 바로 위. 깊이 정렬 밖에 그린다(지붕에 가리면 못 읽는다).
 func _bubble() -> void:
@@ -693,6 +767,10 @@ func _draw() -> void:
 	layer.sort_custom(func(a, b): return a.z < b.z if a.z != b.z else a.i < b.i)
 	for e in layer:
 		e.f.call()
+	for f in floats:
+		var a: float = clampf(f.t, 0.0, 1.0)
+		_chip(f.pos, 22.0 + String(f.text).length() * 11.0, 21, Color(0.17, 0.14, 0.11, 0.82 * a))
+		_text(f.pos + Vector2(0, 15), String(f.text), 12, Color(0.99, 0.91, 0.66, a))
 	if not bubble.is_empty():
 		_bubble()
 	# 나쁜 놈은 **늘 맨 앞**에 그린다. 지붕 뒤에 숨으면 누를 수가 없다.

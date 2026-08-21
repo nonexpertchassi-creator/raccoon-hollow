@@ -3,7 +3,7 @@ extends Node
 ## main.tscn에는 안 넣는다 — 넣으면 게임을 켤 때마다 몇 초 뒤에 꺼진다.
 ##
 ##   SHOT_MINUTES=30           얼마나 감을지
-##   SHOT_UNTIL=bubble|grumpy  그 장면이 나올 때까지 더 감는다
+##   SHOT_UNTIL=bubble|grumpy|coin  그 장면이 나올 때까지 더 감는다
 ##   SHOT_ZOOM=1.0             그 크기로 찍는다(기본은 게임이 정한 값)
 ##   SHOT_PANEL=quests|guests|ledger|<가게id>   창을 열어 놓고 찍는다
 ##   SHOT_TAB=items|work|rank  가게 창의 갈피를 골라서 찍는다
@@ -72,6 +72,8 @@ func _scene_has(main: Node, want: String) -> bool:
 		return not main.village.bubble.is_empty()
 	if want == "grumpy":
 		return _grumpy(main) > 0
+	if want == "coin":
+		return not main.village.floats.is_empty()      # 팔린 순간 뜨는 엽전 표
 	return true
 
 func _process(_delta: float) -> void:

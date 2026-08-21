@@ -392,7 +392,7 @@ func _shop_body() -> void:
 func _item_row(icon: String, id: String) -> HBoxContainer:
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
-	var t: Texture2D = Art.tex("items", id)
+	var t: Texture2D = Art.ranked("items", id, sim.rank_of(shop_id))
 	if t != null:
 		var tr := TextureRect.new()
 		tr.texture = t
