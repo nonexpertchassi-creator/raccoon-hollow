@@ -12,6 +12,8 @@ const TW := 96.0
 const TH := 48.0
 const GW := 15
 const GH := 18
+## 마을 바깥으로 더 까는 풀밭 두께(칸). 여기까지는 밀어서 볼 수 있다.
+const EDGE := 2
 
 ## 칸 좌표 → 세계 좌표. 정수는 칸의 모서리다.
 static func w(tx: float, ty: float) -> Vector2:
@@ -32,6 +34,15 @@ const SHOP_T := [
 	Vector2i(5, 5),    # 약재상
 ]
 const YARD_KIND := ["A", "B", "D", "C", "C"]
+## 마을 드나드는 목 — 길이 마을 가장자리에 닿는 칸 전부.
+##
+## ★ 예전엔 위쪽 한 곳(6,0)뿐이었다. 그래서 손님이 **늘 같은 데서 같은 줄로**
+##   내려왔다. 길이 여섯 갈래인데 쓰는 목이 하나면 마을이 좁아 보인다.
+const GATES := [
+	Vector2i(5, 0), Vector2i(6, 0), Vector2i(12, 0), Vector2i(13, 0),          # 위
+	Vector2i(5, GH - 1), Vector2i(6, GH - 1), Vector2i(12, GH - 1), Vector2i(13, GH - 1),  # 아래
+	Vector2i(0, 5), Vector2i(0, 11), Vector2i(GW - 1, 5), Vector2i(GW - 1, 11),            # 옆
+]
 const SMALL_T := [Vector2i(7, 7), Vector2i(10, 6), Vector2i(8, 10), Vector2i(11, 9)]
 const DOG_T := Vector2i(14, 9)
 

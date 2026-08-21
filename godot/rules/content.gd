@@ -1021,9 +1021,8 @@ const STAFF := {
 	"capAdd": 10.0,
 	"max": 1.0,
 	"costMul": [
-		0.12
+		0.06
 	]
 }
 
 const STOCK_CAP := 40.0
-

@@ -26,6 +26,15 @@ var on_focus: Callable = Callable()
 var _held: String = ""
 var _held_t: float = 0.0
 var _rep_t: float = 0.0
+## 손가락이 창에 닿아 있는 동안은 **다시 그리지 않는다.**
+##
+## ★ 이걸 안 하면 화살표와 갈피가 열 번에 서너 번 안 먹는다.
+##   창은 0.3초마다 통째로 다시 그리는데, 누르는 순간과 떼는 순간 사이에
+##   그 일이 벌어지면 단추가 사라져 버린다. Godot은 **누른 단추와 뗀 단추가
+##   같을 때만** '눌렸다'로 치므로, 사라진 단추는 아무 일도 안 한다.
+##   게다가 뗀 자리가 빈 곳이 되면 그 누름이 지도까지 흘러가 창이 닫힌다 —
+##   유저가 본 "이전 가게를 눌렀는데 창이 닫힌다"가 이것이다.
+var _pressing: bool = false
 
 func _ready() -> void:
 	visible = false
@@ -100,11 +109,16 @@ func close() -> void:
 	shop_id = ""
 
 func _input(e: InputEvent) -> void:
-	# 어디서 뗐든 꾹 누르기는 끝난다. 단추가 다시 그려지며 사라져도 안전하다.
-	if _held == "" :
+	var down: Variant = null
+	if e is InputEventMouseButton and (e as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
+		down = (e as InputEventMouseButton).pressed
+	elif e is InputEventScreenTouch:
+		down = (e as InputEventScreenTouch).pressed
+	if down == null:
 		return
-	if (e is InputEventMouseButton and not (e as InputEventMouseButton).pressed) \
-			or (e is InputEventScreenTouch and not (e as InputEventScreenTouch).pressed):
+	_pressing = bool(down)
+	# 어디서 뗐든 꾹 누르기는 끝난다. 단추가 다시 그려지며 사라져도 안전하다.
+	if not _pressing:
 		_held = ""
 
 func _process(delta: float) -> void:
@@ -125,9 +139,10 @@ func _process(delta: float) -> void:
 					_held = ""
 					break
 			_acc = 1.0                      # 오른 숫자를 바로 보여준다
-	# 돈이 오르면 눌릴 수 있게 된 단추가 생긴다 — 자주 다시 그린다
+	# 돈이 오르면 눌릴 수 있게 된 단추가 생긴다 — 자주 다시 그린다.
+	# 다만 손가락이 닿아 있는 동안은 참는다(위 _pressing 설명).
 	_acc += delta
-	if _acc < 0.3:
+	if _acc < 0.3 or (_pressing and _held == ""):
 		return
 	_acc = 0.0
 	rebuild()
@@ -430,11 +445,21 @@ func _level_btn(id: String) -> Button:
 		return _btn("최대 Lv.%d 🪙%s" % [int(sim.max_lv(id)), Num.fmt(sim.level_cost_many(id, need))],
 			true, func(): sim.level_up_many(id, need); rebuild())
 	var c: float = sim.level_cost(id)
-	var b: Button = _btn("레벨업 🪙" + Num.fmt(c), sim.money >= c,
-		func(): sim.level_up_many(id, 1); rebuild())
-	if sim.money >= c:
-		# 꾹 누르기는 여기서 시작만 한다 — 끝내는 것은 창이 듣는다(_input)
-		b.button_down.connect(func(): _held = id; _held_t = 0.0; _rep_t = 0.0)
+	var b := Button.new()
+	b.text = "레벨업 🪙" + Num.fmt(c)
+	b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	b.disabled = sim.money < c
+	if not b.disabled:
+		# ★ '눌렸다(pressed)'가 아니라 **'누르기 시작했다(button_down)'**에 건다.
+		#   pressed는 누른 단추와 뗀 단추가 같아야 오는데, 꾹 누르는 동안
+		#   창이 다시 그려지면 그 단추는 이미 없다 — 톡 누른 것이 통째로
+		#   사라진다. 시작에 걸면 다시 그려지든 말든 한 단계는 확실히 오른다.
+		b.button_down.connect(func():
+			sim.level_up_many(id, 1)
+			_held = id
+			_held_t = 0.0
+			_rep_t = 0.0
+			_acc = 1.0)
 	return b
 
 ## 일손과 이 가게만의 강화. 둘 다 "한 번 사면 계속 도는 것"이라 같이 둔다.

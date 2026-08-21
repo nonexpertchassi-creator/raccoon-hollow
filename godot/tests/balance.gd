@@ -33,9 +33,9 @@ static func act(s: Sim, rng: Rng, use_shop_up: bool) -> void:
 		if s.can_promote(sh):
 			s.promote(sh)
 			return
-	if s.can_buy_auto():
-		s.buy_auto()
-		return
+	# ★ 장부 정리(자동 강화)는 **안 산다.** 게임에서 뺐기 때문이다.
+	#   여기서만 사면 재는 판과 사람이 노는 판이 달라진다 — 그러면 잰 값이
+	#   아무 말도 안 해준다. (대조 시험 쪽 RunSim은 답안지와 맞춰야 하니 그대로 산다.)
 	if s.can_buy_guard():
 		s.buy_guard()
 		return

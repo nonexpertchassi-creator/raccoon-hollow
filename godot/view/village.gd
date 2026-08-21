@@ -27,8 +27,12 @@ var walkers: Array = []
 var cam_center: Vector2 = Vector2.ZERO
 const WALK := 95.0          # 손님 걸음(세계 px/초)
 const BUY_TIME := 2.3       # 가게 앞에 서 있는 시간
-const ENTRY := Vector2i(6, 0)
-const EXIT := Vector2i(6, 17)
+## 손님이 들어오고 나가는 목은 **매번 고른다**(Iso.GATES).
+## 여기 쓰는 주사위는 화면 전용이다 — sim의 주사위를 한 번이라도 굴리면
+## 대조 시험이 그 자리에서 어긋난다. 화면은 sim을 읽기만 한다.
+var _grng: Rng = Rng.new(20260821)
+func _gate() -> Vector2i:
+	return Iso.GATES[int(_grng.next() * Iso.GATES.size()) % Iso.GATES.size()]
 const LINE_MAX := 4          # 한 가게 앞에 세우는 손님 수
 
 ## 손님이 물어본 것 — "무쇠도끼?" 한 마디가 그 가게 지붕 위에 뜬다.
@@ -89,12 +93,13 @@ func on_sale(sale: Dictionary) -> void:
 		clerks[idx].busy = 1.4
 		return
 	var door: Vector2i = Iso.door(sim, idx)
-	var path: Array = Iso.route(ENTRY, Iso.nearest_road(door))
+	var enter: Vector2i = _gate()
+	var path: Array = Iso.route(enter, Iso.nearest_road(door))
 	if path.is_empty():
 		return
 	walkers.append({
 		"face": String(sale.guest.face), "shop": idx, "state": "in",
-		"pos": Iso.w(ENTRY.x + 0.5, ENTRY.y + 0.5),
+		"pos": Iso.w(enter.x + 0.5, enter.y + 0.5), "out_gate": _gate(),
 		"path": path, "step": 1, "wait": 0.0, "qwait": 0.0, "empty": empty,
 		"n": int(sale.n), "gain": float(sale.gain),
 	})
@@ -144,7 +149,7 @@ func _advance(delta: float) -> void:
 					if wk.wait >= BUY_TIME:
 						wk.state = "out"
 						line[wk.shop].erase(wk)
-						wk.path = Iso.route(Iso.nearest_road(Iso.door(sim, wk.shop)), EXIT)
+						wk.path = Iso.route(Iso.nearest_road(Iso.door(sim, wk.shop)), wk.out_gate)
 						wk.step = 1
 			"out":
 				if _walk(wk, delta) and wk.step >= wk.path.size():
@@ -513,9 +518,11 @@ func _pest(t: Dictionary) -> void:
 func _draw() -> void:
 	if sim == null:
 		return
-	# 바닥
-	for ty in range(Iso.GH):
-		for tx in range(Iso.GW):
+	# 바닥. 마을 밖으로 두 칸 더 깐다 — **바깥이 있어야 가장자리 가게를
+	# 화면 가운데로 끌어올 수 있다.** 딱 맞게 깔면 끝 칸에서 더는 못 밀고,
+	# 그 가게는 늘 화면 구석에 붙어 있게 된다(줌을 키우면 더 답답하다).
+	for ty in range(-Iso.EDGE, Iso.GH + Iso.EDGE):
+		for tx in range(-Iso.EDGE, Iso.GW + Iso.EDGE):
 			_tile(tx, ty, Iso.is_road(tx, ty))
 
 	# 깊이 순서대로 — 아래 꼭짓점 y가 큰 것이 앞이다

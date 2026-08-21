@@ -14,7 +14,6 @@ var _acc: float = 0.0
 var panel: ShopPanel
 var sfx: Sfx
 var _layer: CanvasLayer
-var _autobtn: Button
 var _guestbtn: Button
 var _questbtn: Button
 var _newsbtn: Button
@@ -42,6 +41,13 @@ var _pinch_d: float = 0.0
 ## "잠깐 두고 나중에 본다"가 아예 성립하지 않는다.
 const SAVE_PATH := "user://save.dat"
 var _save_acc: float = 0.0
+## 내가 이 판의 주인공인가. 시험 장면(shot·taptest) 안에 얹혀 있을 때는 거짓이다.
+##
+## ★ 이걸 안 가르면 **시험이 남의 저장본을 물려받는다.** 실제로 그랬다 —
+##   30분짜리 스크린샷을 몇 번 찍었더니 저장본이 쌓였고, 그다음부터 누르기
+##   시험이 "매대를 눌렀는데 안 오른다"로 실패했다. 고장이 아니라 이미
+##   만렙이었던 것이다. 시험은 늘 **빈손으로 시작**해야 한다.
+var _standalone: bool = false
 var _away: Variant = null       # 다녀온 동안 번 것 (있으면 창을 띄운다)
 
 func _load() -> Variant:
@@ -81,14 +87,15 @@ func _save() -> void:
 func _notification(what: int) -> void:
 	# 창을 닫거나 화면을 벗어날 때 마지막으로 한 번 더 담는다
 	if what == NOTIFICATION_WM_CLOSE_REQUEST or what == NOTIFICATION_APPLICATION_PAUSED:
-		if sim != null:
+		if sim != null and _standalone:
 			_save()
 
 func _ready() -> void:
 	RenderingServer.set_default_clear_color(Color("6f8159"))
 	sim = Sim.new()
 	rng = Rng.new(int(Time.get_unix_time_from_system()))
-	_away = _load()
+	_standalone = get_parent() == get_tree().root
+	_away = _load() if _standalone else null
 
 	village = Village.new()
 	village.setup(sim)
@@ -133,10 +140,6 @@ func _ready() -> void:
 	_newsbtn.text = "소식"
 	_newsbtn.pressed.connect(func(): panel.open_kind("ledger"))
 	bar.add_child(_newsbtn)
-	_autobtn = Button.new()
-	_autobtn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_autobtn.pressed.connect(func(): sim.buy_auto())
-	bar.add_child(_autobtn)
 
 	sfx = Sfx.new()
 	add_child(sfx)
@@ -217,7 +220,7 @@ func _process(delta: float) -> void:
 	step(delta)
 	village.cam_center = cam.position
 	_save_acc += delta
-	if _save_acc > 5.0:
+	if _standalone and _save_acc > 5.0:
 		_save_acc = 0.0
 		_save()
 
@@ -235,10 +238,6 @@ func _paint() -> void:
 		sim.items.size(), sim.guests.size(), int(sim.gems)]
 	_guestbtn.text = "손님 %d/%d" % [sim.guests.size(), Content.GUESTS.size()]
 	_questbtn.text = "의뢰 %d" % sim.quests.size()
-	_autobtn.visible = not sim.auto
-	if not sim.auto:
-		_autobtn.text = "장부 정리 🪙" + Num.fmt(Content.AUTO_COST)
-		_autobtn.disabled = sim.money < Content.AUTO_COST
 	var lines: Array[String] = []
 	for i in range(min(3, sim.events.size())):
 		lines.append("· " + String(sim.events[i].msg))
@@ -408,10 +407,15 @@ func _tap(p: Vector2) -> void:
 			return
 	panel.close()
 
+## 마을 밖으로는 못 나간다 — 끝없는 초록 벌판이 나오면 길을 잃는다.
+## 다만 **가장자리 두 칸(Iso.EDGE)까지는 넘어갈 수 있다.** 딱 마을 끝에서
+## 막으면 구석 가게는 영영 화면 구석에 붙어 있는다. 창이 열려 있으면
+## 그 높이만큼 더 내려갈 수 있다 — 안 그러면 창 뒤에 깔린 가게를 못 끌어올린다.
 func _clamp_cam() -> void:
 	var lo := Vector2(INF, INF)
 	var hi := Vector2(-INF, -INF)
-	for t in [Vector2i(0, 0), Vector2i(Iso.GW, 0), Vector2i(0, Iso.GH), Vector2i(Iso.GW, Iso.GH)]:
+	for t in [Vector2i(-Iso.EDGE, -Iso.EDGE), Vector2i(Iso.GW + Iso.EDGE, -Iso.EDGE),
+			Vector2i(-Iso.EDGE, Iso.GH + Iso.EDGE), Vector2i(Iso.GW + Iso.EDGE, Iso.GH + Iso.EDGE)]:
 		var p: Vector2 = Iso.w(t.x, t.y)
 		lo = Vector2(minf(lo.x, p.x), minf(lo.y, p.y))
 		hi = Vector2(maxf(hi.x, p.x), maxf(hi.y, p.y))
@@ -419,4 +423,6 @@ func _clamp_cam() -> void:
 	# 마을이 화면보다 작으면 가운데에 붙여 둔다
 	var c: Vector2 = (lo + hi) * 0.5
 	cam.position.x = c.x if hi.x - lo.x < half.x * 2 else clampf(cam.position.x, lo.x + half.x, hi.x - half.x)
-	cam.position.y = c.y if hi.y - lo.y < half.y * 2 else clampf(cam.position.y, lo.y + half.y - 80, hi.y - half.y + 80)
+	var sheet: float = (absf(panel.offset_top) * 0.5 / cam.zoom.x) if (panel != null and panel.visible) else 0.0
+	cam.position.y = c.y + sheet if hi.y - lo.y < half.y * 2 \
+		else clampf(cam.position.y, lo.y + half.y - 80, hi.y - half.y + 80 + sheet)
