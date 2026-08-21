@@ -23,14 +23,20 @@
 - `PROCESS.md` — 제작 회고와 다음 순서.
 - `FLOW.md` — **흐름과 꼬인 곳.** 무엇이 무엇과 이어지는지, 어디가 끊겼는지를
   그림으로 본다. 기능을 더 넣기 전에 여기부터 맞춘다.
+- `NAMES.md` — **이름과 뜻.** 같은 것을 다른 말로, 다른 것을 같은 말로 부르면
+  거기서부터 대화가 어긋난다. 새 이름을 만들기 전에 여기부터 본다.
 - `ASSETS.md` — 필요한 그림 목록(자동 생성).
 
 ## 반드시 지키는 것
 
-**1. 짐작하지 말고 잰다.**
+**1. 짐작하지 말고 잰다. 그리고 한 판으로 판단하지 않는다.**
 "이렇게 하면 나아질 것이다"는 이 프로젝트에서 여러 번 틀렸다.
-숫자를 바꾸면 `node tools/balance.mjs 8 1`로 재고, 씨앗을 바꿔 두세 번 더 돌린다.
-한 판만 보고 판단하면 운을 실력으로 착각한다.
+숫자를 바꾸면 재되, **반드시 씨앗을 여럿 써서 가운뎃값을 본다.**
+
+이 게임은 씨앗만 바꿔도 8시간 매출이 0.85T ~ 1.25T로 흔들린다 —
+**재려는 효과보다 판마다의 운이 더 크다.** 씨앗 하나로 재면 손해인 강화가
++32% 이득으로 보인다. 실제로 그렇게 속았다(PLAN.md 2026-08-21).
+가게 강화는 `tools/shopup.sh`가 다섯 판을 돌려 가운뎃값을 내놓는다.
 
 **2. 옮긴 것은 대조한다.**
 `tools/crosscheck.sh` — 자바스크립트판과 Godot판을 같은 씨앗으로 돌려 대조한다.
@@ -60,7 +66,8 @@
 ```sh
 tools/crosscheck.sh              # JS판 ↔ Godot판 대조 (tap·fmt·rng·content·sim)
 SIM_HOURS=4 tools/crosscheck.sh sim   # 길게 돌려 어긋남이 쌓이는지
-node tools/balance.mjs 8 1       # 8시간 밸런스 측정 (시간, 씨앗)
+node tools/balance.mjs 8 1       # 8시간 밸런스 측정 (시간, 씨앗) — 답안지 쪽
+tools/shopup.sh                  # 가게 강화가 이득인지 — **씨앗 다섯으로** 잰다
 node tools/gen-content.mjs       # content.js → godot/rules/content.gd 다시 뽑기
 node tools/guests.mjs 6          # 손님 등장 문턱을 목표 시각에 수렴시킨다
 node tools/art.mjs --write       # ASSETS.md 그림 목록 갱신

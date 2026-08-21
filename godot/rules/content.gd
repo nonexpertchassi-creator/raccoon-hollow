@@ -1049,3 +1049,4 @@ const STAFF_RANKS := [
 ]
 
 const STOCK_CAP := 40.0
+
