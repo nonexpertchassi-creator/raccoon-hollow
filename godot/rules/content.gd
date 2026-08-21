@@ -160,7 +160,7 @@ const GUESTS := [
 		"pay": 1.0,
 		"spread": 3.0,
 		"speed": 1.4,
-		"wild": 0.0,
+		"wild": 0.25,
 		"at": 0.0,
 		"desc": "발이 빠르지만 조금씩만 산다"
 	},
@@ -173,7 +173,7 @@ const GUESTS := [
 		"pay": 0.85,
 		"spread": 2.0,
 		"speed": 1.7,
-		"wild": 0.0,
+		"wild": 0.25,
 		"at": 5800.0,
 		"desc": "쉴 새 없이 들르는 대신 값을 깎는다"
 	},
@@ -186,7 +186,7 @@ const GUESTS := [
 		"pay": 1.15,
 		"spread": 2.0,
 		"speed": 1.5,
-		"wild": 0.15,
+		"wild": 0.3,
 		"at": 180000.0,
 		"desc": "자주 오지만 한두 개면 족하다"
 	},

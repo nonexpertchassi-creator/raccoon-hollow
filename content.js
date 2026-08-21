@@ -137,11 +137,11 @@ export const GUESTS = [
    * 그대로 두고 흔들기만 한다 — 자주 오는 앞 손님(토끼·까치)은 0으로
    * 둬서 길에 사람이 끊기지 않게 하고, 뒤로 갈수록 운에 맡긴다.
    */
-  { id: 'rabbit',   name: '토끼',   face: '🐰', every: 4.6,  qty: 3,  pay: 1.0,  spread: 3, speed: 1.4, wild: 0,
+  { id: 'rabbit',   name: '토끼',   face: '🐰', every: 4.6,  qty: 3,  pay: 1.0,  spread: 3, speed: 1.4, wild: 0.25,
     at: 0,             desc: '발이 빠르지만 조금씩만 산다' },
-  { id: 'magpie',   name: '까치',   face: '🐦', every: 3.1,  qty: 2,  pay: 0.85, spread: 2, speed: 1.7, wild: 0,
+  { id: 'magpie',   name: '까치',   face: '🐦', every: 3.1,  qty: 2,  pay: 0.85, spread: 2, speed: 1.7, wild: 0.25,
     at: 5_800,        desc: '쉴 새 없이 들르는 대신 값을 깎는다' },
-  { id: 'squirrel', name: '다람쥐', face: '🐿️', every: 4.2,  qty: 2,  pay: 1.15, spread: 2, speed: 1.5, wild: 0.15,
+  { id: 'squirrel', name: '다람쥐', face: '🐿️', every: 4.2,  qty: 2,  pay: 1.15, spread: 2, speed: 1.5, wild: 0.3,
     at: 180_000,     desc: '자주 오지만 한두 개면 족하다' },
   { id: 'badger',   name: '오소리', face: '🦡', every: 17,   qty: 5,  pay: 1.5,  spread: 3, speed: 0.9, wild: 0.3,
     at: 10_000_000,   desc: '느긋하게 두루 산다' },

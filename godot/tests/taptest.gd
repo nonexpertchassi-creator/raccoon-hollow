@@ -43,11 +43,10 @@ func _process(_d: float) -> void:
 
 	# 2) 현판을 누르면 창이 열린다.
 	#
-	#    ★ 처음엔 '마당 한가운데'로 시험했다가 실패했는데, 고장이 아니라
-	#      **시험이 틀린 것**이었다. 3×3 마당은 가운데가 매대 판정 안에
-	#      들어간다(이웃 칸이 화면에서 48px밖에 안 떨어진다). 매대가 먼저인
-	#      것은 일부러 그렇게 만든 것이다 — 강화를 지도에서 바로 하려고.
-	#      마당으로 들어가는 정식 통로는 현판과 앞 꼭짓점이다.
+	#    ★ 예전 주석: "마당 한가운데는 매대 판정에 먹히니 현판으로만 연다."
+	#      그건 매대 판정이 제 칸의 두 배였기 때문이고, 유저가 **그걸 그대로
+	#      느꼈다**("계산대를 눌러야만 열리는 것 같다"). 판정을 제 칸으로
+	#      좁혔으니 이제 마당 아무 데나 눌러도 열려야 한다 — 아래 2-3이 그 시험이다.
 	var N: Vector2 = Iso.w(o.x, o.y)
 	main._tap(N + Vector2(0, -56))
 	if not main.panel.visible or main.panel.shop_id != "smith":
@@ -60,6 +59,23 @@ func _process(_d: float) -> void:
 	if not main.panel.visible:
 		fails.append("마당 앞쪽을 눌렀는데 가게 창이 안 열렸다")
 	main.panel.close()
+
+	# 2-3) 마당 안쪽 — 매대가 안 놓인 칸을 누르면 창이 열린다.
+	#      매대·가마·계산대가 쓰는 칸을 빼고 남은 칸으로 시험한다.
+	var yd: Dictionary = Iso.yard(Iso.YARD_KIND[0], n)
+	var taken: Array = [yd.kiln, yd.counter]
+	for k in range(min(s.stall_cap("smith"), Content.SHOPS[0].items.size())):
+		taken.append(yd.stalls[k])
+	var free: Variant = null
+	for ty in range(n):
+		for tx in range(n):
+			if not taken.has(Vector2i(tx, ty)):
+				free = Vector2i(tx, ty)
+	if free != null:
+		main._tap(Iso.w(o.x + (free as Vector2i).x + 0.5, o.y + (free as Vector2i).y + 0.5))
+		if not main.panel.visible:
+			fails.append("마당 빈 칸을 눌렀는데 가게 창이 안 열렸다")
+		main.panel.close()
 
 	# 3) 작은 건물 자리를 누르면 세워진다
 	var before_small: int = s.smalls.size()

@@ -24,6 +24,19 @@ var _newsbtn: Button
 var _press_at: Vector2 = Vector2.ZERO
 var _dragged: bool = false
 
+## ── 줌 ──
+## 왜 칸을 정해 두나. 마음대로 줄이면 마을이 개미만 해지고, 마음대로 키우면
+## 손님이 화면을 다 덮는다. 둘 다 놀 수 없는 화면이다.
+##   1.00 — 처음 보는 크기. 가게 하나(3×3 마당 288px)가 폭 430 안에 꽉 찬다
+##   0.45 — 마을 전체를 훑는다
+##   1.80 — 매대 하나를 정확히 누를 만큼
+const ZOOM_DEF := 1.0
+const ZOOM_MIN := 0.45
+const ZOOM_MAX := 1.8
+## 두 손가락 사이 거리 — 지난 프레임과 견줘서 벌어졌는지 좁혀졌는지를 본다
+var _touches: Dictionary = {}
+var _pinch_d: float = 0.0
+
 ## ── 저장 ──
 ## 방치형에서 저장은 잔재미가 아니라 뼈대다. 껐다 켜면 처음부터인 게임은
 ## "잠깐 두고 나중에 본다"가 아예 성립하지 않는다.
@@ -82,7 +95,7 @@ func _ready() -> void:
 	add_child(village)
 
 	cam = Camera2D.new()
-	cam.zoom = Vector2(0.62, 0.62)
+	cam.zoom = Vector2(ZOOM_DEF, ZOOM_DEF)
 	# 대장간 앞에서 시작한다 — 처음 켜면 여기 하나만 서 있다.
 	# 화면의 가로 위치는 tx가 아니라 (tx − ty)라, 칸 좌표를 그대로 쓰면 엉뚱한 데를 본다.
 	cam.position = Iso.w(Iso.SHOP_T[0].x - 1.5, Iso.SHOP_T[0].y - 1.5) + Vector2(0, -60)
@@ -233,6 +246,40 @@ func _paint() -> void:
 ## 화면을 끌어서 마을을 둘러보고, 눌러서 논다.
 ## 마을 밖으로는 못 나간다 — 끝없는 초록 벌판이 나오면 길을 잃는다.
 func _unhandled_input(e: InputEvent) -> void:
+	# 두 손가락 — 폰에서 크게·작게. 손가락 하나는 밀기라 여기서 안 본다.
+	if e is InputEventScreenTouch:
+		var st := e as InputEventScreenTouch
+		if st.pressed:
+			_touches[st.index] = st.position
+		else:
+			_touches.erase(st.index)
+		_pinch_d = 0.0
+		if _touches.size() >= 2:
+			_dragged = true           # 두 손가락을 뗐을 때 그 자리가 눌리면 안 된다
+		return
+	if e is InputEventScreenDrag:
+		var sd := e as InputEventScreenDrag
+		_touches[sd.index] = sd.position
+		if _touches.size() >= 2:
+			var pts: Array = _touches.values()
+			var d: float = (pts[0] as Vector2).distance_to(pts[1] as Vector2)
+			var mid: Vector2 = ((pts[0] as Vector2) + (pts[1] as Vector2)) * 0.5
+			if _pinch_d > 0.0 and d > 0.0:
+				_zoom_by(d / _pinch_d, mid)
+			_pinch_d = d
+		return
+	# 트랙패드 오므리기(맥) · 휠(책상에서 시험할 때)
+	if e is InputEventMagnifyGesture:
+		_zoom_by((e as InputEventMagnifyGesture).factor, (e as InputEventMagnifyGesture).position)
+		return
+	if e is InputEventMouseButton and (e as InputEventMouseButton).pressed:
+		var wb := e as InputEventMouseButton
+		if wb.button_index == MOUSE_BUTTON_WHEEL_UP:
+			_zoom_by(1.1, wb.position)
+			return
+		if wb.button_index == MOUSE_BUTTON_WHEEL_DOWN:
+			_zoom_by(1.0 / 1.1, wb.position)
+			return
 	if e is InputEventMouseButton and (e as InputEventMouseButton).button_index == MOUSE_BUTTON_LEFT:
 		var mb := e as InputEventMouseButton
 		if mb.pressed:
@@ -242,10 +289,21 @@ func _unhandled_input(e: InputEvent) -> void:
 			_tap(_to_world(mb.position))
 	elif e is InputEventMouseMotion and (e as InputEventMouseMotion).button_mask & MOUSE_BUTTON_MASK_LEFT:
 		var mm := e as InputEventMouseMotion
+		if _touches.size() >= 2:
+			return                             # 두 손가락은 크기 조절이지 밀기가 아니다
 		if mm.position.distance_to(_press_at) > 8.0:
 			_dragged = true                    # 8px 넘게 움직였으면 끈 것이다
 		cam.position -= mm.relative / cam.zoom.x
 		_clamp_cam()
+
+## 누른 자리를 붙잡고 크게·작게. 화면 한가운데를 기준으로 하면 보고 있던
+## 가게가 손 밑에서 도망간다 — 손가락 밑의 땅은 그대로 있어야 한다.
+func _zoom_by(f: float, at: Vector2) -> void:
+	var before: Vector2 = _to_world(at)
+	var z: float = clampf(cam.zoom.x * f, ZOOM_MIN, ZOOM_MAX)
+	cam.zoom = Vector2(z, z)
+	cam.position += before - _to_world(at)
+	_clamp_cam()
 
 func _to_world(screen: Vector2) -> Vector2:
 	return cam.position + (screen - get_viewport_rect().size * 0.5) / cam.zoom.x
@@ -292,9 +350,14 @@ func _tap(p: Vector2) -> void:
 			for k in range(cap):
 				var sp2: Vector2i = y.stalls[k]
 				var q: Vector2 = Iso.w(o.x + sp2.x + 0.5, o.y + sp2.y + 0.5)
-				if absf(p.x - q.x) > 52.0 or p.y < q.y - 64.0 or p.y > q.y + 28.0:
+				# ★ 매대 판정은 **제 칸 위**로만. 예전엔 104×92짜리 네모라
+				#   칸(96×48) 두 개 몫을 먹었고, 그래서 마당 어디를 눌러도
+				#   매대가 먼저 잡혔다 — 가게 창은 현판으로만 열리는 셈이었다.
+				#   칸 모양 그대로(마름모) 재고, 매대 몸통 높이만큼만 위로 올린다.
+				var dy: float = p.y - (q.y - 14.0)
+				if absf(p.x - q.x) / (Iso.TW * 0.5) + absf(dy) / (Iso.TH * 0.5) > 1.0:
 					continue
-				var d: float = Vector2(p.x - q.x, (p.y - (q.y - 18.0)) * 1.4).length()
+				var d: float = Vector2(p.x - q.x, dy * 2.0).length()
 				if d < best_d:
 					best_d = d
 					best = k

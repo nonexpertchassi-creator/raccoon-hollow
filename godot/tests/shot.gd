@@ -4,6 +4,7 @@ extends Node
 ##
 ##   SHOT_MINUTES=30           얼마나 감을지
 ##   SHOT_UNTIL=bubble|grumpy  그 장면이 나올 때까지 더 감는다
+##   SHOT_ZOOM=1.0             그 크기로 찍는다(기본은 게임이 정한 값)
 ##   SHOT_PANEL=quests|guests|<가게id>   창을 열어 놓고 찍는다
 var _done: bool = false
 
@@ -24,6 +25,11 @@ func _ready() -> void:
 			if _scene_has(main, want):
 				break
 			_step(main, s, rng)
+	# 줌을 바꿔 가며 찍는다 — "이 크기가 놀 만한가"는 재는 게 아니라 보는 것이다
+	if OS.has_environment("SHOT_ZOOM"):
+		var z: float = float(OS.get_environment("SHOT_ZOOM"))
+		main.cam.zoom = Vector2(z, z)
+		main._clamp_cam()
 	main._paint()
 	if OS.has_environment("SHOT_PANEL"):
 		var k: String = OS.get_environment("SHOT_PANEL")
