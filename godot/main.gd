@@ -1,8 +1,7 @@
 extends Node2D
 ## 마을 화면. 규칙(sim)은 읽기만 하고 절대 고치지 않는다.
 ##
-## 아직 손으로 누를 수 있는 것이 없다 — 지금은 가상 플레이어가 대신 누른다.
-## 누르는 조작은 다음 차례다.
+## 지도를 눌러서 논다(_tap). 강화·창 열기·나쁜 놈 잡기가 전부 여기서 갈린다.
 
 var sim: Sim
 var rng: Rng
@@ -180,6 +179,8 @@ func _process(delta: float) -> void:
 		village.on_sale(s)
 	for d in r.done:
 		village.on_sale(d)
+	if r.ask != null:
+		village.on_ask(r.ask)
 	village.cam_center = cam.position
 	_save_acc += delta
 	if _save_acc > 5.0:

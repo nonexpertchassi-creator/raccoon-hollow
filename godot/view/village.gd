@@ -31,6 +31,12 @@ const ENTRY := Vector2i(6, 0)
 const EXIT := Vector2i(6, 17)
 const LINE_MAX := 4          # 한 가게 앞에 세우는 손님 수
 
+## 손님이 물어본 것 — "무쇠도끼?" 한 마디가 그 가게 지붕 위에 뜬다.
+## 이게 없으면 아직 안 연 품목을 **왜** 여는지가 화면에 안 보인다.
+## 한 번에 하나만 띄운다 — 두 개가 겹치면 둘 다 못 읽는다.
+var bubble: Dictionary = {}
+const BUBBLE_LIFE := 4.5
+
 ## 가게 앞 줄. 손님이 겹쳐 서면 서로를 덮어서 몇 마리인지도 안 보인다.
 ## 먼저 온 손님이 0번(계산대 앞), 나머지는 길을 따라 뒤로 선다.
 var line: Array = []
@@ -51,11 +57,26 @@ func setup(s: Sim) -> void:
 		clerks.append({"pos": Iso.foot(sim, i).work, "at": "work", "busy": 0.0})
 		line.append([])
 
+## sim이 "손님이 물어봤다"고 알려오면 그 가게 위에 말풍선을 띄운다.
+func on_ask(ask: Dictionary) -> void:
+	var idx: int = -1
+	for i in range(Content.SHOPS.size()):
+		if Content.SHOPS[i].id == ask.item.shop:
+			idx = i
+	if idx < 0:
+		return
+	bubble = {"idx": idx, "text": "%s?" % String(ask.item.name),
+		"face": String(ask.guest.face), "t": BUBBLE_LIFE}
+
 ## sim이 판 것을 화면에 들여보낸다. **sim을 고치지 않는다** — 읽고 흉내만 낸다.
 func on_sale(sale: Dictionary) -> void:
-	if sale.lines.is_empty():
+	# 빈손 손님도 들여보낸다 — 못 산 물건의 가게 앞까지는 가 본다.
+	# 💢는 거기서 나온다. 문 앞에서 되돌려보내면 왜 화가 났는지가 안 보인다.
+	var empty: bool = sale.lines.is_empty()
+	var src: Array = sale.get("grumbles", []) if empty else sale.lines
+	if src.is_empty():
 		return
-	var shop_id: String = String(sale.lines[0].item.shop)
+	var shop_id: String = String(src[0].item.shop)
 	var idx: int = -1
 	for i in range(Content.SHOPS.size()):
 		if Content.SHOPS[i].id == shop_id:
@@ -74,7 +95,7 @@ func on_sale(sale: Dictionary) -> void:
 	walkers.append({
 		"face": String(sale.guest.face), "shop": idx, "state": "in",
 		"pos": Iso.w(ENTRY.x + 0.5, ENTRY.y + 0.5),
-		"path": path, "step": 1, "wait": 0.0,
+		"path": path, "step": 1, "wait": 0.0, "qwait": 0.0, "empty": empty,
 		"n": int(sale.n), "gain": float(sale.gain),
 	})
 	line[idx].append(walkers[walkers.size() - 1])
@@ -100,6 +121,12 @@ func _walk(wk: Dictionary, delta: float) -> bool:
 	return false
 
 func _advance(delta: float) -> void:
+	# 말풍선 시계도 여기서 돈다. _process에 두면 빨리 감기(shot·taptest)가
+	# 이 줄을 건너뛰어서, 도구에게는 말풍선이 **영원히 안 사라지는 것**이 된다.
+	if not bubble.is_empty():
+		bubble.t -= delta
+		if bubble.t <= 0.0:
+			bubble = {}
 	var keep: Array = []
 	for wk in walkers:
 		match wk.state:
@@ -111,6 +138,9 @@ func _advance(delta: float) -> void:
 					# 맨 앞에 설 때까지는 시계가 안 돈다 — 줄은 기다리는 곳이다
 					if line[wk.shop].find(wk) == 0:
 						wk.wait += delta
+						wk.qwait = 0.0        # 제 차례가 왔으면 화를 푼다
+					else:
+						wk.qwait += delta
 					if wk.wait >= BUY_TIME:
 						wk.state = "out"
 						line[wk.shop].erase(wk)
@@ -411,10 +441,35 @@ func _clerk(i: int) -> void:
 func _walker(wk: Dictionary) -> void:
 	_raccoon(wk.pos, 34.0, Color("9c8f7a"))
 	_text(wk.pos + Vector2(0, -46), wk.face, 20, Color.WHITE)
-	if wk.state == "buy":
-		var txt: String = "🪙%s" % Num.fmt(wk.gain)
-		_chip(wk.pos + Vector2(0, -78), 20.0 + txt.length() * 11.0, 21, Color(0.17, 0.14, 0.11, 0.82))
-		_text(wk.pos + Vector2(0, -63), txt, 12, Color("ffe9a8"))
+	if wk.state != "buy":
+		return
+	var bob: float = sin(_t * 5.2) * 2.0
+	# 💢 = **빈손으로 돌아간다.** 계산대 앞에 서 본 뒤에만 띄운다 —
+	# 걸어 들어올 때부터 화가 나 있으면 '묻지도 않았는데 왜 화났지'가 된다.
+	if wk.empty:
+		if wk.wait > 0.0:
+			_text(wk.pos + Vector2(15, -46 + bob), "💢", 19, Color.WHITE)
+		return
+	# 😠 = **지금 줄에서 기다리는 중**. 제 차례가 오면 바로 푼다 — 물건을
+	# 받아 들고도 화난 얼굴이 남아 있으면 그것도 '왜 화났지'가 된다.
+	if wk.qwait > Content.SERVICE.linePatience:
+		_text(wk.pos + Vector2(15, -44 + bob), "😠", 17, Color.WHITE)
+	var txt: String = "🪙%s" % Num.fmt(wk.gain)
+	_chip(wk.pos + Vector2(0, -78), 20.0 + txt.length() * 11.0, 21, Color(0.17, 0.14, 0.11, 0.82))
+	_text(wk.pos + Vector2(0, -63), txt, 12, Color("ffe9a8"))
+
+## 물어보는 말풍선 — 현판 바로 위. 깊이 정렬 밖에 그린다(지붕에 가리면 못 읽는다).
+func _bubble() -> void:
+	var o: Vector2i = Iso.org(sim, int(bubble.idx))
+	# 현판(N.y−72 ~ −40)보다 위에. 처음에 −86으로 뒀더니 말풍선이 현판을 덮어
+	# 가게 이름이 안 보였다 — 꼬리 끝까지 재서 띄운다.
+	var n: Vector2 = Iso.w(o.x, o.y) + Vector2(0, -116)
+	var txt: String = "%s %s" % [bubble.face, bubble.text]
+	var a: float = minf(1.0, float(bubble.t))       # 사라질 땐 옅어진다
+	_chip(n, 28.0 + txt.length() * 12.0, 28, Color(1.0, 0.965, 0.847, a))
+	draw_colored_polygon(PackedVector2Array([n + Vector2(-6, 27), n + Vector2(6, 27),
+		n + Vector2(0, 36)]), Color(1.0, 0.965, 0.847, a))
+	_text(n + Vector2(0, 19), txt, 13, Color(C.ink, a))
 
 ## 나쁜 놈이 지금 어디 있나. 없으면 빈 딕셔너리.
 ##
@@ -509,6 +564,8 @@ func _draw() -> void:
 	layer.sort_custom(func(a, b): return a.z < b.z if a.z != b.z else a.i < b.i)
 	for e in layer:
 		e.f.call()
+	if not bubble.is_empty():
+		_bubble()
 	# 나쁜 놈은 **늘 맨 앞**에 그린다. 지붕 뒤에 숨으면 누를 수가 없다.
 	var th: Dictionary = pest_at(cam_center)
 	if not th.is_empty():
