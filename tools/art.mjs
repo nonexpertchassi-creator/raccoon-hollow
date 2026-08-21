@@ -24,6 +24,7 @@ const HERO = [
   ['raccoon-walk1', '걷기 1 — 왼발 앞'],
   ['raccoon-walk2', '걷기 2 — 오른발 앞'],
   ['raccoon-sleep', '조는 중 — 진열대가 다 차서 할 일이 없다'],
+  ['mayor',         '촌장 — 마을을 돌아다닌다. 흰 수염과 지팡이. **마당 밖으로 나오는 유일한 너구리**'],
 ];
 
 const GROUPS = [

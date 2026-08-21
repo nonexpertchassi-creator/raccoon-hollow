@@ -57,6 +57,16 @@ const BUBBLE_LIFE := 4.5
 ## 먼저 온 손님이 0번(계산대 앞), 나머지는 길을 따라 뒤로 선다.
 var line: Array = []
 
+## 촌장 너구리 — **마당 밖으로 나오는 유일한 너구리**다.
+## 길을 따라 마을을 돌아다니고, 걸린 의뢰가 있으면 머리 위에 ❗를 띄운다.
+## 누르면 의뢰 창이 열린다.
+##
+## ★ 여기 있는 것은 **화면뿐**이다. sim은 한 줄도 안 건드린다.
+##   촌장이 경제(돈·젬)를 만지는 순간 대조 시험이 그 자리에서 깨진다 —
+##   자바스크립트 답안지에는 촌장이 없기 때문이다. 그 이야기는 FLOW.md에 적었다.
+var mayor: Dictionary = {}
+const MAYOR_SPEED := 62.0
+
 ## 가게별 점장 — 평소엔 작업대, 팔릴 땐 계산대 뒤로 간다
 var clerks: Array = []
 const CLERK_SPEED := 130.0
@@ -72,6 +82,9 @@ func setup(s: Sim) -> void:
 	for i in range(Content.SHOPS.size()):
 		clerks.append({"pos": Iso.foot(sim, i).work, "at": "work", "busy": 0.0, "walking": false})
 		line.append([])
+	var start: Vector2i = Iso.GATES[0]
+	mayor = {"pos": Iso.w(start.x + 0.5, start.y + 0.5), "at": start,
+		"path": [], "step": 1, "rest": 1.0}
 
 ## sim이 "손님이 물어봤다"고 알려오면 그 가게 위에 말풍선을 띄운다.
 func on_ask(ask: Dictionary) -> void:
@@ -159,6 +172,7 @@ func _advance(delta: float) -> void:
 		if f.t > 0.0:
 			live.append(f)
 	floats = live
+	_walk_mayor(delta)
 	var keep: Array = []
 	for wk in walkers:
 		match wk.state:
@@ -198,6 +212,41 @@ func _advance(delta: float) -> void:
 		var step: float = CLERK_SPEED * delta
 		c.walking = d.length() > step        # 걷는 중이면 걷는 그림을 쓴다
 		c.pos = goal if d.length() <= step else c.pos + d.normalized() * step
+
+## 촌장 걸음 — 길 위의 아무 데나 한 곳을 골라 걸어가고, 닿으면 잠깐 쉬었다 또 간다.
+## 목적지를 마을 문(GATES)에서 고르면 늘 가장자리만 돌게 되므로 길 전체에서 고른다.
+func _walk_mayor(delta: float) -> void:
+	if mayor.is_empty():
+		return
+	if mayor.path.is_empty() or mayor.step >= mayor.path.size():
+		mayor.rest -= delta
+		if mayor.rest > 0.0:
+			return
+		var to: Vector2i = _road_spot()
+		mayor.path = Iso.route(mayor.at, to)
+		mayor.step = 1
+		mayor.at = to
+		mayor.rest = 1.4 + _grng.next() * 2.6
+		if mayor.path.is_empty():
+			mayor.at = _road_spot()
+		return
+	var t: Vector2i = mayor.path[mayor.step]
+	var target: Vector2 = Iso.w(t.x + 0.5, t.y + 0.5)
+	var d: Vector2 = target - mayor.pos
+	var step: float = MAYOR_SPEED * delta
+	if d.length() <= step:
+		mayor.pos = target
+		mayor.step += 1
+	else:
+		mayor.pos += d.normalized() * step
+
+func _road_spot() -> Vector2i:
+	for _try in range(20):
+		var tx: int = int(_grng.next() * Iso.GW) % Iso.GW
+		var ty: int = int(_grng.next() * Iso.GH) % Iso.GH
+		if Iso.is_road(tx, ty):
+			return Vector2i(tx, ty)
+	return Iso.GATES[0]
 
 func _process(delta: float) -> void:
 	_t += delta
@@ -543,6 +592,25 @@ func _hero_tex(shop_id: String, pose: String) -> Texture2D:
 		return t
 	return Art.tex("hero", "raccoon-" + pose)
 
+## 촌장 — 흰 수염과 지팡이로 가른다. 크기는 점장·직원과 같다.
+## 가르는 것은 크기가 아니라 **어디를 다니느냐**다 — 마당 밖은 이 너구리뿐이다.
+func _mayor() -> void:
+	if mayor.is_empty():
+		return
+	var t: Texture2D = Art.tex("hero", "mayor")
+	if t != null:
+		_sprite(t, mayor.pos, "hero")
+	else:
+		_raccoon(mayor.pos, SHAPE, Color("cbb79a"))
+		draw_line(mayor.pos + Vector2(15, -6), mayor.pos + Vector2(19, -44), C.wood2, 2.5)
+		draw_circle(mayor.pos + Vector2(0, -26), 5.0, Color(1, 1, 1, 0.85))
+	# 걸린 의뢰가 있으면 알린다. 의뢰 창은 아래 단추에도 있지만,
+	# **마을 안에서 눈에 띄어야** 보러 간다.
+	if not sim.quests.is_empty():
+		var bob: float = absf(sin(_t * 4.0)) * 5.0
+		_chip(mayor.pos + Vector2(0, -86 - bob), 26, 26, Color("c7563f"))
+		_text(mayor.pos + Vector2(0, -67 - bob), "❗", 17, Color.WHITE)
+
 func _clerk(i: int) -> void:
 	var c: Dictionary = clerks[i]
 	var pose: String = "make"
@@ -757,6 +825,9 @@ func _draw() -> void:
 		seq += 1
 	layer.append({"z": Iso.w(Iso.DOG_T.x + 1, Iso.DOG_T.y + 1).y, "i": seq, "f": _dog})
 	seq += 1
+	if not mayor.is_empty():
+		layer.append({"z": mayor.pos.y, "i": seq, "f": _mayor})
+		seq += 1
 	# 너구리들 — 발끝 y로 선다. 그래야 계산대 뒤에 서면 가려지고 앞에 서면 가린다.
 	for i in range(Content.SHOPS.size()):
 		if not sim.shops.has(String(Content.SHOPS[i].id)):

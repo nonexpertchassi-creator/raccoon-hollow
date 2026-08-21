@@ -340,14 +340,22 @@ func _tap(p: Vector2) -> void:
 			sfx.play("catch")
 			return
 
-	# 2) 삽살개 자리
+	# 2) 촌장 — 마을을 돌아다닌다. 누르면 의뢰 창.
+	#    가게보다 먼저 본다. 가게 마당 위를 지나갈 때 그 밑에 깔리면 못 누른다.
+	if not village.mayor.is_empty():
+		var mp: Vector2 = village.mayor.pos
+		if absf(p.x - mp.x) < 34.0 and p.y > mp.y - 92.0 and p.y < mp.y + 14.0:
+			panel.open_kind("quests")
+			return
+
+	# 3) 삽살개 자리
 	var dp: Vector2 = Iso.w(Iso.DOG_T.x + 1, Iso.DOG_T.y + 1)
 	if not sim.guard and absf(p.x - dp.x) < 60.0 and p.y > dp.y - 80.0 and p.y < dp.y + 26.0:
 		if sim.buy_guard():
 			sfx.play("open")
 		return
 
-	# 3) 작은 건물 — 세우거나, 북적일 때 눌러 장을 연다
+	# 4) 작은 건물 — 세우거나, 북적일 때 눌러 장을 연다
 	for i in range(Iso.SMALL_T.size()):
 		var sp: Vector2 = Iso.w(Iso.SMALL_T[i].x + 1, Iso.SMALL_T[i].y + 1)
 		if absf(p.x - sp.x) < 62.0 and p.y > sp.y - 92.0 and p.y < sp.y + 24.0:
@@ -358,7 +366,7 @@ func _tap(p: Vector2) -> void:
 				sfx.play("fair")
 			return
 
-	# 4) 가게 — 매대는 그 자리에서 강화, 나머지는 창
+	# 5) 가게 — 매대는 그 자리에서 강화, 나머지는 창
 	for i in range(Content.SHOPS.size()):
 		var shop: Dictionary = Content.SHOPS[i]
 		var o: Vector2i = Iso.org(sim, i)
