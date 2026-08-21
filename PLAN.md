@@ -2862,3 +2862,35 @@ ERROR: Project export for preset "iOS" failed.
 수도 없다. 시뮬레이터도 Xcode에 딸려 온다(`simctl`이 없다).
 
 앱스토어에서 Xcode를 받아야 하고, 몇 GB에 시간이 걸린다.
+
+### 이어서 — 아이폰 내보내기, 나머지 걸림돌 둘
+
+**내 앞 진단은 절반이 틀렸다.** "Xcode가 안 깔려 있다"고 적었는데 깔려 있다.
+`xcode-select`가 명령줄 도구를 가리키고 있어서 **명령줄이 Xcode를 못 볼 뿐**이고,
+Xcode 앱 자체는 멀쩡하다. 명령줄로 확인한 것을 앱의 상태로 넘겨짚었다.
+
+아이콘을 고친 뒤에도 둘이 더 걸렸다:
+
+| 걸린 것 | 왜 | 고친 것 |
+|---|---|---|
+| `Apple 스토어 팀 ID가 지정되지 않았습니다` | 비워 두면 Godot이 아예 안 내보낸다 | 자리채움 값을 넣었다. 진짜 팀은 Xcode의 Signing 칸에서 고른다 |
+| `xcodebuild를 실행하는 데 실패했습니다` | Godot이 **직접 빌드까지** 하려 했는데, 명령줄이 Xcode를 못 본다 | `export_project_only=true` — Xcode 프로젝트만 만들고 빌드는 Xcode에게 맡긴다 |
+
+그리고 `bundle_identifier`가 `"test"`였다. iOS에서 못 쓰는 이름이라
+`com.raccoonhollow.nogur`로 바꿨다.
+
+**결과:** `/Users/apple/Downloads/nogur-ios/nogur.xcodeproj` (430MB).
+오류 없이 끝까지 나온다.
+
+### 왜 'Xcode의 깃 클론'이 답이 아닌가 (유저 물음)
+
+Xcode의 깃 클론은 **Xcode용 프로젝트**를 받아오는 기능이다. 우리 저장소는
+Godot 프로젝트라, 클론해 봤자 Xcode에게는 **글자 파일 뭉치**일 뿐이다.
+
+순서는 반대다:
+
+```
+Godot(내보내기) → nogur.xcodeproj → Xcode로 열기 → 아이폰에 설치
+```
+
+Godot이 Xcode 프로젝트를 **만들어 준다.** 저장소를 Xcode로 여는 게 아니다.
