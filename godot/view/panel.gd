@@ -50,7 +50,9 @@ func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	offset_left = 0
 	offset_right = 0
-	offset_top = -540
+	# 폰에서 보니 창이 쓸데없이 컸다 — 화면의 6할을 덮으면 마을이 안 보이고,
+	# 그러면 "지금 뭘 하고 있었지"를 잃는다. 목록은 어차피 밀어서 본다.
+	offset_top = -430
 	# 배경을 안 깔면 지도가 글자 사이로 비쳐서 아무것도 못 읽는다
 	var bg := StyleBoxFlat.new()
 	bg.bg_color = Color("f3e9d2")
@@ -64,7 +66,7 @@ func _ready() -> void:
 	bg.content_margin_bottom = 12
 	add_theme_stylebox_override("panel", bg)
 	var scroll := ScrollContainer.new()
-	scroll.custom_minimum_size = Vector2(0, 500)
+	scroll.custom_minimum_size = Vector2(0, 392)
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	add_child(scroll)
 	_box = VBoxContainer.new()
@@ -178,6 +180,13 @@ func _refresh_held() -> void:
 	var c: float = sim.level_cost(_held)
 	_held_btn.text = "레벨업 🪙" + Num.fmt(c)
 	_held_btn.disabled = sim.money < c
+
+## 손가락으로 누르는 단추 — 글자는 작아도 **누르는 자리는 커야 한다.**
+func _wide_btn(text: String, enabled: bool, cb: Callable) -> Button:
+	var b: Button = _btn(text, enabled, cb, false)
+	b.custom_minimum_size = Vector2(52, 48)
+	b.add_theme_font_size_override("font_size", 24)
+	return b
 
 func _btn(text: String, enabled: bool, cb: Callable, expand: bool = true) -> Button:
 	var b := Button.new()
@@ -441,12 +450,14 @@ func _shop_body() -> void:
 	# 제목 줄 — ‹ 가게 이름 ›. 화살표로 옆 가게로 건너간다(지도도 따라 옮긴다).
 	var many: bool = _open_shops().size() > 1
 	var head := HBoxContainer.new()
-	head.add_child(_btn("‹", many, func(): step_shop(-1), false))
+	# ★ 화살표는 **손가락 크기**로. 글자 크기대로 두었더니 폰에서 너무 작았다.
+	#   애플이 권하는 최소 크기가 44pt인데, 글자 하나짜리 단추는 그 절반도 안 된다.
+	head.add_child(_wide_btn("‹", many, func(): step_shop(-1)))
 	var title := _label("%s %s   %s" % [shop.sign, shop.name, shop.ranks[sim.rank_of(shop_id)]], 20)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	head.add_child(title)
-	head.add_child(_btn("›", many, func(): step_shop(1), false))
+	head.add_child(_wide_btn("›", many, func(): step_shop(1)))
 	_box.add_child(head)
 
 	# 갈피 줄

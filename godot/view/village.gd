@@ -115,7 +115,6 @@ func on_sale(sale: Dictionary) -> void:
 	# 줄이 다 차면 이번 손님은 화면에 안 들여보낸다. 돈은 이미 들어왔고,
 	# 화면은 어차피 sim의 그림자일 뿐이다 — 그림자가 넘칠 필요는 없다.
 	if line[idx].size() >= LINE_MAX:
-		clerks[idx].busy = 1.4
 		return
 	var door: Vector2i = Iso.door(sim, idx)
 	var enter: Vector2i = _gate()
@@ -127,9 +126,9 @@ func on_sale(sale: Dictionary) -> void:
 		"pos": Iso.w(enter.x + 0.5, enter.y + 0.5), "out_gate": _gate(),
 		"path": path, "step": 1, "wait": 0.0, "qwait": 0.0, "empty": empty,
 		"n": int(sale.n), "gain": float(sale.gain), "sold": _order_of(sale),
+		"speed": float(sale.guest.get("speed", 1.0)), "off": (_grng.next() - 0.5) * 30.0,
 	})
 	line[idx].append(walkers[walkers.size() - 1])
-	clerks[idx].busy = 1.4
 
 ## 이 손님이 무엇을 몇 개 사러 왔나. 머리 위에 띄울 주문표다.
 ## 셋까지만 담는다 — 넷을 넘기면 말풍선이 손님보다 커져서 길을 덮는다.
@@ -139,17 +138,36 @@ func _order_of(sale: Dictionary) -> Array:
 		out.append({"id": String(l.item.id), "icon": String(l.item.icon), "n": int(l.n)})
 	return out
 
+## 줄에서 **몇 번째인가.** 아직 걸어오는 중인 사람은 안 센다.
+##
+## ★ 예전엔 `line.find(wk)`를 그대로 썼다. 그런데 줄자리는 **문에 들어서는
+##   순간** 잡히므로, 앞사람이 아직 길 위에 있는데 그 자리는 이미 찜해져 있었다.
+##   그래서 **맨 앞이 비었는데 뒷사람이 두 번째 자리에 서서 기다리는** 그림이 됐다.
+##   폰에서 유저가 바로 알아챈 것이 이것이다.
+func _line_index(wk: Dictionary) -> int:
+	var n: int = 0
+	for w in line[wk.shop]:
+		if w == wk:
+			break
+		if w.state == "buy":
+			n += 1
+	return n
+
 func _walk(wk: Dictionary, delta: float) -> bool:
 	var target: Vector2
 	if wk.state == "buy":
-		target = Iso.line_spot(sim, wk.shop, maxi(0, line[wk.shop].find(wk)))
+		target = Iso.line_spot(sim, wk.shop, _line_index(wk))
 	elif wk.step < wk.path.size():
 		var t: Vector2i = wk.path[wk.step]
-		target = Iso.w(t.x + 0.5, t.y + 0.5)
+		# 길을 걸을 때만 좌우로 조금 흩뜨린다. 다들 한 줄로 겹쳐 걸으면
+		# 열 마리가 한 마리처럼 보인다. 줄에 설 때는 안 흩뜨린다(줄이 흐트러진다).
+		target = Iso.w(t.x + 0.5, t.y + 0.5) + Vector2(wk.off, wk.off * 0.4)
 	else:
 		return true
 	var d: Vector2 = target - wk.pos
-	var step: float = WALK * delta
+	# 손님마다 걸음이 다르다 — 토끼는 빠르고 거북은 느리다.
+	# 이 숫자는 content.js에 처음부터 있었는데 화면이 안 쓰고 있었다.
+	var step: float = WALK * float(wk.speed) * delta
 	if d.length() <= step:
 		wk.pos = target
 		if wk.state != "buy":
@@ -182,7 +200,7 @@ func _advance(delta: float) -> void:
 			"buy":
 				if _walk(wk, delta):
 					# 맨 앞에 설 때까지는 시계가 안 돈다 — 줄은 기다리는 곳이다
-					if line[wk.shop].find(wk) == 0:
+					if _line_index(wk) == 0:
 						wk.wait += delta
 						wk.qwait = 0.0        # 제 차례가 왔으면 화를 푼다
 					else:
@@ -202,7 +220,17 @@ func _advance(delta: float) -> void:
 					continue                      # 마을을 떠났다
 		keep.append(wk)
 	walkers = keep
-	# 점장 — 팔린 여운이 있으면 계산대 뒤, 아니면 작업대
+	# 점장 — **손님이 계산대에 닿아 있는 동안** 계산대 뒤에 선다.
+	#
+	# ★ 예전엔 sim이 "팔렸다"고 알리는 순간(=손님이 마을 입구에 생기는 순간)
+	#   점장을 보냈다. 손님은 몇 초를 걸어와야 하는데 점장은 이미 가 있으니,
+	#   **아무도 없는 계산대에서 물건을 옮기는** 그림이 됐다.
+	#   폰에서 유저가 바로 알아챈 것이 이것이다.
+	for i in range(Content.SHOPS.size()):
+		for wk in line[i]:
+			if wk.state == "buy" and _line_index(wk) == 0:
+				clerks[i].busy = 0.25       # 서 있는 동안 계속 새로 채워진다
+				break
 	for i in range(Content.SHOPS.size()):
 		var c: Dictionary = clerks[i]
 		c.busy = max(0.0, c.busy - delta)
@@ -716,7 +744,7 @@ func _order(wk: Dictionary) -> void:
 		return
 	# 줄이 길 때 전부 띄우면 주문표끼리 겹쳐 어느 것도 안 읽힌다.
 	# **맨 앞사람만** — 줄을 세운 이유의 절반이 이것이다(자바스크립트판에서 얻은 답).
-	if line[wk.shop].find(wk) != 0:
+	if _line_index(wk) != 0:
 		return
 	var show: int = min(3, sold.size())
 	var more: int = sold.size() - show
