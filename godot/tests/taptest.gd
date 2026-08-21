@@ -113,6 +113,50 @@ func _process(_d: float) -> void:
 	if s.money != money_before:
 		fails.append("빈 풀밭을 눌렀는데 돈이 움직였다")
 
+	# 7) 레벨업 단추를 **꾹 누르는 동안 창이 살아 있어야 한다.**
+	#
+	#    ★ 이 시험이 없어서 같은 고장을 두 번 냈다. 창은 0.3초마다 통째로
+	#      다시 그리는데, 누르고 있는 사이에 그러면 단추가 사라진다.
+	#      그러면 손을 뗀 자리가 빈 곳이 되어 그 누름이 지도로 흘러가고,
+	#      **창이 닫힌다.** 유저가 "레벨업 한 번 눌렀는데 바텀시트가 닫힌다"고
+	#      한 그것이다. 눈으로는 "가끔 그러네"까지밖에 못 간다.
+	#    돈을 확 줄여 둔다 — 만렙까지 갈 돈이 있으면 단추가 '최대'로 바뀌어서
+	#    꾹 누르기 자체가 안 나온다. 시험하려는 그 상태를 만들어 놓고 본다.
+	var first: String = ""
+	for it in Content.SHOPS[0].items:
+		if s.is_open(it.id):
+			first = String(it.id)
+			break
+	if first != "":
+		s.items[first].lv = 1.0             # 위에서 만렙까지 올려 놨다 — 도로 내린다
+		# 스무 단계쯤 살 돈. **적게 주면 시험이 아무것도 안 본다** —
+		# 꾹 누르기가 돈이 떨어져 곧바로 끝나면, 보려던 그 순간이 안 온다.
+		# (여섯 단계로 뒀다가 실제로 속았다. 고장 난 판을 넣어도 통과했다.)
+		# 만렙까지 갈 돈은 아니어야 한다 — 그러면 단추가 '최대'로 바뀐다.
+		s.money = s.level_cost_many(first, 20)
+	main.panel.open_for("smith")            # 안에서 이미 다시 그린다 — 또 부르면 안 된다
+	var lvbtn: Button = _find_btn(main.panel, "레벨업")
+	if lvbtn == null:
+		fails.append("가게 창에 레벨업 단추가 없다")
+	else:
+		lvbtn.emit_signal("button_down")
+		main.panel._pressing = true          # 손가락이 아직 닿아 있다
+		main.panel._acc = 5.0                # 다시 그릴 때가 한참 지났다
+		main.panel._process(0.5)
+		# ★ 단추 자신이 아니라 **그 줄**을 본다. rebuild()는 _box의 자식(줄)에게만
+		#   queue_free()를 걸고, 그 안에 든 단추는 줄이 지워질 때 같이 사라진다 —
+		#   단추한테 물어보면 "나는 멀쩡하다"고 답한다. 그것 때문에 이 시험이
+		#   고장 난 판을 넣어도 통과했다. **시험이 못 보는 것은 없는 것이다.**
+		var row: Node = lvbtn
+		while row.get_parent() != null and row.get_parent() != main.panel._box:
+			row = row.get_parent()
+		if row.is_queued_for_deletion():
+			fails.append("꾹 누르는 동안 그 줄이 지워졌다 — 떼면 창이 닫힌다")
+		if not main.panel.visible:
+			fails.append("레벨업을 누르는 중에 창이 닫혔다")
+		main.panel._pressing = false
+	main.panel.close()
+
 	# 소리도 여기서 본다. 소리는 안 나는 게 고장인지 원래 그런 건지 귀로 못 가르고,
 	# 지금은 더미라 **아예 안 들린다** — 셈으로 볼 수밖에 없다.
 	# 위에서 매대를 눌렀으니 강화 소리가 한 번은 울렸어야 한다.
@@ -127,3 +171,19 @@ func _process(_d: float) -> void:
 	get_tree().quit(0 if fails.is_empty() else 1)
 
 var _snap: Dictionary = {}
+
+## 창 안에서 글자로 단추를 찾는다(가지가 여러 겹이라 훑는다).
+##
+## ★ **지워지기로 예약된 것은 건너뛴다.** 창을 다시 그리면 옛 줄들이 아직
+##   가지에 붙어 있는 채로 '지울 것' 표시만 달린다. 그걸 집으면 이미 죽은
+##   단추를 붙잡고 시험하게 되고, 그러면 멀쩡한 판도 실패로 나온다.
+func _find_btn(n: Node, starts: String) -> Button:
+	for c in n.get_children():
+		if c.is_queued_for_deletion():
+			continue
+		if c is Button and String((c as Button).text).begins_with(starts):
+			return c as Button
+		var deep: Button = _find_btn(c, starts)
+		if deep != null:
+			return deep
+	return null

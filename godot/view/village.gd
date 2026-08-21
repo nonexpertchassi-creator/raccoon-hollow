@@ -404,7 +404,13 @@ func _stall(i: int, k: int, spot: Vector2i) -> void:
 	var shown: float = min(cap, st.stock)
 	var capped: bool = shown >= cap
 
-	_box(o.x + spot.x + 0.14, o.y + spot.y + 0.14, 0.72, 0.72, 14, C.paper, C.wood)
+	# 매대(좌판) — 가게마다 다르게 생겼다. 대장간은 모루 받침, 필방은 낮은 서안…
+	# 그림이 없으면 여태처럼 나무 상자를 그린다.
+	var table: Texture2D = Art.ranked("stalls", String(shop.id), sim.rank_of(String(shop.id)))
+	if table != null:
+		_sprite(table, p + Vector2(0, 14), "stalls")
+	else:
+		_box(o.x + spot.x + 0.14, o.y + spot.y + 0.14, 0.72, 0.72, 14, C.paper, C.wood)
 	# 등급이 오르면 그림도 바뀐다 — 그 등급 그림이 있으면 그것,
 	# 없으면 기본 그림에 **등급 테**를 둘러 표시한다(무쇠→참쇠→강철).
 	var rk: int = sim.rank_of(String(shop.id))
@@ -529,8 +535,10 @@ func _idle(i: int) -> bool:
 ## 점장 그림 — **가게 것이 있으면 가게 것**, 없으면 공통 점장.
 ## 대장간 너구리는 망치를 들고, 필방 너구리는 앞치마를 두르는 식이다.
 ## 한 장도 없으면 도형으로 그린다. 어디서 멈춰도 게임은 돈다.
+## 가게 등급도 본다 — `smith-make-1.png`가 있으면 참쇠 대장간 점장은 그걸 쓴다.
+## 없으면 그 가게 점장, 그것도 없으면 공통 점장. **세 겹 다 없으면 도형이다.**
 func _hero_tex(shop_id: String, pose: String) -> Texture2D:
-	var t: Texture2D = Art.tex("clerks", "%s-%s" % [shop_id, pose])
+	var t: Texture2D = Art.ranked("clerks", "%s-%s" % [shop_id, pose], sim.rank_of(shop_id))
 	if t != null:
 		return t
 	return Art.tex("hero", "raccoon-" + pose)

@@ -35,10 +35,17 @@ var _rep_t: float = 0.0
 ##   게다가 뗀 자리가 빈 곳이 되면 그 누름이 지도까지 흘러가 창이 닫힌다 —
 ##   유저가 본 "이전 가게를 눌렀는데 창이 닫힌다"가 이것이다.
 var _pressing: bool = false
+## 꾹 누르는 동안 글자만 고쳐 쓸 두 곳
+var _held_btn: Button = null
+var _held_line: Label = null
 
 func _ready() -> void:
 	visible = false
 	set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	# ★ 창 위를 누른 것은 **절대 지도로 새어 나가면 안 된다.**
+	#   이걸 안 박아 두면, 단추가 아닌 빈 자리를 눌렀을 때 그 누름이 지도까지
+	#   내려가 "빈 곳을 눌렀다"로 처리되어 창이 닫힌다.
+	mouse_filter = Control.MOUSE_FILTER_STOP
 	offset_left = 0
 	offset_right = 0
 	offset_top = -540
@@ -120,6 +127,8 @@ func _input(e: InputEvent) -> void:
 	# 어디서 뗐든 꾹 누르기는 끝난다. 단추가 다시 그려지며 사라져도 안전하다.
 	if not _pressing:
 		_held = ""
+		_held_btn = null
+		_held_line = null
 
 func _process(delta: float) -> void:
 	if not visible:
@@ -138,14 +147,33 @@ func _process(delta: float) -> void:
 				if sim.at_max(_held) or sim.level_up_many(_held, 1) == 0:
 					_held = ""
 					break
-			_acc = 1.0                      # 오른 숫자를 바로 보여준다
+			_refresh_held()
 	# 돈이 오르면 눌릴 수 있게 된 단추가 생긴다 — 자주 다시 그린다.
 	# 다만 손가락이 닿아 있는 동안은 참는다(위 _pressing 설명).
 	_acc += delta
-	if _acc < 0.3 or (_pressing and _held == ""):
+	if _acc < 0.3 or _pressing:
 		return
 	_acc = 0.0
 	rebuild()
+
+## 꾹 누르는 동안 오르는 숫자를 보여준다 — **다시 그리지 않고 글자만 고쳐 쓴다.**
+##
+## ★ 통째로 다시 그렸더니 누르고 있던 단추가 사라졌고, 손을 뗀 자리가 빈 곳이
+##   되면서 그 누름이 지도로 흘러가 **창이 닫혔다.** 유저가 "레벨업 한 번
+##   눌렀는데 바텀시트가 닫힌다"고 한 게 이것이다.
+##   손가락이 닿아 있는 동안은 무엇도 지우지 않는다. 글자만 바꾼다.
+func _refresh_held() -> void:
+	if _held == "" or _held_line == null or _held_btn == null:
+		return
+	_held_line.text = "%s   Lv.%d/%d   🪙%s" % [sim.item_name(_held), int(sim.lv(_held)),
+		int(sim.max_lv(_held)), Num.fmt(sim.price(_held))]
+	if sim.at_max(_held):
+		_held_btn.text = "끝까지 올렸다"
+		_held_btn.disabled = true
+		return
+	var c: float = sim.level_cost(_held)
+	_held_btn.text = "레벨업 🪙" + Num.fmt(c)
+	_held_btn.disabled = sim.money < c
 
 func _btn(text: String, enabled: bool, cb: Callable, expand: bool = true) -> Button:
 	var b := Button.new()
@@ -419,16 +447,17 @@ func _tab_items(shop: Dictionary) -> void:
 		var row: HBoxContainer = _item_row(String(it.icon), String(it.id))
 		var col: VBoxContainer = row.get_child(1)
 		if sim.is_open(it.id):
-			col.add_child(_label("%s   Lv.%d/%d   🪙%s" % [
+			var line: Label = _label("%s   Lv.%d/%d   🪙%s" % [
 				sim.item_name(it.id), int(sim.lv(it.id)), int(sim.max_lv(it.id)),
-				Num.fmt(sim.price(it.id))], 14))
+				Num.fmt(sim.price(it.id))], 14)
+			col.add_child(line)
 			col.add_child(_label("재고 %d/%d · %.1f초" % [
 				int(sim.items[it.id].stock), int(sim.cap_of(it.id)), sim.craft_time(it.id)],
 				11, Color("8a7a63")))
 			if sim.at_max(it.id):
 				col.add_child(_label("더 올릴 수 없다 — 승급해야 한다", 12, Color("8a7a63")))
 			else:
-				col.add_child(_level_btn(String(it.id)))
+				col.add_child(_level_btn(String(it.id), line))
 		elif sim.asked.has(it.id):
 			col.add_child(_label("%s — 손님이 찾던 물건" % it.name, 14))
 			col.add_child(_btn("칸 열기 🪙" + Num.fmt(it.cost), sim.can_open_item(it.id),
@@ -447,7 +476,7 @@ func _tab_items(shop: Dictionary) -> void:
 ##   하나로 줄이고, **꾹 누르면 원하는 만큼** 오른다.
 ##   그리고 지금 돈으로 만렙까지 갈 수 있으면 단추가 스스로 '최대'로 바뀐다 —
 ##   그때는 한 번 누르는 게 맞고, 그 사실을 사람이 알아채야 할 이유가 없다.
-func _level_btn(id: String) -> Button:
+func _level_btn(id: String, line: Label) -> Button:
 	var need: int = int(sim.max_lv(id) - sim.lv(id))
 	var afford: int = sim.affordable_levels(id)
 	if need > 0 and afford >= need:
@@ -468,7 +497,9 @@ func _level_btn(id: String) -> Button:
 			_held = id
 			_held_t = 0.0
 			_rep_t = 0.0
-			_acc = 1.0)
+			_held_btn = b
+			_held_line = line
+			_refresh_held())
 	return b
 
 ## 일손과 이 가게만의 강화. 둘 다 "한 번 사면 계속 도는 것"이라 같이 둔다.
