@@ -43,7 +43,10 @@ func _ready() -> void:
 				main.panel.rebuild()
 	# 찍은 화면에 무엇이 들어 있는지 말해 준다 — 그림만 보면 "말풍선이 원래
 	# 안 뜨는 건지, 이번에만 없는 건지"를 못 가른다.
-	print("SHOT 손님 %d · 빈손💢 %d · 말풍선 %s · 소리 %s" % [main.village.walkers.size(),
+	var staff: int = 0
+	for sh in main.sim.shops:
+		staff += int(main.sim.staff_of(sh))
+	print("SHOT 손님 %d · 직원 %d · 빈손💢 %d · 말풍선 %s · 소리 %s" % [main.village.walkers.size(), staff,
 		_grumpy(main), ("없음" if main.village.bubble.is_empty() else String(main.village.bubble.text)),
 		main.sfx.summary()])
 

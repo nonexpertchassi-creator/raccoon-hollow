@@ -8,7 +8,7 @@
  * **content.js와 art/ 폴더에서 계산**하면 절대 안 어긋난다.
  */
 import { readdirSync, existsSync, readFileSync, writeFileSync } from 'fs';
-import { SHOPS, GUESTS, PESTS } from '../content.js';
+import { SHOPS, GUESTS, PESTS, STAFF_RANKS } from '../content.js';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 /* ★ 그림은 **godot/art/** 안에 산다. 저장소 뿌리(art/)가 아니다.
@@ -34,19 +34,33 @@ const GROUPS = [
           '그래서 작게 줄여도 뭔지 알아볼 수 있어야 한다 — 잔무늬보다 **실루엣**이 중요하다.',
     rows: SHOPS.flatMap((s) => s.items.map((i) =>
       ({ id: i.id, why: `${s.name} · ${i.name} (지금 ${i.icon})` }))) },
+  { dir: 'staff', size: '128×128', title: '직원 너구리',
+    note: '**점장과 달라야 한다** — 점장은 이 가게 주인이고 직원은 고용된 쪽이다.\n' +
+          '등급은 **모자**로 가른다(몸은 같아도 된다). 위로 갈수록 격이 오른다.\n' +
+          '`work`는 일하는 자세, `sleep`은 조는 자세 — 진열대가 다 차면 존다.',
+    rows: STAFF_RANKS.flatMap((r) => [['work', '일하는 중'], ['sleep', '조는 중 — 만들 데가 없다']]
+      .map(([pose, why]) => ({ id: `${r.id}-${pose}`, why: `${r.name} · ${r.hat} — ${why}` }))) },
   { dir: 'guests', size: '128×128', title: '손님',
     rows: GUESTS.map((g) => ({ id: g.id, why: `${g.name} — ${g.desc}` })) },
   { dir: 'pests', size: '128×128', title: '나쁜 놈',
     rows: [...PESTS.map((p) => ({ id: p.id, why: `${p.name} — 눌러서 잡는다` })),
            { id: 'dog', why: '삽살개 — 앉아서 지킨다' }] },
+  /* 선택 — 없으면 공통 점장(hero/)으로 다 돌아간다. 그래서 합계에서 뺀다. */
+  { dir: 'clerks', size: '144×144', title: '가게별 점장', optional: true,
+    note: '가게마다 다른 너구리. **여기까지 오면 제일 좋다.**\n' +
+          '대장간은 망치가 어울리고 필방은 앞치마가 어울린다 — 그 가게의 일이 보이게.\n' +
+          '한 장이라도 있으면 그 가게만 이 그림을 쓰고, 없는 자리는 공통 점장이 선다.\n' +
+          '`make`·`sell` 둘만 있어도 충분하다(걷기·조는 것은 공통 것을 쓴다).',
+    rows: SHOPS.flatMap((sh) => [['make', '만드는 중'], ['sell', '파는 중']]
+      .map(([pose, why]) => ({ id: `${sh.id}-${pose}`, why: `${sh.name} — ${why}` }))) },
 ];
 
 let done = 0, total = 0;
 const lines = [];
 for (const g of GROUPS) {
   const left = g.rows.filter((r) => !has(g.dir, r.id));
-  done += g.rows.length - left.length; total += g.rows.length;
-  lines.push(`### ${g.title} — \`${DIR}/${g.dir}/\` · ${g.size} · **${left.length}장 남음**`, '');
+  if (!g.optional) { done += g.rows.length - left.length; total += g.rows.length; }
+  lines.push(`### ${g.title}${g.optional ? ' (선택)' : ''} — \`${DIR}/${g.dir}/\` · ${g.size} · **${left.length}장 남음**`, '');
   if (g.note) lines.push(g.note, '');
   if (!left.length) lines.push('전부 들어왔다. ✅', '');
   else {

@@ -12,6 +12,8 @@ class_name Art
 ## 폰은 화면이 촘촘해서(2~3배) 같은 크기로 주면 뿌옇게 보인다.
 const SIZE := {
 	"hero": Vector2(72, 72),
+	"clerks": Vector2(72, 72),      # 가게별 점장 — 공통 점장과 같은 크기여야 갈아 끼울 수 있다
+	"staff": Vector2(60, 60),       # 직원은 점장보다 조금 작다. 누가 주인인지 한눈에 보이게
 	"guests": Vector2(64, 64),
 	"items": Vector2(64, 112),
 	"pests": Vector2(64, 64),

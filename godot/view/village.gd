@@ -58,7 +58,7 @@ func setup(s: Sim) -> void:
 	clerks = []
 	line = []
 	for i in range(Content.SHOPS.size()):
-		clerks.append({"pos": Iso.foot(sim, i).work, "at": "work", "busy": 0.0})
+		clerks.append({"pos": Iso.foot(sim, i).work, "at": "work", "busy": 0.0, "walking": false})
 		line.append([])
 
 ## sim이 "손님이 물어봤다"고 알려오면 그 가게 위에 말풍선을 띄운다.
@@ -164,6 +164,7 @@ func _advance(delta: float) -> void:
 		var goal: Vector2 = f.serve if c.busy > 0.0 else f.work
 		var d: Vector2 = goal - c.pos
 		var step: float = CLERK_SPEED * delta
+		c.walking = d.length() > step        # 걷는 중이면 걷는 그림을 쓴다
 		c.pos = goal if d.length() <= step else c.pos + d.normalized() * step
 
 func _process(delta: float) -> void:
@@ -462,13 +463,86 @@ func _raccoon(p: Vector2, size: float, tint: Color) -> void:
 	draw_circle(at + Vector2(-size * 0.11, -size * 0.90), size * 0.09, Color(0.17, 0.14, 0.11, 0.85))
 	draw_circle(at + Vector2(size * 0.11, -size * 0.90), size * 0.09, Color(0.17, 0.14, 0.11, 0.85))
 
-func _clerk(i: int) -> void:
-	# 파는 중이면 파는 자세, 아니면 만드는 자세. 두 장만 있으면 나머지는 돌려 쓴다.
-	var t: Texture2D = Art.tex("hero", "raccoon-sell" if clerks[i].busy > 0.0 else "raccoon-make")
+## 이 가게가 **할 일이 없나** — 열린 물건이 전부 진열대까지 찼으면 존다.
+## 이게 있어야 "더 만들 데가 없다"가 화면으로 보인다(늘리라는 신호다).
+func _idle(i: int) -> bool:
+	var any: bool = false
+	for it in Content.SHOPS[i].items:
+		if not sim.is_open(it.id):
+			continue
+		any = true
+		if sim.items[it.id].stock < sim.cap_of(it.id):
+			return false
+	return any
+
+## 점장 그림 — **가게 것이 있으면 가게 것**, 없으면 공통 점장.
+## 대장간 너구리는 망치를 들고, 필방 너구리는 앞치마를 두르는 식이다.
+## 한 장도 없으면 도형으로 그린다. 어디서 멈춰도 게임은 돈다.
+func _hero_tex(shop_id: String, pose: String) -> Texture2D:
+	var t: Texture2D = Art.tex("clerks", "%s-%s" % [shop_id, pose])
 	if t != null:
-		_sprite(t, clerks[i].pos, "hero")
+		return t
+	return Art.tex("hero", "raccoon-" + pose)
+
+func _clerk(i: int) -> void:
+	var c: Dictionary = clerks[i]
+	var pose: String = "make"
+	if c.busy > 0.0:
+		pose = "sell"
+	elif c.walking:
+		pose = "walk1" if fmod(_t * 5.0, 2.0) < 1.0 else "walk2"
+	elif _idle(i):
+		pose = "sleep"
+	var id: String = String(Content.SHOPS[i].id)
+	var t: Texture2D = _hero_tex(id, pose)
+	if t == null:                       # 그 자세가 아직 없으면 만드는 자세로
+		t = _hero_tex(id, "make")
+	if t != null:
+		_sprite(t, c.pos, "clerks" if Art.tex("clerks", "%s-%s" % [id, pose]) != null else "hero")
 		return
-	_raccoon(clerks[i].pos, 33.0, Color("a8815a"))
+	_raccoon(c.pos, 33.0, Color("a8815a"))
+
+## 직원 — 작업대 옆에 서서 계속 만든다.
+##
+## ★ 자바스크립트판에는 있었는데 옮기면서 빠져 있었다. 직원을 뽑아도
+##   화면에는 아무도 안 나타났다 — 돈만 나가고 아무 일도 안 일어나는,
+##   제일 나쁜 종류다. (예전에 자리가 0개라 안 보이던 것과 같은 증상이고,
+##   그때 자리 규칙은 고쳤는데 **그리는 쪽을 안 옮겼다.**)
+## 직원이 실제로 설 자리. **칸 한가운데가 아니라 마당 안쪽으로 당긴다.**
+##
+## ★ 3×3 마당에서 직원 자리는 담벼락 칸밖에 안 남는데, 그 앞에는 매대가 선다.
+##   칸 한가운데에 세웠더니 매대 뒤에 가려서 **머리만 보였다.** 480K를 주고
+##   머리 하나를 사는 셈이다. 안쪽으로 26px 당기면 매대 앞으로 나온다.
+##   앞뒤 순서도 이 자리로 정해야 한다 — 안 그러면 그림과 순서가 따로 논다.
+func _staff_pos(i: int, k: int) -> Vector2:
+	var n: int = Iso.plot_dim(sim, i)
+	var y: Dictionary = Iso.yard(Iso.YARD_KIND[i], n)
+	var spots: Array = Iso.staff_spots(y, n)
+	var o: Vector2i = Iso.org(sim, i)
+	var sp: Vector2i = spots[k]
+	var p: Vector2 = Iso.w(o.x + sp.x + 0.5, o.y + sp.y + 0.5)
+	var center: Vector2 = Iso.w(o.x + n * 0.5, o.y + n * 0.5)
+	if p.distance_to(center) > 34.0:
+		p += (center - p).normalized() * 26.0
+	return p
+
+func _staff(i: int, k: int) -> void:
+	var spots: Array = Iso.staff_spots(Iso.yard(Iso.YARD_KIND[i], Iso.plot_dim(sim, i)), Iso.plot_dim(sim, i))
+	if k >= spots.size():
+		return
+	var p: Vector2 = _staff_pos(i, k)
+	var idle: bool = _idle(i)
+	# 망치질 — 할 일이 있을 때만 들썩인다. 다 찼으면 가만히 있는다.
+	var swing: float = maxf(0.0, sin(fmod(_t / 2.4 + i * 0.37 + (k + 1) * 0.29, 1.0) * TAU))
+	var bob: float = 0.0 if idle else swing * 3.0
+	var rank: String = String(Content.STAFF_RANKS[0].id)     # 아직 등급 규칙이 없다 — 전부 알바
+	var t: Texture2D = Art.tex("staff", "%s-%s" % [rank, "sleep" if idle else "work"])
+	if t == null:
+		t = Art.tex("staff", "%s-work" % rank)
+	if t != null:
+		_sprite(t, p + Vector2(0, -bob), "staff")
+		return
+	_raccoon(p + Vector2(0, -bob), 26.0, Color("bfa987"))
 
 func _walker(wk: Dictionary) -> void:
 	var t: Texture2D = Art.tex("guests", String(wk.get("id", "")))
@@ -595,8 +669,13 @@ func _draw() -> void:
 	seq += 1
 	# 너구리들 — 발끝 y로 선다. 그래야 계산대 뒤에 서면 가려지고 앞에 서면 가린다.
 	for i in range(Content.SHOPS.size()):
-		if sim.shops.has(String(Content.SHOPS[i].id)):
-			layer.append({"z": clerks[i].pos.y + 0.5, "i": seq, "f": _clerk.bind(i)})
+		if not sim.shops.has(String(Content.SHOPS[i].id)):
+			continue
+		layer.append({"z": clerks[i].pos.y + 0.5, "i": seq, "f": _clerk.bind(i)})
+		seq += 1
+		var spots: Array = Iso.staff_spots(Iso.yard(Iso.YARD_KIND[i], Iso.plot_dim(sim, i)), Iso.plot_dim(sim, i))
+		for k in range(min(int(sim.staff_of(String(Content.SHOPS[i].id))), spots.size())):
+			layer.append({"z": _staff_pos(i, k).y, "i": seq, "f": _staff.bind(i, k)})
 			seq += 1
 	for wk in walkers:
 		layer.append({"z": wk.pos.y, "i": seq, "f": _walker.bind(wk)})

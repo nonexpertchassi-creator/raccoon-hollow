@@ -1025,4 +1025,27 @@ const STAFF := {
 	]
 }
 
+const STAFF_RANKS := [
+	{
+		"id": "band",
+		"name": "머리띠 알바",
+		"hat": "수건 머리띠"
+	},
+	{
+		"id": "chorip",
+		"name": "초립 일꾼",
+		"hat": "초립(누런 풀 갓)"
+	},
+	{
+		"id": "paeraengi",
+		"name": "패랭이 선임",
+		"hat": "패랭이(챙 넓은 대나무 갓)"
+	},
+	{
+		"id": "baengnip",
+		"name": "백립 매니저",
+		"hat": "백립(흰 갓)"
+	}
+]
+
 const STOCK_CAP := 40.0
