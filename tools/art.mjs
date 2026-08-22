@@ -8,7 +8,7 @@
  * **content.js와 art/ 폴더에서 계산**하면 절대 안 어긋난다.
  */
 import { readdirSync, existsSync, readFileSync, writeFileSync } from 'fs';
-import { SHOPS, GUESTS, PESTS, STAFF_RANKS } from '../content.js';
+import { SHOPS, GUESTS, PESTS, STAFF_RANKS, CARD_GRADES } from '../content.js';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 /* ★ 그림은 **godot/art/** 안에 산다. 저장소 뿌리(art/)가 아니다.
@@ -49,7 +49,25 @@ const GROUPS = [
     rows: STAFF_RANKS.flatMap((r) => [['work', '일하는 중'], ['sleep', '조는 중 — 만들 데가 없다']]
       .map(([pose, why]) => ({ id: `${r.id}-${pose}`, why: `${r.name} · ${r.hat} — ${why}` }))) },
   { dir: 'guests', size: '128×128', title: '손님',
-    rows: GUESTS.map((g) => ({ id: g.id, why: `${g.name} — ${g.desc}` })) },
+    note: '마을에 걸어 들어오는 모습. **카드 그림과 다르다** — 이건 옆에서 본 걷는 모습이고,\n' +
+          '카드는 정면으로 선 초상이다. 여기부터 있어야 마을이 회색 덩어리를 벗는다.\n' +
+          '괄호 안이 카드 등급이다 — 귀한 짐승일수록 귀티가 나야 한다.',
+    rows: GUESTS.map((g) => ({ id: g.id,
+      why: `${g.name} (${CARD_GRADES[g.grade - 1].name}) — ${g.desc}` })) },
+  /* 카드는 5성 단위로 갈아입는다. 30종 × 4장 = 120장이라 **한꺼번에 하지 않는다** —
+   * 1단(1~5성)만 있어도 게임이 다 돌아간다. 그래서 1단만 합계에 넣고 나머지는 선택. */
+  { dir: 'cards', size: '512×768', title: '손님 카드 1단 (1~5성)',
+    note: '**세로로 긴 초상.** 정면을 보고 서 있는 모습, 배경까지 그린 한 장.\n' +
+          '뽑기에서 크게 뜨고 도감에 모인다 — 이 게임에서 제일 오래 들여다보는 그림이다.\n' +
+          '테두리·등급 표시는 코드가 그린다. **짐승과 배경만** 그리면 된다.\n' +
+          '파일 이름은 `<손님id>-1.png`. 6~10성은 `-2`, 11~15성은 `-3`, 16~20성은 `-4`.',
+    rows: GUESTS.map((g) => ({ id: `${g.id}-1`,
+      why: `${g.name} (${CARD_GRADES[g.grade - 1].name}) — 1~5성` })) },
+  { dir: 'cards', size: '512×768', title: '손님 카드 2~4단 (6~20성)', optional: true,
+    note: '**나중에.** 없으면 1단 그림을 계속 쓴다.\n' +
+          '같은 짐승이 성이 오를수록 차림이 좋아지는 식으로 — 옷·장신구·배경이 달라진다.',
+    rows: GUESTS.flatMap((g) => [2, 3, 4].map((k) => ({ id: `${g.id}-${k}`,
+      why: `${g.name} — ${[6, 11, 16][k - 2]}~${[10, 15, 20][k - 2]}성` }))) },
   { dir: 'pests', size: '128×128', title: '나쁜 놈',
     rows: [...PESTS.map((p) => ({ id: p.id, why: `${p.name} — 눌러서 잡는다` })),
            { id: 'dog', why: '삽살개 — 앉아서 지킨다' }] },
@@ -61,6 +79,16 @@ const GROUPS = [
           '**물건 그림이 이 위에 얹힌다** — 가운데 위쪽을 비워 둘 것.\n' +
           '승급 그림(`smith-1.png`)도 넣을 수 있다. 없으면 기본 것을 쓴다.',
     rows: SHOPS.map((sh) => ({ id: sh.id, why: `${sh.name} — ${sh.desc || ''}`.trim() })) },
+  { dir: 'ui', size: '아래 참고', title: '뽑기와 룰렛 판',
+    note: '움직임은 `MOTION.md`에 적어 뒀다.\n' +
+          '· `back.png` 512×768 — 카드 뒷면. 뒤집기 연출에 쓴다. 등급 빛은 코드가 얹는다\n' +
+          '· `wheel.png` 512×512 — 룰렛 원판. **열두 칸**이 그려진 바퀴. 칸 안 글자는 코드가 얹는다\n' +
+          '· `needle.png` 64×96 — 룰렛 바늘. 위에서 아래를 가리킨다',
+    rows: [
+      { id: 'back', why: '카드 뒷면 512×768 — 뒤집기 전에 보이는 면' },
+      { id: 'wheel', why: '룰렛 원판 512×512 — 칸 열둘이 나뉜 바퀴' },
+      { id: 'needle', why: '룰렛 바늘 64×96 — 위에서 아래를 가리킨다' },
+    ] },
   /* 선택 — 없으면 공통 점장(hero/)으로 다 돌아간다. 그래서 합계에서 뺀다. */
   { dir: 'clerks', size: '144×144', title: '가게별 점장', optional: true,
     note: '가게마다 다른 너구리. **여기까지 오면 제일 좋다.**\n' +
