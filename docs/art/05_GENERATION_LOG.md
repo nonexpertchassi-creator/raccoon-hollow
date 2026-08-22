@@ -59,6 +59,7 @@
 | LOG-CARD-010 | 2026-08-22 | GUEST-CARDS-TIER2-BATCH-04-P01 | [cards/](../../godot/art/cards/) | Generated | 뒤뜰·물가·꽃길·장독대의 1단 생활 장소를 수선해 2단으로 확장 |
 | LOG-CARD-011 | 2026-08-22 | GUEST-CARDS-TIER2-BATCH-05-P01 | [cards/](../../godot/art/cards/) | Generated | 황혼 산길·단풍 숲·연못·겨울길의 개체 연속성을 유지하며 2단으로 확장 |
 | LOG-CARD-012 | 2026-08-22 | GUEST-CARDS-TIER2-BATCH-06-P01 | [cards/](../../godot/art/cards/) | Generated | 논·산길·약초밭·눈길·마을 입구를 수선해 30종의 2단 카드 초안을 완성 |
+| LOG-CARD-013 | 2026-08-22 | GUEST-CARDS-TIER3-BATCH-01-P01 | [cards/](../../godot/art/cards/) | Generated | 열린 문·낮은 좌판·준비된 물건으로 3단 장날 생활권 가정을 시험 |
 
 ## 최초 실행 결과
 
@@ -857,6 +858,34 @@
 - 30종 전체 시트에서 배경 복구 밀도가 급격히 뛰는 카드가 없는지 사용자와 함께 확인한다.
 - 3단은 같은 개체·계절을 유지하되 `익숙한 단골 → 장날의 오래된 벗`으로 상업 흔적만 한 단계 늘린다.
 - 사용자 승인 전까지 30장 모두 `초안`이다.
+
+### LOG-CARD-013 — 손님 성장 카드 3단 첫 5종 P01
+
+- 날짜: `2026-08-22`
+- Prompt ID: `GUEST-CARDS-TIER3-BATCH-01-P01`
+- Prompt source: [prompts/GUEST-CARDS-TIER3-BATCH-01-P01.md](./prompts/GUEST-CARDS-TIER3-BATCH-01-P01.md)
+- 게임용 초안: `rabbit-3.png`, `magpie-3.png`, `squirrel-3.png`, `badger-3.png`, `fox-3.png`
+- QA: [qa/guest-cards-tier3-batch-01.png](./qa/guest-cards-tier3-batch-01.png)
+- 상태: `Generated` / 그림 장부 `초안`
+
+#### 관찰
+
+- 다섯 장 모두 2단의 같은 개체·자세·계절·장소를 유지한다.
+- 열린 문, 낮은 좌판, 삼베 그늘막, 광주리·곡식자루·옹기·손수레로 장날의 생활 흔적만 늘렸다.
+- 사람이나 추가 동물 없이도 장터가 준비된 상태를 읽을 수 있고, 손님은 자연 상태를 유지한다.
+- 다섯 런타임 파일은 정확한 `512×768`이다.
+
+#### 판정
+
+- 결과: `Generated`
+- Why: 3단 가정은 시각적으로 구분되지만 실제 프레임에서 배경 밀도와 사용자 승인이 남았다.
+- Hard fail 여부: 의상·직업 자세·추가 동물·프레임·문자·별·등급색·마법 효과·워터마크 없음.
+
+#### 다음 수정
+
+- 작은 카드 프레임에서 좌판이 동물 실루엣을 침범하지 않는지 2단과 나란히 확인한다.
+- 이후 3단도 상업 흔적을 배경 가장자리에 제한하고 개체 크기와 자세를 바꾸지 않는다.
+- 사용자 승인 전까지 다섯 장 모두 `초안`, 3단 규칙은 `Hypothesis`다.
 
 ### LOG-UI-002 — 룰렛 바늘 P01
 
