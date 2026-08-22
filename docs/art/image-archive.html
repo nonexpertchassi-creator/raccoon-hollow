@@ -588,18 +588,18 @@
             <div class="stamp" aria-label="초안 서른한 장">초<br>안</div>
           </div>
           <dl class="audit-list">
-            <div><dt>확인 커밋</dt><dd>e49395b</dd></div>
+            <div><dt>확인 커밋</dt><dd>5dacb82</dd></div>
             <div><dt>화면 기준</dt><dd>430 × 932</dd></div>
-            <div><dt>필수 그림</dt><dd>125장</dd></div>
+            <div><dt>필수 그림</dt><dd>170장</dd></div>
             <div><dt>확정</dt><dd>0장</dd></div>
             <div><dt>초안</dt><dd>31장</dd></div>
-            <div><dt>없음</dt><dd>94장</dd></div>
-            <div><dt>선택 작업</dt><dd>+100장</dd></div>
+            <div><dt>없음</dt><dd>139장</dd></div>
+            <div><dt>선택 작업</dt><dd>+110장</dd></div>
           </dl>
         </div>
         <div>
           <div class="slot-label"><span>필수 그림 선반</span><strong>확정 0 · 초안 31</strong></div>
-          <div class="progress-slots" id="progressSlots" aria-label="필수 125장 중 초안 31장, 확정 0장"></div>
+          <div class="progress-slots" id="progressSlots" aria-label="필수 170장 중 초안 31장, 확정 0장"></div>
         </div>
       </aside>
     </header>
@@ -608,7 +608,7 @@
       <div class="section-head">
         <div>
           <p class="section-kicker">자동 주문 목록 기준</p>
-          <h2>필수 125장 + 선택 100장</h2>
+          <h2>필수 170장 + 선택 110장</h2>
         </div>
         <p class="section-note">붉은 도장은 없음, 황토색 도장은 초안, 초록 도장은 확정이다. 현재 초안 31장은 카드에서 실제 그림으로 바로 비교할 수 있다.</p>
       </div>
@@ -618,12 +618,12 @@
           <input class="search" id="assetSearch" type="search" placeholder="곡괭이, rabbit, 점장…" autocomplete="off">
         </label>
         <div class="filters" role="group" aria-label="이미지 목록 필터">
-          <button class="filter" type="button" data-filter="all" aria-pressed="true">전체 225</button>
-          <button class="filter" type="button" data-filter="none" aria-pressed="false">없음 194</button>
+          <button class="filter" type="button" data-filter="all" aria-pressed="true">전체 280</button>
+          <button class="filter" type="button" data-filter="none" aria-pressed="false">없음 249</button>
           <button class="filter" type="button" data-filter="draft" aria-pressed="false">초안 31</button>
           <button class="filter" type="button" data-filter="approved" aria-pressed="false">확정 0</button>
-          <button class="filter" type="button" data-filter="required" aria-pressed="false">필수 125</button>
-          <button class="filter" type="button" data-filter="optional" aria-pressed="false">선택 100</button>
+          <button class="filter" type="button" data-filter="required" aria-pressed="false">필수 170</button>
+          <button class="filter" type="button" data-filter="optional" aria-pressed="false">선택 110</button>
           <button class="filter" type="button" data-filter="hero" aria-pressed="false">점장</button>
           <button class="filter" type="button" data-filter="staff" aria-pressed="false">직원</button>
           <button class="filter" type="button" data-filter="guests" aria-pressed="false">손님</button>
@@ -637,10 +637,10 @@
       <p class="result-line" id="resultLine" aria-live="polite"></p>
       <div class="asset-grid" id="assetGrid"></div>
       <details>
-        <summary>선택 작업 설명 · 성장 카드 90장 + 가게별 전용 점장 10장</summary>
+        <summary>선택 작업 설명 · 성장 카드 90장 + 가게별 전용 점장 20장</summary>
         <div class="optional-copy">
-          <p>필수 125장에는 포함하지 않는다. 손님 카드 2~4단은 없으면 1단 그림을 계속 쓰고, 가게별 점장은 없으면 공용 점장이 선다.</p>
-          <p><strong>성장 카드:</strong> 손님 30종 × 2·3·4단<br><strong>전용 점장:</strong> 가게 5곳 × make·sell<br><strong>파일 규칙:</strong> <code>godot/art/cards/&lt;손님&gt;-&lt;단계&gt;.png</code> · <code>godot/art/clerks/&lt;가게&gt;-&lt;포즈&gt;.png</code></p>
+          <p>필수 170장에는 포함하지 않는다. 손님 카드 2~4단은 없으면 1단 그림을 계속 쓰고, 가게별 점장은 없으면 공용 점장이 선다.</p>
+          <p><strong>성장 카드:</strong> 손님 30종 × 2·3·4단<br><strong>전용 점장:</strong> 가게 10곳 × make·sell<br><strong>파일 규칙:</strong> <code>godot/art/cards/&lt;손님&gt;-&lt;단계&gt;.png</code> · <code>godot/art/clerks/&lt;가게&gt;-&lt;포즈&gt;.png</code></p>
         </div>
       </details>
     </section>
@@ -724,7 +724,7 @@
 
     <footer class="foot">
       <span>너구리 만물상 · 실제 이미지 아카이브</span>
-      <code>source: e49395b · updated: 2026-08-22</code>
+      <code>source: 5dacb82 · updated: 2026-08-22</code>
     </footer>
   </main>
 
@@ -742,6 +742,18 @@
       ['muskdeer', '사향노루', '🦌', 4], ['moonbear', '반달곰', '🐻', 4], ['haetae', '해태', '🦁', 5]
     ];
     const gradeName = ['흔함', '드묾', '귀함', '진귀', '영물', '신수'];
+    const extraItems = [
+      ['국밥집', 'bap', '국밥', '🍲'], ['국밥집', 'kuk', '장국', '🥣'], ['국밥집', 'sujebi', '수제비', '🥟'], ['국밥집', 'naeng', '냉국', '🧊'],
+      ['국밥집', 'gomtang', '곰탕', '🍜'], ['국밥집', 'samgye', '삼계탕', '🐔'], ['국밥집', 'chueo', '추어탕', '🐟'], ['국밥집', 'yongbong', '용봉탕', '🐲'],
+      ['주막', 'makgeol', '막걸리', '🍶'], ['주막', 'jeon', '파전', '🥞'], ['주막', 'dongdong', '동동주', '🍯'], ['주막', 'muk', '묵무침', '🥗'],
+      ['주막', 'cheongju', '청주', '🍾'], ['주막', 'bossam', '보쌈', '🥬'], ['주막', 'beopju', '법주', '🏺'], ['주막', 'gujeol', '구절판', '🍱'],
+      ['꼬치집', 'tteokggo', '떡꼬치', '🍡'], ['꼬치집', 'dakggo', '닭꼬치', '🍢'], ['꼬치집', 'beoseot', '버섯꼬치', '🍄'], ['꼬치집', 'saengseon', '생선꼬치', '🐠'],
+      ['꼬치집', 'sanjeok', '산적', '🍖'], ['꼬치집', 'jangeo', '장어구이', '🐍'], ['꼬치집', 'neobiani', '너비아니', '🥩'], ['꼬치집', 'yukhoe', '육회', '🌶️'],
+      ['떡집', 'garae', '가래떡', '🍥'], ['떡집', 'injeol', '인절미', '🍡'], ['떡집', 'songpyeon', '송편', '🥠'], ['떡집', 'baekseol', '백설기', '🍚'],
+      ['떡집', 'yaksik', '약식', '🍯'], ['떡집', 'hwajeon', '화전', '🌸'], ['떡집', 'dasik', '다식', '🍪'], ['떡집', 'yugwa', '유과', '🍬'],
+      ['푸줏간', 'dwaeji', '돼지고기', '🥓'], ['푸줏간', 'dak', '닭고기', '🍗'], ['푸줏간', 'sogogi', '쇠고기', '🥩'], ['푸줏간', 'galbi', '갈비', '🍖'],
+      ['푸줏간', 'ugeoji', '우거지', '🥬'], ['푸줏간', 'gopchang', '곱창', '🌭'], ['푸줏간', 'ansim', '안심', '🍽️'], ['푸줏간', 'hanwoo', '한우 등심', '👑']
+    ];
     const draftGuestIds = new Set(['rabbit', 'magpie', 'squirrel', 'badger', 'fox', 'deer', 'boar', 'bear', 'turtle', 'crane', 'ox', 'tiger', 'sparrow', 'frog', 'mole', 'hedgehog', 'duck']);
 
     const assets = [
@@ -806,6 +818,10 @@
       { c: 'items', shop: '약재상', label: '침향', file: 'agar.png', icon: '🪵', size: '128×224', status: 'none' },
       { c: 'items', shop: '약재상', label: '경옥고', file: 'elixir.png', icon: '🍯', size: '128×224', status: 'none' },
 
+      ...extraItems.map(([shop, id, label, icon]) => ({
+        c: 'items', shop, label, file: `${id}.png`, icon, size: '128×224', status: 'none'
+      })),
+
       ...guestCatalog.map(([id, name, icon, grade]) => ({
         c: 'guests', label: `${name} · ${gradeName[grade - 1]}`, file: `${id}.png`, icon, size: '128×128',
         actual: id === 'rabbit' ? '현재 파일 64×64 · 구규격' : undefined,
@@ -833,6 +849,11 @@
       { c: 'stalls', shop: '지물포', label: '지물포 좌판', file: 'paper.png', icon: '📜', size: '192×176', status: 'none' },
       { c: 'stalls', shop: '옹기점', label: '옹기점 좌판', file: 'pot.png', icon: '🏺', size: '192×176', status: 'none' },
       { c: 'stalls', shop: '약재상', label: '약재상 좌판', file: 'herb.png', icon: '🌿', size: '192×176', status: 'none' },
+      { c: 'stalls', shop: '국밥집', label: '국밥집 좌판', file: 'soup.png', icon: '🍲', size: '192×176', status: 'none' },
+      { c: 'stalls', shop: '주막', label: '주막 좌판', file: 'inn.png', icon: '🍶', size: '192×176', status: 'none' },
+      { c: 'stalls', shop: '꼬치집', label: '꼬치집 좌판', file: 'skewer.png', icon: '🍢', size: '192×176', status: 'none' },
+      { c: 'stalls', shop: '떡집', label: '떡집 좌판', file: 'ricecake.png', icon: '🍡', size: '192×176', status: 'none' },
+      { c: 'stalls', shop: '푸줏간', label: '푸줏간 좌판', file: 'butcher.png', icon: '🥩', size: '192×176', status: 'none' },
 
       { c: 'ui', label: '카드 뒷면', file: 'back.png', icon: '🂠', size: '512×768', status: 'none', dir: 'cards' },
       { c: 'ui', label: '룰렛 원판 · 12칸', file: 'wheel.png', icon: '🎡', size: '512×512', status: 'none' },
@@ -847,7 +868,17 @@
       { c: 'clerks', shop: '옹기점', label: '옹기점 점장 · 제작', file: 'pot-make.png', icon: '🏺', size: '144×144', status: 'none', optional: true },
       { c: 'clerks', shop: '옹기점', label: '옹기점 점장 · 판매', file: 'pot-sell.png', icon: '🏺', size: '144×144', status: 'none', optional: true },
       { c: 'clerks', shop: '약재상', label: '약재상 점장 · 제작', file: 'herb-make.png', icon: '🌿', size: '144×144', status: 'none', optional: true },
-      { c: 'clerks', shop: '약재상', label: '약재상 점장 · 판매', file: 'herb-sell.png', icon: '🌿', size: '144×144', status: 'none', optional: true }
+      { c: 'clerks', shop: '약재상', label: '약재상 점장 · 판매', file: 'herb-sell.png', icon: '🌿', size: '144×144', status: 'none', optional: true },
+      { c: 'clerks', shop: '국밥집', label: '국밥집 점장 · 제작', file: 'soup-make.png', icon: '🍲', size: '144×144', status: 'none', optional: true },
+      { c: 'clerks', shop: '국밥집', label: '국밥집 점장 · 판매', file: 'soup-sell.png', icon: '🍲', size: '144×144', status: 'none', optional: true },
+      { c: 'clerks', shop: '주막', label: '주막 점장 · 제작', file: 'inn-make.png', icon: '🍶', size: '144×144', status: 'none', optional: true },
+      { c: 'clerks', shop: '주막', label: '주막 점장 · 판매', file: 'inn-sell.png', icon: '🍶', size: '144×144', status: 'none', optional: true },
+      { c: 'clerks', shop: '꼬치집', label: '꼬치집 점장 · 제작', file: 'skewer-make.png', icon: '🍢', size: '144×144', status: 'none', optional: true },
+      { c: 'clerks', shop: '꼬치집', label: '꼬치집 점장 · 판매', file: 'skewer-sell.png', icon: '🍢', size: '144×144', status: 'none', optional: true },
+      { c: 'clerks', shop: '떡집', label: '떡집 점장 · 제작', file: 'ricecake-make.png', icon: '🍡', size: '144×144', status: 'none', optional: true },
+      { c: 'clerks', shop: '떡집', label: '떡집 점장 · 판매', file: 'ricecake-sell.png', icon: '🍡', size: '144×144', status: 'none', optional: true },
+      { c: 'clerks', shop: '푸줏간', label: '푸줏간 점장 · 제작', file: 'butcher-make.png', icon: '🥩', size: '144×144', status: 'none', optional: true },
+      { c: 'clerks', shop: '푸줏간', label: '푸줏간 점장 · 판매', file: 'butcher-sell.png', icon: '🥩', size: '144×144', status: 'none', optional: true }
     ];
 
     const categoryName = { hero: '점장', staff: '직원', items: '물건', guests: '손님', cards: '손님 카드', pests: '상호작용', stalls: '좌판', ui: '뽑기·룰렛', clerks: '선택 점장' };
