@@ -106,6 +106,91 @@ export const SHOPS = [
       { id: 'elixir',  name: '경옥고', price: 300_000,  time: 12.9, cost: 2_000_000_000_000, icon: '🍯' },
     ],
   },
+  {
+    id: 'soup', name: '국밥집', sign: '湯', cost: 990_000_000,
+    desc: '뜨끈한 국밥 한 그릇을 만다',
+    color: '#8a6a45',
+    ranks: ['장국', '곰국', '용봉탕'],
+    promote: [21_000_000_000, 600_000_000_000],
+    items: [
+      { id: 'bap',       name: '국밥', price: 10_000, time: 6.2, cost: 0, icon: '🍲' },
+      { id: 'kuk',       name: '장국', price: 27_000, time: 7.0, cost: 1_200_000, icon: '🥣' },
+      { id: 'sujebi',    name: '수제비', price: 71_000, time: 7.8, cost: 3_200_000, icon: '🥟' },
+      { id: 'naeng',     name: '냉국', price: 180_000, time: 8.6, cost: 8_100_000, icon: '🧊' },
+      { id: 'gomtang',   name: '곰탕', price: 480_000, time: 9.4, cost: 1_200_000_000_000, icon: '🍜' },
+      { id: 'samgye',    name: '삼계탕', price: 1_200_000, time: 10.2, cost: 3_000_000_000_000, icon: '🐔' },
+      { id: 'chueo',     name: '추어탕', price: 3_200_000, time: 11.0, cost: 8_000_000_000_000, icon: '🐟' },
+      { id: 'yongbong',  name: '용봉탕', price: 8_400_000, time: 11.8, cost: 21_000_000_000_000, icon: '🐲' },
+    ],
+  },
+  {
+    id: 'inn', name: '주막', sign: '酒', cost: 22_000_000_000,
+    desc: '길손을 재우고 술과 안주를 낸다',
+    color: '#8a6a45',
+    ranks: ['막', '청', '법'],
+    promote: [150_000_000_000, 3_600_000_000_000],
+    items: [
+      { id: 'makgeol',   name: '막걸리', price: 22_000, time: 6.8, cost: 0, icon: '🍶' },
+      { id: 'jeon',      name: '파전', price: 57_000, time: 7.6, cost: 2_600_000, icon: '🥞' },
+      { id: 'dongdong',  name: '동동주', price: 150_000, time: 8.4, cost: 6_800_000, icon: '🍯' },
+      { id: 'muk',       name: '묵무침', price: 390_000, time: 9.2, cost: 18_000_000, icon: '🥗' },
+      { id: 'cheongju',  name: '청주', price: 1_000_000, time: 10.0, cost: 18_000_000_000_000, icon: '🍾' },
+      { id: 'bossam',    name: '보쌈', price: 2_600_000, time: 10.8, cost: 46_000_000_000_000, icon: '🥬' },
+      { id: 'beopju',    name: '법주', price: 6_800_000, time: 11.6, cost: 120_000_000_000_000, icon: '🏺' },
+      { id: 'gujeol',    name: '구절판', price: 18_000_000, time: 12.4, cost: 320_000_000_000_000, icon: '🍱' },
+    ],
+  },
+  {
+    id: 'skewer', name: '꼬치집', sign: '串', cost: 480_000_000_000,
+    desc: '숯불에 꿰어 굽는다',
+    color: '#8a6a45',
+    ranks: ['숯', '참숯', '백탄'],
+    promote: [1_000_000_000_000, 22_000_000_000_000],
+    items: [
+      { id: 'tteokggo',  name: '떡꼬치', price: 46_000, time: 7.4, cost: 0, icon: '🍡' },
+      { id: 'dakggo',    name: '닭꼬치', price: 120_000, time: 8.2, cost: 5_400_000, icon: '🍢' },
+      { id: 'beoseot',   name: '버섯꼬치', price: 310_000, time: 9.0, cost: 14_000_000, icon: '🍄' },
+      { id: 'saengseon',  name: '생선꼬치', price: 810_000, time: 9.8, cost: 36_000_000, icon: '🐠' },
+      { id: 'sanjeok',   name: '산적', price: 2_100_000, time: 10.6, cost: 260_000_000_000_000, icon: '🍖' },
+      { id: 'jangeo',    name: '장어구이', price: 5_500_000, time: 11.4, cost: 670_000_000_000_000, icon: '🐍' },
+      { id: 'neobiani',  name: '너비아니', price: 14_000_000, time: 12.2, cost: 1_700_000_000_000_000, icon: '🥩' },
+      { id: 'yukhoe',    name: '육회', price: 37_000_000, time: 13.0, cost: 4_500_000_000_000_000, icon: '🌶️' },
+    ],
+  },
+  {
+    id: 'ricecake', name: '떡집', sign: '餠', cost: 11_000_000_000_000,
+    desc: '쌀을 쳐서 떡을 빚는다',
+    color: '#8a6a45',
+    ranks: ['햅쌀', '찹쌀', '진상'],
+    promote: [7_200_000_000_000, 130_000_000_000_000],
+    items: [
+      { id: 'garae',     name: '가래떡', price: 97_000, time: 8.0, cost: 0, icon: '🍥' },
+      { id: 'injeol',    name: '인절미', price: 250_000, time: 8.8, cost: 11_000_000, icon: '🍡' },
+      { id: 'songpyeon',  name: '송편', price: 660_000, time: 9.6, cost: 30_000_000, icon: '🥠' },
+      { id: 'baekseol',  name: '백설기', price: 1_700_000, time: 10.4, cost: 76_000_000, icon: '🍚' },
+      { id: 'yaksik',    name: '약식', price: 4_400_000, time: 11.2, cost: 3_800_000_000_000_000, icon: '🍯' },
+      { id: 'hwajeon',   name: '화전', price: 12_000_000, time: 12.0, cost: 10_000_000_000_000_000, icon: '🌸' },
+      { id: 'dasik',     name: '다식', price: 30_000_000, time: 12.8, cost: 26_000_000_000_000_000, icon: '🍪' },
+      { id: 'yugwa',     name: '유과', price: 78_000_000, time: 13.6, cost: 67_000_000_000_000_000, icon: '🍬' },
+    ],
+  },
+  {
+    id: 'butcher', name: '푸줏간', sign: '肉', cost: 230_000_000_000_000,
+    desc: '뼈를 발라 고기를 판다',
+    color: '#8a6a45',
+    ranks: ['막', '상', '진상'],
+    promote: [50_000_000_000_000, 780_000_000_000_000],
+    items: [
+      { id: 'dwaeji',    name: '돼지고기', price: 200_000, time: 8.6, cost: 0, icon: '🥓' },
+      { id: 'dak',       name: '닭고기', price: 530_000, time: 9.4, cost: 24_000_000, icon: '🍗' },
+      { id: 'sogogi',    name: '쇠고기', price: 1_400_000, time: 10.2, cost: 63_000_000, icon: '🥩' },
+      { id: 'galbi',     name: '갈비', price: 3_600_000, time: 11.0, cost: 160_000_000, icon: '🍖' },
+      { id: 'ugeoji',    name: '우거지', price: 9_300_000, time: 11.8, cost: 56_000_000_000_000_000, icon: '🥬' },
+      { id: 'gopchang',  name: '곱창', price: 24_000_000, time: 12.6, cost: 140_000_000_000_000_000, icon: '🌭' },
+      { id: 'ansim',     name: '안심', price: 63_000_000, time: 13.4, cost: 380_000_000_000_000_000, icon: '🍽️' },
+      { id: 'hanwoo',    name: '한우 등심', price: 160_000_000, time: 14.2, cost: 960_000_000_000_000_000, icon: '👑' },
+    ],
+  },
 ];
 
 /* ───────────── 손님 ─────────────
@@ -619,10 +704,22 @@ export const GUARD = {
   desc: '마당을 지키며 나쁜 놈을 대신 물어 잡는다',
 };
 
+/* ★ guests(손님 성 합계)를 32 → 10, 135 → 40으로 낮췄다.
+ *
+ * 뽑기가 들어오면서 성이 오르는 길이 통째로 바뀌었다. 예전에는 손님이
+ * 오기만 하면 방문 횟수로 저절로 올랐다 — 시간이 채워 주는 숫자였다.
+ * 이제는 카드를 모아 눌러야 오른다.
+ *
+ * 그런데 문턱은 옛날 그대로 두었더니 **가게가 다섯에서 멈췄다.**
+ * 8시간 매출이 1.47T → 3.28B, 천 배가 날아갔다. 재서 잡은 값이다:
+ * 4시간에 뽑기 100회 · 손님 15명 · 성 합계 9. 32는 하루가 걸리는 숫자였다.
+ *
+ * 규칙이 바뀌면 **그 규칙에 기대던 문턱도 같이 바뀌어야 한다.**
+ * 이걸 놓치면 아무것도 안 고장 났는데 게임만 멈춘다 — 제일 찾기 어려운 종류다. */
 export const RANKS = [
   { maxLv: 30,  priceMul: 1,     guests: 0, ips: 0 },
-  { maxLv: 60,  priceMul: 4,     guests: 32,  ips: 15_000 },
-  { maxLv: 100, priceMul: 16,    guests: 135, ips: 800_000 },
+  { maxLv: 60,  priceMul: 4,     guests: 10,  ips: 15_000 },
+  { maxLv: 100, priceMul: 16,    guests: 40, ips: 800_000 },
 ];
 
 /** 25레벨마다 그 품목의 **판매가**가 2배가 된다. 24→25가 제일 신나야 한다.

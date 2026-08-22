@@ -11,7 +11,10 @@ class_name Iso
 const TW := 96.0
 const TH := 48.0
 const GW := 15
-const GH := 18
+## 마을이 길어졌다(18 → 30). 가게가 다섯에서 열이 되면서 자리가 모자랐다.
+## 가로로 늘리지 않고 **세로로만** 늘린 이유: 이 시점(비스듬히 내려다본 격자)에서
+## 가로로 늘리면 화면이 마름모로 넓게 퍼져 폰에서 양옆이 잘린다.
+const GH := 30
 ## 마을 바깥으로 더 까는 풀밭 두께(칸). 여기까지는 밀어서 볼 수 있다.
 const EDGE := 2
 
@@ -22,18 +25,31 @@ static func w(tx: float, ty: float) -> Vector2:
 ## 큰길 둘(세로, 두 칸 폭)과 골목 둘(가로, 한 칸 폭)이 마을을 여섯으로 가른다.
 ## 손님은 **길로만 다닌다.**
 static func is_road(tx: int, ty: int) -> bool:
-	return tx == 5 or tx == 6 or tx == 12 or tx == 13 or ty == 5 or ty == 11
+	return tx == 5 or tx == 6 or tx == 12 or tx == 13 \
+		or ty == 5 or ty == 11 or ty == 17 or ty == 23
 
 ## 마당의 **길 쪽 모서리**(계산대가 있는 앞 모서리). 마당은 여기를 붙박이로
 ## 두고 길 반대쪽(뒤)으로 자란다 — 넓어지는 건 뒷마당이다.
+## 가게 자리 — **길에 닿는 앞 모서리**다. 마당은 여기를 붙박이로 두고
+## 길 반대쪽(뒤)으로 자란다. 그래서 승급해서 넓어져도 앞줄이 안 밀린다.
+##
+## 골목이 넷(ty 5·11·17·23), 큰길이 둘(tx 5·6 / 12·13)이라 마을이 열 칸으로
+## 나뉜다. 가게가 열이니 딱 맞는다.
 const SHOP_T := [
 	Vector2i(5, 17),   # 대장간
 	Vector2i(12, 17),  # 필방
 	Vector2i(5, 11),   # 지물포
 	Vector2i(12, 5),   # 옹기점
 	Vector2i(5, 5),    # 약재상
+	Vector2i(12, 11),  # 국밥집
+	Vector2i(5, 23),   # 주막
+	Vector2i(12, 23),  # 꼬치집
+	Vector2i(5, 29),   # 떡집
+	Vector2i(12, 29),  # 푸줏간
 ]
-const YARD_KIND := ["A", "B", "D", "C", "C"]
+## 마당 생김새는 **돌려 가며** 준다. 열 채가 다 같은 모양이면 마을이 아니라
+## 창고가 된다. 어느 것을 줘도 규칙은 같다 — 계산대가 길 쪽에 붙기만 하면 된다.
+const YARD_KIND := ["A", "B", "D", "C", "C", "A", "D", "B", "C", "A"]
 ## 마을 드나드는 목 — 길이 마을 가장자리에 닿는 칸 전부.
 ##
 ## ★ 예전엔 위쪽 한 곳(6,0)뿐이었다. 그래서 손님이 **늘 같은 데서 같은 줄로**
@@ -41,10 +57,13 @@ const YARD_KIND := ["A", "B", "D", "C", "C"]
 const GATES := [
 	Vector2i(5, 0), Vector2i(6, 0), Vector2i(12, 0), Vector2i(13, 0),          # 위
 	Vector2i(5, GH - 1), Vector2i(6, GH - 1), Vector2i(12, GH - 1), Vector2i(13, GH - 1),  # 아래
-	Vector2i(0, 5), Vector2i(0, 11), Vector2i(GW - 1, 5), Vector2i(GW - 1, 11),            # 옆
+	Vector2i(0, 5), Vector2i(0, 11), Vector2i(0, 17), Vector2i(0, 23),         # 왼쪽 골목
+	Vector2i(GW - 1, 5), Vector2i(GW - 1, 11), Vector2i(GW - 1, 17), Vector2i(GW - 1, 23),  # 오른쪽
 ]
-const SMALL_T := [Vector2i(7, 7), Vector2i(10, 6), Vector2i(8, 10), Vector2i(11, 9)]
-const DOG_T := Vector2i(14, 9)
+## 작은 건물과 개집 — 가게가 열이 되면서 안쪽 칸을 내줬다.
+## 오른쪽 끝 줄(x=14)은 길도 마당도 아니라 늘 비어 있다. 거기로 옮긴다.
+const SMALL_T := [Vector2i(14, 2), Vector2i(14, 8), Vector2i(14, 14), Vector2i(14, 20)]
+const DOG_T := Vector2i(14, 26)
 
 ## 손님이 서는 쪽(길)과 그 반대쪽(점장이 서는 마당 안). 한 칸 어치다.
 const GATE_OFF := {"x": Vector2(44, 22), "y": Vector2(-44, 22)}

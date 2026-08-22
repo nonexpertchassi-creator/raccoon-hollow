@@ -59,6 +59,28 @@ static func act(s: Sim, rng: Rng, use_shop_up: bool) -> void:
 		if best != "":
 			s.buy_shop_up(best)
 			return
+	# ── 뽑기·룰렛·성 올리기 ──
+	#
+	# ★ 이걸 안 넣었더니 **8시간 매출이 1.47T에서 3.28B로 주저앉았다.**
+	#   손님이 이제 뽑기로만 오는데 도구가 뽑기를 안 하니, 토끼 한 마리로
+	#   여덟 시간을 장사한 셈이다. 두 시간 만에 새로 열리는 것이 끊겼다.
+	#   *도구가 안 써 보는 기능은 도구에게 없는 것이다* — 다섯 번째다.
+	s.roul_refill()
+	if s.can_spin(false):
+		s.spin(false, rng)
+		return
+	if s.can_spin(true):
+		s.spin(true, rng)
+		return
+	# 모은 카드는 바로 성으로 바꾼다. 공짜로 세지는 것을 안 쓸 이유가 없다.
+	for gid in s.guests:
+		if s.can_star_up(String(gid)):
+			s.star_up(String(gid))
+			return
+	# 열 장씩 뽑는다 — 한 장씩보다 싸고 드묾 보장이 붙는다
+	if s.can_pull(10):
+		s.pull(10, rng)
+		return
 	var up: String = ""
 	var up_c: float = INF
 	var any_left: bool = false
@@ -150,6 +172,14 @@ func _init() -> void:
 	print("   손님 열둘이 다 온 시각: %s" % (
 		_mm(guest_at.values().max()) if guest_at.size() >= Content.GUESTS.size() else "아직 다 안 옴"))
 	print("   마지막으로 새것이 열린 시각: %s  (그 뒤는 레벨업뿐)" % _mm(last_new))
+	# ★ 뽑기가 들어온 뒤로 **여기가 병목인지 아닌지**를 매번 봐야 한다.
+	#   손님이 안 늘면 경제가 안 자라는데, 손님은 젬이 있어야 는다.
+	var stars_sum: int = 0
+	for gid in s.guests:
+		stars_sum += s.regular_lv(String(gid))
+	print("   뽑기 %d회(%d단계) · 손님 %d/%d · 성 합계 %d · 남은 젬 %d · 가게 %d/%d" % [
+		int(s.pulls), s.gacha_lv(), s.guests.size(), Content.GUESTS.size(),
+		stars_sum, int(s.gems), s.shops.size(), Content.SHOPS.size()])
 	if use_up:
 		var got: Array[String] = []
 		for sh in s.shops:
