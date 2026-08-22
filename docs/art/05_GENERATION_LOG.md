@@ -25,6 +25,8 @@
 | LOG-STAFF-001 | 2026-08-21 | STAFF-BAND-V0.1-P01 | [band-work.png](../../godot/art/staff/band-work.png) · [band-sleep.png](../../godot/art/staff/band-sleep.png) | Generated | 머리띠만 두른 알바의 작업·수면 144×144 초안 |
 | LOG-STAFF-002 | 2026-08-21 | STAFF-BAND-V0.2-P01 | [band-work.png](../../godot/art/staff/band-work.png) · [band-sleep.png](../../godot/art/staff/band-sleep.png) | Generated | 차렷 작업 포즈와 몽글 수면방울로 사용자 피드백 반영 |
 | LOG-STAFF-003 | 2026-08-22 | STAFF-RANKS-V0.3-P01 | [staff/](../../godot/art/staff/) | Generated | 초립·패랭이·백립 작업/수면 6장으로 직원 4등급 초안 완성 |
+| LOG-HERO-004 | 2026-08-22 | HERO-V0.4-P01 | [hero/](../../godot/art/hero/) | Generated | 걷기 2장·수면·촌장으로 공용 점장 필수 자세를 채움 |
+| LOG-GUEST-001 | 2026-08-22 | GUEST-MAGPIE-V0.1-P01 | [magpie.png](../../godot/art/guests/magpie.png) | Generated | 필드용 128×128 까치 손님 초안 |
 
 ## 최초 실행 결과
 
@@ -250,6 +252,48 @@
 - 네 등급을 한 화면에 놓고 몸 크기, 얼굴 대비, 모자 챙의 가림을 확인한다.
 - 작업 손 애니메이션은 두 번째 프레임 또는 코드 효과를 비교한 뒤 결정한다.
 - 수면방울 분리 애니메이션은 구현 부담과 작은 화면 가독성을 확인하기 전까지 `Hypothesis`로 둔다.
+
+### LOG-HERO-004 — 점장 걷기·수면과 촌장 P01
+
+- 날짜: `2026-08-22`
+- Prompt ID: `HERO-V0.4-P01`
+- Prompt source: [prompts/HERO-V0.4-P01.md](./prompts/HERO-V0.4-P01.md)
+- 기반 이미지: `HERO-V0.3` 짧은 앞치마 점장
+- 게임용 초안: `raccoon-walk1.png`, `raccoon-walk2.png`, `raccoon-sleep.png`, `mayor.png`
+- 상태: `Generated` / 그림 장부 `초안`
+
+#### 관찰
+
+- 걷기 두 장은 머리·몸·꼬리·앞치마를 비슷하게 유지하면서 발과 팔의 전후만 교차해 작은 화면에서도 차이가 난다.
+- 수면은 서 있는 자세를 유지하고 눈·모은 앞발·몽글방울로 상태가 읽힌다.
+- 촌장은 점장과 같은 크기지만 흰 수염, 지팡이, 앞치마 없음으로 구분된다.
+- 네 런타임 파일은 `144×144`, RGBA, 진짜 투명 배경이며 하단 접점을 맞췄다.
+
+#### 판정
+
+- 결과: `Generated`
+- Why: 자동 주문서의 점장·촌장 파일명을 모두 채웠지만 게임 화면에서 걷기 프레임의 흔들림과 촌장 지팡이 가림은 아직 검수 전이다.
+- Hard fail 여부: 고리 꼬리, 전신 관복, 중국·일본 대표 요소, 불투명 배경, 텍스트·UI 없음.
+
+### LOG-GUEST-001 — 까치 필드 손님 P01
+
+- 날짜: `2026-08-22`
+- Prompt ID: `GUEST-MAGPIE-V0.1-P01`
+- Prompt source: [prompts/GUEST-MAGPIE-V0.1-P01.md](./prompts/GUEST-MAGPIE-V0.1-P01.md)
+- 게임용 초안: [magpie.png](../../godot/art/guests/magpie.png)
+- 상태: `Generated` / 그림 장부 `초안`
+
+#### 관찰
+
+- 깊은 갈색 먹빛, 흰 배와 날개 반점, 긴 꼬리가 64×64 표시에서도 까치로 읽힌다.
+- 카드를 위한 정면 초상이 아니라 마을에서 오른쪽을 향하는 필드 스프라이트로 제작했다.
+- 런타임 파일은 `128×128`, RGBA, 실제 투명 배경이며 발끝이 아래 변에 닿는다.
+
+#### 판정
+
+- 결과: `Generated`
+- Why: 필드 규격은 통과했지만 다른 손님들과 한 화면에서 크기·눈 크기·선 굵기를 비교하기 전이다.
+- Hard fail 여부: 배경, 의상, 물건, 텍스트·UI 없음.
 
 ## 새 로그 템플릿
 
