@@ -57,6 +57,7 @@
 | LOG-CARD-008 | 2026-08-22 | GUEST-CARDS-TIER2-BATCH-02-P01 | [cards/](../../godot/art/cards/) | Generated | 계절과 등급이 달라도 수선된 생활 공간만으로 2단 성장 규칙 유지 |
 | LOG-CARD-009 | 2026-08-22 | GUEST-CARDS-TIER2-BATCH-03-P01 | [cards/](../../godot/art/cards/) | Generated | 등급 양끝도 풍경 규모와 생활 정돈만으로 2단 성장 차이 유지 |
 | LOG-CARD-010 | 2026-08-22 | GUEST-CARDS-TIER2-BATCH-04-P01 | [cards/](../../godot/art/cards/) | Generated | 뒤뜰·물가·꽃길·장독대의 1단 생활 장소를 수선해 2단으로 확장 |
+| LOG-CARD-011 | 2026-08-22 | GUEST-CARDS-TIER2-BATCH-05-P01 | [cards/](../../godot/art/cards/) | Generated | 황혼 산길·단풍 숲·연못·겨울길의 개체 연속성을 유지하며 2단으로 확장 |
 
 ## 최초 실행 결과
 
@@ -798,6 +799,33 @@
 #### 다음 수정
 
 - 수달의 상체가 지나치게 의인화돼 보이는지 1단과 함께 검수한다.
+- 사용자 승인 전까지 다섯 장 모두 `초안`이다.
+
+### LOG-CARD-011 — 손님 성장 카드 2단 다섯 번째 5종 P01
+
+- 날짜: `2026-08-22`
+- Prompt ID: `GUEST-CARDS-TIER2-BATCH-05-P01`
+- Prompt source: [prompts/GUEST-CARDS-TIER2-BATCH-05-P01.md](./prompts/GUEST-CARDS-TIER2-BATCH-05-P01.md)
+- 게임용 초안: `wildcat-2.png`, `goral-2.png`, `marten-2.png`, `mandarin-2.png`, `wolf-2.png`
+- QA: [qa/guest-cards-tier2-batch-05.png](./qa/guest-cards-tier2-batch-05.png)
+- 상태: `Generated` / 그림 장부 `초안`
+
+#### 관찰
+
+- 다섯 장 모두 각 1단의 개체·자세·계절과 황혼 산길·바위 비탈·단풍 숲·연못·겨울길을 유지한다.
+- 돌담·계단·연못축대·디딤돌·장작을 수선하거나 정돈해 장식 없이 2단 회복을 보여준다.
+- 원앙은 화려한 개체색에 맞춰 배경 채도를 억제했고, 늑대는 따뜻한 창빛을 작게 제한했다.
+- 다섯 런타임 파일은 정확한 `512×768`이다.
+
+#### 판정
+
+- 결과: `Generated`
+- Why: 개체와 장소의 연속성은 성립했지만 실제 카드 프레임 및 사용자 승인이 남았다.
+- Hard fail 여부: 의상·마법 효과·프레임·문자·별·등급색·워터마크 없음.
+
+#### 다음 수정
+
+- 산양 카드의 먼 마을 지붕 밀도와 원앙 카드의 정자 크기가 실제 프레임 안에서 과밀하지 않은지 확인한다.
 - 사용자 승인 전까지 다섯 장 모두 `초안`이다.
 
 ### LOG-UI-002 — 룰렛 바늘 P01
