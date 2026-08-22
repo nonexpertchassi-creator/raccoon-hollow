@@ -54,6 +54,7 @@
 | LOG-CLERK-003 | 2026-08-22 | CLERKS-BATCH-21-P01 | [clerks/](../../godot/art/clerks/) | Generated | 밤색·자주색·먹색 앞치마로 국밥집·주막과 꼬치집 제작을 구분 |
 | LOG-CLERK-004 | 2026-08-22 | CLERKS-BATCH-22-P01 | [clerks/](../../godot/art/clerks/) | Generated | 꼬치집·떡집·푸줏간을 닫아 가게별 점장 20장 초안 완성 |
 | LOG-CARD-007 | 2026-08-22 | GUEST-CARDS-TIER2-BATCH-01-P01 | [cards/](../../godot/art/cards/) | Generated | 같은 개체와 자연 자세를 유지하고 수선된 마을 안쪽으로 2단 성장 규칙 시험 |
+| LOG-CARD-008 | 2026-08-22 | GUEST-CARDS-TIER2-BATCH-02-P01 | [cards/](../../godot/art/cards/) | Generated | 계절과 등급이 달라도 수선된 생활 공간만으로 2단 성장 규칙 유지 |
 
 ## 최초 실행 결과
 
@@ -714,6 +715,33 @@
 
 - 2단 나머지 손님도 같은 개체와 기존 계절을 유지하고, 마을 회복·생활 반경만 한 단계 올린다.
 - 3단 전에는 1단/2단 한 쌍을 실제 카드 프레임에 넣어 변화가 너무 약하거나 강하지 않은지 검수한다.
+- 사용자 승인 전까지 다섯 장 모두 `초안`이다.
+
+### LOG-CARD-008 — 손님 성장 카드 2단 두 번째 5종 P01
+
+- 날짜: `2026-08-22`
+- Prompt ID: `GUEST-CARDS-TIER2-BATCH-02-P01`
+- Prompt source: [prompts/GUEST-CARDS-TIER2-BATCH-02-P01.md](./prompts/GUEST-CARDS-TIER2-BATCH-02-P01.md)
+- 게임용 초안: `deer-2.png`, `boar-2.png`, `bear-2.png`, `turtle-2.png`, `crane-2.png`
+- QA: [qa/guest-cards-tier2-batch-02.png](./qa/guest-cards-tier2-batch-02.png)
+- 상태: `Generated` / 그림 장부 `초안`
+
+#### 관찰
+
+- 각 1단의 동물 정체성·자연 자세·단풍/추수/첫눈/연못/일출 계절을 유지한다.
+- 묶은 멍석과 볏단, 쓸어 낸 눈길, 손본 정자·물길·다리로 회복된 생활 반경을 보여준다.
+- 진귀·영물도 의상이나 광효과 없이 공간 완성도만 올렸다.
+- 다섯 런타임 파일은 정확한 `512×768`이다.
+
+#### 판정
+
+- 결과: `Generated`
+- Why: 등급이 달라도 2단 성장 언어는 유지되지만 실제 카드 프레임 및 사용자 승인이 남았다.
+- Hard fail 여부: 의상·인간 자세·마법 효과·프레임·문자·별·등급색·워터마크 없음.
+
+#### 다음 수정
+
+- 다음 2단 묶음도 각 1단 계절과 자세를 유지한다.
 - 사용자 승인 전까지 다섯 장 모두 `초안`이다.
 
 ### LOG-UI-002 — 룰렛 바늘 P01
