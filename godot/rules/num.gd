@@ -11,7 +11,10 @@ static func fmt(x: float) -> String:
 	var n: float = floor(x)
 	if n < 1000.0:
 		return str(int(n))
-	var U: Array[String] = ["", "K", "M", "B", "T", "Qa"]
+	# Qa 뒤로 여섯 더 — 가게 스무 채까지 갈 자리를 미리 낸다.
+	# 여기서 멈추면 '12345678Qa' 처럼 줄인 숫자가 다시 안 읽히게 된다.
+	# sim.js와 **같이** 고쳐야 한다(fmt 시험이 둘을 대조 중이다).
+	var U: Array[String] = ["", "K", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "Dc"]
 	var i: int = 0
 	var v: float = n
 	while v >= 1000.0 and i < U.size() - 1:

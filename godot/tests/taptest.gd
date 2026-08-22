@@ -160,6 +160,63 @@ func _process(_d: float) -> void:
 		main.panel._pressing = false
 	main.panel.close()
 
+	# 8) 뽑기와 룰렛을 **단추로 눌러 본다.**
+	#
+	#    ★ 규칙 시험(tests/gacha.gd)은 확률이 표대로인지만 본다. 그건
+	#      "단추를 눌렀을 때 그 규칙이 불리는가"는 안 본다 — 창을 새로
+	#      만들었으니 그 사이가 끊겼을 수 있다. 실제로 창 종류를 안 적어
+	#      두었더니 도구가 '뽑기'를 가게 이름으로 알아들은 적이 있다.
+	s.gems = 100.0
+	main.panel.open_kind("gacha")
+	var pull1: Button = _find_btn(main.panel, "1회")
+	if pull1 == null:
+		fails.append("뽑기 창에 1회 단추가 없다")
+	else:
+		var before_pulls: float = s.pulls
+		pull1.emit_signal("pressed")
+		if s.pulls <= before_pulls:
+			fails.append("1회 뽑기를 눌렀는데 안 뽑혔다")
+		if not main.card.visible:
+			fails.append("뽑았는데 카드가 안 떴다")
+		main.card.close()
+	# 열 장 뽑기 — 드묾 보장이 걸리는 자리
+	var pull10: Button = _find_btn(main.panel, "10회")
+	if pull10 != null:
+		var g0: float = s.gems
+		pull10.emit_signal("pressed")
+		if s.gems >= g0:
+			fails.append("10회 뽑기를 눌렀는데 젬이 안 줄었다")
+		main.card.close()
+	# 룰렛 — 무료 한 번
+	main.panel.tab = "work"
+	main.panel.rebuild()
+	var spin: Button = _find_btn(main.panel, "무료로")
+	if spin == null:
+		fails.append("룰렛 창에 무료 돌리기 단추가 없다")
+	else:
+		s.roul_refill()
+		var free0: float = s.roulFree
+		spin.emit_signal("pressed")
+		if s.roulFree >= free0:
+			fails.append("룰렛을 돌렸는데 횟수가 안 줄었다")
+		if not main.card.visible:
+			fails.append("룰렛을 돌렸는데 결과가 안 떴다")
+		main.card.close()
+	main.panel.close()
+
+	# 9) 도감에서 **카드로 성을 올린다**
+	s.cards["rabbit"] = 999.0
+	var lv0: int = s.regular_lv("rabbit")
+	main.panel.open_kind("guests")
+	var starbtn: Button = _find_btn(main.panel, "%d성으로" % (lv0 + 2))
+	if starbtn == null:
+		fails.append("도감에 성 올리는 단추가 없다")
+	else:
+		starbtn.emit_signal("pressed")
+		if s.regular_lv("rabbit") != lv0 + 1:
+			fails.append("성 올리기를 눌렀는데 안 올랐다")
+	main.panel.close()
+
 	# 소리도 여기서 본다. 소리는 안 나는 게 고장인지 원래 그런 건지 귀로 못 가르고,
 	# 지금은 더미라 **아예 안 들린다** — 셈으로 볼 수밖에 없다.
 	# 위에서 매대를 눌렀으니 강화 소리가 한 번은 울렸어야 한다.

@@ -1185,7 +1185,13 @@ const cut = (x, d) => { const p = 10 ** d; return (Math.floor(x * p) / p).toFixe
 export function fmt(n) {
   n = Math.floor(n);
   if (n < 1000) return String(n);
-  const U = ['', 'K', 'M', 'B', 'T', 'Qa'];
+  /* ★ Qa 뒤로 여섯을 더 붙였다(2026-08-22).
+   *   가게가 열 채가 되면서 푸줏간이 이미 230조다. 스무 채까지 갈 참인데
+   *   Qa에서 멈추면 그때부터 '12345678Qa' 같은 글자가 나온다 — 읽으라고
+   *   줄인 숫자가 다시 안 읽히는 숫자가 되는 것이다.
+   *   자바스크립트와 Godot을 **같이** 고쳤다. 이 함수는 아직 양쪽을 대조
+   *   중이라(fmt 시험), 한쪽만 고치면 그 자리에서 빨간불이 뜬다. */
+  const U = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc'];
   let i = 0, v = n;
   while (v >= 1000 && i < U.length - 1) { v /= 1000; i++; }
   return (v < 10 ? cut(v, 2) : v < 100 ? cut(v, 1) : String(Math.floor(v))) + U[i];
