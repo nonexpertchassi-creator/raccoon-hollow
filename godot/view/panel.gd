@@ -20,6 +20,12 @@ var _acc: float = 0.0
 var on_focus: Callable = Callable()
 ## 카드 한 장이 열렸다고 알리는 줄. 승급은 이 창에서 일어난다.
 var on_card: Callable = Callable()
+## 뽑은 결과를 화면에 넘긴다(카드가 넘어가는 연출은 main이 맡는다)
+var on_pull: Callable = Callable()
+## 룰렛을 돌려 달라고 부탁한다. 광고 기다리기가 있어서 main이 맡는다.
+var on_spin: Callable = Callable()
+## 뽑기용 주사위. sim의 주사위는 tick이 쓰고 있으니 여기서 따로 굴린다.
+var _rng: Rng = Rng.new(20260822)
 ## 꾹 누르고 있는 품목. 누르는 동안 계속 오른다.
 ##
 ## ★ 단추의 button_up을 안 쓰는 이유: 이 창은 0.3초마다 통째로 다시 그린다.
@@ -249,6 +255,7 @@ func rebuild() -> void:
 		"quests": _quests_body()
 		"guests": _guests_body()
 		"ledger": _ledger_body()
+		"gacha": _fair_body()
 
 ## ── 마을 의뢰와 젬 ──
 func _quests_body() -> void:
@@ -359,22 +366,135 @@ func _cards_body() -> void:
 		_box.add_child(row)
 
 func _guest_list() -> void:
-	_box.add_child(_label("마을에 온 손님 %d / %d · 단골 등급 합계 %d" % [
+	_box.add_child(_label("만난 손님 %d / %d · 성 합계 %d" % [
 		sim.guests.size(), Content.GUESTS.size(), sim.regular_sum()], 13, Color("5a4e3d")))
+	_box.add_child(_label("손님은 뽑기로 만난다. 같은 손님의 카드를 모으면 성을 올린다.",
+		11, Color("8a7a63"), true))
 	for g in Content.GUESTS:
-		if not sim.guests.has(String(g.id)):
-			_box.add_child(_label("?  ? ? ?   누적 매출 🪙%s에 온다" % Num.fmt(g.at), 13, Color("8a7a63")))
+		var gid: String = String(g.id)
+		var gr: Dictionary = Content.CARD_GRADES[int(g.grade) - 1]
+		if not sim.guests.has(gid):
+			# 아직 안 만난 손님. **등급만 알려준다** — 무엇이 남았는지는 보여야
+			# 뽑을 마음이 생기고, 누구인지까지 보여주면 뽑을 이유가 없다.
+			_box.add_child(_label("%s  ? ? ?   %s" % [gr.face, gr.name], 13, Color("b3a992")))
 			continue
-		var lv: int = sim.regular_lv(String(g.id))
-		var left: Variant = null
-		if lv < Content.REGULARS.size() - 1:
-			left = sim.regular_need(String(g.id), lv + 1) - sim.visits.get(g.id, 0.0)
-		_box.add_child(_label("%s %s   %d성 %s   %s" % [
-			g.face, g.name, lv + 1, Content.REGULARS[lv].name,
-			"최고 등급" if left == null else "다음까지 %s번" % Num.fmt(float(left))], 14))
-		_box.add_child(_label("%s · %d초마다 %d개 · 값 ×%s · 누적 %s개 / %s번" % [
+		var lv: int = sim.regular_lv(gid)
+		var have: float = sim.cards.get(gid, 0.0)
+		var need: Variant = sim.star_need(gid)
+		_box.add_child(_label("%s %s   %d성 %s   %s%s" % [
+			g.face, g.name, lv + 1, Content.REGULARS[lv].name, gr.face, gr.name], 14))
+		if need == null:
+			_box.add_child(_label("20성 — 더 오를 곳이 없다 · 카드 %s장" % Num.fmt(have), 11, Color("a8763e")))
+		else:
+			_bar(have / float(need), Color(gr.color))
+			var row := HBoxContainer.new()
+			var txt: Label = _label("카드 %s / %s장" % [Num.fmt(have), Num.fmt(float(need))], 12, Color("5a4e3d"))
+			txt.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			row.add_child(txt)
+			# ★ 성은 **눌러서** 올린다. 저절로 오르면 "왜 올랐지"가 되고,
+			#   모은 카드를 쓰는 그 순간이 사라진다.
+			row.add_child(_btn("%d성으로" % (lv + 2), sim.can_star_up(gid),
+				func(): sim.star_up(gid); rebuild(), false))
+			_box.add_child(row)
+		_box.add_child(_label("%s · %d초마다 %d개 · 값 ×%s · 누적 %s개" % [
 			g.desc, int(g.every), int(g.qty), str(g.pay),
-			Num.fmt(sim.bought.get(g.id, 0.0)), Num.fmt(sim.visits.get(g.id, 0.0))], 11, Color("8a7a63"), true))
+			Num.fmt(sim.bought.get(gid, 0.0))], 11, Color("8a7a63"), true))
+
+## ── 뽑기 ──
+##
+## ★ 확률표를 **접어 두지 않고 그대로 보여준다.** 확률을 숨기는 뽑기는
+##   만들지 않는다 — 나라마다 법으로 정해 놓은 곳도 있고, 무엇보다
+##   숨기면 "속았다"가 남는다.
+## 뽑기와 룰렛은 **한 창에 갈피 둘**로 넣는다.
+## 아래 단추가 다섯이 되면 폰에서 누르다 틀린다 — FLOW.md에 적어 둔 그 이유다.
+## 둘 다 "운으로 얻는 것"이라 한자리에 있는 게 뜻도 맞는다.
+func _fair_body() -> void:
+	_head("뽑기와 룰렛")
+	var bar := HBoxContainer.new()
+	for t in [["items", "뽑기"], ["work", "룰렛"]]:
+		var key: String = String(t[0])
+		var b := _btn(String(t[1]), true, func(): tab = key; rebuild())
+		b.disabled = tab == key
+		bar.add_child(b)
+	_box.add_child(bar)
+	if tab == "work":
+		_roulette_body()
+	else:
+		_gacha_body()
+
+func _gacha_body() -> void:
+	var lv: int = sim.gacha_lv()
+	var nxt: Variant = sim.gacha_next()
+	_box.add_child(_label("뽑기 %d단계 · 여태 %s번 뽑았다" % [lv, Num.fmt(sim.pulls)], 15, Color("a8763e")))
+	if nxt == null:
+		_box.add_child(_label("만렙이다 — 제일 좋은 확률이다", 12, Color("4a7c59")))
+	else:
+		var span: float = float(Content.GACHA.levelAt[lv]) - float(Content.GACHA.levelAt[lv - 1])
+		_bar(1.0 - float(nxt) / span, Color("a8763e"))
+		_box.add_child(_label("%s번 더 뽑으면 %d단계 — 좋은 카드가 더 자주 나온다"
+			% [Num.fmt(float(nxt)), lv + 1], 12, Color("8a7a63")))
+	_box.add_child(_label("가진 젬 💎%d" % int(sim.gems), 14, Color("5a4e3d")))
+
+	var row := HBoxContainer.new()
+	for c in Content.GACHA.cost:
+		var n: int = int(c.n)
+		row.add_child(_btn("%d회\n💎%d" % [n, int(c.gems)], sim.can_pull(n),
+			func(): _do_pull(n)))
+	_box.add_child(row)
+	if int(Content.GACHA.tenPity) <= lv:
+		_box.add_child(_label("열 장 이상 뽑으면 드묾 이상 한 장은 반드시 나온다", 11, Color("4a7c59")))
+
+	_box.add_child(_label("지금 단계의 확률", 15, Color("5a4e3d")))
+	var rates: Array = sim.gacha_rates()
+	for i in range(rates.size()):
+		var gr: Dictionary = Content.CARD_GRADES[i]
+		var pct: float = float(rates[i])
+		var line := HBoxContainer.new()
+		var nm: Label = _label("%s %s" % [gr.face, gr.name], 13,
+			Color(gr.color) if pct > 0.0 else Color("b3a992"))
+		nm.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		line.add_child(nm)
+		line.add_child(_label(("%.1f%%" % pct) if pct > 0.0 else "안 나옴", 13,
+			Color("2b241b") if pct > 0.0 else Color("b3a992"), false))
+		_box.add_child(line)
+	_box.add_child(_label("등급 안에서는 손님마다 똑같은 확률이다. 흔함 8종 · 드묾 7종 · 귀함 6종 · 진귀 5종 · 영물 3종 · 신수 1종.",
+		11, Color("8a7a63"), true))
+
+func _do_pull(n: int) -> void:
+	var got: Array = sim.pull(n, _rng)
+	if got.is_empty():
+		return
+	if on_pull.is_valid():
+		on_pull.call(got)
+	rebuild()
+
+## ── 룰렛 ──
+func _roulette_body() -> void:
+	sim.roul_refill()
+	_box.add_child(_label("오늘 남은 횟수 — 무료 %d · 광고 %d" % [
+		int(sim.roulFree), int(sim.roulAd)], 15, Color("a8763e")))
+	_box.add_child(_label("매일 자정에 다시 찬다", 11, Color("8a7a63")))
+	var row := HBoxContainer.new()
+	row.add_child(_btn("무료로 돌리기", sim.can_spin(false), func(): _do_spin(false)))
+	row.add_child(_btn("광고 보고 돌리기", sim.can_spin(true), func(): _do_spin(true)))
+	_box.add_child(row)
+	_box.add_child(_label("※ 광고는 아직 **더미**다 — 누르면 잠깐 기다렸다 보상이 나온다.",
+		11, Color("8a7a63"), true))
+
+	_box.add_child(_label("칸과 확률", 15, Color("5a4e3d")))
+	for w in Content.ROULETTE.wedges:
+		var line := HBoxContainer.new()
+		var nm: Label = _label(String(w.label), 13)
+		nm.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		line.add_child(nm)
+		line.add_child(_label("%d%%" % int(w.weight), 13, Color("5a4e3d"), false))
+		_box.add_child(line)
+	_box.add_child(_label("엽전은 **지금 초당 수입의 몇 초치**다 — 언제 돌려도 값이 비슷하도록.",
+		11, Color("8a7a63"), true))
+
+func _do_spin(by_ad: bool) -> void:
+	if on_spin.is_valid():
+		on_spin.call(by_ad)
 
 ## ── 장날 소식 ──
 ##

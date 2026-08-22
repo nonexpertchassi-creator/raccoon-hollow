@@ -559,15 +559,15 @@ func _small(i: int) -> void:
 func _dog() -> void:
 	var t: Vector2i = Iso.DOG_T
 	var p: Vector2 = Iso.w(t.x + 1, t.y + 1)
-	if not sim.guard:
+	if sim.guards <= 0.0:
 		var N: Vector2 = Iso.w(t.x, t.y)
 		var E: Vector2 = Iso.w(t.x + 1, t.y)
 		var W: Vector2 = Iso.w(t.x, t.y + 1)
 		_outline(N, E, p, W, Color(0.24, 0.2, 0.14, 0.4), 2.0)
 		_text(p + Vector2(0, -Iso.TH - 16), "삽살개 자리", 12, C.ruin)
-		var can: bool = sim.money >= Content.GUARD.cost
+		var can: bool = sim.money >= sim.guard_cost()
 		_chip(p + Vector2(0, -Iso.TH - 8), 80, 21, C.jade if can else Color(0.24, 0.2, 0.14, 0.3))
-		_text(p + Vector2(0, -Iso.TH + 7), "🪙" + Num.fmt(Content.GUARD.cost), 12,
+		_text(p + Vector2(0, -Iso.TH + 7), "🪙" + Num.fmt(sim.guard_cost()), 12,
 			Color.WHITE if can else Color("e6e0cf"))
 		return
 	_pad(t.x, t.y)
@@ -575,11 +575,21 @@ func _dog() -> void:
 	_box(t.x + 0.06, t.y + 0.06, 0.88, 0.88, 8, Color("8a6647"), Color("6b4c33"), 19)
 	draw_circle(p + Vector2(0, -13), 6.5, C.ink)
 	var bob: float = absf(sin(_t * 12.0)) * 3.0 if sim.pest != null else sin(_t * 2.0) * 1.2
+	# 개가 여러 마리면 개집 둘레에 나란히 앉는다. 마리 수가 화면에 안 보이면
+	# 돈을 내고 산 것이 어디 있는지 알 수가 없다.
 	var pic: Texture2D = Art.tex("pests", "dog")
-	if pic != null:
-		_sprite(pic, p + Vector2(-18, 6 - bob), "pests")
-	else:
-		_text(p + Vector2(-26, 4 - bob), "🐕", 24, Color.WHITE)
+	for k in range(int(sim.guards)):
+		var off := Vector2(-26.0 + k * 24.0, 4.0 - bob + (k % 2) * 6.0)
+		if pic != null:
+			_sprite(pic, p + off + Vector2(8, 2), "pests")
+		else:
+			_text(p + off, "🐕", 24, Color.WHITE)
+	# 더 들일 수 있으면 그 자리를 비워 표시한다
+	if sim.guards < float(sim.guard_max()):
+		var can2: bool = sim.money >= sim.guard_cost()
+		_chip(p + Vector2(0, -Iso.TH - 34), 86, 21, C.jade if can2 else Color(0.24, 0.2, 0.14, 0.3))
+		_text(p + Vector2(0, -Iso.TH - 19), "🐕+ 🪙" + Num.fmt(sim.guard_cost()), 11,
+			Color.WHITE if can2 else Color("e6e0cf"))
 
 ## 그림 한 장을 **발끝 기준**으로 놓는다. 그림 주문서에도 "발끝이 아래 변에
 ## 닿게"라고 적어 둔 이유가 이것이다 — 발끝이 곧 그 물건이 서 있는 자리이고,

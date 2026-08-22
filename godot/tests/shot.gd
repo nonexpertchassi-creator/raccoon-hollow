@@ -5,7 +5,7 @@ extends Node
 ##   SHOT_MINUTES=30           얼마나 감을지
 ##   SHOT_UNTIL=bubble|grumpy|coin  그 장면이 나올 때까지 더 감는다
 ##   SHOT_ZOOM=1.0             그 크기로 찍는다(기본은 게임이 정한 값)
-##   SHOT_PANEL=quests|guests|ledger|<가게id>   창을 열어 놓고 찍는다
+##   SHOT_PANEL=quests|guests|ledger|gacha|<가게id>   창을 열어 놓고 찍는다
 ##   SHOT_TAB=items|work|rank  가게 창의 갈피를 골라서 찍는다
 ##   SHOT_CARD=<가게id>        점장 카드가 열린 순간을 띄워서 찍는다
 var _done: bool = false
@@ -40,7 +40,9 @@ func _ready() -> void:
 	main._paint()
 	if OS.has_environment("SHOT_PANEL"):
 		var k: String = OS.get_environment("SHOT_PANEL")
-		if k == "quests" or k == "guests" or k == "ledger":
+		# ★ 창 종류를 여기 안 적으면 도구가 그 창을 **가게 이름으로 알아듣는다**.
+		#   실제로 뽑기 창을 찍으려다 "gacha라는 가게가 없다"로 죽었다.
+		if k in ["quests", "guests", "ledger", "gacha"]:
 			main.panel.open_kind(k)
 		else:
 			main.panel.open_for(k)

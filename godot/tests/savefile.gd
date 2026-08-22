@@ -14,7 +14,7 @@ func _init() -> void:
 	var g: FileAccess = FileAccess.open(P, FileAccess.READ)
 	var box: Variant = bytes_to_var(g.get_buffer(g.get_length()))
 	var b := Sim.new()
-	b.load_from(box.state)
+	b.load_from(box.state, int(box.get("ver", Sim.SAVE_VER)))
 	var ok: bool = RunSim.snapshot(a) == RunSim.snapshot(b)
 	print("파일에 담았다 꺼낸 판이 같은가: ", "예" if ok else "아니오")
 	print("파일 크기: %d바이트" % FileAccess.get_file_as_bytes(P).size())

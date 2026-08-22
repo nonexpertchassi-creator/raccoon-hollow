@@ -26,6 +26,45 @@ const AUTO_SHARE := 0.6
 
 const BASKET_SPREAD := 3.0
 
+const CARD_GRADES := [
+	{
+		"id": 1.0,
+		"name": "흔함",
+		"face": "⚪",
+		"color": "#b3a992"
+	},
+	{
+		"id": 2.0,
+		"name": "드묾",
+		"face": "🟢",
+		"color": "#6f8a5c"
+	},
+	{
+		"id": 3.0,
+		"name": "귀함",
+		"face": "🔵",
+		"color": "#4a7c9e"
+	},
+	{
+		"id": 4.0,
+		"name": "진귀",
+		"face": "🟣",
+		"color": "#8a5c9e"
+	},
+	{
+		"id": 5.0,
+		"name": "영물",
+		"face": "🟠",
+		"color": "#c78a3f"
+	},
+	{
+		"id": 6.0,
+		"name": "신수",
+		"face": "🔴",
+		"color": "#c7563f"
+	}
+]
+
 const EVENT := {
 	"gapHours": 12.0,
 	"afterShops": 2.0
@@ -75,6 +114,118 @@ const FAIR := {
 	"window": 12.0,
 	"boost": 30.0,
 	"mult": 2.0
+}
+
+const GACHA := {
+	"cost": [
+		{
+			"n": 1.0,
+			"gems": 1.0
+		},
+		{
+			"n": 10.0,
+			"gems": 9.0
+		},
+		{
+			"n": 30.0,
+			"gems": 25.0
+		}
+	],
+	"levelAt": [
+		0.0,
+		10.0,
+		40.0,
+		100.0,
+		200.0,
+		350.0,
+		600.0,
+		1000.0,
+		1700.0,
+		3000.0
+	],
+	"rates": [
+		[
+			100.0,
+			0.0,
+			0.0,
+			0.0,
+			0.0,
+			0.0
+		],
+		[
+			95.0,
+			5.0,
+			0.0,
+			0.0,
+			0.0,
+			0.0
+		],
+		[
+			88.0,
+			11.0,
+			1.0,
+			0.0,
+			0.0,
+			0.0
+		],
+		[
+			80.0,
+			17.0,
+			3.0,
+			0.0,
+			0.0,
+			0.0
+		],
+		[
+			70.0,
+			23.0,
+			6.0,
+			1.0,
+			0.0,
+			0.0
+		],
+		[
+			60.0,
+			28.0,
+			10.0,
+			2.0,
+			0.0,
+			0.0
+		],
+		[
+			50.0,
+			31.0,
+			15.0,
+			3.5,
+			0.5,
+			0.0
+		],
+		[
+			40.0,
+			33.0,
+			20.0,
+			6.0,
+			1.0,
+			0.0
+		],
+		[
+			30.0,
+			33.0,
+			26.0,
+			9.0,
+			1.8,
+			0.2
+		],
+		[
+			20.0,
+			32.0,
+			32.0,
+			13.0,
+			2.5,
+			0.5
+		]
+	],
+	"tenPity": 2.0
 }
 
 const GEM := {
@@ -145,9 +296,12 @@ const GUARD := {
 	"name": "삽살개",
 	"face": "🐕",
 	"cost": 25000.0,
+	"costMul": 2.2,
+	"perShops": 4.0,
 	"rate": 0.6,
 	"fine": 3.0,
-	"desc": "자리를 비운 사이 나쁜 놈을 대신 잡는다"
+	"rateCap": 0.9,
+	"desc": "마당을 지키며 나쁜 놈을 대신 물어 잡는다"
 }
 
 const GUESTS := [
@@ -160,6 +314,7 @@ const GUESTS := [
 		"pay": 1.0,
 		"spread": 3.0,
 		"speed": 1.4,
+		"grade": 1.0,
 		"wild": 0.25,
 		"at": 0.0,
 		"desc": "발이 빠르지만 조금씩만 산다"
@@ -173,6 +328,7 @@ const GUESTS := [
 		"pay": 0.85,
 		"spread": 2.0,
 		"speed": 1.7,
+		"grade": 1.0,
 		"wild": 0.25,
 		"at": 5800.0,
 		"desc": "쉴 새 없이 들르는 대신 값을 깎는다"
@@ -186,6 +342,7 @@ const GUESTS := [
 		"pay": 1.15,
 		"spread": 2.0,
 		"speed": 1.5,
+		"grade": 1.0,
 		"wild": 0.3,
 		"at": 180000.0,
 		"desc": "자주 오지만 한두 개면 족하다"
@@ -199,6 +356,7 @@ const GUESTS := [
 		"pay": 1.5,
 		"spread": 3.0,
 		"speed": 0.9,
+		"grade": 2.0,
 		"wild": 0.3,
 		"at": 10000000.0,
 		"desc": "느긋하게 두루 산다"
@@ -212,6 +370,7 @@ const GUESTS := [
 		"pay": 1.2,
 		"spread": 3.0,
 		"speed": 1.35,
+		"grade": 2.0,
 		"wild": 0.4,
 		"at": 120000000.0,
 		"desc": "재빠르지만 값을 깎는 데 능하다"
@@ -225,6 +384,7 @@ const GUESTS := [
 		"pay": 2.8,
 		"spread": 3.0,
 		"speed": 1.2,
+		"grade": 3.0,
 		"wild": 0.5,
 		"at": 1700000000.0,
 		"desc": "값을 후하게 쳐준다"
@@ -238,6 +398,7 @@ const GUESTS := [
 		"pay": 2.2,
 		"spread": 1.0,
 		"speed": 1.1,
+		"grade": 3.0,
 		"wild": 0.6,
 		"at": 5400000000.0,
 		"desc": "한 종류를 통째로 쓸어간다"
@@ -251,6 +412,7 @@ const GUESTS := [
 		"pay": 4.0,
 		"spread": 1.0,
 		"speed": 0.8,
+		"grade": 4.0,
 		"wild": 0.7,
 		"at": 17000000000.0,
 		"desc": "진열대를 품절 내고 간다"
@@ -264,6 +426,7 @@ const GUESTS := [
 		"pay": 7.0,
 		"spread": 3.0,
 		"speed": 0.45,
+		"grade": 4.0,
 		"wild": 0.8,
 		"at": 44000000000.0,
 		"desc": "걸음은 느리나 씀씀이가 크다"
@@ -277,6 +440,7 @@ const GUESTS := [
 		"pay": 6.0,
 		"spread": 4.0,
 		"speed": 1.1,
+		"grade": 5.0,
 		"wild": 0.8,
 		"at": 69000000000.0,
 		"desc": "이것저것 골고루 챙긴다"
@@ -290,6 +454,7 @@ const GUESTS := [
 		"pay": 5.0,
 		"spread": 3.0,
 		"speed": 0.4,
+		"grade": 5.0,
 		"wild": 0.9,
 		"at": 160000000000.0,
 		"desc": "느릿느릿 오지만 수레가 가득 찬다"
@@ -303,9 +468,262 @@ const GUESTS := [
 		"pay": 13.0,
 		"spread": 2.0,
 		"speed": 0.95,
+		"grade": 6.0,
 		"wild": 1.0,
 		"at": 300000000000.0,
 		"desc": "어쩌다 오지만 한 번에 어마어마하게 산다"
+	},
+	{
+		"id": "sparrow",
+		"name": "참새",
+		"face": "🐦",
+		"every": 2.8,
+		"qty": 1.0,
+		"pay": 0.9,
+		"spread": 1.0,
+		"speed": 1.8,
+		"grade": 1.0,
+		"wild": 0.2,
+		"at": 999000000000000.0,
+		"desc": "쉴 새 없이 오지만 한 개씩만 집는다"
+	},
+	{
+		"id": "frog",
+		"name": "개구리",
+		"face": "🐸",
+		"every": 5.5,
+		"qty": 3.0,
+		"pay": 1.0,
+		"spread": 2.0,
+		"speed": 1.0,
+		"grade": 1.0,
+		"wild": 0.3,
+		"at": 999000000000000.0,
+		"desc": "비 오는 날이면 더 자주 온다"
+	},
+	{
+		"id": "mole",
+		"name": "두더지",
+		"face": "🦫",
+		"every": 6.0,
+		"qty": 4.0,
+		"pay": 0.95,
+		"spread": 1.0,
+		"speed": 0.7,
+		"grade": 1.0,
+		"wild": 0.3,
+		"at": 999000000000000.0,
+		"desc": "느리지만 한 종류를 꽤 담아 간다"
+	},
+	{
+		"id": "hedgehog",
+		"name": "고슴도치",
+		"face": "🦔",
+		"every": 5.0,
+		"qty": 2.0,
+		"pay": 1.1,
+		"spread": 2.0,
+		"speed": 0.9,
+		"grade": 1.0,
+		"wild": 0.25,
+		"at": 999000000000000.0,
+		"desc": "조심스레 고르고 값은 잘 쳐준다"
+	},
+	{
+		"id": "duck",
+		"name": "오리",
+		"face": "🦆",
+		"every": 4.0,
+		"qty": 3.0,
+		"pay": 0.9,
+		"spread": 3.0,
+		"speed": 1.1,
+		"grade": 1.0,
+		"wild": 0.3,
+		"at": 999000000000000.0,
+		"desc": "여럿이 몰려와 이것저것 본다"
+	},
+	{
+		"id": "otter",
+		"name": "수달",
+		"face": "🦦",
+		"every": 14.0,
+		"qty": 4.0,
+		"pay": 1.6,
+		"spread": 2.0,
+		"speed": 1.3,
+		"grade": 2.0,
+		"wild": 0.35,
+		"at": 999000000000000.0,
+		"desc": "물건을 만져 보고 마음에 들면 산다"
+	},
+	{
+		"id": "roe",
+		"name": "노루",
+		"face": "🦌",
+		"every": 20.0,
+		"qty": 6.0,
+		"pay": 1.4,
+		"spread": 3.0,
+		"speed": 1.5,
+		"grade": 2.0,
+		"wild": 0.35,
+		"at": 999000000000000.0,
+		"desc": "겁이 많아 오래 안 머문다"
+	},
+	{
+		"id": "weasel",
+		"name": "족제비",
+		"face": "🦡",
+		"every": 12.0,
+		"qty": 3.0,
+		"pay": 1.8,
+		"spread": 1.0,
+		"speed": 1.6,
+		"grade": 2.0,
+		"wild": 0.4,
+		"at": 999000000000000.0,
+		"desc": "재빠르게 좋은 것만 골라 간다"
+	},
+	{
+		"id": "wildcat",
+		"name": "살쾡이",
+		"face": "🐈",
+		"every": 26.0,
+		"qty": 7.0,
+		"pay": 1.5,
+		"spread": 2.0,
+		"speed": 1.45,
+		"grade": 2.0,
+		"wild": 0.4,
+		"at": 999000000000000.0,
+		"desc": "까다롭지만 한번 사면 많이 산다"
+	},
+	{
+		"id": "goral",
+		"name": "산양",
+		"face": "🐐",
+		"every": 38.0,
+		"qty": 9.0,
+		"pay": 1.35,
+		"spread": 4.0,
+		"speed": 0.85,
+		"grade": 2.0,
+		"wild": 0.45,
+		"at": 999000000000000.0,
+		"desc": "느긋하게 두루 살핀다"
+	},
+	{
+		"id": "marten",
+		"name": "담비",
+		"face": "🦫",
+		"every": 45.0,
+		"qty": 9.0,
+		"pay": 2.4,
+		"spread": 2.0,
+		"speed": 1.55,
+		"grade": 3.0,
+		"wild": 0.55,
+		"at": 999000000000000.0,
+		"desc": "반질반질한 것을 좋아한다"
+	},
+	{
+		"id": "mandarin",
+		"name": "원앙",
+		"face": "🦆",
+		"every": 60.0,
+		"qty": 10.0,
+		"pay": 3.0,
+		"spread": 2.0,
+		"speed": 1.25,
+		"grade": 3.0,
+		"wild": 0.5,
+		"at": 999000000000000.0,
+		"desc": "짝을 지어 와서 두 배로 산다"
+	},
+	{
+		"id": "wolf",
+		"name": "늑대",
+		"face": "🐺",
+		"every": 70.0,
+		"qty": 13.0,
+		"pay": 2.6,
+		"spread": 1.0,
+		"speed": 1.3,
+		"grade": 3.0,
+		"wild": 0.6,
+		"at": 999000000000000.0,
+		"desc": "한 종류를 정해 놓고 온다"
+	},
+	{
+		"id": "egret",
+		"name": "백로",
+		"face": "🕊️",
+		"every": 95.0,
+		"qty": 14.0,
+		"pay": 3.2,
+		"spread": 4.0,
+		"speed": 1.15,
+		"grade": 3.0,
+		"wild": 0.65,
+		"at": 999000000000000.0,
+		"desc": "희고 고운 것을 두루 챙긴다"
+	},
+	{
+		"id": "leopard",
+		"name": "표범",
+		"face": "🐆",
+		"every": 100.0,
+		"qty": 15.0,
+		"pay": 5.0,
+		"spread": 2.0,
+		"speed": 1.5,
+		"grade": 4.0,
+		"wild": 0.7,
+		"at": 999000000000000.0,
+		"desc": "드물게 나타나 값을 후하게 친다"
+	},
+	{
+		"id": "muskdeer",
+		"name": "사향노루",
+		"face": "🦌",
+		"every": 130.0,
+		"qty": 13.0,
+		"pay": 8.0,
+		"spread": 3.0,
+		"speed": 1.0,
+		"grade": 4.0,
+		"wild": 0.75,
+		"at": 999000000000000.0,
+		"desc": "귀한 것에 값을 아끼지 않는다"
+	},
+	{
+		"id": "moonbear",
+		"name": "반달곰",
+		"face": "🐻",
+		"every": 150.0,
+		"qty": 20.0,
+		"pay": 4.5,
+		"spread": 1.0,
+		"speed": 0.75,
+		"grade": 4.0,
+		"wild": 0.75,
+		"at": 999000000000000.0,
+		"desc": "한 종류를 통째로 비우고 간다"
+	},
+	{
+		"id": "haetae",
+		"name": "해태",
+		"face": "🦁",
+		"every": 300.0,
+		"qty": 24.0,
+		"pay": 9.0,
+		"spread": 3.0,
+		"speed": 0.9,
+		"grade": 5.0,
+		"wild": 0.9,
+		"at": 999000000000000.0,
+		"desc": "마을을 지키는 짐승 — 어쩌다 들러 크게 산다"
 	}
 ]
 
@@ -519,6 +937,86 @@ const REGULARS := [
 		"pay": 2.4
 	}
 ]
+
+const ROULETTE := {
+	"freePerDay": 1.0,
+	"adPerDay": 3.0,
+	"adSeconds": 2.0,
+	"wedges": [
+		{
+			"kind": "coin",
+			"amount": 30.0,
+			"weight": 18.0,
+			"label": "엽전 한 줌"
+		},
+		{
+			"kind": "gem",
+			"amount": 3.0,
+			"weight": 14.0,
+			"label": "💎 3"
+		},
+		{
+			"kind": "coin",
+			"amount": 180.0,
+			"weight": 12.0,
+			"label": "엽전 한 꾸러미"
+		},
+		{
+			"kind": "card",
+			"amount": 1.0,
+			"weight": 10.0,
+			"label": "손님 카드 1장"
+		},
+		{
+			"kind": "coin",
+			"amount": 30.0,
+			"weight": 12.0,
+			"label": "엽전 한 줌"
+		},
+		{
+			"kind": "gem",
+			"amount": 5.0,
+			"weight": 9.0,
+			"label": "💎 5"
+		},
+		{
+			"kind": "coin",
+			"amount": 600.0,
+			"weight": 6.0,
+			"label": "엽전 한 자루"
+		},
+		{
+			"kind": "card",
+			"amount": 2.0,
+			"weight": 5.0,
+			"label": "손님 카드 2장"
+		},
+		{
+			"kind": "gem",
+			"amount": 10.0,
+			"weight": 5.0,
+			"label": "💎 10"
+		},
+		{
+			"kind": "coin",
+			"amount": 1800.0,
+			"weight": 4.0,
+			"label": "엽전 한 궤"
+		},
+		{
+			"kind": "card",
+			"amount": 5.0,
+			"weight": 3.0,
+			"label": "손님 카드 5장"
+		},
+		{
+			"kind": "gem",
+			"amount": 30.0,
+			"weight": 2.0,
+			"label": "💎 30"
+		}
+	]
+}
 
 const SERVICE := {
 	"patience": 6.0,
@@ -1048,5 +1546,26 @@ const STAFF_RANKS := [
 	}
 ]
 
-const STOCK_CAP := 40.0
+const STAR_CARDS := [
+	5.0,
+	10.0,
+	15.0,
+	20.0,
+	30.0,
+	40.0,
+	55.0,
+	70.0,
+	90.0,
+	115.0,
+	145.0,
+	180.0,
+	220.0,
+	270.0,
+	330.0,
+	400.0,
+	480.0,
+	580.0,
+	700.0
+]
 
+const STOCK_CAP := 40.0

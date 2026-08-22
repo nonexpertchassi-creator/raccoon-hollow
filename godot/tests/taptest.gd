@@ -97,7 +97,7 @@ func _process(_d: float) -> void:
 
 	# 4) 삽살개 자리
 	main._tap(Iso.w(Iso.DOG_T.x + 1, Iso.DOG_T.y + 1) + Vector2(0, -20))
-	if not s.guard:
+	if s.guards <= 0.0:
 		fails.append("삽살개 자리를 눌렀는데 안 들어왔다")
 
 	# 5) 나쁜 놈 — 억지로 하나 세워 놓고 눌러 본다

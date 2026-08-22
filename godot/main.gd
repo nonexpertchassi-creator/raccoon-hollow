@@ -17,6 +17,9 @@ var sfx: Sfx
 var _layer: CanvasLayer
 var _guestbtn: Button
 var _questbtn: Button
+var _fairbtn: Button
+## 더미 광고가 도는 동안 잠깐 막아 둔다
+var _adWait: float = 0.0
 var _newsbtn: Button
 
 ## 끌기와 누르기를 가른다. 이걸 안 하면 마을을 둘러보려고 끌 때마다
@@ -67,7 +70,7 @@ func _load() -> Variant:
 	if int(box.get("ver", 0)) > Sim.SAVE_VER:
 		push_warning("더 새 판에서 만든 저장본이다 — 건드리지 않는다")
 		return null
-	sim.load_from(box.state)
+	sim.load_from(box.state, int(box.get("ver", 1)))
 	# 껐던 시간만큼 벌어 둔다. 실제 시계로 잰다 — 게임을 켜 둔 시간이 아니라.
 	var away: float = Time.get_unix_time_from_system() - float(box.get("at", 0.0))
 	if away > 0.0:
@@ -137,6 +140,9 @@ func _ready() -> void:
 	_questbtn = Button.new()
 	_questbtn.pressed.connect(func(): panel.open_kind("quests"))
 	bar.add_child(_questbtn)
+	_fairbtn = Button.new()
+	_fairbtn.pressed.connect(func(): panel.open_kind("gacha"))
+	bar.add_child(_fairbtn)
 	_newsbtn = Button.new()
 	_newsbtn.text = "소식"
 	_newsbtn.pressed.connect(func(): panel.open_kind("ledger"))
@@ -149,6 +155,8 @@ func _ready() -> void:
 	panel.sim = sim
 	panel.on_focus = _focus_shop
 	panel.on_card = _show_card
+	panel.on_pull = _show_pull
+	panel.on_spin = _spin
 	_layer.add_child(panel)
 	card = CardPopup.new()
 	card.sim = sim
@@ -222,6 +230,11 @@ func step(delta: float) -> void:
 		sfx.play("quest")
 
 func _process(delta: float) -> void:
+	if _adWait > 0.0:
+		_adWait -= delta
+		if _adWait <= 0.0:
+			_adWait = 0.0
+			_finish_spin(true)
 	step(delta)
 	village.cam_center = cam.position
 	_save_acc += delta
@@ -243,6 +256,10 @@ func _paint() -> void:
 		sim.items.size(), sim.guests.size(), int(sim.gems)]
 	_guestbtn.text = "손님 %d/%d" % [sim.guests.size(), Content.GUESTS.size()]
 	_questbtn.text = "의뢰 %d" % sim.quests.size()
+	sim.roul_refill()
+	# 남은 횟수를 단추에 적는다 — 안 적으면 매일 열어 보고 확인해야 한다
+	var left: int = int(sim.roulFree) + int(sim.roulAd)
+	_fairbtn.text = "뽑기" if left == 0 else "뽑기 ●%d" % left
 	var lines: Array[String] = []
 	for i in range(min(3, sim.events.size())):
 		lines.append("· " + String(sim.events[i].msg))
@@ -300,6 +317,30 @@ func _unhandled_input(e: InputEvent) -> void:
 			_dragged = true                    # 8px 넘게 움직였으면 끈 것이다
 		cam.position -= mm.relative / cam.zoom.x
 		_clamp_cam()
+
+## 뽑은 카드를 보여준다. 여러 장이면 제일 좋은 것 한 장을 크게 띄운다 —
+## 열 장을 한 장씩 보여주면 그게 더 지루하다.
+func _show_pull(got: Array) -> void:
+	sfx.play("quest")
+	card.show_pull(got)
+
+## 룰렛을 돌린다. 광고면 **잠깐 기다린다** — 더미지만 기다리는 시간까지가
+## 그 기능이다. 없으면 나중에 진짜 광고를 붙일 때 감이 안 맞는다.
+func _spin(by_ad: bool) -> void:
+	if _adWait > 0.0:
+		return
+	if by_ad:
+		_adWait = float(Content.ROULETTE.adSeconds)
+		return
+	_finish_spin(false)
+
+func _finish_spin(by_ad: bool) -> void:
+	var got: Variant = sim.spin(by_ad, rng)
+	if got == null:
+		return
+	sfx.play("quest")
+	card.show_spin(got)
+	panel.rebuild()
 
 ## 카드 한 장이 열린다 — 가게를 되살렸거나, 승급했거나.
 func _show_card(shop_id: String, rank: int) -> void:
@@ -360,7 +401,7 @@ func _tap(p: Vector2) -> void:
 
 	# 3) 삽살개 자리
 	var dp: Vector2 = Iso.w(Iso.DOG_T.x + 1, Iso.DOG_T.y + 1)
-	if not sim.guard and absf(p.x - dp.x) < 60.0 and p.y > dp.y - 80.0 and p.y < dp.y + 26.0:
+	if sim.guards < float(sim.guard_max()) and absf(p.x - dp.x) < 60.0 and p.y > dp.y - 92.0 and p.y < dp.y + 26.0:
 		if sim.buy_guard():
 			sfx.play("open")
 		return

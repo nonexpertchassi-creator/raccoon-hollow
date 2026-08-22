@@ -131,37 +131,187 @@ export const GUESTS = [
    *   spread  훑는 품목 종류 수      1이면 한 종류를 쓸어간다 = 품절
    *   speed   걷는 속도 배수         화면에서만 쓴다
    *   wild    등장의 들쭉날쭉함      0이면 시계처럼, 1이면 완전히 운
+   *   grade   카드 등급 1~6          뽑기에서 나오는 귀함. 셀수록 좋은 손님이다
+   *   at      **옛 규칙의 흔적**     누적 매출이 여기 닿으면 저절로 왔다.
+   *           Godot판은 이제 **뽑기로만** 손님이 온다 — 이 값을 안 본다.
+   *           자바스크립트판(답안지)이 아직 쓰므로 지우지 않고 남겨 둔다.
+   *           새로 넣은 열여덟은 999조라 옛 규칙으로는 사실상 영영 안 온다.
+   *           (1e30을 썼더니 자바스크립트와 Godot이 글자로 다르게 찍혀
+   *           대조가 빨간불이 됐다 — 큰 수는 지수 표기에서 갈린다.)
    *
    * wild를 넣은 이유: every만 있으면 호랑이도 400초마다 정확히 온다.
    * 시계처럼 오는 희귀 손님은 희귀하게 느껴지지 않는다. 평균 간격은
    * 그대로 두고 흔들기만 한다 — 자주 오는 앞 손님(토끼·까치)은 0으로
    * 둬서 길에 사람이 끊기지 않게 하고, 뒤로 갈수록 운에 맡긴다.
    */
-  { id: 'rabbit',   name: '토끼',   face: '🐰', every: 4.6,  qty: 3,  pay: 1.0,  spread: 3, speed: 1.4, wild: 0.25,
+  { id: 'rabbit',   name: '토끼',   face: '🐰', every: 4.6,  qty: 3,  pay: 1.0,  spread: 3, speed: 1.4, grade: 1, wild: 0.25,
     at: 0,             desc: '발이 빠르지만 조금씩만 산다' },
-  { id: 'magpie',   name: '까치',   face: '🐦', every: 3.1,  qty: 2,  pay: 0.85, spread: 2, speed: 1.7, wild: 0.25,
+  { id: 'magpie',   name: '까치',   face: '🐦', every: 3.1,  qty: 2,  pay: 0.85, spread: 2, speed: 1.7, grade: 1, wild: 0.25,
     at: 5_800,        desc: '쉴 새 없이 들르는 대신 값을 깎는다' },
-  { id: 'squirrel', name: '다람쥐', face: '🐿️', every: 4.2,  qty: 2,  pay: 1.15, spread: 2, speed: 1.5, wild: 0.3,
+  { id: 'squirrel', name: '다람쥐', face: '🐿️', every: 4.2,  qty: 2,  pay: 1.15, spread: 2, speed: 1.5, grade: 1, wild: 0.3,
     at: 180_000,     desc: '자주 오지만 한두 개면 족하다' },
-  { id: 'badger',   name: '오소리', face: '🦡', every: 17,   qty: 5,  pay: 1.5,  spread: 3, speed: 0.9, wild: 0.3,
+  { id: 'badger',   name: '오소리', face: '🦡', every: 17,   qty: 5,  pay: 1.5,  spread: 3, speed: 0.9, grade: 2, wild: 0.3,
     at: 10_000_000,   desc: '느긋하게 두루 산다' },
-  { id: 'fox',      name: '여우',   face: '🦊', every: 32,   qty: 8,  pay: 1.2,  spread: 3, speed: 1.35, wild: 0.4,
+  { id: 'fox',      name: '여우',   face: '🦊', every: 32,   qty: 8,  pay: 1.2,  spread: 3, speed: 1.35, grade: 2, wild: 0.4,
     at: 120_000_000, desc: '재빠르지만 값을 깎는 데 능하다' },
-  { id: 'deer',     name: '사슴',   face: '🦌', every: 50,   qty: 9,  pay: 2.8,  spread: 3, speed: 1.2, wild: 0.5,
+  { id: 'deer',     name: '사슴',   face: '🦌', every: 50,   qty: 9,  pay: 2.8,  spread: 3, speed: 1.2, grade: 3, wild: 0.5,
     at: 1_700_000_000, desc: '값을 후하게 쳐준다' },
-  { id: 'boar',     name: '멧돼지', face: '🐗', every: 80,   qty: 12, pay: 2.2,  spread: 1, speed: 1.1, wild: 0.6,
+  { id: 'boar',     name: '멧돼지', face: '🐗', every: 80,   qty: 12, pay: 2.2,  spread: 1, speed: 1.1, grade: 3, wild: 0.6,
     at: 5_400_000_000, desc: '한 종류를 통째로 쓸어간다' },
-  { id: 'bear',     name: '곰',     face: '🐻', every: 120,  qty: 16, pay: 4.0,  spread: 1, speed: 0.8, wild: 0.7,
+  { id: 'bear',     name: '곰',     face: '🐻', every: 120,  qty: 16, pay: 4.0,  spread: 1, speed: 0.8, grade: 4, wild: 0.7,
     at: 17_000_000_000, desc: '진열대를 품절 내고 간다' },
-  { id: 'turtle',   name: '거북',   face: '🐢', every: 110,  qty: 14, pay: 7.0,  spread: 3, speed: 0.45, wild: 0.8,
+  { id: 'turtle',   name: '거북',   face: '🐢', every: 110,  qty: 14, pay: 7.0,  spread: 3, speed: 0.45, grade: 4, wild: 0.8,
     at: 44_000_000_000, desc: '걸음은 느리나 씀씀이가 크다' },
-  { id: 'crane',    name: '두루미', face: '🦢', every: 145,  qty: 16, pay: 6.0,  spread: 4, speed: 1.1, wild: 0.8,
+  { id: 'crane',    name: '두루미', face: '🦢', every: 145,  qty: 16, pay: 6.0,  spread: 4, speed: 1.1, grade: 5, wild: 0.8,
     at: 69_000_000_000, desc: '이것저것 골고루 챙긴다' },
-  { id: 'ox',       name: '소',     face: '🐂', every: 260,  qty: 26, pay: 5.0,  spread: 3, speed: 0.4, wild: 0.9,
+  { id: 'ox',       name: '소',     face: '🐂', every: 260,  qty: 26, pay: 5.0,  spread: 3, speed: 0.4, grade: 5, wild: 0.9,
     at: 160_000_000_000, desc: '느릿느릿 오지만 수레가 가득 찬다' },
-  { id: 'tiger',    name: '호랑이', face: '🐯', every: 400,  qty: 34, pay: 13.0, spread: 2, speed: 0.95, wild: 1.0,
+  { id: 'tiger',    name: '호랑이', face: '🐯', every: 400,  qty: 34, pay: 13.0, spread: 2, speed: 0.95, grade: 6, wild: 1.0,
     at: 300_000_000_000, desc: '어쩌다 오지만 한 번에 어마어마하게 산다' },
+  { id: 'sparrow',    name: '참새', face: '🐦', every: 2.8, qty: 1, pay: 0.9, spread: 1, speed: 1.8, grade: 1, wild: 0.2,
+    at: 999_000_000_000_000, desc: '쉴 새 없이 오지만 한 개씩만 집는다' },
+  { id: 'frog',       name: '개구리', face: '🐸', every: 5.5, qty: 3, pay: 1.0, spread: 2, speed: 1.0, grade: 1, wild: 0.3,
+    at: 999_000_000_000_000, desc: '비 오는 날이면 더 자주 온다' },
+  { id: 'mole',       name: '두더지', face: '🦫', every: 6.0, qty: 4, pay: 0.95, spread: 1, speed: 0.7, grade: 1, wild: 0.3,
+    at: 999_000_000_000_000, desc: '느리지만 한 종류를 꽤 담아 간다' },
+  { id: 'hedgehog',   name: '고슴도치', face: '🦔', every: 5.0, qty: 2, pay: 1.1, spread: 2, speed: 0.9, grade: 1, wild: 0.25,
+    at: 999_000_000_000_000, desc: '조심스레 고르고 값은 잘 쳐준다' },
+  { id: 'duck',       name: '오리', face: '🦆', every: 4.0, qty: 3, pay: 0.9, spread: 3, speed: 1.1, grade: 1, wild: 0.3,
+    at: 999_000_000_000_000, desc: '여럿이 몰려와 이것저것 본다' },
+  { id: 'otter',      name: '수달', face: '🦦', every: 14, qty: 4, pay: 1.6, spread: 2, speed: 1.3, grade: 2, wild: 0.35,
+    at: 999_000_000_000_000, desc: '물건을 만져 보고 마음에 들면 산다' },
+  { id: 'roe',        name: '노루', face: '🦌', every: 20, qty: 6, pay: 1.4, spread: 3, speed: 1.5, grade: 2, wild: 0.35,
+    at: 999_000_000_000_000, desc: '겁이 많아 오래 안 머문다' },
+  { id: 'weasel',     name: '족제비', face: '🦡', every: 12, qty: 3, pay: 1.8, spread: 1, speed: 1.6, grade: 2, wild: 0.4,
+    at: 999_000_000_000_000, desc: '재빠르게 좋은 것만 골라 간다' },
+  { id: 'wildcat',    name: '살쾡이', face: '🐈', every: 26, qty: 7, pay: 1.5, spread: 2, speed: 1.45, grade: 2, wild: 0.4,
+    at: 999_000_000_000_000, desc: '까다롭지만 한번 사면 많이 산다' },
+  { id: 'goral',      name: '산양', face: '🐐', every: 38, qty: 9, pay: 1.35, spread: 4, speed: 0.85, grade: 2, wild: 0.45,
+    at: 999_000_000_000_000, desc: '느긋하게 두루 살핀다' },
+  { id: 'marten',     name: '담비', face: '🦫', every: 45, qty: 9, pay: 2.4, spread: 2, speed: 1.55, grade: 3, wild: 0.55,
+    at: 999_000_000_000_000, desc: '반질반질한 것을 좋아한다' },
+  { id: 'mandarin',   name: '원앙', face: '🦆', every: 60, qty: 10, pay: 3.0, spread: 2, speed: 1.25, grade: 3, wild: 0.5,
+    at: 999_000_000_000_000, desc: '짝을 지어 와서 두 배로 산다' },
+  { id: 'wolf',       name: '늑대', face: '🐺', every: 70, qty: 13, pay: 2.6, spread: 1, speed: 1.3, grade: 3, wild: 0.6,
+    at: 999_000_000_000_000, desc: '한 종류를 정해 놓고 온다' },
+  { id: 'egret',      name: '백로', face: '🕊️', every: 95, qty: 14, pay: 3.2, spread: 4, speed: 1.15, grade: 3, wild: 0.65,
+    at: 999_000_000_000_000, desc: '희고 고운 것을 두루 챙긴다' },
+  { id: 'leopard',    name: '표범', face: '🐆', every: 100, qty: 15, pay: 5.0, spread: 2, speed: 1.5, grade: 4, wild: 0.7,
+    at: 999_000_000_000_000, desc: '드물게 나타나 값을 후하게 친다' },
+  { id: 'muskdeer',   name: '사향노루', face: '🦌', every: 130, qty: 13, pay: 8.0, spread: 3, speed: 1.0, grade: 4, wild: 0.75,
+    at: 999_000_000_000_000, desc: '귀한 것에 값을 아끼지 않는다' },
+  { id: 'moonbear',   name: '반달곰', face: '🐻', every: 150, qty: 20, pay: 4.5, spread: 1, speed: 0.75, grade: 4, wild: 0.75,
+    at: 999_000_000_000_000, desc: '한 종류를 통째로 비우고 간다' },
+  { id: 'haetae',     name: '해태', face: '🦁', every: 300, qty: 24, pay: 9.0, spread: 3, speed: 0.9, grade: 5, wild: 0.9,
+    at: 999_000_000_000_000, desc: '마을을 지키는 짐승 — 어쩌다 들러 크게 산다' },
 ];
+
+/* ───────────── 카드 등급 여섯 ─────────────
+ * 손님 카드의 귀함. 뽑기에서 나오는 확률이 등급마다 다르다.
+ *
+ * 왜 여섯인가: 넷이면 "좋은 것/나쁜 것"으로만 갈리고, 여덟이면 등급 이름이
+ * 안 외워진다. 여섯이면 아래 셋(흔함·드묾·귀함)이 일상이고 위 셋(진귀·영물·
+ * 신수)이 사건이 된다 — 일상과 사건이 반씩이라야 뽑을 맛이 난다.
+ *
+ * 등급은 **세기 순서**와 같다. 귀한 카드일수록 실제로 좋은 손님이다.
+ * 이게 어긋나면 "귀한데 쓸모없다"가 되고, 그건 뽑기를 죽인다. */
+export const CARD_GRADES = [
+  { id: 1, name: '흔함', face: '⚪', color: '#b3a992' },
+  { id: 2, name: '드묾', face: '🟢', color: '#6f8a5c' },
+  { id: 3, name: '귀함', face: '🔵', color: '#4a7c9e' },
+  { id: 4, name: '진귀', face: '🟣', color: '#8a5c9e' },
+  { id: 5, name: '영물', face: '🟠', color: '#c78a3f' },
+  { id: 6, name: '신수', face: '🔴', color: '#c7563f' },
+];
+
+/* ───────────── 뽑기 ─────────────
+ * 손님 카드를 뽑는다. **이제 손님은 뽑기로만 마을에 온다** —
+ * 예전에는 누적 매출이 문턱을 넘으면 저절로 왔다.
+ *
+ * 왜 바꾸나: 저절로 오면 "기다리면 열린다"가 되고, 그건 할 일이 아니라
+ * 시간이 하는 일이다. 뽑아서 만나면 **내가 데려온 손님**이 된다.
+ *
+ * ★ 확률은 아래 표가 전부다. 게임 안에서도 이 표를 그대로 보여준다 —
+ *   확률을 숨기는 뽑기는 만들지 않는다.
+ */
+export const GACHA = {
+  /* 뽑는 값(젬). 여러 장을 한 번에 뽑으면 조금 싸다.
+   * 젬은 귀한 재화라 한 장에 1개다 — 강화(3~62젬)와 값이 겹치므로
+   * "강화를 살까 뽑을까"가 매번 고민이 된다. 그 고민이 이 게임의 재미다. */
+  cost: [
+    { n: 1,  gems: 1 },
+    { n: 10, gems: 9 },
+    { n: 30, gems: 25 },
+  ],
+
+  /* 뽑기 레벨 1~10. 많이 뽑을수록 오른다(누적 횟수).
+   * 아래는 **그 레벨까지 오는 데 필요한 누적 뽑기 횟수**다. */
+  levelAt: [0, 10, 40, 100, 200, 350, 600, 1000, 1700, 3000],
+
+  /* 레벨별 등급 확률(%). 각 줄의 합은 반드시 100이다.
+   * 왼쪽부터 흔함·드묾·귀함·진귀·영물·신수.
+   *
+   * 1레벨은 흔함만 나온다. 뽑기를 막 시작한 사람에게 신수가 나오면
+   * 그 뒤로 뽑을 이유가 사라진다 — 올라갈 곳을 남겨 둔다. */
+  rates: [
+    [100,  0,    0,  0,   0,   0  ],   // Lv1
+    [ 95,  5,    0,  0,   0,   0  ],   // Lv2
+    [ 88, 11,    1,  0,   0,   0  ],   // Lv3
+    [ 80, 17,    3,  0,   0,   0  ],   // Lv4
+    [ 70, 23,    6,  1,   0,   0  ],   // Lv5
+    [ 60, 28,   10,  2,   0,   0  ],   // Lv6
+    [ 50, 31,   15,  3.5, 0.5, 0  ],   // Lv7
+    [ 40, 33,   20,  6,   1,   0  ],   // Lv8
+    [ 30, 33,   26,  9,   1.8, 0.2],   // Lv9
+    [ 20, 32,   32, 13,   2.5, 0.5],   // Lv10
+  ],
+
+  /* 열 장 뽑기에서 **드묾 이상 한 장은 반드시** 나온다(2레벨부터).
+   * 열 번 뽑아 전부 흔함이면 뽑은 기억이 안 남는다. */
+  tenPity: 2,
+};
+
+/* 카드를 모아 손님의 성(星)을 올린다. 아래는 **한 단계 올리는 데 드는 장수**다.
+ *
+ * 1성 → 2성이 5장, 19성 → 20성이 700장. 다 합치면 한 손님을 20성까지
+ * 올리는 데 3,755장이다. 손님이 서른이니 전부 채우는 건 사실상 끝이 없다 —
+ * 방치형에서 끝이 보이는 목표는 그날로 끝난다. */
+export const STAR_CARDS = [
+  5, 10, 15, 20, 30, 40, 55, 70, 90, 115,
+  145, 180, 220, 270, 330, 400, 480, 580, 700,
+];
+
+/* ───────────── 룰렛 ─────────────
+ * 하루 네 번 돌리는 작은 잔치. 무료 한 번, 광고 세 번.
+ *
+ * ★ 광고는 아직 **더미**다. 누르면 잠깐 기다렸다 보상이 나온다.
+ *   진짜 광고를 붙일 자리만 만들어 둔 것이다.
+ *
+ * ★ 칸 열둘, 무게는 아래가 전부다. 합이 100이라 그대로 퍼센트다.
+ *   게임 안 '확률 보기'가 이 표를 그대로 읽어서 보여준다.
+ */
+export const ROULETTE = {
+  freePerDay: 1,
+  adPerDay: 3,
+  adSeconds: 2,          // 더미 광고가 도는 시간
+
+  /* kind: coin(초 단위 수입) · gem(개수) · card(장수)
+   * weight의 합 = 100 */
+  wedges: [
+    { kind: 'coin', amount: 30,   weight: 18, label: '엽전 한 줌' },
+    { kind: 'gem',  amount: 3,    weight: 14, label: '💎 3' },
+    { kind: 'coin', amount: 180,  weight: 12, label: '엽전 한 꾸러미' },
+    { kind: 'card', amount: 1,    weight: 10, label: '손님 카드 1장' },
+    { kind: 'coin', amount: 30,   weight: 12, label: '엽전 한 줌' },
+    { kind: 'gem',  amount: 5,    weight:  9, label: '💎 5' },
+    { kind: 'coin', amount: 600,  weight:  6, label: '엽전 한 자루' },
+    { kind: 'card', amount: 2,    weight:  5, label: '손님 카드 2장' },
+    { kind: 'gem',  amount: 10,   weight:  5, label: '💎 10' },
+    { kind: 'coin', amount: 1800, weight:  4, label: '엽전 한 궤' },
+    { kind: 'card', amount: 5,    weight:  3, label: '손님 카드 5장' },
+    { kind: 'gem',  amount: 30,   weight:  2, label: '💎 30' },
+  ],
+};
 
 /* ───────────── 단골 20성 ─────────────
  * 자주 오는 손님은 단골이 된다. 많이 사가고 값도 후하게 쳐준다.
@@ -451,9 +601,22 @@ export const PESTS = [
 export const GUARD = {
   id: 'dog', name: '삽살개', face: '🐕',
   cost: 25_000,
-  rate: 0.6,     // 이 확률로 물어 잡는다. 1로 두면 화면을 볼 이유가 없어진다
+  costMul: 2.2,  // 두 번째 개부터 이만큼씩 비싸진다
+  perShops: 4,   // 가게 넷마다 한 마리까지. 가게 하나에 개 셋은 우스꽝스럽다
+  rate: 0.6,     // 한 마리가 이 확률로 문다. 1로 두면 화면을 볼 이유가 없어진다
   fine: 3,       // 직접 잡을 때가 20·13이다. 개는 거들 뿐이다
-  desc: '자리를 비운 사이 나쁜 놈을 대신 잡는다',
+
+  /* ★ 여러 마리를 둬도 **90%를 안 넘는다.**
+   *   개 넷이면 97%, 다섯이면 99%다. 그러면 나쁜 놈이 사실상 사라지고,
+   *   손가락으로 잡는 재미도 같이 사라진다 — 돈으로 재미를 지우는 셈이다.
+   *   열에 하나는 반드시 사람 몫으로 남긴다. */
+  rateCap: 0.9,
+
+  /* ★ 설명을 고쳤다. 예전에는 "자리를 비운 사이"라고 적혀 있었는데
+   *   **코드는 온라인·오프라인을 안 가린다** — 늘 물어 잡는다.
+   *   설명이 코드보다 좁게 적혀 있어서, 만드는 사람이 "온라인에도 있어야
+   *   하지 않나"고 물었다. 문서가 코드보다 오래 산 두 번째 예다. */
+  desc: '마당을 지키며 나쁜 놈을 대신 물어 잡는다',
 };
 
 export const RANKS = [

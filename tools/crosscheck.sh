@@ -11,6 +11,7 @@
 set -e
 cd "$(dirname "$0")/.."
 SUBJECTS="${*:-fmt rng content sim save}"
+# GOLDEN=write 로 부르면 sim의 '박아 둔 정답'을 지금 값으로 다시 쓴다
 
 # class_name(전역 이름)은 프로젝트를 한 번 훑어야 등록된다.
 # 조건부로 건너뛰게 했더니 .gd를 고쳐도 옛 이름이 남을 여지가 있었다. 늘 훑는다.
@@ -45,9 +46,47 @@ case "$OUT" in
   *) fail bits "" ; echo "$OUT" | grep "값이 다르다" | head -3 | sed 's/^/     /' ;;
 esac
 
+# 뽑기·룰렛은 자바스크립트에 짝이 없다(Godot에만 있는 규칙이다).
+# 확률은 눈으로 못 보므로 십만 번씩 굴려 표와 견준다.
+OUT=$(godot --headless --path godot --script tests/gacha.gd 2>&1 || true)
+case "$OUT" in
+  *"GACHA OK"*) pass gacha "뽑기·룰렛 확률이 표대로다" ;;
+  *) fail gacha "" ; echo "$OUT" | grep "GACHA FAIL" | head -4 | sed 's/^/     /' ;;
+esac
+
 for S in $SUBJECTS; do
   node tools/answers.mjs "$S"
   godot --headless --path godot --script tests/crosscheck.gd -- "$S" >/dev/null 2>&1
+  # ── sim은 이제 **어제의 자신**과 대조한다 ──
+  #
+  # ★ 2026-08-22, 답안지가 갈라졌다. 뽑기가 들어오면서 손님이 오는 규칙이
+  #   바뀌었는데(문턱 → 뽑기), 자바스크립트판에는 뽑기가 없다. 두 판은 이제
+  #   영영 다른 게임이라 서로 대조할 수가 없다.
+  #
+  #   그렇다고 시험을 버리면 규칙을 고칠 때마다 무엇이 달라졌는지 알 길이 없다.
+  #   그래서 **정답을 파일로 박아 둔다**(golden_sim.txt). 규칙을 일부러 고쳤으면
+  #   아래 명령으로 정답을 다시 박고, 그 차이를 커밋에 남긴다:
+  #
+  #       GOLDEN=write tools/crosscheck.sh sim
+  #
+  #   저장 시험이 이미 쓰던 방법과 같다 — 답안지가 자기 자신이 되는 것이다.
+  if [ "$S" = "sim" ]; then
+    G=godot/tests/golden_sim.txt
+    if [ "$GOLDEN" = "write" ]; then
+      cp godot/out_godot.txt "$G"
+      printf "📌 %-8s 정답을 다시 박았다 (%s줄)\n" "$S" "$(wc -l < "$G" | tr -d ' ')"
+    elif [ ! -f "$G" ]; then
+      FAIL=1
+      printf "❌ %-8s 박아 둔 정답이 없다 — GOLDEN=write 로 한 번 만들 것\n" "$S"
+    elif diff -q "$G" godot/out_godot.txt >/dev/null 2>&1; then
+      printf "✅ %-8s %s줄 전부 어제와 같다\n" "$S" "$(wc -l < "$G" | tr -d ' ')"
+    else
+      FAIL=1
+      printf "❌ %-8s 어제와 달라졌다 (일부러 고쳤으면 GOLDEN=write):\n" "$S"
+      diff "$G" godot/out_godot.txt | head -6 | cut -c1-150 | sed 's/^/     /'
+    fi
+    continue
+  fi
   # 저장 시험은 자기 자신과 대조한다 — 어긋난 줄에만 두 값이 같이 찍힌다
   if [ "$S" = "save" ]; then
     if grep -q "저장했다 켰을 때" godot/out_godot.txt; then

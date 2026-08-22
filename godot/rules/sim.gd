@@ -61,12 +61,29 @@ var rank: Dictionary = {}
 ## '가게는 없는데 곡괭이는 팔린다'가 됐다. 가게를 열면 그때 들어온다.
 var items: Dictionary = {}
 var asked: Array = []
+## 마을에 온 손님. **이제 뽑기로만 늘어난다** — 카드를 처음 뽑으면 그때 온다.
+## 토끼 하나로 시작한다(첫 카드를 뽑기 전에도 장사는 돼야 하니까).
 var guests: Array = ["rabbit"]
+## 손님별 **가진 카드 장수**. 성을 올릴 때 쓰고 줄어든다.
+var cards: Dictionary = {"rabbit": 0.0}
+## 손님별 **성(星)**. 0이 1성, 19가 20성이다.
+## 예전에는 방문 횟수로 저절로 올랐는데, 이제 **카드를 모아 눌러서** 올린다.
+var stars: Dictionary = {}
+## 여태 뽑은 총 횟수. 뽑기 레벨이 여기서 나온다.
+var pulls: float = 0.0
+## 룰렛 — 오늘 남은 무료/광고 횟수와, 마지막으로 채운 날.
+var roulFree: float = 1.0
+var roulAd: float = 3.0
+var roulDay: float = -1.0
 var bought: Dictionary = {}
 var visits: Dictionary = {}
 var sold: float = 0.0
 var auto: bool = false
 var smalls: Array = []
+## 삽살개 **마리 수**. 예전에는 있다/없다(참·거짓)였다.
+## 가게가 늘면 도둑도 느니 여러 마리를 둘 수 있어야 한다.
+var guards: float = 0.0
+## 옛 저장본 호환용. 참이면 한 마리로 친다(load_from에서 옮긴다).
 var guard: bool = false
 var staff: Dictionary = {}
 var fair: float = 0.0
@@ -192,11 +209,29 @@ func _pest_born(P: Dictionary, rng: Rng) -> Variant:
 			"what": "엽전 %s닢을 노린다" % Num.fmt(amount)}
 
 # ── 삽살개 ──
-func can_buy_guard() -> bool: return not guard and money >= Content.GUARD.cost
+## 삽살개 값 — 마리마다 오른다. 두 번째부터는 첫 마리의 2.2배씩.
+func guard_cost() -> float:
+	return floor(Content.GUARD.cost * pow(Content.GUARD.costMul, guards))
+
+func guard_max() -> int:
+	# 가게 넷마다 한 마리. 가게가 하나뿐인데 개가 셋이면 우스꽝스럽다.
+	return max(1, int(ceil(float(shops.size()) / Content.GUARD.perShops)))
+
+## 나쁜 놈을 무는 확률. 마리가 늘수록 오르되 **덜 오른다** —
+## 그냥 곱하면 세 마리에 180%가 되어 나쁜 놈이 아예 없는 게임이 된다.
+## 남는 몫(1 − rate)을 마리마다 갉아먹는 식이라 100%를 절대 안 넘는다.
+func guard_rate() -> float:
+	if guards <= 0.0:
+		return 0.0
+	return min(float(Content.GUARD.rateCap), 1.0 - pow(1.0 - Content.GUARD.rate, guards))
+
+func can_buy_guard() -> bool:
+	return guards < float(guard_max()) and money >= guard_cost()
 func buy_guard() -> bool:
 	if not can_buy_guard():
 		return false
-	money -= Content.GUARD.cost
+	money -= guard_cost()
+	guards += 1.0
 	guard = true
 	_ev("%s을 들였다 — 자리를 비워도 지켜준다" % Content.GUARD.name, "shop")
 	return true
@@ -210,7 +245,7 @@ func _pest_escape(rng: Rng) -> void:
 	var where: Dictionary = {"kind": tt.kind, "itemId": tt.get("itemId", null)}
 	pest = null
 
-	if guard and rng.next() < Content.GUARD.rate:
+	if guards > 0.0 and rng.next() < guard_rate():
 		var worth: float = (price(tt.itemId) * tt.qty) if P.steal == "goods" else float(tt.amount)
 		var gain: float = floor(worth * Content.GUARD.fine)
 		money += gain
@@ -257,16 +292,41 @@ func catch_pest(rng: Rng) -> Variant:
 	return {"kind": tt.kind, "gain": gain, "gem": gem}
 
 # ── 단골 20성 ──
-func regular_need(gid: String, i: int) -> float:
+## 다음 성까지 필요한 **카드 장수**. (예전에는 방문 횟수였다)
+func star_need(gid: String) -> Variant:
+	var lv: int = regular_lv(gid)
+	if lv >= Content.STAR_CARDS.size():
+		return null                      # 20성 — 더 오를 곳이 없다
+	return Content.STAR_CARDS[lv]
+
+func can_star_up(gid: String) -> bool:
+	var need: Variant = star_need(gid)
+	return need != null and cards.get(gid, 0.0) >= float(need)
+
+## 카드를 써서 한 성 올린다. **눌러서 올린다** — 저절로 오르면
+## "왜 올랐지"가 되고, 모으는 재미도 사라진다.
+func star_up(gid: String) -> bool:
+	if not can_star_up(gid):
+		return false
+	cards[gid] = cards.get(gid, 0.0) - float(star_need(gid))
+	stars[gid] = float(regular_lv(gid) + 1)
+	_ev("%s %d성이 되었다" % [_guest_by_id[gid].name, regular_star(gid)], "guest")
+	return true
+
+func regular_need_old(gid: String, i: int) -> float:
 	if not _guest_by_id.has(gid):
 		return Content.REGULARS[i].at
 	return max(1.0, round(Content.REGULARS[i].at / _guest_by_id[gid].every))
 
+## 지금 몇 성인가(0 = 1성). 카드로 올린 값만 본다.
 func regular_lv(gid: String) -> int:
+	return int(stars.get(gid, 0.0))
+
+func regular_lv_old(gid: String) -> int:
 	var n: float = visits.get(gid, 0.0)
 	var out: int = 0
 	for i in range(1, Content.REGULARS.size()):
-		if n >= regular_need(gid, i):
+		if n >= regular_need_old(gid, i):
 			out = i
 	return out
 
@@ -924,14 +984,12 @@ func tick(dt: float, rng: Rng) -> Dictionary:
 			_new_quest(rng)
 		_qCool = Content.QUEST.every
 
-	# 5) 새 손님
+	# 5) 새 손님 — **저절로는 안 온다.**
+	#
+	# ★ 예전에는 누적 매출이 문턱을 넘으면 손님이 저절로 왔다. 그러면
+	#   "기다리면 열린다"가 되는데, 그건 내가 한 일이 아니라 시간이 한 일이다.
+	#   이제 손님은 **뽑기로만** 온다(pull·spin 안에서 들어온다).
 	var new_guest: Variant = null
-	for g in Content.GUESTS:
-		if not guests.has(g.id) and revenue >= g.at:
-			guests.append(g.id)
-			new_guest = g
-			_ev("%s 마을에 왔다" % Num.josa(g.name, "이", "가"), "guest")
-			break
 
 	var out: Dictionary = {"sales": sales, "done": done, "ask": ask, "newGuest": new_guest,
 		"autoLv": auto_lv, "pests": _pestEvents, "quests": _questDone, "event": _evDone}
@@ -1097,6 +1155,158 @@ func _ask(rng: Rng) -> Variant:
 	_ev("%s: \"%s\"" % [guest.name, line], "ask")
 	return {"guest": guest, "item": item, "line": line}
 
+# ── 뽑기 ──
+##
+## ★ 확률은 Content.GACHA.rates가 전부다. 게임 안에서도 그 표를 그대로 보여준다.
+##   확률을 숨기는 뽑기는 만들지 않는다.
+
+## 지금 뽑기 레벨(1~10). 여태 뽑은 총 횟수로 정해진다.
+func gacha_lv() -> int:
+	var lv: int = 1
+	for i in range(Content.GACHA.levelAt.size()):
+		if pulls >= float(Content.GACHA.levelAt[i]):
+			lv = i + 1
+	return lv
+
+## 다음 레벨까지 몇 번 더 뽑아야 하나. 만렙이면 null.
+func gacha_next() -> Variant:
+	var lv: int = gacha_lv()
+	if lv >= Content.GACHA.levelAt.size():
+		return null
+	return float(Content.GACHA.levelAt[lv]) - pulls
+
+func gacha_rates() -> Array:
+	return Content.GACHA.rates[gacha_lv() - 1]
+
+func gacha_cost(n: int) -> Variant:
+	for c in Content.GACHA.cost:
+		if int(c.n) == n:
+			return float(c.gems)
+	return null
+
+func can_pull(n: int) -> bool:
+	var c: Variant = gacha_cost(n)
+	return c != null and gems >= float(c)
+
+## 등급 하나를 뽑는다. 표의 무게대로 고른다.
+func _roll_grade(rng: Rng, floor_grade: int = 1) -> int:
+	var r: Array = gacha_rates()
+	var total: float = 0.0
+	for i in range(r.size()):
+		if i + 1 >= floor_grade:
+			total += float(r[i])
+	if total <= 0.0:
+		return floor_grade
+	var x: float = rng.next() * total
+	for i in range(r.size()):
+		if i + 1 < floor_grade:
+			continue
+		x -= float(r[i])
+		if x <= 0.0:
+			return i + 1
+	return floor_grade
+
+## 그 등급의 손님 중 하나를 고른다. 등급 안에서는 고르게 나온다.
+func _roll_guest(grade: int, rng: Rng) -> String:
+	var pool: Array = []
+	for g in Content.GUESTS:
+		if int(g.grade) == grade:
+			pool.append(String(g.id))
+	if pool.is_empty():
+		return ""
+	return String(pool[int(rng.next() * pool.size()) % pool.size()])
+
+## n장 뽑는다. 뽑은 것 목록을 돌려준다 — 화면이 그걸로 연출한다.
+##
+## 열 장 이상 뽑을 때는 **드묾 이상 한 장을 보장**한다(2레벨부터).
+## 열 번 뽑아 전부 흔함이면 뽑은 기억이 안 남는다.
+func pull(n: int, rng: Rng) -> Array:
+	if not can_pull(n):
+		return []
+	gems -= float(gacha_cost(n))
+	var out: Array = []
+	var best: int = 0
+	for i in range(n):
+		var floor_g: int = 1
+		# 마지막 한 장을 남기고도 드묾 이상이 없으면 그 장을 올려 준다
+		if n >= 10 and i == n - 1 and best < 2 and gacha_lv() >= int(Content.GACHA.tenPity):
+			floor_g = 2
+		var grade: int = _roll_grade(rng, floor_g)
+		best = max(best, grade)
+		var gid: String = _roll_guest(grade, rng)
+		if gid == "":
+			continue
+		var isnew: bool = not guests.has(gid)
+		if isnew:
+			guests.append(gid)
+			_guestAcc[gid] = 0.0
+			_ev("%s 마을에 왔다" % Num.josa(_guest_by_id[gid].name, "이", "가"), "guest")
+		cards[gid] = cards.get(gid, 0.0) + 1.0
+		out.append({"id": gid, "grade": grade, "isNew": isnew})
+	pulls += float(n)
+	return out
+
+# ── 룰렛 ──
+
+## 하루가 바뀌었으면 횟수를 채운다. **실제 시간**으로 센다(wall).
+func roul_refill() -> void:
+	var today: float = floor(wall / 86400.0)
+	if roulDay == today:
+		return
+	roulDay = today
+	roulFree = float(Content.ROULETTE.freePerDay)
+	roulAd = float(Content.ROULETTE.adPerDay)
+
+func can_spin(by_ad: bool) -> bool:
+	roul_refill()
+	return roulAd > 0.0 if by_ad else roulFree > 0.0
+
+## 한 번 돌린다. 어느 칸에 섰는지와 받은 것을 돌려준다.
+func spin(by_ad: bool, rng: Rng) -> Variant:
+	if not can_spin(by_ad):
+		return null
+	if by_ad:
+		roulAd -= 1.0
+	else:
+		roulFree -= 1.0
+	var total: float = 0.0
+	for w in Content.ROULETTE.wedges:
+		total += float(w.weight)
+	var x: float = rng.next() * total
+	var idx: int = Content.ROULETTE.wedges.size() - 1
+	for i in range(Content.ROULETTE.wedges.size()):
+		x -= float(Content.ROULETTE.wedges[i].weight)
+		if x <= 0.0:
+			idx = i
+			break
+	var w2: Dictionary = Content.ROULETTE.wedges[idx]
+	var got: Dictionary = {"wedge": idx, "kind": String(w2.kind), "amount": 0.0, "cards": []}
+	match String(w2.kind):
+		"coin":
+			# 엽전은 **지금 수입의 몇 초치**다. 고정 금액이면 초반엔 후하고
+			# 후반엔 먼지가 된다 — 언제 돌려도 값이 비슷해야 매일 돌린다.
+			var coin: float = floor(max(10.0, income_per_sec() * float(w2.amount)))
+			money += coin
+			revenue += coin
+			got.amount = coin
+		"gem":
+			gems += float(w2.amount)
+			got.amount = float(w2.amount)
+		"card":
+			for i in range(int(w2.amount)):
+				var grade: int = _roll_grade(rng)
+				var gid: String = _roll_guest(grade, rng)
+				if gid == "":
+					continue
+				if not guests.has(gid):
+					guests.append(gid)
+					_guestAcc[gid] = 0.0
+				cards[gid] = cards.get(gid, 0.0) + 1.0
+				got.cards.append({"id": gid, "grade": grade})
+			got.amount = float(w2.amount)
+	_ev("룰렛 — %s" % String(w2.label), "quest")
+	return got
+
 ## 오프라인 수익. 껐다 켰을 때 쌓여 있어야 다시 켠다.
 func offline(seconds: float) -> Variant:
 	# 수익은 4시간까지만 쌓이지만 **이벤트 마감은 그대로 흐른다**
@@ -1127,6 +1337,7 @@ const SAVE_KEYS: Array[String] = [
 	"wall", "event", "skins", "cleared", "_evAt", "_evIdx",
 	"orders", "_oid", "_hold", "_guestAcc", "_guestGap", "pest", "_pestAcc", "_pestGap", "_askAcc",
 	"ledger", "shopUp",
+	"cards", "stars", "pulls", "guards", "roulFree", "roulAd", "roulDay",
 ]
 ## 글자로 저장했다 되돌리면 정수가 소수가 된다(-1 → -1.0). 자리를 세는 데
 ## 쓰는 것들은 도로 정수로 되돌린다 — 아니면 배열 자리를 못 찾는다.
@@ -1142,7 +1353,9 @@ const INT_KEYS: Array[String] = ["busy", "_qid", "_evIdx", "_oid"]
 ## 규칙: **저장본 모양을 바꾸면 이 번호를 올리고, 옛 판을 받아주는 코드를 남긴다.**
 ## 그리고 새 판 저장본을 옛 게임에 넣지 않는다(아래 _load에서 막는다) —
 ## 모르는 칸을 만나면 게임이 죽는 대신 그냥 안 읽는 게 낫다.
-const SAVE_VER: int = 1
+## 2판: 뽑기·룰렛·카드가 들어오고 삽살개가 여러 마리가 됐다.
+## 1판 저장본은 아래 load_from이 받아준다(개 한 마리, 카드 없음, 성은 방문 수로).
+const SAVE_VER: int = 2
 
 func save() -> Dictionary:
 	var d: Dictionary = {}
@@ -1174,7 +1387,10 @@ func to_blob() -> PackedByteArray:
 static func from_blob(b: PackedByteArray) -> Variant:
 	return bytes_to_var(b)
 
-func load_from(d: Dictionary) -> void:
+## ver는 저장본의 판 번호. **옛 판을 옮기는 코드가 새 판에도 돌면 안 된다** —
+## 실제로 그랬다. 성(星)을 방문 횟수에서 옮기는 줄이 2판 저장본에도 돌아서,
+## 껐다 켜면 성이 제멋대로 올라갔다. 저장 시험이 그걸 잡았다.
+func load_from(d: Dictionary, ver: int = SAVE_VER) -> void:
 	for k in SAVE_KEYS:
 		if not d.has(k):
 			continue
@@ -1191,6 +1407,18 @@ func load_from(d: Dictionary) -> void:
 	for g in Content.GUESTS:
 		if not _guestAcc.has(g.id):
 			_guestAcc[g.id] = 0.0
+	# ── 옛 저장본(1판) 받아주기 ──
+	# 개: 있다/없다 → 마리 수
+	if ver < 2 and guards <= 0.0 and guard:
+		guards = 1.0
+	# 성: 방문 횟수로 매기던 것을 그대로 옮겨 온다. 안 옮기면 몇 시간 쌓은
+	# 단골이 전부 1성으로 되돌아간다 — 그건 저장본을 깨뜨린 것과 같다.
+	if ver < 2 and stars.is_empty() and not visits.is_empty():
+		for gid in visits.keys():
+			stars[gid] = float(regular_lv_old(String(gid)))
+	for gid in guests:
+		if not cards.has(gid):
+			cards[gid] = 0.0
 
 # ── 장날 소식 ──
 

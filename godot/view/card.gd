@@ -18,6 +18,7 @@ var _art: TextureRect
 var _title: Label
 var _sub: Label
 var _sign: Label
+var _head_label: Label
 
 func _ready() -> void:
 	visible = false
@@ -55,7 +56,8 @@ func _ready() -> void:
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 6)
 	_cardbox.add_child(box)
-	var top := Label.new()
+	_head_label = Label.new()
+	var top: Label = _head_label
 	top.text = "새 점장 카드!"
 	top.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	top.add_theme_font_size_override("font_size", 15)
@@ -95,8 +97,60 @@ func show_card(shop_id: String, rank: int) -> void:
 	_art.visible = t != null
 	_sign.visible = t == null            # 그림이 없으면 현판 글자로 대신한다
 	_sign.text = String(shop.sign)
+	_head_label.text = "새 점장 카드!"
 	_title.text = "%s %s" % [shop.ranks[rank], shop.name]
+	_title.add_theme_color_override("font_color", Color("2b241b"))
 	_sub.text = "%s · %d번째 등급" % [shop.desc, rank + 1]
+	visible = true
+
+## 뽑은 카드. 여러 장이면 **제일 좋은 것 한 장**을 크게 띄우고 나머지는 줄로 적는다.
+## 열 장을 한 장씩 넘겨 보여주면 그게 더 지루하다.
+func show_pull(got: Array) -> void:
+	if got.is_empty():
+		return
+	_t = 0.0
+	var best: Dictionary = got[0]
+	for r in got:
+		if int(r.grade) > int(best.grade):
+			best = r
+	var g: Dictionary = Sim.guest_by_id(String(best.id))
+	var gr: Dictionary = Content.CARD_GRADES[int(best.grade) - 1]
+	_art.texture = Art.tex("guests", String(best.id))
+	_art.visible = _art.texture != null
+	_sign.visible = _art.texture == null
+	_sign.text = String(g.face)
+	_title.text = "%s %s" % [g.name, "— 처음 만났다!" if best.get("isNew", false) else ""]
+	_title.add_theme_color_override("font_color", Color(gr.color))
+	var counts: Dictionary = {}
+	for r in got:
+		var k: int = int(r.grade)
+		counts[k] = int(counts.get(k, 0)) + 1
+	var parts: Array[String] = []
+	for k in range(6, 0, -1):
+		if counts.has(k):
+			parts.append("%s%s %d" % [Content.CARD_GRADES[k - 1].face, Content.CARD_GRADES[k - 1].name, int(counts[k])])
+	_sub.text = "%s %s · %d장 뽑음\n%s" % [gr.face, gr.name, got.size(), " · ".join(parts)]
+	_head_label.text = "새 손님!" if best.get("isNew", false) else "카드를 뽑았다"
+	visible = true
+
+## 룰렛 결과.
+func show_spin(got: Dictionary) -> void:
+	_t = 0.0
+	var w: Dictionary = Content.ROULETTE.wedges[int(got.wedge)]
+	_art.visible = false
+	_sign.visible = true
+	_sign.text = "🎡"
+	_head_label.text = "룰렛"
+	_title.text = String(w.label)
+	_title.add_theme_color_override("font_color", Color("2b241b"))
+	match String(got.kind):
+		"coin": _sub.text = "🪙 %s" % Num.fmt(float(got.amount))
+		"gem": _sub.text = "💎 %d" % int(got.amount)
+		_:
+			var names: Array[String] = []
+			for c in got.cards:
+				names.append(String(Sim.guest_by_id(String(c.id)).name))
+			_sub.text = "손님 카드 %d장 — %s" % [int(got.amount), ", ".join(names)]
 	visible = true
 
 func close() -> void:
