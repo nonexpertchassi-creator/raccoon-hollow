@@ -64,6 +64,7 @@
 | LOG-CARD-015 | 2026-08-22 | GUEST-CARDS-TIER3-BATCH-03-P01 | [cards/](../../godot/art/cards/) | Generated | 논머리·산길·곡식마당·물길·텃밭으로 등급 양끝의 3단 장날 언어 확장 |
 | LOG-CARD-016 | 2026-08-22 | GUEST-CARDS-TIER3-BATCH-04-P01 | [cards/](../../godot/art/cards/) | Generated | 열매·연못·나루·묘목·옹기마당으로 장소별 3단 장날 언어 확장 |
 | LOG-CARD-017 | 2026-08-22 | GUEST-CARDS-TIER3-BATCH-05-P01 | [cards/](../../godot/art/cards/) | Generated | 황혼·산길·단풍·연못·겨울의 색을 지키며 3단 장날 언어 확장 |
+| LOG-CARD-018 | 2026-08-22 | GUEST-CARDS-TIER3-BATCH-06-P01 | [cards/](../../godot/art/cards/) | Generated | 희귀도가 높은 다섯 종까지 장식 없는 3단 장소 언어로 완성 |
 
 ## 최초 실행 결과
 
@@ -1002,6 +1003,35 @@
 - 산양과 담비의 산물장 밀도가 축소 카드에서 동물의 외곽선과 경쟁하지 않는지 확인한다.
 - 늑대 카드에서 푸른 배경과 회색 털 사이의 얼굴·앞다리 대비를 실제 화면에서 확인한다.
 - 사용자 승인 전까지 다섯 장 모두 `초안`, 3단 규칙은 `Hypothesis`다.
+
+### LOG-CARD-018 — 손님 성장 카드 3단 여섯 번째 5종 P01
+
+- 날짜: `2026-08-22`
+- Prompt ID: `GUEST-CARDS-TIER3-BATCH-06-P01`
+- Prompt source: [prompts/GUEST-CARDS-TIER3-BATCH-06-P01.md](./prompts/GUEST-CARDS-TIER3-BATCH-06-P01.md)
+- 게임용 초안: `egret-3.png`, `leopard-3.png`, `muskdeer-3.png`, `moonbear-3.png`, `haetae-3.png`
+- 묶음 QA: [qa/guest-cards-tier3-batch-06.png](./qa/guest-cards-tier3-batch-06.png)
+- 전체 QA: [qa/guest-cards-tier3-all-30.png](./qa/guest-cards-tier3-all-30.png)
+- 상태: `Generated` / 그림 장부 `초안`
+
+#### 관찰
+
+- 다섯 장 모두 2단의 같은 개체·자세·계절과 논물길·산길·약초길·눈길·마을 입구를 유지한다.
+- 백로의 긴 다리, 표범 무늬, 사향노루의 작은 몸, 반달곰의 검은 덩어리, 해태의 청록색이 새 물건보다 먼저 읽힌다.
+- 해태도 금장·붉은 기둥·광효과 없이 마을 입구 공용 장터의 쓰임으로만 3단을 설명한다.
+- 다섯 런타임 파일은 정확한 `512×768`이며, 이 묶음으로 3단 30종이 모두 채워졌다.
+
+#### 판정
+
+- 결과: `Generated`
+- Why: 30종 전체에서 같은 3단 가정이 유지되지만 실제 카드 프레임 및 사용자 승인이 남았다.
+- Hard fail 여부: 의상·직업 자세·추가 동물·프레임·문자·별·등급색·금장·등롱·마법 효과·워터마크 없음.
+
+#### 다음 수정
+
+- 3단 전체 시트에서 소형 동물과 대형 동물의 장터 물건 상대 밀도를 비교한다.
+- 4단은 물건 수를 더 늘리지 말고 완전히 복구된 공동 생활권과 잘 관리된 기반시설로 차이를 시험한다.
+- 사용자 승인 전까지 30장 모두 `초안`, 3단 규칙은 `Hypothesis`다.
 
 ### LOG-UI-002 — 룰렛 바늘 P01
 
