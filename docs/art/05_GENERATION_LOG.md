@@ -48,6 +48,7 @@
 | LOG-ITEM-017 | 2026-08-22 | ITEMS-BUTCHER-STALL-BATCH-16-P01 | [items/](../../godot/art/items/) | Generated | 잎 묶음·미색 고리·긴 필렛·마블링 타원으로 물건 80종을 마무리 |
 | LOG-STALL-001 | 2026-08-22 | ITEMS-BUTCHER-STALL-BATCH-16-P01 | [smith.png](../../godot/art/stalls/smith.png) | Generated | 중앙을 비운 낮은 대장간 좌판과 실제 물건 합성 기준을 시험 |
 | LOG-STALL-002 | 2026-08-22 | STALLS-BATCH-17-P01 | [stalls/](../../godot/art/stalls/) | Generated | 같은 낮은 골격을 한지·종이·흙·약장·온장판 재료로 확장 |
+| LOG-STALL-003 | 2026-08-22 | STALLS-BATCH-18-P01 | [stalls/](../../godot/art/stalls/) | Generated | 술상·숯홈·떡판·도마로 좌판 10종과 필수 170장을 마무리 |
 
 ## 최초 실행 결과
 
@@ -1285,6 +1286,36 @@
 - 약재상 서랍 손잡이가 장식처럼 먼저 읽히면 손잡이 대비를 줄이고 서랍 덩어리를 유지한다.
 - 남은 주막·꼬치집·떡집·푸줏간도 같은 골격에서 술상·숯홈·떡판·도마 고정 설비만 바꾼다.
 - 사용자 승인 전까지 다섯 장 모두 `초안`이다.
+
+### LOG-STALL-003 — 주막부터 푸줏간까지 좌판 4종 P01
+
+- 날짜: `2026-08-22`
+- Prompt ID: `STALLS-BATCH-18-P01`
+- Prompt source: [prompts/STALLS-BATCH-18-P01.md](./prompts/STALLS-BATCH-18-P01.md)
+- 게임용 초안: `inn.png`, `skewer.png`, `ricecake.png`, `butcher.png`
+- QA: [qa/stalls-batch-18.png](./qa/stalls-batch-18.png) · [qa/stalls-overlay-test-18.png](./qa/stalls-overlay-test-18.png) · [qa/stalls-all-10.png](./qa/stalls-all-10.png)
+- 상태: `Generated` / 그림 장부 `초안`
+
+#### 관찰
+
+- 주막은 멍석 술상과 잔받침, 꼬치집은 돌 숯홈과 빈 꼬치받침, 떡집은 밝은 떡판과 돌절구, 푸줏간은 두꺼운 도마와 저울·갈고리로 갈렸다.
+- 대표 상품을 현재 Godot 좌표로 겹쳐도 양옆 고정 설비가 남아 업종을 보조한다.
+- 열 좌판 전체가 같은 폭·높이·하단 접점·빈 중앙을 공유하면서 작업면 재료와 옆 설비만 달라 한 시스템으로 읽힌다.
+- 떡집 최초 P01은 투명 배경 대신 체크무늬와 바닥 그림이 포함돼 즉시 반려했고, 형태를 유지하며 실제 알파 배경으로 다시 만든 P02를 게임용 초안에 사용했다.
+- 네 런타임 파일은 정확한 `192×176`, RGBA, 실제 투명 배경, 하단 접점 정렬이다.
+
+#### 판정
+
+- 결과: `Generated`
+- Why: 필수 좌판 10종과 자동 주문서 170장을 모두 채웠지만 실제 Godot 마을 화면에서 이웃 좌판·진행 계기·이름표 가림 및 사용자 미감 승인이 남았다.
+- Hard fail 여부: 게임용 네 장에는 건물·지붕·문자·이름패·불투명 배경 없음. 떡집 P01의 체크무늬 배경은 `Rejected`로 별도 보존.
+
+#### 다음 수정
+
+- 클로드 요청 메모 12의 실제 알파 경계 바닥 정렬을 적용한 뒤 가로형 물건이 좌판에 닿는지 다시 찍는다.
+- 실제 화면에서 양옆 설비가 인접 격자와 겹치면 좌판 폭을 바꾸기보다 양옆 장식 대비와 높이를 줄인다.
+- 필수 그림은 파일 존재만으로 확정하지 않고 실제 화면 검수와 사용자 승인을 기다린다.
+- 다음 선택 제작은 가게별 점장 20장이다.
 
 ## 새 로그 템플릿
 
