@@ -44,6 +44,7 @@
 | LOG-ITEM-013 | 2026-08-22 | ITEMS-SKEWER-BATCH-12-P01 | [items/](../../godot/art/items/) | Generated | 떡·닭·버섯·생선·산적을 막대 위 재료 리듬으로 구분 |
 | LOG-ITEM-014 | 2026-08-22 | ITEMS-SKEWER-RICECAKE-BATCH-13-P01 | [items/](../../godot/art/items/) | Generated | 장어·너비아니·육회로 꼬치집을 닫고 가래떡·인절미로 떡집을 시작 |
 | LOG-ITEM-015 | 2026-08-22 | ITEMS-RICECAKE-BATCH-14-P01 | [items/](../../godot/art/items/) | Generated | 반달·큰 흰 네모·찰밥 사각·꽃 원·찍음 과자로 떡집 다섯 품목을 구분 |
+| LOG-ITEM-016 | 2026-08-22 | ITEMS-RICECAKE-BUTCHER-BATCH-15-P01 | [items/](../../godot/art/items/) | Generated | 유과로 떡집을 닫고 지방층·닭다리·살코기·뼈로 푸줏간을 시작 |
 
 ## 최초 실행 결과
 
@@ -1165,6 +1166,35 @@
 - 백설기가 건축 블록처럼 보이면 잘린 단면의 쌀알 결만 약하게 키운다.
 - 다식의 개별 문양은 화면에서 사라져도 3×3 배열이 읽히므로 런타임용 선을 추가하지 않는다.
 - 떡집 마지막 유과와 푸줏간 4종은 밝은 튀김·원육·손질 고기의 재료 실루엣을 먼저 구분한다.
+- 사용자 승인 전까지 다섯 장 모두 `초안`이다.
+
+### LOG-ITEM-016 — 떡집 마무리·푸줏간 시작 5종 P01
+
+- 날짜: `2026-08-22`
+- Prompt ID: `ITEMS-RICECAKE-BUTCHER-BATCH-15-P01`
+- Prompt source: [prompts/ITEMS-RICECAKE-BUTCHER-BATCH-15-P01.md](./prompts/ITEMS-RICECAKE-BUTCHER-BATCH-15-P01.md)
+- 게임용 초안: `yugwa.png`, `dwaeji.png`, `dak.png`, `sogogi.png`, `galbi.png`
+- QA: [qa/items-ricecake-butcher-batch-15.png](./qa/items-ricecake-butcher-batch-15.png)
+- 상태: `Generated` / 그림 장부 `초안`
+
+#### 관찰
+
+- 유과는 볶은 쌀알 결이 붙은 밝은 긴 타원 여섯 개라 떡집의 다른 매끈한 떡과 구분된다.
+- 돼지고기는 층진 지방과 볏짚 묶음, 닭고기는 교차한 닭다리, 쇠고기는 넓은 둥근 살코기, 갈비는 미색 뼈가 돌출된 직사각이다.
+- 네 고기 품목은 모두 피·칼·도축 없이 정돈된 식재료로 표현됐고 축소 QA에서도 받침보다 재료 외곽이 먼저 읽힌다.
+- 다섯 런타임 파일은 정확한 `128×224`, RGBA, 실제 투명 배경, 중앙 정렬이다.
+
+#### 판정
+
+- 결과: `Generated`
+- Why: 푸줏간 첫 네 품목이 색만이 아니라 구조로 갈렸지만 실제 판매 오버레이와 사용자 미감 승인이 남았다.
+- Hard fail 여부: 피·도축·사체·머리·발·칼·현대 포장·문자·불투명 배경·등급 효과 없음.
+
+#### 다음 수정
+
+- 쇠고기와 갈비가 비슷하게 보이면 쇠고기의 둥근 외곽보다 갈비의 짧은 돌출 뼈를 우선 키운다.
+- 닭다리의 뼈 끝이 과도하게 커 보이면 고기 덩이 비율을 유지한 채 뼈 길이만 줄인다.
+- 푸줏간 남은 우거지·곱창·안심·한우 등심은 잎 묶음·둥근 고리·길쭉한 필렛·굵은 마블링으로 가른다.
 - 사용자 승인 전까지 다섯 장 모두 `초안`이다.
 
 ## 새 로그 템플릿
