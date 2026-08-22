@@ -32,6 +32,7 @@
 | LOG-ITEM-001 | 2026-08-22 | INTERACTION-ITEMS-BATCH-01-P01 | [pick.png](../../godot/art/items/pick.png) | Generated | 독립 물건 제작의 첫 규격으로 대장간 곡괭이를 채움 |
 | LOG-ITEM-002 | 2026-08-22 | ITEMS-SMITH-BATCH-01-P01 | [items/](../../godot/art/items/) | Generated | 낫·호미·도끼·가위·부엌칼을 같은 무쇠·나무 세트로 채움 |
 | LOG-ITEM-003 | 2026-08-22 | ITEMS-SMITH-BRUSH-BATCH-02-P01 | [items/](../../godot/art/items/) | Generated | 자물쇠·가마솥으로 대장간을 닫고 붓·먹·벼루로 필방을 시작 |
+| LOG-ITEM-004 | 2026-08-22 | ITEMS-BRUSH-BATCH-03-P01 | [items/](../../godot/art/items/) | Generated | 연적·필통·서산·붓걸이·화첩으로 필방 8종을 모두 채움 |
 
 ## 최초 실행 결과
 
@@ -803,6 +804,35 @@
 - 점장 손 오버레이는 캔버스 전체가 아니라 알파 경계 기준으로 표시 크기를 정한다.
 - 필방의 연적·필통·서산·붓걸이·화첩도 금박 없이 재료와 실루엣으로 이어간다.
 - 사용자 승인 전까지 다섯 런타임은 `초안`이다.
+
+### LOG-ITEM-004 — 필방 문방구 5종 P01
+
+- 날짜: `2026-08-22`
+- Prompt ID: `ITEMS-BRUSH-BATCH-03-P01`
+- Prompt source: [prompts/ITEMS-BRUSH-BATCH-03-P01.md](./prompts/ITEMS-BRUSH-BATCH-03-P01.md)
+- 게임용 초안: `waterp.png`, `brushpot.png`, `bookmk.png`, `brushrk.png`, `album.png`
+- QA: [qa/items-brush-batch-03.png](./qa/items-brush-batch-03.png)
+- 상태: `Generated` / 그림 장부 `초안`
+
+#### 관찰
+
+- 연적은 위·옆 두 구멍, 필통은 세워 둔 붓 자루, 서산은 겹친 한지 표식, 붓걸이는 네 홈, 화첩은 제본과 빈 제목지로 용도가 갈린다.
+- 서산은 국립민속박물관 소장품의 종이 재질·길고 좁은 비율·독서 횟수 계수 기능을 게임 실루엣으로 단순화했다.
+- 백자 청화는 대나무·풀 한두 획으로 제한해 중국 궁중 도자기 인상을 피했다.
+- 다섯 런타임 파일은 정확한 `128×224`, RGBA, 실제 투명 배경, 중앙 정렬이다.
+
+#### 판정
+
+- 결과: `Generated`
+- Why: 필방 8종이 모두 채워졌고 낯선 서산도 자료 근거가 있지만 실제 목록에서 이름과 함께 보이는지 사용자 검수가 남았다.
+- Hard fail 여부: 문자·숫자·금박·붉은 칠·용무늬·불투명 배경·등급 효과 없음.
+
+#### 다음 수정
+
+- 서산이 화살표 묶음처럼 보이면 종이 가장자리의 한지 결을 조금 키우고 끈 고리를 줄인다.
+- 필통이 붓 세트처럼 보이면 내부 붓 자루 노출 높이를 15% 낮춘다.
+- 다음 지물포는 한지·창호지·장지의 종이 종류를 색보다 접힘·묶음·쓰임새 실루엣으로 구분한다.
+- 사용자 승인 전까지 다섯 장 모두 `초안`이다.
 
 ## 새 로그 템플릿
 
