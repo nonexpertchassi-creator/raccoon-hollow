@@ -52,6 +52,7 @@
 | LOG-CLERK-001 | 2026-08-22 | CLERKS-BATCH-19-P01 | [clerks/](../../godot/art/clerks/) | Generated | 공용 점주에 가죽·먹색·한지색의 최소 업종 표식만 추가 |
 | LOG-CLERK-002 | 2026-08-22 | CLERKS-BATCH-20-P01 | [clerks/](../../godot/art/clerks/) | Generated | 한지·황토·쑥빛 앞치마로 지물포·옹기점·약재상 두 포즈를 채움 |
 | LOG-CLERK-003 | 2026-08-22 | CLERKS-BATCH-21-P01 | [clerks/](../../godot/art/clerks/) | Generated | 밤색·자주색·먹색 앞치마로 국밥집·주막과 꼬치집 제작을 구분 |
+| LOG-CLERK-004 | 2026-08-22 | CLERKS-BATCH-22-P01 | [clerks/](../../godot/art/clerks/) | Generated | 꼬치집·떡집·푸줏간을 닫아 가게별 점장 20장 초안 완성 |
 
 ## 최초 실행 결과
 
@@ -1408,6 +1409,36 @@
 
 - 꼬치집 판매를 같은 먹색 앞치마로 닫고, 떡집과 푸줏간 두 포즈를 만든다.
 - 사용자 승인 전까지 다섯 장 모두 `초안`이다.
+
+### LOG-CLERK-004 — 가게별 점장 마지막 5장 P01
+
+- 날짜: `2026-08-22`
+- Prompt ID: `CLERKS-BATCH-22-P01`
+- Prompt source: [prompts/CLERKS-BATCH-22-P01.md](./prompts/CLERKS-BATCH-22-P01.md)
+- 게임용 초안: `skewer-sell.png`, `ricecake-make.png`, `ricecake-sell.png`, `butcher-make.png`, `butcher-sell.png`
+- QA: [qa/clerks-batch-22.png](./qa/clerks-batch-22.png)
+- 상태: `Generated` / 그림 장부 `초안`
+
+#### 관찰
+
+- 꼬치집 판매는 앞서 만든 먹색 앞치마·적갈색 옆끈·그을음 밑단을 유지한다.
+- 떡집은 따뜻한 아이보리 앞치마와 작은 쌀가루 자국, 푸줏간은 깊은 적갈색 가죽 앞치마와 한쪽 보호대로 구분된다.
+- 칼·고기·떡·꼬치 같은 직접 상품 기호를 캐릭터에 고정하지 않아 별도 품목 오버레이를 계속 재사용할 수 있다.
+- 푸줏간 보호대 방향은 두 포즈에서 미세하게 다르지만 `72×72`에서는 앞치마 큰 색면과 팔 자세가 먼저 읽힌다.
+- 다섯 생성 원본의 픽셀 체크무늬는 원본으로 보존했고, 게임용은 가장자리 연결 배경만 투명 처리했다.
+- 다섯 런타임 파일은 정확한 `144×144`, RGBA, 실제 투명 배경, 하단 발접점 정렬이다.
+
+#### 판정
+
+- 결과: `Generated`
+- Why: 가게 10곳 × make/sell 전용 점장 20장 규격과 색면 체계를 모두 채웠지만 실제 Godot 이동·수면 폴백 및 사용자 승인이 남았다.
+- Hard fail 여부: 게임용 다섯 장에는 전신 옷·고리 꼬리·날붙이·피·고정 상품·문자·UI·불투명 배경 없음.
+
+#### 다음 수정
+
+- 전용 점장 make/sell에서 공용 walk/sleep으로 바뀌는 순간의 앞치마 연속성을 실제 화면에서 검수한다.
+- 다음 선택 제작은 손님 성장 카드 2단 첫 5장이다.
+- 사용자 승인 전까지 전용 점장 20장 모두 `초안`이다.
 
 ## 새 로그 템플릿
 
