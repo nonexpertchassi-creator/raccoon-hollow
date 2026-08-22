@@ -55,6 +55,7 @@
 | LOG-CLERK-004 | 2026-08-22 | CLERKS-BATCH-22-P01 | [clerks/](../../godot/art/clerks/) | Generated | 꼬치집·떡집·푸줏간을 닫아 가게별 점장 20장 초안 완성 |
 | LOG-CARD-007 | 2026-08-22 | GUEST-CARDS-TIER2-BATCH-01-P01 | [cards/](../../godot/art/cards/) | Generated | 같은 개체와 자연 자세를 유지하고 수선된 마을 안쪽으로 2단 성장 규칙 시험 |
 | LOG-CARD-008 | 2026-08-22 | GUEST-CARDS-TIER2-BATCH-02-P01 | [cards/](../../godot/art/cards/) | Generated | 계절과 등급이 달라도 수선된 생활 공간만으로 2단 성장 규칙 유지 |
+| LOG-CARD-009 | 2026-08-22 | GUEST-CARDS-TIER2-BATCH-03-P01 | [cards/](../../godot/art/cards/) | Generated | 등급 양끝도 풍경 규모와 생활 정돈만으로 2단 성장 차이 유지 |
 
 ## 최초 실행 결과
 
@@ -742,6 +743,33 @@
 #### 다음 수정
 
 - 다음 2단 묶음도 각 1단 계절과 자세를 유지한다.
+- 사용자 승인 전까지 다섯 장 모두 `초안`이다.
+
+### LOG-CARD-009 — 손님 성장 카드 2단 세 번째 5종 P01
+
+- 날짜: `2026-08-22`
+- Prompt ID: `GUEST-CARDS-TIER2-BATCH-03-P01`
+- Prompt source: [prompts/GUEST-CARDS-TIER2-BATCH-03-P01.md](./prompts/GUEST-CARDS-TIER2-BATCH-03-P01.md)
+- 게임용 초안: `ox-2.png`, `tiger-2.png`, `sparrow-2.png`, `frog-2.png`, `mole-2.png`
+- QA: [qa/guest-cards-tier2-batch-03.png](./qa/guest-cards-tier2-batch-03.png)
+- 상태: `Generated` / 그림 장부 `초안`
+
+#### 관찰
+
+- 소·호랑이는 논과 산길의 규모, 참새·개구리·두더지는 곡식마당·물길·텃밭의 정돈으로 성장 차이를 만든다.
+- 호랑이는 마을 지붕이 더 많이 보이지만 장식·광효과 없이 신수 위계를 유지한다.
+- 흔한 세 종은 각 1단의 소박한 자세와 생활 장소를 그대로 잇는다.
+- 다섯 런타임 파일은 정확한 `512×768`이다.
+
+#### 판정
+
+- 결과: `Generated`
+- Why: 등급 양끝의 2단 규칙은 유지되지만 실제 프레임 및 사용자 승인이 남았다.
+- Hard fail 여부: 의상·인간 자세·마법 효과·프레임·문자·별·등급색·워터마크 없음.
+
+#### 다음 수정
+
+- 호랑이 배경의 지붕 밀도가 실제 카드 UI에서 지나치게 복잡한지 확인한다.
 - 사용자 승인 전까지 다섯 장 모두 `초안`이다.
 
 ### LOG-UI-002 — 룰렛 바늘 P01
