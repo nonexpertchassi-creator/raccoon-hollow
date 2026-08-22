@@ -69,6 +69,7 @@
 | LOG-CARD-020 | 2026-08-22 | GUEST-CARDS-TIER4-BATCH-02-P01 | [cards/](../../godot/art/cards/) | Generated | 가을·수확·눈·연못·나루의 길과 물길로 4단 가정 확장 |
 | LOG-CARD-021 | 2026-08-23 | GUEST-CARDS-TIER4-BATCH-03-P01 | [cards/](../../godot/art/cards/) | Generated | 논·산길·곡식마당·수로·텃밭을 잇는 4단 기반시설 가정 확장 |
 | LOG-CARD-022 | 2026-08-23 | GUEST-CARDS-TIER4-BATCH-04-P01 | [cards/](../../godot/art/cards/) | Generated | 과수원·습지·나루·묘목장·옹기마당의 4단 생활권 확장 |
+| LOG-CARD-023 | 2026-08-23 | GUEST-CARDS-TIER4-BATCH-05-P01 | [cards/](../../godot/art/cards/) | Generated | 황혼·산길·단풍·연못·겨울의 4단 관리 상태 확장 |
 
 ## 최초 실행 결과
 
@@ -1147,6 +1148,34 @@
 
 - 고슴도치 카드에서 대추의 양보다 열린 마당문과 길의 연결이 먼저 읽히는지 확인한다.
 - 마지막 두 묶음도 동물 고유색과 실루엣을 기반시설보다 앞에 둔다.
+- 사용자 승인 전까지 다섯 장 모두 `초안`, 4단 규칙은 `Hypothesis`다.
+
+### LOG-CARD-023 — 손님 성장 카드 4단 다섯 번째 5종 P01
+
+- 날짜: `2026-08-23`
+- Prompt ID: `GUEST-CARDS-TIER4-BATCH-05-P01`
+- Prompt source: [prompts/GUEST-CARDS-TIER4-BATCH-05-P01.md](./prompts/GUEST-CARDS-TIER4-BATCH-05-P01.md)
+- 게임용 초안: `wildcat-4.png`, `goral-4.png`, `marten-4.png`, `mandarin-4.png`, `wolf-4.png`
+- QA: [qa/guest-cards-tier4-batch-05.png](./qa/guest-cards-tier4-batch-05.png)
+- 상태: `Generated` / 그림 장부 `초안`
+
+#### 관찰
+
+- 다섯 장 모두 3단의 같은 개체·자세·계절과 황혼길·산길·단풍마당·연못·겨울길을 유지한다.
+- 살쾡이·늑대는 열린 길과 고정 창호, 산양·담비·원앙은 연속된 길·담·물길로 4단을 설명한다.
+- 털무늬와 원앙의 깃색이 먼저 읽히지만 산양 뒤의 계곡마을 지붕 밀도는 실제 카드 틀 검수가 필요하다.
+- 다섯 런타임 파일은 정확한 `512×768`이다.
+
+#### 판정
+
+- 결과: `Generated`
+- Why: 명암과 계절을 바꾸지 않아도 관리 상태만으로 4단이 읽히지만 산양 배경 밀도와 사용자 승인이 남았다.
+- Hard fail 여부: 의상·직업 자세·추가 동물·프레임·문자·별·등급색·금장·이동식 등롱·마법 효과·워터마크 없음.
+
+#### 다음 수정
+
+- 산양 카드의 계곡 지붕이 몸과 산세보다 강하지 않은지 실제 프레임에서 확인한다.
+- 마지막 희귀 다섯 종도 광효과 없이 공동 기반시설로만 닫는다.
 - 사용자 승인 전까지 다섯 장 모두 `초안`, 4단 규칙은 `Hypothesis`다.
 
 ### LOG-UI-002 — 룰렛 바늘 P01
