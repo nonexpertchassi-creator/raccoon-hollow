@@ -27,6 +27,9 @@
 | LOG-STAFF-003 | 2026-08-22 | STAFF-RANKS-V0.3-P01 | [staff/](../../godot/art/staff/) | Generated | 초립·패랭이·백립 작업/수면 6장으로 직원 4등급 초안 완성 |
 | LOG-HERO-004 | 2026-08-22 | HERO-V0.4-P01 | [hero/](../../godot/art/hero/) | Generated | 걷기 2장·수면·촌장으로 공용 점장 필수 자세를 채움 |
 | LOG-GUEST-001 | 2026-08-22 | GUEST-MAGPIE-V0.1-P01 | [magpie.png](../../godot/art/guests/magpie.png) | Generated | 필드용 128×128 까치 손님 초안 |
+| LOG-UI-002 | 2026-08-22 | INTERACTION-ITEMS-BATCH-01-P01 | [needle.png](../../godot/art/ui/needle.png) | Generated | 룰렛 축과 적색 촉이 64×96에서도 분리되는 바늘 초안 |
+| LOG-PEST-001 | 2026-08-22 | INTERACTION-ITEMS-BATCH-01-P01 | [pests/](../../godot/art/pests/) | Generated | 쥐·까마귀·삽살개 한 장씩으로 이동·도난·경비 실루엣을 채움 |
+| LOG-ITEM-001 | 2026-08-22 | INTERACTION-ITEMS-BATCH-01-P01 | [pick.png](../../godot/art/items/pick.png) | Generated | 독립 물건 제작의 첫 규격으로 대장간 곡괭이를 채움 |
 
 ## 최초 실행 결과
 
@@ -659,6 +662,87 @@
 - 해태가 다른 카드보다 너무 만화적으로 보이면 갈기 덩어리만 유지하고 몸 명암을 한 단계 자연스럽게 맞춘다.
 - 사향노루가 맹수처럼 보이면 송곳니를 절반으로 줄인다.
 - 사용자 승인 전까지 다섯 장 모두 `초안`을 유지한다.
+
+### LOG-UI-002 — 룰렛 바늘 P01
+
+- 날짜: `2026-08-22`
+- Prompt ID: `INTERACTION-ITEMS-BATCH-01-P01`
+- Prompt source: [prompts/INTERACTION-ITEMS-BATCH-01-P01.md](./prompts/INTERACTION-ITEMS-BATCH-01-P01.md)
+- 게임용 초안: [needle.png](../../godot/art/ui/needle.png)
+- QA: [qa/interaction-items-batch-01.png](./qa/interaction-items-batch-01.png)
+- 상태: `Generated` / 그림 장부 `초안`
+
+#### 관찰
+
+- 황동 축·짙은 목재 몸통·넓은 적색 촉이 세 덩어리로 분리돼 `64×96`에서도 아래 방향이 읽힌다.
+- 바늘 그림에는 진동이나 각도를 고정하지 않아 룰렛 코드가 회전축을 기준으로 자유롭게 움직일 수 있다.
+- 런타임 파일은 정확한 `64×96`, RGBA, 실제 투명 배경이다.
+
+#### 판정
+
+- 결과: `Generated`
+- Why: 필수 경로와 규격은 채웠지만 실제 원판 위의 축 정렬과 대비를 Godot 화면에서 확인해야 한다.
+- Hard fail 여부: 글자·테두리·배경·그림자판·마법 효과 없음.
+
+#### 다음 수정
+
+- 원판 중심축과 겹쳤을 때 황동 원이 커 보이면 원형 축만 10% 줄인다.
+- 클릭 애니메이션은 추가 PNG가 아니라 코드 진동으로 처리한다.
+- 사용자 승인 전까지 `초안`을 유지한다.
+
+### LOG-PEST-001 — 필드 상호작용 3종 P01
+
+- 날짜: `2026-08-22`
+- Prompt ID: `INTERACTION-ITEMS-BATCH-01-P01`
+- Prompt source: [prompts/INTERACTION-ITEMS-BATCH-01-P01.md](./prompts/INTERACTION-ITEMS-BATCH-01-P01.md)
+- 게임용 초안: [rat.png](../../godot/art/pests/rat.png) · [crow.png](../../godot/art/pests/crow.png) · [dog.png](../../godot/art/pests/dog.png)
+- QA: [qa/interaction-items-batch-01.png](./qa/interaction-items-batch-01.png)
+- 상태: `Generated` / 그림 장부 `초안`
+
+#### 관찰
+
+- 쥐는 낮게 뻗은 몸과 긴 꼬리, 까마귀는 오른쪽 비행 자세와 부리의 엽전, 삽살개는 크고 안정적인 앉은 실루엣으로 역할이 구분된다.
+- 까마귀의 밝은 체크 배경과 삽살개의 밝은 체크 배경은 가장자리 연결 영역만 제거해 실제 알파로 복구했다.
+- 세 런타임 파일은 정확한 `128×128`, RGBA이며 하단 접점을 맞췄다.
+
+#### 판정
+
+- 결과: `Generated`
+- Why: 정지 실루엣만으로 기능은 읽히지만 실제 필드 크기에서 쥐의 꼬리와 까마귀의 엽전이 보이는지 확인해야 한다.
+- Hard fail 여부: 옷·무기·인간 손·문자·효과선·불투명 배경 없음.
+
+#### 다음 수정
+
+- 이동은 수평 위치·1~2px 들썩임·좌우 반전으로 처리하고 추가 프레임은 만들지 않는다.
+- 엽전이 64px에서 사라지면 까마귀 본체가 아니라 엽전만 약 15% 키운다.
+- 삽살개의 경비 반응은 코드의 작은 튕김으로 우선 시험한다.
+
+### LOG-ITEM-001 — 대장간 곡괭이 P01
+
+- 날짜: `2026-08-22`
+- Prompt ID: `INTERACTION-ITEMS-BATCH-01-P01`
+- Prompt source: [prompts/INTERACTION-ITEMS-BATCH-01-P01.md](./prompts/INTERACTION-ITEMS-BATCH-01-P01.md)
+- 게임용 초안: [pick.png](../../godot/art/items/pick.png)
+- QA: [qa/interaction-items-batch-01.png](./qa/interaction-items-batch-01.png)
+- 상태: `Generated` / 그림 장부 `초안`
+
+#### 관찰
+
+- 철날과 나무 자루가 큰 두 색면으로 나뉘어 `64×112` 표시 크기에서도 곡괭이로 읽힌다.
+- 얕은 사선으로 세워 점장 손 오버레이와 물건 카드 양쪽에 재사용할 여백을 남겼다.
+- 런타임 파일은 정확한 `128×224`, RGBA, 실제 투명 배경이다.
+
+#### 판정
+
+- 결과: `Generated`
+- Why: 물건 공통 규격의 첫 사례는 채웠지만 점장 손 사이에 올린 실제 화면 검수가 남았다.
+- Hard fail 여부: 받침대·글자·등급 광효과·배경·과도한 금속 반사 없음.
+
+#### 다음 수정
+
+- 같은 대장간 8종은 숯색 철·황토 나무·굵은 실루엣을 공유한다.
+- 점장 손에서 너무 길면 원본을 다시 그리지 않고 오버레이 표시 비율을 먼저 낮춘다.
+- 사용자 승인 전까지 `초안`을 유지한다.
 
 ## 새 로그 템플릿
 
