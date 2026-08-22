@@ -58,6 +58,7 @@
 | LOG-CARD-009 | 2026-08-22 | GUEST-CARDS-TIER2-BATCH-03-P01 | [cards/](../../godot/art/cards/) | Generated | 등급 양끝도 풍경 규모와 생활 정돈만으로 2단 성장 차이 유지 |
 | LOG-CARD-010 | 2026-08-22 | GUEST-CARDS-TIER2-BATCH-04-P01 | [cards/](../../godot/art/cards/) | Generated | 뒤뜰·물가·꽃길·장독대의 1단 생활 장소를 수선해 2단으로 확장 |
 | LOG-CARD-011 | 2026-08-22 | GUEST-CARDS-TIER2-BATCH-05-P01 | [cards/](../../godot/art/cards/) | Generated | 황혼 산길·단풍 숲·연못·겨울길의 개체 연속성을 유지하며 2단으로 확장 |
+| LOG-CARD-012 | 2026-08-22 | GUEST-CARDS-TIER2-BATCH-06-P01 | [cards/](../../godot/art/cards/) | Generated | 논·산길·약초밭·눈길·마을 입구를 수선해 30종의 2단 카드 초안을 완성 |
 
 ## 최초 실행 결과
 
@@ -827,6 +828,35 @@
 
 - 산양 카드의 먼 마을 지붕 밀도와 원앙 카드의 정자 크기가 실제 프레임 안에서 과밀하지 않은지 확인한다.
 - 사용자 승인 전까지 다섯 장 모두 `초안`이다.
+
+### LOG-CARD-012 — 손님 성장 카드 2단 여섯 번째 5종 P01
+
+- 날짜: `2026-08-22`
+- Prompt ID: `GUEST-CARDS-TIER2-BATCH-06-P01`
+- Prompt source: [prompts/GUEST-CARDS-TIER2-BATCH-06-P01.md](./prompts/GUEST-CARDS-TIER2-BATCH-06-P01.md)
+- 게임용 초안: `egret-2.png`, `leopard-2.png`, `muskdeer-2.png`, `moonbear-2.png`, `haetae-2.png`
+- 묶음 QA: [qa/guest-cards-tier2-batch-06.png](./qa/guest-cards-tier2-batch-06.png)
+- 2단 전체 QA: [qa/guest-cards-tier2-all-30.png](./qa/guest-cards-tier2-all-30.png)
+- 상태: `Generated` / 그림 장부 `초안`
+
+#### 관찰
+
+- 다섯 장 모두 각 1단의 종 특징·자세·계절을 유지한다.
+- 논 관개축대·산길 난간·약초길 돌담·눈길 대문·마을 입구 물길로 서로 다른 가장자리 회복을 보여준다.
+- 해태를 포함한 희귀 손님도 발광·등급색·궁전 장식 없이 생활 기반 수선만 사용했다.
+- 다섯 런타임 파일은 정확한 `512×768`이며 이 묶음으로 2단 30종을 모두 채웠다.
+
+#### 판정
+
+- 결과: `Generated`
+- Why: 2단 세트의 제작 규칙과 파일 계약은 완성됐지만 실제 카드 프레임 및 사용자 승인이 남았다.
+- Hard fail 여부: 의상·마법 효과·프레임·문자·별·등급색·워터마크 없음.
+
+#### 다음 수정
+
+- 30종 전체 시트에서 배경 복구 밀도가 급격히 뛰는 카드가 없는지 사용자와 함께 확인한다.
+- 3단은 같은 개체·계절을 유지하되 `익숙한 단골 → 장날의 오래된 벗`으로 상업 흔적만 한 단계 늘린다.
+- 사용자 승인 전까지 30장 모두 `초안`이다.
 
 ### LOG-UI-002 — 룰렛 바늘 P01
 
