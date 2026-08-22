@@ -31,6 +31,7 @@
 | LOG-PEST-001 | 2026-08-22 | INTERACTION-ITEMS-BATCH-01-P01 | [pests/](../../godot/art/pests/) | Generated | 쥐·까마귀·삽살개 한 장씩으로 이동·도난·경비 실루엣을 채움 |
 | LOG-ITEM-001 | 2026-08-22 | INTERACTION-ITEMS-BATCH-01-P01 | [pick.png](../../godot/art/items/pick.png) | Generated | 독립 물건 제작의 첫 규격으로 대장간 곡괭이를 채움 |
 | LOG-ITEM-002 | 2026-08-22 | ITEMS-SMITH-BATCH-01-P01 | [items/](../../godot/art/items/) | Generated | 낫·호미·도끼·가위·부엌칼을 같은 무쇠·나무 세트로 채움 |
+| LOG-ITEM-003 | 2026-08-22 | ITEMS-SMITH-BRUSH-BATCH-02-P01 | [items/](../../godot/art/items/) | Generated | 자물쇠·가마솥으로 대장간을 닫고 붓·먹·벼루로 필방을 시작 |
 
 ## 최초 실행 결과
 
@@ -773,6 +774,35 @@
 - 철 질감이 실제 화면에서 번져 보이면 새로 그리기보다 축소 필터와 대비를 먼저 조정한다.
 - 남은 대장간 자물쇠·가마솥도 같은 철색과 외곽선으로 이어간다.
 - 사용자 승인 전까지 다섯 장 모두 `초안`을 유지한다.
+
+### LOG-ITEM-003 — 대장간 마무리·필방 시작 5종 P01
+
+- 날짜: `2026-08-22`
+- Prompt ID: `ITEMS-SMITH-BRUSH-BATCH-02-P01`
+- Prompt source: [prompts/ITEMS-SMITH-BRUSH-BATCH-02-P01.md](./prompts/ITEMS-SMITH-BRUSH-BATCH-02-P01.md)
+- 게임용 초안: `lock.png`, `cauldr.png`, `brush.png`, `ink.png`, `inkstone.png`
+- QA: [qa/items-smith-brush-batch-02.png](./qa/items-smith-brush-batch-02.png)
+- 상태: `Generated` / 그림 장부 `초안`
+
+#### 관찰
+
+- 자물쇠는 옆으로 긴 철 몸체, 가마솥은 둥근 뚜껑과 세 발, 붓은 대나무와 털, 먹은 긴 검은 막대, 벼루는 두 홈으로 구분된다.
+- 가로 물건을 `128×224` 캔버스 아래에 붙이지 않고 중앙에 놓으니 카드 안에서 시각 중심이 맞는다.
+- 다섯 런타임 파일은 정확한 `128×224`, RGBA, 실제 투명 배경이다.
+- 최초 자물쇠는 높은 U자 고리와 많은 금장이 현대 판타지 물건처럼 보여 `Revision`으로 보존하고 V0.2로 교체했다.
+
+#### 판정
+
+- 결과: `Generated` (`ITEM-LOCK-V0.1`만 `Revision`)
+- Why: 대장간 8종이 모두 채워졌고 필방 재료 방향도 읽히지만 실제 카드·점장 손 검수와 사용자 승인이 남았다.
+- Hard fail 여부: V0.2와 나머지 네 장에는 글자·금박 장식·불투명 배경·캐릭터·등급 효과 없음.
+
+#### 다음 수정
+
+- 물건 PNG는 발접점이 아니라 투명 캔버스 중앙 정렬을 공통 규칙 후보로 유지한다.
+- 점장 손 오버레이는 캔버스 전체가 아니라 알파 경계 기준으로 표시 크기를 정한다.
+- 필방의 연적·필통·서산·붓걸이·화첩도 금박 없이 재료와 실루엣으로 이어간다.
+- 사용자 승인 전까지 다섯 런타임은 `초안`이다.
 
 ## 새 로그 템플릿
 
