@@ -61,6 +61,7 @@
 | LOG-CARD-012 | 2026-08-22 | GUEST-CARDS-TIER2-BATCH-06-P01 | [cards/](../../godot/art/cards/) | Generated | 논·산길·약초밭·눈길·마을 입구를 수선해 30종의 2단 카드 초안을 완성 |
 | LOG-CARD-013 | 2026-08-22 | GUEST-CARDS-TIER3-BATCH-01-P01 | [cards/](../../godot/art/cards/) | Generated | 열린 문·낮은 좌판·준비된 물건으로 3단 장날 생활권 가정을 시험 |
 | LOG-CARD-014 | 2026-08-22 | GUEST-CARDS-TIER3-BATCH-02-P01 | [cards/](../../godot/art/cards/) | Generated | 산물·곡식·겨울 저장품·물가 쉼터·나루 장터로 3단 장소 언어 확장 |
+| LOG-CARD-015 | 2026-08-22 | GUEST-CARDS-TIER3-BATCH-03-P01 | [cards/](../../godot/art/cards/) | Generated | 논머리·산길·곡식마당·물길·텃밭으로 등급 양끝의 3단 장날 언어 확장 |
 
 ## 최초 실행 결과
 
@@ -914,6 +915,34 @@
 
 - 눈 장면과 나루 장면에서 물건 밀도가 카드 프레임 안에서 지나치게 높지 않은지 확인한다.
 - 이후 3단도 장소의 기존 기능을 장날 쓰임으로 확장하되 배경 요소 수를 제한한다.
+- 사용자 승인 전까지 다섯 장 모두 `초안`, 3단 규칙은 `Hypothesis`다.
+
+### LOG-CARD-015 — 손님 성장 카드 3단 세 번째 5종 P01
+
+- 날짜: `2026-08-22`
+- Prompt ID: `GUEST-CARDS-TIER3-BATCH-03-P01`
+- Prompt source: [prompts/GUEST-CARDS-TIER3-BATCH-03-P01.md](./prompts/GUEST-CARDS-TIER3-BATCH-03-P01.md)
+- 게임용 초안: `ox-3.png`, `tiger-3.png`, `sparrow-3.png`, `frog-3.png`, `mole-3.png`
+- QA: [qa/guest-cards-tier3-batch-03.png](./qa/guest-cards-tier3-batch-03.png)
+- 상태: `Generated` / 그림 장부 `초안`
+
+#### 관찰
+
+- 다섯 장 모두 2단의 같은 개체·자세·계절과 논머리·산길·곡식마당·물길·텃밭을 유지한다.
+- 호랑이는 산세와 몸집을 우선하고 쉼터를 작게, 참새·개구리·두더지는 생활 반경에 맞춘 소형 좌판을 사용했다.
+- 소 카드에는 곡식과 채소가 함께 들어가 논머리 복합 산물장으로 읽힌다.
+- 다섯 런타임 파일은 정확한 `512×768`이다.
+
+#### 판정
+
+- 결과: `Generated`
+- Why: 등급 양끝에서도 3단 가정이 유지되지만 실제 카드 프레임 및 사용자 승인이 남았다.
+- Hard fail 여부: 의상·직업 자세·추가 동물·프레임·문자·별·등급색·마법 효과·워터마크 없음.
+
+#### 다음 수정
+
+- 소의 복합 산물장이 곡식 중심의 2단 연속성을 해치지 않는지 2·3단 병렬 검수한다.
+- 호랑이의 먼 마을 지붕과 쉼터가 실루엣보다 강하지 않은지 확인한다.
 - 사용자 승인 전까지 다섯 장 모두 `초안`, 3단 규칙은 `Hypothesis`다.
 
 ### LOG-UI-002 — 룰렛 바늘 P01
