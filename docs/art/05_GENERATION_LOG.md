@@ -42,6 +42,7 @@
 | LOG-ITEM-011 | 2026-08-22 | ITEMS-SOUP-INN-BATCH-10-P01 | [items/](../../godot/art/items/) | Generated | 추어탕·용봉탕으로 국밥집을 닫고 막걸리·파전·동동주로 주막을 시작 |
 | LOG-ITEM-012 | 2026-08-22 | ITEMS-INN-BATCH-11-P01 | [items/](../../godot/art/items/) | Generated | 묵무침·청주·보쌈·법주·구절판으로 주막 8종을 마무리 |
 | LOG-ITEM-013 | 2026-08-22 | ITEMS-SKEWER-BATCH-12-P01 | [items/](../../godot/art/items/) | Generated | 떡·닭·버섯·생선·산적을 막대 위 재료 리듬으로 구분 |
+| LOG-ITEM-014 | 2026-08-22 | ITEMS-SKEWER-RICECAKE-BATCH-13-P01 | [items/](../../godot/art/items/) | Generated | 장어·너비아니·육회로 꼬치집을 닫고 가래떡·인절미로 떡집을 시작 |
 
 ## 최초 실행 결과
 
@@ -1104,6 +1105,35 @@
 - 꼬치가 점장 손에서 너무 작으면 PNG를 다시 그리기보다 실제 알파 경계 기반 최대 폭 규칙을 조정한다.
 - 버섯꼬치의 표고 별무늬가 장식처럼 보이면 칼집 폭만 줄인다.
 - 꼬치집 마지막 장어구이·너비아니·육회는 막대가 아닌 접시 구조로 전환해 반복을 끊는다.
+- 사용자 승인 전까지 다섯 장 모두 `초안`이다.
+
+### LOG-ITEM-014 — 꼬치집 마무리·떡집 시작 5종 P01
+
+- 날짜: `2026-08-22`
+- Prompt ID: `ITEMS-SKEWER-RICECAKE-BATCH-13-P01`
+- Prompt source: [prompts/ITEMS-SKEWER-RICECAKE-BATCH-13-P01.md](./prompts/ITEMS-SKEWER-RICECAKE-BATCH-13-P01.md)
+- 게임용 초안: `jangeo.png`, `neobiani.png`, `yukhoe.png`, `garae.png`, `injeol.png`
+- QA: [qa/items-skewer-ricecake-batch-13.png](./qa/items-skewer-ricecake-batch-13.png)
+- 상태: `Generated` / 그림 장부 `초안`
+
+#### 관찰
+
+- 장어구이는 긴 쌍, 너비아니는 넓은 격자 고기 세 장, 육회는 배채가 섞인 붉은 가는 채 무더기다.
+- 가래떡은 볏짚 묶음의 흰 원통, 인절미는 콩고물 네모라 첫 떡 두 종이 형태와 색으로 함께 갈린다.
+- 육회는 피·방울·날달걀 없이 정돈된 재료 무더기로 비그래픽하게 표현했다.
+- 다섯 런타임 파일은 정확한 `128×224`, RGBA, 실제 투명 배경, 중앙 정렬이다.
+
+#### 판정
+
+- 결과: `Generated`
+- Why: 꼬치집 8종이 모두 채워지고 떡집의 흰쌀·콩고물 기준도 시작됐지만 실제 카드에서 가래떡이 소품 막대처럼 보이지 않는지 검수가 남았다.
+- Hard fail 여부: 피·날달걀·현대 장식·불꽃·연기·문자·불투명 배경·등급 효과 없음.
+
+#### 다음 수정
+
+- 육회가 붉은 면처럼 보이면 배채를 줄이고 고기채의 짧은 굽음을 키운다.
+- 가래떡이 나무 막대처럼 보이면 잘린 단면의 흰쌀 결만 조금 키운다.
+- 떡집 남은 송편·백설기·약식·화전·다식·유과는 색보다 빚기·쌓기·찍기 구조를 우선한다.
 - 사용자 승인 전까지 다섯 장 모두 `초안`이다.
 
 ## 새 로그 템플릿
