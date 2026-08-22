@@ -45,6 +45,8 @@
 | LOG-ITEM-014 | 2026-08-22 | ITEMS-SKEWER-RICECAKE-BATCH-13-P01 | [items/](../../godot/art/items/) | Generated | 장어·너비아니·육회로 꼬치집을 닫고 가래떡·인절미로 떡집을 시작 |
 | LOG-ITEM-015 | 2026-08-22 | ITEMS-RICECAKE-BATCH-14-P01 | [items/](../../godot/art/items/) | Generated | 반달·큰 흰 네모·찰밥 사각·꽃 원·찍음 과자로 떡집 다섯 품목을 구분 |
 | LOG-ITEM-016 | 2026-08-22 | ITEMS-RICECAKE-BUTCHER-BATCH-15-P01 | [items/](../../godot/art/items/) | Generated | 유과로 떡집을 닫고 지방층·닭다리·살코기·뼈로 푸줏간을 시작 |
+| LOG-ITEM-017 | 2026-08-22 | ITEMS-BUTCHER-STALL-BATCH-16-P01 | [items/](../../godot/art/items/) | Generated | 잎 묶음·미색 고리·긴 필렛·마블링 타원으로 물건 80종을 마무리 |
+| LOG-STALL-001 | 2026-08-22 | ITEMS-BUTCHER-STALL-BATCH-16-P01 | [smith.png](../../godot/art/stalls/smith.png) | Generated | 중앙을 비운 낮은 대장간 좌판과 실제 물건 합성 기준을 시험 |
 
 ## 최초 실행 결과
 
@@ -1196,6 +1198,63 @@
 - 닭다리의 뼈 끝이 과도하게 커 보이면 고기 덩이 비율을 유지한 채 뼈 길이만 줄인다.
 - 푸줏간 남은 우거지·곱창·안심·한우 등심은 잎 묶음·둥근 고리·길쭉한 필렛·굵은 마블링으로 가른다.
 - 사용자 승인 전까지 다섯 장 모두 `초안`이다.
+
+### LOG-ITEM-017 — 푸줏간 마무리 4종 P01
+
+- 날짜: `2026-08-22`
+- Prompt ID: `ITEMS-BUTCHER-STALL-BATCH-16-P01`
+- Prompt source: [prompts/ITEMS-BUTCHER-STALL-BATCH-16-P01.md](./prompts/ITEMS-BUTCHER-STALL-BATCH-16-P01.md)
+- 게임용 초안: `ugeoji.png`, `gopchang.png`, `ansim.png`, `hanwoo.png`
+- QA: [qa/items-butcher-stall-batch-16.png](./qa/items-butcher-stall-batch-16.png)
+- 상태: `Generated` / 그림 장부 `초안`
+
+#### 관찰
+
+- 우거지는 짙은 잎 묶음, 곱창은 밝은 세 겹 고리, 안심은 끝이 가는 긴 필렛, 한우 등심은 굵은 마블링의 두꺼운 타원이다.
+- 기존 푸줏간 네 종과 함께 봐도 색만이 아니라 외곽과 내부 구조로 여덟 품목이 갈린다.
+- 피·칼·도축 표현 없이 모두 정돈된 판매 식재료로 보인다.
+- 네 런타임 파일은 정확한 `128×224`, RGBA, 실제 투명 배경, 중앙 정렬이다.
+
+#### 판정
+
+- 결과: `Generated`
+- Why: 자동 주문서의 물건 80종을 모두 채웠지만 실제 좌판·점장 손 오버레이와 사용자 미감 승인이 남았다.
+- Hard fail 여부: 피·도축·사체·칼·현대 포장·문자·불투명 배경·등급 효과 없음.
+
+#### 다음 수정
+
+- 곱창이 소시지나 밧줄처럼 보이면 절단면보다 불규칙한 굵기와 짧은 고리 개수를 조정한다.
+- 한우 등심의 마블링이 등급 빛처럼 보이면 선 굵기는 유지하되 면적을 줄인다.
+- 사용자 승인 전까지 네 장 모두 `초안`이다.
+
+### LOG-STALL-001 — 대장간 좌판 P01
+
+- 날짜: `2026-08-22`
+- Prompt ID: `ITEMS-BUTCHER-STALL-BATCH-16-P01`
+- Prompt source: [prompts/ITEMS-BUTCHER-STALL-BATCH-16-P01.md](./prompts/ITEMS-BUTCHER-STALL-BATCH-16-P01.md)
+- 게임용 초안: `godot/art/stalls/smith.png`
+- QA: [qa/stall-smith-overlay-test-16.png](./qa/stall-smith-overlay-test-16.png)
+- 상태: `Generated` / 그림 장부 `초안`
+
+#### 관찰
+
+- 좌판은 낮고 넓은 U자형 목재·무쇠 받침이며 왼쪽 작은 모루와 오른쪽 짧은 쇠받침으로 대장간 업종을 표시한다.
+- 중앙 윗부분은 비어 있어 곡괭이·가마솥·자물쇠가 좌판 그림 자체와 충돌하지 않는다.
+- 현재 Godot의 `_stall()` 좌표를 2배로 재현하면 곡괭이는 상판에 닿지만 가마솥과 자물쇠는 투명 캔버스의 아래 여백만큼 뜬다.
+- 런타임 파일은 정확한 `192×176`, RGBA, 실제 투명 배경, 하단 접점 정렬이다.
+
+#### 판정
+
+- 결과: `Generated`
+- Why: 첫 좌판의 공통 구조는 성립하지만 실제 알파 경계 기반 물건 바닥 정렬이 구현되고 Godot 화면에서 격자·계기·이름표 가림을 확인해야 한다.
+- Hard fail 여부: 지붕·건물·불꽃·연기·상품 내장·문자·이름패·불투명 배경 없음.
+
+#### 다음 수정
+
+- 좌판 그림을 품목별로 바꾸지 않고 `낮은 공통 받침 + 양옆 업종 표식 + 빈 중앙`을 다음 아홉 좌판의 Hypothesis로 재사용한다.
+- 클로드 요청 메모 12대로 좌판 물건은 실제 알파 경계 아랫변을 상판 기준선에 맞춘다.
+- 실제 화면에서 모루가 물건보다 먼저 읽히면 모루 크기만 한 단계 줄인다.
+- 사용자 승인 전까지 대장간 좌판은 `초안`이다.
 
 ## 새 로그 템플릿
 
