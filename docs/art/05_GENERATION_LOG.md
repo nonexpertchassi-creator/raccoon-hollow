@@ -66,6 +66,7 @@
 | LOG-CARD-017 | 2026-08-22 | GUEST-CARDS-TIER3-BATCH-05-P01 | [cards/](../../godot/art/cards/) | Generated | 황혼·산길·단풍·연못·겨울의 색을 지키며 3단 장날 언어 확장 |
 | LOG-CARD-018 | 2026-08-22 | GUEST-CARDS-TIER3-BATCH-06-P01 | [cards/](../../godot/art/cards/) | Generated | 희귀도가 높은 다섯 종까지 장식 없는 3단 장소 언어로 완성 |
 | LOG-CARD-019 | 2026-08-22 | GUEST-CARDS-TIER4-BATCH-01-P01 | [cards/](../../godot/art/cards/) | Generated | 연결된 담·길·배수로와 공동마당으로 4단 최종 성장 가정 시험 |
+| LOG-CARD-020 | 2026-08-22 | GUEST-CARDS-TIER4-BATCH-02-P01 | [cards/](../../godot/art/cards/) | Generated | 가을·수확·눈·연못·나루의 길과 물길로 4단 가정 확장 |
 
 ## 최초 실행 결과
 
@@ -1060,6 +1061,34 @@
 
 - 까치와 다람쥐는 3·4단 병렬 축소 검수에서 수확물 증가보다 기반시설 연결이 먼저 읽히는지 확인한다.
 - 다음 4단 묶음은 새 물건을 늘리지 않고 물길·공동마당·집 사이 연결을 우선한다.
+- 사용자 승인 전까지 다섯 장 모두 `초안`, 4단 규칙은 `Hypothesis`다.
+
+### LOG-CARD-020 — 손님 성장 카드 4단 두 번째 5종 P01
+
+- 날짜: `2026-08-22`
+- Prompt ID: `GUEST-CARDS-TIER4-BATCH-02-P01`
+- Prompt source: [prompts/GUEST-CARDS-TIER4-BATCH-02-P01.md](./prompts/GUEST-CARDS-TIER4-BATCH-02-P01.md)
+- 게임용 초안: `deer-4.png`, `boar-4.png`, `bear-4.png`, `turtle-4.png`, `crane-4.png`
+- QA: [qa/guest-cards-tier4-batch-02.png](./qa/guest-cards-tier4-batch-02.png)
+- 상태: `Generated` / 그림 장부 `초안`
+
+#### 관찰
+
+- 다섯 장 모두 3단의 같은 개체·자세·계절과 가을길·수확마당·눈길·연못·나루를 유지한다.
+- 사슴·멧돼지는 이어진 마을길, 곰은 눈이 치워진 동선, 거북·두루미는 물길·다리·선착장의 연결로 4단을 설명한다.
+- 대형 동물과 긴 다리 주변의 빈 공간이 남아 장터 물건보다 동물 실루엣이 먼저 읽힌다.
+- 다섯 런타임 파일은 정확한 `512×768`이다.
+
+#### 판정
+
+- 결과: `Generated`
+- Why: 계절과 물가가 달라도 공동 기반시설 중심의 4단 가정이 유지되지만 실제 카드 프레임 및 사용자 승인이 남았다.
+- Hard fail 여부: 의상·직업 자세·추가 동물·프레임·문자·별·등급색·금장·등롱·마법 효과·워터마크 없음.
+
+#### 다음 수정
+
+- 두루미의 포장품과 대나무 묶음이 축소 프레임에서 긴 다리와 경쟁하지 않는지 확인한다.
+- 다음 4단도 동물 크기보다 기반시설 연결 범위를 먼저 조정한다.
 - 사용자 승인 전까지 다섯 장 모두 `초안`, 4단 규칙은 `Hypothesis`다.
 
 ### LOG-UI-002 — 룰렛 바늘 P01
