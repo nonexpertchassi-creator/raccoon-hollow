@@ -7,10 +7,10 @@
 - 현재 게이트: `Art Concept Blueprint V0.1` 승인 완료
 - 현재 상태: `Approved — LOG-BP-001`
 - 승인 이미지: [generated/BP-V0.1-P01.png](./generated/BP-V0.1-P01.png)
-- 현재 게임 구현: Godot 전환 진행 중 — `4c22a91` 기준 PNG 로더와 점장·토끼·직원 초안 연결
-- 현재 그림 현황: 필수 74장 중 초안 11장, 확정 0장, 없음 63장
-- 다음 목표: 점장 걷기·수면·촌장과 손님 초안을 제작하면서 실제 Godot 화면에서 크기를 검수
-- 새 범위: 최신 주문서에 가게별 좌판 5장이 필수로 추가됨
+- 현재 게임 구현: Godot 전환 진행 중 — `e49395b` 기준 30종 손님·카드 뽑기·룰렛까지 확장
+- 현재 그림 현황: 필수 125장 중 초안 16장, 확정 0장, 없음 109장
+- 다음 목표: 손님 필드 스프라이트를 5장 단위로 제작하고 실제 Godot 화면 크기를 검수
+- 선택 범위: 손님 성장 카드 90장과 가게별 전용 점장 10장
 
 ## 문서 지도
 
@@ -21,7 +21,7 @@
 5. [04_ASSET_LIST.md](./04_ASSET_LIST.md) — 현재 범위와 후속 에셋 큐
 6. [05_GENERATION_LOG.md](./05_GENERATION_LOG.md) — 생성 결과, 승인/반려, 원인 및 규칙 수정 기록
 7. [06_GAME_INTEGRATION.md](./06_GAME_INTEGRATION.md) — 실제 게임 화면 구조와 제작 에셋 연결 계획
-8. [image-archive.html](./image-archive.html) — 실제 이미지와 필수 74장 + 선택 10장을 함께 보는 시각 장부
+8. [image-archive.html](./image-archive.html) — 실제 이미지와 필수 125장 + 선택 100장을 함께 보는 시각 장부
 9. [IMAGE_ARCHIVE.md](./IMAGE_ARCHIVE.md) — 시각 장부의 판단 근거와 텍스트 기록
 
 ## 상태 언어
