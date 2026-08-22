@@ -30,6 +30,7 @@
 | LOG-UI-002 | 2026-08-22 | INTERACTION-ITEMS-BATCH-01-P01 | [needle.png](../../godot/art/ui/needle.png) | Generated | 룰렛 축과 적색 촉이 64×96에서도 분리되는 바늘 초안 |
 | LOG-PEST-001 | 2026-08-22 | INTERACTION-ITEMS-BATCH-01-P01 | [pests/](../../godot/art/pests/) | Generated | 쥐·까마귀·삽살개 한 장씩으로 이동·도난·경비 실루엣을 채움 |
 | LOG-ITEM-001 | 2026-08-22 | INTERACTION-ITEMS-BATCH-01-P01 | [pick.png](../../godot/art/items/pick.png) | Generated | 독립 물건 제작의 첫 규격으로 대장간 곡괭이를 채움 |
+| LOG-ITEM-002 | 2026-08-22 | ITEMS-SMITH-BATCH-01-P01 | [items/](../../godot/art/items/) | Generated | 낫·호미·도끼·가위·부엌칼을 같은 무쇠·나무 세트로 채움 |
 
 ## 최초 실행 결과
 
@@ -743,6 +744,35 @@
 - 같은 대장간 8종은 숯색 철·황토 나무·굵은 실루엣을 공유한다.
 - 점장 손에서 너무 길면 원본을 다시 그리지 않고 오버레이 표시 비율을 먼저 낮춘다.
 - 사용자 승인 전까지 `초안`을 유지한다.
+
+### LOG-ITEM-002 — 대장간 기본 도구 5종 P01
+
+- 날짜: `2026-08-22`
+- Prompt ID: `ITEMS-SMITH-BATCH-01-P01`
+- Prompt source: [prompts/ITEMS-SMITH-BATCH-01-P01.md](./prompts/ITEMS-SMITH-BATCH-01-P01.md)
+- 게임용 초안: `sickle.png`, `hoe.png`, `axe.png`, `shears.png`, `knife.png`
+- QA: [qa/items-smith-batch-01.png](./qa/items-smith-batch-01.png)
+- 상태: `Generated` / 그림 장부 `초안`
+
+#### 관찰
+
+- 낫의 큰 곡선, 호미의 직각 날, 도끼의 쐐기, 가위의 고리, 부엌칼의 넓은 날이 축소 뒤에도 서로 겹치지 않는다.
+- 숯빛 무쇠와 황토갈색 나무가 곡괭이와 같은 두 주재료로 묶인다.
+- 다섯 런타임 파일은 정확한 `128×224`, RGBA, 실제 투명 배경이다.
+- 원화의 금속 표면은 곡괭이보다 다소 세밀하지만 `64×112` 축소에서는 큰 명암 덩어리로 정리된다.
+
+#### 판정
+
+- 결과: `Generated`
+- Why: 대장간 세트와 파일 규격은 통과했지만 실제 물건 카드와 점장 손 오버레이에서의 상대 크기 검수가 남았다.
+- Hard fail 여부: 손·캐릭터·바닥·글자·등급 효과·불투명 배경 없음.
+
+#### 다음 수정
+
+- 도구별 원본 높이는 유지하고 점장 손에서는 공통 최대 높이로 축소한다.
+- 철 질감이 실제 화면에서 번져 보이면 새로 그리기보다 축소 필터와 대비를 먼저 조정한다.
+- 남은 대장간 자물쇠·가마솥도 같은 철색과 외곽선으로 이어간다.
+- 사용자 승인 전까지 다섯 장 모두 `초안`을 유지한다.
 
 ## 새 로그 템플릿
 
