@@ -1,0 +1,905 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>너구리 만물상 · 그림 장부</title>
+  <meta name="description" content="너구리 만물상의 실제 이미지, 제작 상태, Godot 연결 상태를 함께 보는 시각 아카이브">
+  <style>
+    :root {
+      --ink: #2b241b;
+      --ink-soft: #5a4e3d;
+      --paper: #ece2cb;
+      --paper-deep: #d8c9a7;
+      --wood: #8a6a45;
+      --wood-dark: #5f4630;
+      --tile: #4a4139;
+      --jade: #4a7c59;
+      --jade-pale: #c8d1b7;
+      --red: #a34a3a;
+      --gold: #a8763e;
+      --empty: #b9aa8b;
+      --white: #fffaf0;
+      --shadow: rgba(43, 36, 27, .16);
+      --display: "AppleMyungjo", "Batang", "Noto Serif KR", serif;
+      --body: "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+      --mono: "SFMono-Regular", Menlo, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: var(--body);
+      background-color: #c9bb9c;
+      background-image:
+        radial-gradient(circle at 20% 10%, rgba(255,255,255,.28) 0 1px, transparent 1.6px),
+        radial-gradient(circle at 80% 70%, rgba(43,36,27,.08) 0 1px, transparent 1.5px);
+      background-size: 21px 23px, 31px 29px;
+      line-height: 1.55;
+    }
+
+    a { color: inherit; }
+
+    button,
+    input { font: inherit; }
+
+    button:focus-visible,
+    input:focus-visible,
+    a:focus-visible,
+    summary:focus-visible {
+      outline: 3px solid var(--gold);
+      outline-offset: 3px;
+    }
+
+    .shell {
+      width: min(1280px, calc(100% - 28px));
+      margin: 18px auto 44px;
+      border: 1px solid rgba(43,36,27,.32);
+      background: var(--paper);
+      box-shadow: 0 22px 60px rgba(43,36,27,.22);
+    }
+
+    .masthead {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(270px, .75fr);
+      min-height: 340px;
+      border-bottom: 8px solid var(--tile);
+    }
+
+    .mast-copy {
+      position: relative;
+      overflow: hidden;
+      padding: clamp(34px, 6vw, 78px);
+      background: var(--tile);
+      color: var(--white);
+    }
+
+    .mast-copy::after {
+      content: "圖";
+      position: absolute;
+      right: -18px;
+      bottom: -84px;
+      color: rgba(255,255,255,.045);
+      font: 280px/1 var(--display);
+      transform: rotate(-7deg);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      margin: 0 0 18px;
+      color: #dbc69e;
+      font: 700 12px/1.2 var(--mono);
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 { font-family: var(--display); }
+
+    h1 {
+      max-width: 720px;
+      margin: 0;
+      font-size: clamp(44px, 8vw, 96px);
+      font-weight: 700;
+      letter-spacing: -.07em;
+      line-height: .94;
+    }
+
+    .mast-lede {
+      max-width: 620px;
+      margin: 28px 0 0;
+      color: #ddd0b6;
+      font-size: clamp(15px, 2vw, 19px);
+      word-break: keep-all;
+    }
+
+    .audit-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 36px 30px 28px;
+      background: var(--paper-deep);
+      border-left: 1px solid rgba(43,36,27,.28);
+    }
+
+    .audit-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .audit-card h2 {
+      margin: 0;
+      font-size: 26px;
+      line-height: 1.05;
+    }
+
+    .stamp {
+      display: grid;
+      place-items: center;
+      width: 64px;
+      aspect-ratio: 1;
+      border: 3px double var(--red);
+      color: var(--red);
+      font-family: var(--display);
+      font-weight: 800;
+      line-height: 1.05;
+      text-align: center;
+      transform: rotate(4deg);
+    }
+
+    .audit-list {
+      display: grid;
+      gap: 0;
+      margin: 26px 0;
+      border-top: 1px solid rgba(43,36,27,.22);
+    }
+
+    .audit-list div {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(43,36,27,.18);
+      font-size: 13px;
+    }
+
+    .audit-list dt { color: var(--ink-soft); }
+    .audit-list dd { margin: 0; font-weight: 800; text-align: right; }
+
+    .slot-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 9px;
+      font-size: 12px;
+      color: var(--ink-soft);
+    }
+
+    .slot-label strong {
+      color: var(--ink);
+      font: 800 19px/1 var(--mono);
+    }
+
+    .progress-slots {
+      display: grid;
+      grid-template-columns: repeat(15, 1fr);
+      gap: 4px;
+    }
+
+    .progress-slot {
+      aspect-ratio: 1;
+      border: 1px solid rgba(43,36,27,.26);
+      background: rgba(255,255,255,.24);
+    }
+
+    .progress-slot.is-draft {
+      background: var(--gold);
+      border-color: var(--gold);
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,.22);
+    }
+
+    .progress-slot.is-approved {
+      background: var(--jade);
+      border-color: var(--jade);
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,.22);
+    }
+
+    .section {
+      padding: clamp(34px, 6vw, 74px);
+      border-bottom: 1px solid rgba(43,36,27,.24);
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 28px;
+      margin-bottom: 30px;
+    }
+
+    .section-kicker {
+      margin: 0 0 7px;
+      color: var(--red);
+      font: 800 11px/1.2 var(--mono);
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .section h2 {
+      margin: 0;
+      font-size: clamp(29px, 4vw, 50px);
+      letter-spacing: -.045em;
+      line-height: 1;
+    }
+
+    .section-note {
+      max-width: 480px;
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: 14px;
+      word-break: keep-all;
+    }
+
+    .file {
+      display: block;
+      margin-top: 7px;
+      color: var(--ink-soft);
+      font: 11px/1.45 var(--mono);
+      overflow-wrap: anywhere;
+    }
+
+    .catalog-tools {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) auto;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 22px;
+    }
+
+    .search-wrap { position: relative; }
+
+    .search-wrap::before {
+      content: "찾기";
+      position: absolute;
+      left: 13px;
+      top: 50%;
+      color: var(--ink-soft);
+      font: 800 10px/1 var(--mono);
+      letter-spacing: .08em;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    .search {
+      width: 100%;
+      min-height: 46px;
+      padding: 10px 14px 10px 58px;
+      border: 1px solid rgba(43,36,27,.35);
+      border-radius: 0;
+      color: var(--ink);
+      background: rgba(255,250,240,.72);
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 6px;
+    }
+
+    .filter {
+      min-height: 38px;
+      padding: 7px 12px;
+      border: 1px solid rgba(43,36,27,.34);
+      border-radius: 0;
+      color: var(--ink);
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .filter[aria-pressed="true"] {
+      color: var(--white);
+      background: var(--tile);
+      border-color: var(--tile);
+    }
+
+    .result-line {
+      margin: 0 0 12px;
+      color: var(--ink-soft);
+      font: 12px/1.4 var(--mono);
+    }
+
+    .asset-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .asset-card {
+      position: relative;
+      min-width: 0;
+      border: 1px solid rgba(43,36,27,.22);
+      background: rgba(255,250,240,.48);
+    }
+
+    .asset-card.is-draft {
+      border-color: rgba(168,118,62,.72);
+      background: rgba(255,250,240,.78);
+    }
+
+    .asset-card.is-approved {
+      border-color: rgba(74,124,89,.62);
+      background: rgba(255,250,240,.78);
+    }
+
+    .asset-preview {
+      display: grid;
+      place-items: center;
+      height: 126px;
+      border-bottom: 1px solid rgba(43,36,27,.18);
+      background: rgba(216,201,167,.42);
+    }
+
+    .asset-preview img {
+      max-width: 96px;
+      max-height: 104px;
+      object-fit: contain;
+      filter: drop-shadow(0 5px 5px rgba(43,36,27,.13));
+    }
+
+    .asset-preview.is-empty {
+      color: rgba(43,36,27,.28);
+      font-size: 43px;
+      background-image: repeating-linear-gradient(
+        -45deg,
+        rgba(43,36,27,.025) 0,
+        rgba(43,36,27,.025) 7px,
+        transparent 7px,
+        transparent 14px
+      );
+    }
+
+    .asset-body { padding: 12px; }
+
+    .asset-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      margin-bottom: 5px;
+      color: var(--ink-soft);
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .asset-card h3 {
+      min-height: 2.45em;
+      margin: 0;
+      font-family: var(--body);
+      font-size: 14px;
+      line-height: 1.25;
+    }
+
+    .asset-card .file { font-size: 9.5px; }
+
+    .mini-state {
+      position: absolute;
+      top: 7px;
+      right: 7px;
+      padding: 3px 6px;
+      color: var(--red);
+      background: rgba(236,226,203,.9);
+      border: 1px solid currentColor;
+      font: 800 9px/1.2 var(--mono);
+    }
+
+    .is-draft .mini-state { color: var(--gold); }
+    .is-approved .mini-state { color: var(--jade); }
+
+    .actual-spec {
+      display: block;
+      margin-top: 6px;
+      color: var(--red);
+      font: 9.5px/1.35 var(--mono);
+    }
+
+    .empty-result {
+      grid-column: 1 / -1;
+      padding: 50px 20px;
+      border: 1px dashed var(--empty);
+      text-align: center;
+      color: var(--ink-soft);
+    }
+
+    .versions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      border-top: 1px solid rgba(43,36,27,.28);
+      border-left: 1px solid rgba(43,36,27,.28);
+    }
+
+    .version-column {
+      min-width: 0;
+      border-right: 1px solid rgba(43,36,27,.28);
+      border-bottom: 1px solid rgba(43,36,27,.28);
+    }
+
+    .version-head {
+      min-height: 126px;
+      padding: 20px;
+      border-bottom: 1px solid rgba(43,36,27,.28);
+      background: var(--paper-deep);
+    }
+
+    .version-head small {
+      color: var(--red);
+      font: 800 10px/1.2 var(--mono);
+    }
+
+    .version-head h3 { margin: 7px 0 5px; font-size: 22px; }
+    .version-head p { margin: 0; color: var(--ink-soft); font-size: 12px; }
+
+    .version-image {
+      display: grid;
+      place-items: center;
+      min-height: 310px;
+      padding: 16px;
+      background: rgba(255,250,240,.46);
+      border-bottom: 1px solid rgba(43,36,27,.2);
+    }
+
+    .version-image:last-child { border-bottom: 0; }
+
+    .version-image img {
+      width: 100%;
+      max-width: 280px;
+      max-height: 280px;
+      object-fit: contain;
+    }
+
+    .version-image figcaption {
+      width: 100%;
+      margin-top: 12px;
+      color: var(--ink-soft);
+      font: 10px/1.4 var(--mono);
+      text-align: center;
+    }
+
+    .reference-grid {
+      display: grid;
+      grid-template-columns: 1.45fr .7fr;
+      gap: 18px;
+    }
+
+    .reference-card {
+      margin: 0;
+      padding: 16px;
+      border: 1px solid rgba(43,36,27,.25);
+      background: rgba(255,250,240,.55);
+    }
+
+    .reference-card img {
+      display: block;
+      width: 100%;
+      max-height: 620px;
+      object-fit: contain;
+      background: var(--paper-deep);
+    }
+
+    .reference-card figcaption { padding: 14px 2px 2px; }
+    .reference-card strong { font-family: var(--display); font-size: 18px; }
+    .reference-card p { margin: 5px 0 0; color: var(--ink-soft); font-size: 12px; }
+
+    details {
+      margin-top: 20px;
+      border: 1px solid rgba(43,36,27,.3);
+      background: rgba(255,250,240,.44);
+    }
+
+    summary {
+      padding: 16px 18px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .optional-copy {
+      padding: 0 18px 18px;
+      color: var(--ink-soft);
+      font-size: 13px;
+    }
+
+    .foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 22px clamp(28px, 6vw, 74px);
+      color: #ddd0b6;
+      background: var(--tile);
+      font-size: 12px;
+    }
+
+    .foot code { font-family: var(--mono); }
+
+    @media (max-width: 980px) {
+      .masthead { grid-template-columns: 1fr; }
+      .audit-card { border-left: 0; }
+      .asset-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 760px) {
+      .shell { width: 100%; margin: 0; border-left: 0; border-right: 0; }
+      .mast-copy { padding: 46px 24px; }
+      .audit-card { padding: 28px 22px; }
+      .section { padding: 42px 20px; }
+      .section-head { display: block; }
+      .section-note { margin-top: 14px; }
+      .catalog-tools { grid-template-columns: 1fr; }
+      .filters { justify-content: flex-start; }
+      .asset-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .versions { display: block; border-bottom: 0; }
+      .version-column { border-left: 0; }
+      .reference-grid { grid-template-columns: 1fr; }
+      .foot { align-items: flex-start; flex-direction: column; }
+    }
+
+    @media (max-width: 480px) {
+      h1 { font-size: 49px; }
+      .progress-slots { grid-template-columns: repeat(12, 1fr); }
+      .asset-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .asset-preview { height: 112px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+    }
+
+    @media print {
+      body { background: white; }
+      .shell { width: 100%; margin: 0; box-shadow: none; }
+      .catalog-tools { display: none; }
+      .asset-grid { grid-template-columns: repeat(5, 1fr); }
+      .section { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="masthead">
+      <section class="mast-copy">
+        <p class="eyebrow">Raccoon Hollow · Art Ledger</p>
+        <h1>너구리 만물상<br>그림 장부</h1>
+        <p class="mast-lede">그림이 저장됐는지가 아니라 지금 어디까지 쓸 수 있는지를 기록한다. 없음, 초안, 확정의 세 단계와 Godot 적용 결과를 한곳에서 눈으로 확인한다.</p>
+      </section>
+      <aside class="audit-card" aria-label="Godot 전환 감사 요약">
+        <div>
+          <div class="audit-top">
+            <div>
+              <p class="eyebrow" style="color: var(--red);">Godot audit</p>
+              <h2>전환 뒤<br>그림 현황</h2>
+            </div>
+            <div class="stamp" aria-label="초안 열한 장">초<br>안</div>
+          </div>
+          <dl class="audit-list">
+            <div><dt>확인 커밋</dt><dd>4c22a91</dd></div>
+            <div><dt>화면 기준</dt><dd>430 × 932</dd></div>
+            <div><dt>필수 그림</dt><dd>74장</dd></div>
+            <div><dt>확정</dt><dd>0장</dd></div>
+            <div><dt>초안</dt><dd>11장</dd></div>
+            <div><dt>없음</dt><dd>63장</dd></div>
+            <div><dt>선택 작업</dt><dd>+10장</dd></div>
+          </dl>
+        </div>
+        <div>
+          <div class="slot-label"><span>필수 그림 선반</span><strong>확정 0 · 초안 11</strong></div>
+          <div class="progress-slots" id="progressSlots" aria-label="필수 74장 중 초안 11장, 확정 0장"></div>
+        </div>
+      </aside>
+    </header>
+
+    <section class="section" id="catalog">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">자동 주문 목록 기준</p>
+          <h2>필수 74장 + 선택 10장</h2>
+        </div>
+        <p class="section-note">붉은 도장은 없음, 황토색 도장은 초안, 초록 도장은 확정이다. 현재 초안 11장은 카드에서 실제 그림으로 바로 비교할 수 있다.</p>
+      </div>
+      <div class="catalog-tools">
+        <label class="search-wrap">
+          <span class="sr-only" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">이미지 검색</span>
+          <input class="search" id="assetSearch" type="search" placeholder="곡괭이, rabbit, 점장…" autocomplete="off">
+        </label>
+        <div class="filters" role="group" aria-label="이미지 목록 필터">
+          <button class="filter" type="button" data-filter="all" aria-pressed="true">전체 84</button>
+          <button class="filter" type="button" data-filter="none" aria-pressed="false">없음 73</button>
+          <button class="filter" type="button" data-filter="draft" aria-pressed="false">초안 11</button>
+          <button class="filter" type="button" data-filter="approved" aria-pressed="false">확정 0</button>
+          <button class="filter" type="button" data-filter="required" aria-pressed="false">필수 74</button>
+          <button class="filter" type="button" data-filter="optional" aria-pressed="false">선택 10</button>
+          <button class="filter" type="button" data-filter="hero" aria-pressed="false">점장</button>
+          <button class="filter" type="button" data-filter="staff" aria-pressed="false">직원</button>
+          <button class="filter" type="button" data-filter="guests" aria-pressed="false">손님</button>
+          <button class="filter" type="button" data-filter="items" aria-pressed="false">물건</button>
+          <button class="filter" type="button" data-filter="stalls" aria-pressed="false">좌판</button>
+          <button class="filter" type="button" data-filter="pests" aria-pressed="false">상호작용</button>
+        </div>
+      </div>
+      <p class="result-line" id="resultLine" aria-live="polite"></p>
+      <div class="asset-grid" id="assetGrid"></div>
+      <details>
+        <summary>선택 작업 설명 · 가게별 전용 점장 10장</summary>
+        <div class="optional-copy">
+          <p>필수 74장에는 포함하지 않는다. 공용 점장으로 게임이 모두 돌아간 뒤 각 가게의 개성을 더할 때 만든다. 위 목록에는 빠뜨리지 않도록 선택 카드로 함께 표시했다.</p>
+          <p><strong>가게:</strong> smith · brush · paper · pot · herb<br><strong>포즈:</strong> make · sell<br><strong>파일 규칙:</strong> <code>godot/art/clerks/&lt;가게&gt;-&lt;포즈&gt;.png</code></p>
+        </div>
+      </details>
+    </section>
+
+    <section class="section" id="versions">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">생성 이력 · 실제 원화</p>
+          <h2>점장 디자인 변천</h2>
+        </div>
+        <p class="section-note">반려본도 지우지 않는다. 무엇을 줄였고 왜 앞치마만 남았는지 이미지 자체로 비교한다.</p>
+      </div>
+      <div class="versions">
+        <article class="version-column">
+          <header class="version-head">
+            <small>V0.1 · REVISION</small>
+            <h3>전신 서민복</h3>
+            <p>역할은 분명했지만 작은 화면에서 옷의 세부가 사라지고 몸이 무거워졌다.</p>
+          </header>
+          <figure class="version-image">
+            <img src="./generated/hero/HERO-V0.1-make-master.png" alt="V0.1 전신 서민복 제작 포즈">
+            <figcaption>HERO-V0.1-make-master.png</figcaption>
+          </figure>
+          <figure class="version-image">
+            <img src="./generated/hero/HERO-V0.1-sell-master.png" alt="V0.1 전신 서민복 판매 포즈">
+            <figcaption>HERO-V0.1-sell-master.png</figcaption>
+          </figure>
+        </article>
+        <article class="version-column">
+          <header class="version-head">
+            <small>V0.2 · REVISION</small>
+            <h3>무복식</h3>
+            <p>털 실루엣은 또렷해졌지만 손님과 구별되는 점장 표식이 약했다.</p>
+          </header>
+          <figure class="version-image">
+            <img src="./generated/hero/HERO-V0.2-make-master.png" alt="V0.2 무복식 제작 포즈">
+            <figcaption>HERO-V0.2-make-master.png</figcaption>
+          </figure>
+          <figure class="version-image">
+            <img src="./generated/hero/HERO-V0.2-sell-master.png" alt="V0.2 무복식 판매 포즈">
+            <figcaption>HERO-V0.2-sell-master.png</figcaption>
+          </figure>
+        </article>
+        <article class="version-column">
+          <header class="version-head">
+            <small>V0.3 · CURRENT CANDIDATE</small>
+            <h3>짧은 앞치마</h3>
+            <p>털과 행동 실루엣을 가리지 않으면서 점장의 역할만 한 색면으로 남겼다.</p>
+          </header>
+          <figure class="version-image">
+            <img src="./generated/hero/HERO-V0.3-make-master.png" alt="V0.3 짧은 앞치마 제작 포즈">
+            <figcaption>HERO-V0.3-make-master.png</figcaption>
+          </figure>
+          <figure class="version-image">
+            <img src="./generated/hero/HERO-V0.3-sell-master.png" alt="V0.3 짧은 앞치마 판매 포즈">
+            <figcaption>HERO-V0.3-sell-master.png</figcaption>
+          </figure>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="references">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">장면 기록</p>
+          <h2>세계관과 과거 화면</h2>
+        </div>
+        <p class="section-note">콘셉트의 분위기는 유지하되, 과거 HTML 화면 배치를 현재 Godot 구조의 답으로 착각하지 않는다.</p>
+      </div>
+      <div class="reference-grid">
+        <figure class="reference-card">
+          <img src="./generated/BP-V0.1-P01.png" alt="승인된 너구리 만물상 Art Concept Blueprint">
+          <figcaption><strong>Art Concept Blueprint · Approved</strong><p>따뜻한 조선 서민 마을, 폐허와 복구, 재료감과 한국 생활소품의 기준.</p></figcaption>
+        </figure>
+        <figure class="reference-card">
+          <img src="./qa/village-map-v1.png" alt="Godot 전환 전 HTML 세로 마을 화면">
+          <figcaption><strong>Legacy HTML QA</strong><p>Godot 전환 전 화면 구조 시험. 현재 카메라와 배치 기준으로 사용하지 않는다.</p></figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <span>너구리 만물상 · 실제 이미지 아카이브</span>
+      <code>source: 4c22a91 · updated: 2026-08-22</code>
+    </footer>
+  </main>
+
+  <script>
+    const assets = [
+      { c: 'hero', label: '점장 · 제작', file: 'raccoon-make.png', icon: '🦝', size: '144×144', actual: '현재 파일 72×72 · 구규격', status: 'draft', src: '../../godot/art/hero/raccoon-make.png', fallback: '../../art/hero/raccoon-make.png' },
+      { c: 'hero', label: '점장 · 판매', file: 'raccoon-sell.png', icon: '🦝', size: '144×144', actual: '현재 파일 72×72 · 구규격', status: 'draft', src: '../../godot/art/hero/raccoon-sell.png', fallback: '../../art/hero/raccoon-sell.png' },
+      { c: 'hero', label: '점장 · 걷기 1', file: 'raccoon-walk1.png', icon: '🐾', size: '144×144', status: 'none' },
+      { c: 'hero', label: '점장 · 걷기 2', file: 'raccoon-walk2.png', icon: '🐾', size: '144×144', status: 'none' },
+      { c: 'hero', label: '점장 · 조는 중', file: 'raccoon-sleep.png', icon: '💤', size: '144×144', status: 'none' },
+      { c: 'hero', label: '촌장 · 흰 수염과 지팡이', file: 'mayor.png', icon: '🦝', size: '144×144', status: 'none' },
+
+      { c: 'staff', label: '머리띠 알바 · 차렷 작업', file: 'band-work.png', icon: '🦝', size: '144×144', status: 'draft', src: '../../godot/art/staff/band-work.png' },
+      { c: 'staff', label: '머리띠 알바 · 몽글 수면', file: 'band-sleep.png', icon: '💤', size: '144×144', status: 'draft', src: '../../godot/art/staff/band-sleep.png' },
+      { c: 'staff', label: '초립 일꾼 · 작업', file: 'chorip-work.png', icon: '🦝', size: '144×144', status: 'draft', src: '../../godot/art/staff/chorip-work.png' },
+      { c: 'staff', label: '초립 일꾼 · 수면', file: 'chorip-sleep.png', icon: '💤', size: '144×144', status: 'draft', src: '../../godot/art/staff/chorip-sleep.png' },
+      { c: 'staff', label: '패랭이 선임 · 작업', file: 'paeraengi-work.png', icon: '🦝', size: '144×144', status: 'draft', src: '../../godot/art/staff/paeraengi-work.png' },
+      { c: 'staff', label: '패랭이 선임 · 수면', file: 'paeraengi-sleep.png', icon: '💤', size: '144×144', status: 'draft', src: '../../godot/art/staff/paeraengi-sleep.png' },
+      { c: 'staff', label: '백립 매니저 · 작업', file: 'baengnip-work.png', icon: '🦝', size: '144×144', status: 'draft', src: '../../godot/art/staff/baengnip-work.png' },
+      { c: 'staff', label: '백립 매니저 · 수면', file: 'baengnip-sleep.png', icon: '💤', size: '144×144', status: 'draft', src: '../../godot/art/staff/baengnip-sleep.png' },
+
+      { c: 'items', shop: '대장간', label: '곡괭이', file: 'pick.png', icon: '⛏️', size: '128×224', status: 'none' },
+      { c: 'items', shop: '대장간', label: '낫', file: 'sickle.png', icon: '🌾', size: '128×224', status: 'none' },
+      { c: 'items', shop: '대장간', label: '호미', file: 'hoe.png', icon: '🪴', size: '128×224', status: 'none' },
+      { c: 'items', shop: '대장간', label: '도끼', file: 'axe.png', icon: '🪓', size: '128×224', status: 'none' },
+      { c: 'items', shop: '대장간', label: '가위', file: 'shears.png', icon: '✂️', size: '128×224', status: 'none' },
+      { c: 'items', shop: '대장간', label: '부엌칼', file: 'knife.png', icon: '🔪', size: '128×224', status: 'none' },
+      { c: 'items', shop: '대장간', label: '자물쇠', file: 'lock.png', icon: '🔒', size: '128×224', status: 'none' },
+      { c: 'items', shop: '대장간', label: '가마솥', file: 'cauldr.png', icon: '🍲', size: '128×224', status: 'none' },
+
+      { c: 'items', shop: '필방', label: '붓', file: 'brush.png', icon: '🖌️', size: '128×224', status: 'none' },
+      { c: 'items', shop: '필방', label: '먹', file: 'ink.png', icon: '🖋️', size: '128×224', status: 'none' },
+      { c: 'items', shop: '필방', label: '벼루', file: 'inkstone.png', icon: '🪨', size: '128×224', status: 'none' },
+      { c: 'items', shop: '필방', label: '연적', file: 'waterp.png', icon: '💧', size: '128×224', status: 'none' },
+      { c: 'items', shop: '필방', label: '필통', file: 'brushpot.png', icon: '🗃️', size: '128×224', status: 'none' },
+      { c: 'items', shop: '필방', label: '서산', file: 'bookmk.png', icon: '🔖', size: '128×224', status: 'none' },
+      { c: 'items', shop: '필방', label: '붓걸이', file: 'brushrk.png', icon: '🪝', size: '128×224', status: 'none' },
+      { c: 'items', shop: '필방', label: '화첩', file: 'album.png', icon: '📖', size: '128×224', status: 'none' },
+
+      { c: 'items', shop: '지물포', label: '한지', file: 'hanji.png', icon: '📜', size: '128×224', status: 'none' },
+      { c: 'items', shop: '지물포', label: '부채', file: 'fan.png', icon: '🪭', size: '128×224', status: 'none' },
+      { c: 'items', shop: '지물포', label: '창호지', file: 'window.png', icon: '🪟', size: '128×224', status: 'none' },
+      { c: 'items', shop: '지물포', label: '장지', file: 'floorp.png', icon: '🟫', size: '128×224', status: 'none' },
+      { c: 'items', shop: '지물포', label: '연', file: 'kite.png', icon: '🪁', size: '128×224', status: 'none' },
+      { c: 'items', shop: '지물포', label: '지우산', file: 'umbrel.png', icon: '☂️', size: '128×224', status: 'none' },
+      { c: 'items', shop: '지물포', label: '지등', file: 'lantrn.png', icon: '🏮', size: '128×224', status: 'none' },
+      { c: 'items', shop: '지물포', label: '병풍', file: 'screen.png', icon: '🖼️', size: '128×224', status: 'none' },
+
+      { c: 'items', shop: '옹기점', label: '옹기', file: 'jar.png', icon: '🏺', size: '128×224', status: 'none' },
+      { c: 'items', shop: '옹기점', label: '사발', file: 'bowl.png', icon: '🥣', size: '128×224', status: 'none' },
+      { c: 'items', shop: '옹기점', label: '청자', file: 'celad.png', icon: '🫖', size: '128×224', status: 'none' },
+      { c: 'items', shop: '옹기점', label: '시루', file: 'steamr.png', icon: '🫕', size: '128×224', status: 'none' },
+      { c: 'items', shop: '옹기점', label: '술병', file: 'bottle.png', icon: '🍶', size: '128×224', status: 'none' },
+      { c: 'items', shop: '옹기점', label: '다기', file: 'teaset.png', icon: '🍵', size: '128×224', status: 'none' },
+      { c: 'items', shop: '옹기점', label: '향로', file: 'censer.png', icon: '🪔', size: '128×224', status: 'none' },
+      { c: 'items', shop: '옹기점', label: '달항아리', file: 'moonjr.png', icon: '🌕', size: '128×224', status: 'none' },
+
+      { c: 'items', shop: '약재상', label: '도라지', file: 'root.png', icon: '🌿', size: '128×224', status: 'none' },
+      { c: 'items', shop: '약재상', label: '산삼', file: 'ginseng.png', icon: '🌱', size: '128×224', status: 'none' },
+      { c: 'items', shop: '약재상', label: '녹용', file: 'antler.png', icon: '🦌', size: '128×224', status: 'none' },
+      { c: 'items', shop: '약재상', label: '우황', file: 'bezoar.png', icon: '💊', size: '128×224', status: 'none' },
+      { c: 'items', shop: '약재상', label: '당귀', file: 'danggui.png', icon: '🍂', size: '128×224', status: 'none' },
+      { c: 'items', shop: '약재상', label: '영지', file: 'reishi.png', icon: '🍄', size: '128×224', status: 'none' },
+      { c: 'items', shop: '약재상', label: '침향', file: 'agar.png', icon: '🪵', size: '128×224', status: 'none' },
+      { c: 'items', shop: '약재상', label: '경옥고', file: 'elixir.png', icon: '🍯', size: '128×224', status: 'none' },
+
+      { c: 'guests', label: '토끼', file: 'rabbit.png', icon: '🐰', size: '128×128', actual: '현재 파일 64×64 · 구규격', status: 'draft', src: '../../godot/art/guests/rabbit.png', fallback: '../../art/guests/rabbit.png' },
+      { c: 'guests', label: '까치', file: 'magpie.png', icon: '🐦', size: '128×128', status: 'none' },
+      { c: 'guests', label: '다람쥐', file: 'squirrel.png', icon: '🐿️', size: '128×128', status: 'none' },
+      { c: 'guests', label: '오소리', file: 'badger.png', icon: '🦡', size: '128×128', status: 'none' },
+      { c: 'guests', label: '여우', file: 'fox.png', icon: '🦊', size: '128×128', status: 'none' },
+      { c: 'guests', label: '사슴', file: 'deer.png', icon: '🦌', size: '128×128', status: 'none' },
+      { c: 'guests', label: '멧돼지', file: 'boar.png', icon: '🐗', size: '128×128', status: 'none' },
+      { c: 'guests', label: '곰', file: 'bear.png', icon: '🐻', size: '128×128', status: 'none' },
+      { c: 'guests', label: '거북', file: 'turtle.png', icon: '🐢', size: '128×128', status: 'none' },
+      { c: 'guests', label: '두루미', file: 'crane.png', icon: '🦢', size: '128×128', status: 'none' },
+      { c: 'guests', label: '소', file: 'ox.png', icon: '🐂', size: '128×128', status: 'none' },
+      { c: 'guests', label: '호랑이', file: 'tiger.png', icon: '🐯', size: '128×128', status: 'none' },
+
+      { c: 'pests', label: '도망치는 쥐', file: 'rat.png', icon: '🐀', size: '128×128', status: 'none' },
+      { c: 'pests', label: '엽전을 문 까마귀', file: 'crow.png', icon: '🐦‍⬛', size: '128×128', status: 'none' },
+      { c: 'pests', label: '지키는 삽살개', file: 'dog.png', icon: '🐕', size: '128×128', status: 'none' },
+
+      { c: 'stalls', shop: '대장간', label: '대장간 좌판', file: 'smith.png', icon: '⚒️', size: '192×176', status: 'none' },
+      { c: 'stalls', shop: '필방', label: '필방 좌판', file: 'brush.png', icon: '🖌️', size: '192×176', status: 'none' },
+      { c: 'stalls', shop: '지물포', label: '지물포 좌판', file: 'paper.png', icon: '📜', size: '192×176', status: 'none' },
+      { c: 'stalls', shop: '옹기점', label: '옹기점 좌판', file: 'pot.png', icon: '🏺', size: '192×176', status: 'none' },
+      { c: 'stalls', shop: '약재상', label: '약재상 좌판', file: 'herb.png', icon: '🌿', size: '192×176', status: 'none' },
+
+      { c: 'clerks', shop: '대장간', label: '대장간 점장 · 제작', file: 'smith-make.png', icon: '🔨', size: '144×144', status: 'none', optional: true },
+      { c: 'clerks', shop: '대장간', label: '대장간 점장 · 판매', file: 'smith-sell.png', icon: '🔨', size: '144×144', status: 'none', optional: true },
+      { c: 'clerks', shop: '필방', label: '필방 점장 · 제작', file: 'brush-make.png', icon: '🖌️', size: '144×144', status: 'none', optional: true },
+      { c: 'clerks', shop: '필방', label: '필방 점장 · 판매', file: 'brush-sell.png', icon: '🖌️', size: '144×144', status: 'none', optional: true },
+      { c: 'clerks', shop: '지물포', label: '지물포 점장 · 제작', file: 'paper-make.png', icon: '📜', size: '144×144', status: 'none', optional: true },
+      { c: 'clerks', shop: '지물포', label: '지물포 점장 · 판매', file: 'paper-sell.png', icon: '📜', size: '144×144', status: 'none', optional: true },
+      { c: 'clerks', shop: '옹기점', label: '옹기점 점장 · 제작', file: 'pot-make.png', icon: '🏺', size: '144×144', status: 'none', optional: true },
+      { c: 'clerks', shop: '옹기점', label: '옹기점 점장 · 판매', file: 'pot-sell.png', icon: '🏺', size: '144×144', status: 'none', optional: true },
+      { c: 'clerks', shop: '약재상', label: '약재상 점장 · 제작', file: 'herb-make.png', icon: '🌿', size: '144×144', status: 'none', optional: true },
+      { c: 'clerks', shop: '약재상', label: '약재상 점장 · 판매', file: 'herb-sell.png', icon: '🌿', size: '144×144', status: 'none', optional: true }
+    ];
+
+    const categoryName = { hero: '점장', staff: '직원', items: '물건', guests: '손님', pests: '상호작용', stalls: '좌판', clerks: '선택 점장' };
+    const categoryDir = { hero: 'hero', staff: 'staff', items: 'items', guests: 'guests', pests: 'pests', stalls: 'stalls', clerks: 'clerks' };
+    const categoryOrder = { hero: 0, staff: 1, guests: 2, items: 3, stalls: 4, pests: 5, clerks: 6 };
+    const stateName = { none: '없음', draft: '초안', approved: '확정' };
+    const requiredAssets = assets.filter((asset) => !asset.optional);
+    const grid = document.querySelector('#assetGrid');
+    const resultLine = document.querySelector('#resultLine');
+    const search = document.querySelector('#assetSearch');
+    const filters = [...document.querySelectorAll('.filter')];
+    let activeFilter = 'all';
+
+    document.querySelector('#progressSlots').innerHTML = requiredAssets.map((asset) =>
+      `<span class="progress-slot is-${asset.status}" title="${asset.label} · ${stateName[asset.status]}"></span>`
+    ).join('');
+
+    function matches(asset, query) {
+      const filterMatch = activeFilter === 'all'
+        || activeFilter === asset.status
+        || activeFilter === asset.c
+        || (activeFilter === 'required' && !asset.optional)
+        || (activeFilter === 'optional' && asset.optional);
+      const haystack = `${asset.label} ${asset.file} ${asset.shop || ''} ${categoryName[asset.c]}`.toLowerCase();
+      return filterMatch && haystack.includes(query);
+    }
+
+    function card(asset) {
+      const path = `godot/art/${categoryDir[asset.c]}/${asset.file}`;
+      const preview = asset.status !== 'none'
+        ? `<div class="asset-preview"><img src="${asset.src}" data-fallback="${asset.fallback || ''}" alt="${asset.label}"></div>`
+        : `<div class="asset-preview is-empty" aria-label="아직 이미지 없음">${asset.icon}</div>`;
+      return `<article class="asset-card is-${asset.status}">
+        <span class="mini-state">${stateName[asset.status]}</span>
+        ${preview}
+        <div class="asset-body">
+          <div class="asset-meta"><span>${asset.optional ? '선택 · ' : ''}${asset.shop || categoryName[asset.c]}</span><span>목표 ${asset.size}</span></div>
+          <h3>${asset.label}</h3>
+          <code class="file">${path}</code>
+          ${asset.actual ? `<small class="actual-spec">${asset.actual}</small>` : ''}
+        </div>
+      </article>`;
+    }
+
+    function connectFallbacks() {
+      document.querySelectorAll('img[data-fallback]').forEach((img) => {
+        const useFallback = () => {
+          const fallback = img.dataset.fallback;
+          if (fallback && img.src !== new URL(fallback, document.baseURI).href) img.src = fallback;
+        };
+        img.addEventListener('error', useFallback, { once: true });
+        if (img.complete && img.naturalWidth === 0) useFallback();
+      });
+    }
+
+    function render() {
+      const query = search.value.trim().toLowerCase();
+      const visible = assets
+        .filter((asset) => matches(asset, query))
+        .sort((a, b) => categoryOrder[a.c] - categoryOrder[b.c]);
+      resultLine.textContent = `${visible.length}장 표시 · 확정 ${visible.filter((asset) => asset.status === 'approved').length} · 초안 ${visible.filter((asset) => asset.status === 'draft').length} · 없음 ${visible.filter((asset) => asset.status === 'none').length}`;
+      grid.innerHTML = visible.length
+        ? visible.map(card).join('')
+        : '<div class="empty-result">맞는 그림이 없다. 다른 이름이나 파일명으로 찾아보세요.</div>';
+      connectFallbacks();
+    }
+
+    filters.forEach((button) => {
+      button.addEventListener('click', () => {
+        activeFilter = button.dataset.filter;
+        filters.forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
+        render();
+      });
+    });
+
+    search.addEventListener('input', render);
+    connectFallbacks();
+    render();
+  </script>
+</body>
+</html>
