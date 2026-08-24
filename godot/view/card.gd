@@ -140,21 +140,32 @@ func show_pull(got: Array) -> void:
 			best = r
 	var g: Dictionary = Sim.guest_by_id(String(best.id))
 	var gr: Dictionary = Content.CARD_GRADES[int(best.grade) - 1]
-	var counts: Dictionary = {}
+	# ★ 내역은 **짐승별로** 적는다. 처음엔 등급 합계만 적었는데(⚪흔함 10),
+	#   그러면 "한 짐승이 10장 나왔다"로 읽힌다 — 실제로는 장마다 따로 굴려서
+	#   다람쥐 2 · 토끼 3 · 까치 1처럼 섞여 나오는데, 화면이 그걸 숨기고 있었다.
+	#   유저가 정확히 그렇게 오해했다. 섞여 나온다는 사실이 보여야 한다.
+	var byid: Dictionary = {}
+	var grade_of: Dictionary = {}
 	for r in got:
-		var k: int = int(r.grade)
-		counts[k] = int(counts.get(k, 0)) + 1
+		byid[r.id] = int(byid.get(r.id, 0)) + 1
+		grade_of[r.id] = int(r.grade)
+	var rows: Array = []
+	for gid in byid:
+		rows.append({"id": gid, "n": int(byid[gid]), "grade": int(grade_of[gid])})
+	# 귀한 것부터, 같으면 많이 나온 것부터
+	rows.sort_custom(func(a, b): return a.n > b.n if a.grade == b.grade else a.grade > b.grade)
 	var parts: Array[String] = []
-	for k in range(6, 0, -1):
-		if counts.has(k):
-			parts.append("%s%s %d" % [Content.CARD_GRADES[k - 1].face, Content.CARD_GRADES[k - 1].name, int(counts[k])])
+	for row in rows:
+		var gg: Dictionary = Sim.guest_by_id(String(row.id))
+		var dot: String = String(Content.CARD_GRADES[int(row.grade) - 1].face)
+		parts.append("%s%s%s %d" % [dot, gg.face, gg.name, int(row.n)])
 	# 앞면은 아직 안 보여준다 — 뒤집힌 뒤에 입힐 것만 챙겨 둔다
 	_front = {
 		"tex": _pull_art(String(best.id)),
 		"face": String(g.face),
 		"title": "%s %s" % [g.name, "— 처음 만났다!" if best.get("isNew", false) else ""],
 		"color": Color(gr.color),
-		"sub": "%s %s · %d장 뽑음\n%s" % [gr.face, gr.name, got.size(), " · ".join(parts)],
+		"sub": "%d장 뽑음\n%s" % [got.size(), _wrap(parts, 3)],
 		"head": "새 손님!" if best.get("isNew", false) else "카드를 뽑았다",
 		"grade": int(best.grade),
 	}
@@ -170,6 +181,13 @@ func show_pull(got: Array) -> void:
 	_phase = "back"
 	_pt = 0.0
 	visible = true
+
+## 긴 내역을 몇 개씩 줄로 접는다 — 서른 장이면 열 줄이 넘어 카드가 화면을 뚫는다
+func _wrap(parts: Array[String], per: int) -> String:
+	var lines: Array[String] = []
+	for i in range(0, parts.size(), per):
+		lines.append(" · ".join(parts.slice(i, i + per)))
+	return "\n".join(lines)
 
 ## 카드에 띄울 그림 — 초상(cards/<id>-1)이 있으면 그것, 없으면 걷는 그림,
 ## 둘 다 없으면 이모지. 그림 주문서의 '카드 1단'이 들어오면 여기가 살아난다.
