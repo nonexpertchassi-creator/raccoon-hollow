@@ -195,14 +195,23 @@ func _process(_d: float) -> void:
 		pull10.emit_signal("pressed")
 		if s.gems >= g0:
 			fails.append("10회 뽑기를 눌렀는데 젬이 안 줄었다")
-		# 건너뛰기 — 연출 중에 아무 데나 누르면 즉시 앞면이다.
+		# 열 장은 **판으로 깔린다** — 뒷면 열 장이 놓이고 차례로 뒤집힌다
+		if main.card._mode != "grid":
+			fails.append("열 장을 뽑았는데 판이 안 깔렸다")
+		if main.card._tiles.size() != 10:
+			fails.append("판에 카드가 %d장이다(10장이어야 한다)" % main.card._tiles.size())
+		# 건너뛰기 — 연출 중에 아무 데나 누르면 전부 즉시 앞면이다.
 		# 백 번째 뽑기에서 이게 안 되면 연출이 손맛이 아니라 형벌이 된다.
 		var tapev := InputEventMouseButton.new()
 		tapev.button_index = MOUSE_BUTTON_LEFT
 		tapev.pressed = true
 		main.card._on_input(tapev)
-		if main.card._phase != "":
-			fails.append("연출 중에 눌렀는데 안 건너뛰어진다")
+		var undone: int = 0
+		for t in main.card._tiles:
+			if not t.done:
+				undone += 1
+		if undone > 0:
+			fails.append("건너뛰었는데 %d장이 아직 뒷면이다" % undone)
 		main.card.close()
 	# 룰렛 — 무료 한 번
 	main.panel.tab = "work"

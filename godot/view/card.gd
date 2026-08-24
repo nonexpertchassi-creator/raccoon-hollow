@@ -21,6 +21,21 @@ var _pt: float = 0.0
 var _front: Dictionary = {}          ## 뒤집힌 뒤에 보여줄 앞면
 var _bg: StyleBoxFlat                ## 테두리 색을 등급 색으로 물들이려고 잡아 둔다
 var _flash: ColorRect                ## 진귀 이상에서 한 번 번쩍이는 막
+
+## ── 여러 장 뽑기: 카드가 **판으로 깔린다** ──
+## 열 장이면 열 장, 서른 장이면 서른 장이 뒷면으로 깔렸다가 차례로 뒤집힌다.
+## 순서는 뽑힌 그대로다 — 귀한 것부터 줄 세우지 않는다. 정렬하면 "다음에 뭐가
+## 나올까"가 사라진다(유저 지적). 특별한 카드(처음 만난 손님·영물·신수)는
+## 제 차례에 **멈춰서 떨다가** 터진다 — 고슴도치인 줄 알았는데, 가 이 순간이다.
+var _gridbox: PanelContainer
+var _grid: GridContainer
+var _grid_head: Label
+var _grid_ok: Button
+var _tiles: Array = []               ## {panel, label, style, data, done}
+var _mode: String = ""               ## "" 한 장짜리 · "grid" 판
+var _ci: int = 0                     ## 다음에 뒤집을 자리
+var _ct: float = 0.0
+var _after_new: Array = []           ## 판이 끝난 뒤 크게 띄울 '처음 만난 손님'들
 var _cardbox: PanelContainer
 var _art: TextureRect
 var _title: Label
@@ -95,6 +110,36 @@ func _ready() -> void:
 	ok.text = "받는다"
 	ok.pressed.connect(close)
 	box.add_child(ok)
+	# ── 판(여러 장 뽑기) ──
+	_gridbox = PanelContainer.new()
+	var gbg := StyleBoxFlat.new()
+	gbg.bg_color = Color("f6efdc")
+	gbg.border_color = Color("a8763e")
+	gbg.set_border_width_all(4)
+	gbg.set_corner_radius_all(18)
+	gbg.content_margin_left = 14; gbg.content_margin_right = 14
+	gbg.content_margin_top = 12; gbg.content_margin_bottom = 12
+	_gridbox.add_theme_stylebox_override("panel", gbg)
+	_gridbox.visible = false
+	center.add_child(_gridbox)
+	var gv := VBoxContainer.new()
+	gv.add_theme_constant_override("separation", 8)
+	_gridbox.add_child(gv)
+	_grid_head = Label.new()
+	_grid_head.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_grid_head.add_theme_font_size_override("font_size", 16)
+	_grid_head.add_theme_color_override("font_color", Color("a8763e"))
+	gv.add_child(_grid_head)
+	_grid = GridContainer.new()
+	_grid.columns = 5
+	_grid.add_theme_constant_override("h_separation", 6)
+	_grid.add_theme_constant_override("v_separation", 6)
+	gv.add_child(_grid)
+	_grid_ok = Button.new()
+	_grid_ok.text = "받는다"
+	_grid_ok.pressed.connect(_grid_done_pressed)
+	gv.add_child(_grid_ok)
+
 	# 번쩍이는 막 — 제일 위에. 진귀 이상이 나올 때 한 번 하얗게 스친다.
 	_flash = ColorRect.new()
 	_flash.color = Color(1, 0.98, 0.9, 0.0)
@@ -105,11 +150,19 @@ func _ready() -> void:
 	gui_input.connect(_on_input)
 
 func _on_input(e: InputEvent) -> void:
-	if e is InputEventMouseButton and (e as InputEventMouseButton).pressed and _phase != "":
+	if not (e is InputEventMouseButton and (e as InputEventMouseButton).pressed):
+		return
+	# 어느 연출이든 **누르면 즉시 끝**이다. 백 번째에는 기다림이 형벌이 된다.
+	if _mode == "grid" and _ci < _tiles.size():
+		_reveal_all()
+	elif _phase != "":
 		_finish_flip()
 
 func show_card(shop_id: String, rank: int) -> void:
 	_t = 0.0
+	_mode = ""
+	_gridbox.visible = false
+	_cardbox.visible = true
 	var shop: Dictionary = Sim.shop_by_id(shop_id)
 	var t: Texture2D = Art.ranked("clerks", "%s-make" % shop_id, rank)
 	if t == null:
@@ -133,54 +186,118 @@ func show_card(shop_id: String, rank: int) -> void:
 func show_pull(got: Array) -> void:
 	if got.is_empty():
 		return
+	if got.size() == 1:
+		_show_one(got[0], got.size())
+		return
+	# ── 판으로 깔기 ──
+	_mode = "grid"
+	_ci = 0
+	_ct = 0.0
+	_after_new = []
+	for r in got:
+		if r.get("isNew", false):
+			_after_new.append(r)
+	for c in _grid.get_children():
+		c.queue_free()
+	_tiles = []
+	_grid.columns = 5 if got.size() >= 10 else got.size()
+	for r in got:
+		var st := StyleBoxFlat.new()
+		st.bg_color = Color("e2d6bb")
+		st.border_color = Color("a8763e")
+		st.set_border_width_all(3)
+		st.set_corner_radius_all(8)
+		var tile := PanelContainer.new()
+		tile.custom_minimum_size = Vector2(64, 84)
+		tile.add_theme_stylebox_override("panel", st)
+		tile.pivot_offset = tile.custom_minimum_size * 0.5
+		var lb := Label.new()
+		lb.text = "🎴"
+		lb.add_theme_font_size_override("font_size", 26)
+		lb.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		lb.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		tile.add_child(lb)
+		_grid.add_child(tile)
+		_tiles.append({"panel": tile, "label": lb, "style": st, "data": r, "done": false, "pop": 0.0})
+	_grid_head.text = "%d장 뽑는 중…" % got.size()
+	_grid_ok.visible = false
+	_cardbox.visible = false
+	_gridbox.visible = true
+	visible = true
+
+## 한 장짜리 — 뒷면에서 뒤집힌다 (판이 끝난 뒤 '처음 만난 손님'도 이걸로 띄운다)
+func _show_one(r: Dictionary, total: int) -> void:
 	_t = 0.0
-	var best: Dictionary = got[0]
-	for r in got:
-		if int(r.grade) > int(best.grade):
-			best = r
-	var g: Dictionary = Sim.guest_by_id(String(best.id))
-	var gr: Dictionary = Content.CARD_GRADES[int(best.grade) - 1]
-	# ★ 내역은 **짐승별로** 적는다. 처음엔 등급 합계만 적었는데(⚪흔함 10),
-	#   그러면 "한 짐승이 10장 나왔다"로 읽힌다 — 실제로는 장마다 따로 굴려서
-	#   다람쥐 2 · 토끼 3 · 까치 1처럼 섞여 나오는데, 화면이 그걸 숨기고 있었다.
-	#   유저가 정확히 그렇게 오해했다. 섞여 나온다는 사실이 보여야 한다.
-	var byid: Dictionary = {}
-	var grade_of: Dictionary = {}
-	for r in got:
-		byid[r.id] = int(byid.get(r.id, 0)) + 1
-		grade_of[r.id] = int(r.grade)
-	var rows: Array = []
-	for gid in byid:
-		rows.append({"id": gid, "n": int(byid[gid]), "grade": int(grade_of[gid])})
-	# 귀한 것부터, 같으면 많이 나온 것부터
-	rows.sort_custom(func(a, b): return a.n > b.n if a.grade == b.grade else a.grade > b.grade)
-	var parts: Array[String] = []
-	for row in rows:
-		var gg: Dictionary = Sim.guest_by_id(String(row.id))
-		var dot: String = String(Content.CARD_GRADES[int(row.grade) - 1].face)
-		parts.append("%s%s%s %d" % [dot, gg.face, gg.name, int(row.n)])
-	# 앞면은 아직 안 보여준다 — 뒤집힌 뒤에 입힐 것만 챙겨 둔다
+	var g: Dictionary = Sim.guest_by_id(String(r.id))
+	var gr: Dictionary = Content.CARD_GRADES[int(r.grade) - 1]
 	_front = {
-		"tex": _pull_art(String(best.id)),
+		"tex": _pull_art(String(r.id)),
 		"face": String(g.face),
-		"title": "%s %s" % [g.name, "— 처음 만났다!" if best.get("isNew", false) else ""],
+		"title": "%s%s" % [g.name, " — 처음 만났다!" if r.get("isNew", false) else ""],
 		"color": Color(gr.color),
-		"sub": "%d장 뽑음\n%s" % [got.size(), _wrap(parts, 3)],
-		"head": "새 손님!" if best.get("isNew", false) else "카드를 뽑았다",
-		"grade": int(best.grade),
+		"sub": "%s %s%s" % [gr.face, gr.name, ("" if total == 1 else " · %d장 중 새 손님" % total)],
+		"head": "새 손님!" if r.get("isNew", false) else "카드를 뽑았다",
+		"grade": int(r.grade),
 	}
-	# 뒷면부터
 	_art.visible = false
 	_sign.visible = true
 	_sign.text = "🎴"
 	_title.text = "…"
 	_title.add_theme_color_override("font_color", Color("8a7a63"))
-	_sub.text = " \n "
+	_sub.text = " "
 	_head_label.text = "뽑는 중"
 	_bg.border_color = Color("a8763e")
 	_phase = "back"
 	_pt = 0.0
+	_gridbox.visible = false
+	_cardbox.visible = true
 	visible = true
+
+## 판의 카드 한 장을 뒤집는다
+func _flip_tile(i: int) -> void:
+	var t: Dictionary = _tiles[i]
+	if t.done:
+		return
+	var r: Dictionary = t.data
+	var g: Dictionary = Sim.guest_by_id(String(r.id))
+	var gr: Dictionary = Content.CARD_GRADES[int(r.grade) - 1]
+	# 처음 만난 손님은 ✨를 붙인다 — 판에서도 한눈에 띄어야 한다
+	(t.label as Label).text = ("✨" if r.get("isNew", false) else "") + String(g.face)
+	(t.style as StyleBoxFlat).border_color = Color(gr.color)
+	(t.style as StyleBoxFlat).bg_color = Color("f6efdc")
+	(t.panel as Control).rotation = 0.0
+	t.pop = 1.0
+	t.done = true
+	if _special(r):
+		_flash.color.a = 0.7
+
+## 떨 만한 카드인가 — 처음 만난 손님, 또는 영물·신수
+func _special(r: Dictionary) -> bool:
+	return r.get("isNew", false) or int(r.grade) >= 5
+
+func _reveal_all() -> void:
+	for i in range(_tiles.size()):
+		_flip_tile(i)
+	_flash.color.a = 0.0            # 한꺼번에 깔 때는 안 번쩍인다 — 건너뛰는 중이다
+	_ci = _tiles.size()
+	_grid_finish()
+
+func _grid_finish() -> void:
+	_grid_head.text = "%d장 뽑았다" % _tiles.size()
+	_grid_ok.visible = true
+
+func _grid_done_pressed() -> void:
+	# 처음 만난 손님이 있으면 제일 귀한 것 하나를 크게 띄운다 — 유저가 남기자고 한 그 한 장
+	if not _after_new.is_empty():
+		var best: Dictionary = _after_new[0]
+		for r in _after_new:
+			if int(r.grade) > int(best.grade):
+				best = r
+		_after_new = []
+		_mode = ""
+		_show_one(best, _tiles.size())
+		return
+	close()
 
 ## 긴 내역을 몇 개씩 줄로 접는다 — 서른 장이면 열 줄이 넘어 카드가 화면을 뚫는다
 func _wrap(parts: Array[String], per: int) -> String:
@@ -220,6 +337,9 @@ func _finish_flip() -> void:
 ## 룰렛 결과.
 func show_spin(got: Dictionary) -> void:
 	_t = 0.0
+	_mode = ""
+	_gridbox.visible = false
+	_cardbox.visible = true
 	var w: Dictionary = Content.ROULETTE.wedges[int(got.wedge)]
 	_art.visible = false
 	_sign.visible = true
@@ -240,6 +360,9 @@ func show_spin(got: Dictionary) -> void:
 ## 구역이 열렸다 — 동네째 하나가 드러나는 순간이라 카드로 축하한다.
 func show_zone(dz: Dictionary) -> void:
 	_t = 0.0
+	_mode = ""
+	_gridbox.visible = false
+	_cardbox.visible = true
 	_art.visible = false
 	_sign.visible = true
 	_sign.text = "🏘️"
@@ -252,9 +375,13 @@ func show_zone(dz: Dictionary) -> void:
 func close() -> void:
 	visible = false
 	_phase = ""
+	_mode = ""
 	_front = {}
+	_after_new = []
 	_bg.border_color = Color("a8763e")
 	_cardbox.scale = Vector2.ONE
+	_cardbox.visible = true
+	_gridbox.visible = false
 
 ## 뜰 때 살짝 커지며 나타난다. 툭 나타나면 "언제 떴지" 하고 지나친다.
 func _process(delta: float) -> void:
@@ -263,6 +390,9 @@ func _process(delta: float) -> void:
 	_cardbox.pivot_offset = _cardbox.size * 0.5
 	if _flash.color.a > 0.0:
 		_flash.color.a = max(0.0, _flash.color.a - delta * 2.6)
+	if _mode == "grid":
+		_grid_step(delta)
+		return
 	match _phase:
 		"back":
 			# 테두리가 등급 색으로 차오른다 — 등급이 먼저 새어 나온다
@@ -287,6 +417,38 @@ func _process(delta: float) -> void:
 			_t = min(_t + delta * 4.0, 1.0)
 			var e: float = 1.0 - pow(1.0 - _t, 3.0)
 			_cardbox.scale = Vector2.ONE * (0.86 + 0.14 * e)
+
+## 판 연출 한 걸음 — 보통 카드는 0.09초마다 한 장씩 폭포처럼,
+## 특별한 카드(처음 만남·영물·신수)는 제 차례에 **0.55초 떨다가** 터진다.
+func _grid_step(delta: float) -> void:
+	# 뒤집힌 카드의 튀어오름(pop)을 가라앉힌다
+	for t in _tiles:
+		if float(t.pop) > 0.0:
+			t.pop = max(0.0, float(t.pop) - delta * 5.0)
+			var sc: float = 1.0 + 0.22 * float(t.pop)
+			(t.panel as Control).scale = Vector2(sc, sc)
+	if _ci >= _tiles.size():
+		return
+	var cur: Dictionary = _tiles[_ci]
+	if _special(cur.data):
+		_ct += delta
+		if _ct < 0.55:
+			# 떨림 — 다음이 심상치 않다는 예고. 이게 이 연출의 극이다.
+			(cur.panel as Control).rotation = sin(_ct * 68.0) * 0.09
+			return
+		_flip_tile(_ci)
+		_ci += 1
+		_ct = 0.0
+		if _ci >= _tiles.size():
+			_grid_finish()
+		return
+	_ct += delta
+	if _ct >= 0.09:
+		_ct = 0.0
+		_flip_tile(_ci)
+		_ci += 1
+		if _ci >= _tiles.size():
+			_grid_finish()
 
 ## 뒤집히는 중간에 앞면만 갈아입는다(연출은 계속 돈다)
 func _finish_flip_face() -> void:
