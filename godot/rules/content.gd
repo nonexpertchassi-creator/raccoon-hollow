@@ -65,6 +65,45 @@ const CARD_GRADES := [
 	}
 ]
 
+const DISTRICTS := [
+	{
+		"id": "angol",
+		"name": "안골",
+		"rows": [
+			0.0,
+			17.0
+		],
+		"cost": 0.0,
+		"stars": 0.0,
+		"shops": [
+			"smith",
+			"brush",
+			"paper",
+			"pot",
+			"herb",
+			"soup"
+		],
+		"desc": "처음부터 열려 있는 마을 안쪽"
+	},
+	{
+		"id": "jeoja",
+		"name": "저잣거리",
+		"rows": [
+			18.0,
+			29.0
+		],
+		"cost": 2000000000.0,
+		"stars": 15.0,
+		"shops": [
+			"gaekju",
+			"skewer",
+			"ricecake",
+			"butcher"
+		],
+		"desc": "객주와 먹거리 가게가 늘어선 아랫동네"
+	}
+]
+
 const EVENT := {
 	"gapHours": 12.0,
 	"afterShops": 2.0
@@ -1524,9 +1563,9 @@ const SHOPS := [
 		]
 	},
 	{
-		"id": "inn",
-		"name": "주막",
-		"sign": "酒",
+		"id": "gaekju",
+		"name": "객주",
+		"sign": "客",
 		"cost": 22000000000.0,
 		"desc": "길손을 재우고 술과 안주를 낸다",
 		"color": "#8a6a45",

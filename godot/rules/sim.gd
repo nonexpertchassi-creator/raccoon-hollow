@@ -55,6 +55,10 @@ var t: float = 0.0
 ## 첫 동작을 아무도 해 보지 않는다 — 제일 좋은 첫 순간을 코드가 미리
 ## 써 버리는 셈이다. 대장간은 값이 0이라 켜자마자 누르면 열린다.
 var shops: Array = []
+## 열린 구역. 마을은 골목으로 나뉜 덩어리(구역)로 열린다 — 닫힌 동네가
+## 안개 너머로 보이고, 조건(성 합계·엽전)을 채우면 통째로 열린다.
+## 첫 구역(안골)은 처음부터 열려 있다.
+var zones: Array = ["angol"]
 var rank: Dictionary = {}
 ## 열린 품목. **처음엔 비어 있다** — 가게가 하나도 없으니 팔 것도 없다.
 ## 예전엔 곡괭이가 열린 채로 시작했는데, 대장간을 잠그고 나니
@@ -690,9 +694,58 @@ func promote(shop_id: String) -> bool:
 	return true
 
 # ── 가게 ──
+# ── 구역 ──
+func district_of(shop_id: String) -> Variant:
+	for d in Content.DISTRICTS:
+		if (d.shops as Array).has(shop_id):
+			return d
+	return null
+
+## 이 가게가 있는 구역이 열렸나. 목록에 없는 가게는 열린 것으로 친다 —
+## 나중에 가게를 더 넣고 구역 목록을 깜빡해도 게임이 잠기지는 않게.
+func district_open(shop_id: String) -> bool:
+	var d: Variant = district_of(shop_id)
+	return d == null or zones.has(String(d.id))
+
+## 구역을 여는 조건. 승급 조건과 같은 모양(list of {ok, text})으로 돌려준다 —
+## 화면이 체크리스트 하나로 둘 다 그린다.
+func district_reqs(id: String) -> Variant:
+	for d in Content.DISTRICTS:
+		if d.id != id:
+			continue
+		if zones.has(id):
+			return null
+		var list: Array = []
+		list.append({"ok": regular_sum() >= d.stars,
+			"text": "손님 성 합계 %s (지금 %s)" % [str(int(d.stars)), str(regular_sum())]})
+		list.append({"ok": money >= d.cost, "text": "🪙%s" % Num.fmt(d.cost)})
+		return {"district": d, "list": list}
+	return null
+
+func can_unlock_district(id: String) -> bool:
+	var r: Variant = district_reqs(id)
+	if r == null:
+		return false
+	for x in r.list:
+		if not x.ok:
+			return false
+	return true
+
+func unlock_district(id: String) -> bool:
+	if not can_unlock_district(id):
+		return false
+	var dd: Dictionary = (district_reqs(id) as Dictionary).district
+	money -= dd.cost
+	zones.append(id)
+	bump("open.district")
+	_ev("%s 열렸다 — 무너진 집들이 드러났다" % Num.josa(String(dd.name), "이", "가"), "milestone")
+	return true
+
+## 다음에 열 가게. **잠긴 구역의 가게는 없는 셈 친다** — 무너진 집 표시도,
+## 가상 플레이어의 판단도 전부 여기를 거친다.
 func next_shop() -> Variant:
 	for s in Content.SHOPS:
-		if not shops.has(s.id):
+		if not shops.has(s.id) and district_open(String(s.id)):
 			return s
 	return null
 
@@ -700,7 +753,7 @@ func open_shop(id: String) -> bool:
 	if not _shop_by_id.has(id):
 		return false
 	var s: Dictionary = shop_by_id(id)
-	if shops.has(id) or money < s.cost:
+	if shops.has(id) or money < s.cost or not district_open(id):
 		return false
 	money -= s.cost
 	shops.append(id)
@@ -1372,7 +1425,7 @@ const SAVE_KEYS: Array[String] = [
 	"orders", "_oid", "_hold", "_guestAcc", "_guestGap", "pest", "_pestAcc", "_pestGap", "_askAcc",
 	"ledger", "shopUp",
 	"cards", "stars", "pulls", "guards", "roulFree", "roulAd", "roulDay",
-	"stats",
+	"stats", "zones",
 ]
 ## 글자로 저장했다 되돌리면 정수가 소수가 된다(-1 → -1.0). 자리를 세는 데
 ## 쓰는 것들은 도로 정수로 되돌린다 — 아니면 배열 자리를 못 찾는다.
@@ -1393,7 +1446,10 @@ const INT_KEYS: Array[String] = ["busy", "_qid", "_evIdx", "_oid"]
 ##
 ## 2판: 뽑기·룰렛·카드가 들어오고 삽살개가 여러 마리가 됐다.
 ## 1판 저장본은 아래 load_from이 받아준다(개 한 마리, 카드 없음, 성은 방문 수로).
-const SAVE_VER: int = 3
+## 4판: 구역(zones)이 들어왔다. 3판 저장본은 zones 칸이 없어 기본값으로
+## 시작하는데, 아래 load_from이 **열린 가게에서 구역을 되짚는다** —
+## 저잣거리 가게를 이미 연 판이면 그 구역도 열린 것으로 친다.
+const SAVE_VER: int = 4
 
 func save() -> Dictionary:
 	var d: Dictionary = {}
@@ -1457,6 +1513,15 @@ func load_from(d: Dictionary, ver: int = SAVE_VER) -> void:
 	for gid in guests:
 		if not cards.has(gid):
 			cards[gid] = 0.0
+	# 구역보다 가게가 먼저 저장된 판 — 열린 가게가 있는 구역은 열린 것으로 친다.
+	# 몇 번을 돌려도 같은 결과라 판 번호를 안 가린다(가리면 조건이 하나 더 늘 뿐이다).
+	for dz in Content.DISTRICTS:
+		if zones.has(String(dz.id)):
+			continue
+		for sid in dz.shops:
+			if shops.has(String(sid)):
+				zones.append(String(dz.id))
+				break
 
 # ── 장날 소식 ──
 

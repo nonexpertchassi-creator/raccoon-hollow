@@ -153,6 +153,18 @@ func show_spin(got: Dictionary) -> void:
 			_sub.text = "손님 카드 %d장 — %s" % [int(got.amount), ", ".join(names)]
 	visible = true
 
+## 구역이 열렸다 — 동네째 하나가 드러나는 순간이라 카드로 축하한다.
+func show_zone(dz: Dictionary) -> void:
+	_t = 0.0
+	_art.visible = false
+	_sign.visible = true
+	_sign.text = "🏘️"
+	_head_label.text = "새 구역!"
+	_title.text = String(dz.name)
+	_title.add_theme_color_override("font_color", Color("2b241b"))
+	_sub.text = "%s\n무너진 집 %d채가 드러났다 — 하나씩 되살리자" % [String(dz.desc), (dz.shops as Array).size()]
+	visible = true
+
 func close() -> void:
 	visible = false
 

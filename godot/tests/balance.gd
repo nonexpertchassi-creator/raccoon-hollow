@@ -15,12 +15,22 @@ extends SceneTree
 ##   godot --headless --path godot --script tests/balance.gd
 ##   BAL_HOURS=8 BAL_SEED=2 BAL_SHOPUP=0 godot … (강화를 끄고 재기)
 
+## 구역이 열린 시각 — 문턱(성·엽전)을 재서 잡으려면 이게 보여야 한다
+static var unlocked_at: Dictionary = {}
+
 static func act(s: Sim, rng: Rng, use_shop_up: bool) -> void:
 	if s.busy >= 0 and s.tap_small(s.busy):
 		return
 	if s.pest != null:
 		s.catch_pest(rng)
 		return
+	# 잠긴 구역 — 조건이 차면 바로 연다. 이걸 안 가르치면 배우는
+	# 가게 여섯에서 영영 멈춘다(next_shop이 잠긴 구역을 없는 셈 치니까).
+	for dz in Content.DISTRICTS:
+		if s.can_unlock_district(String(dz.id)):
+			s.unlock_district(String(dz.id))
+			unlocked_at[String(dz.id)] = s.t
+			return
 	var ns: Variant = s.next_shop()
 	if ns != null and s.money >= ns.cost:
 		s.open_shop(ns.id)
@@ -127,6 +137,7 @@ func _init() -> void:
 	var hours: float = _env("BAL_HOURS", 8.0)
 	var seed_value: int = int(_env("BAL_SEED", 1.0))
 	var use_up: bool = _env("BAL_SHOPUP", 1.0) > 0.5
+	unlocked_at = {}
 	var s := Sim.new()
 	var rng := Rng.new(seed_value)
 	var dt: float = 0.25
@@ -195,6 +206,8 @@ func _init() -> void:
 		f.store_string(JSON.stringify(out, "  "))
 		f.close()
 		print("   자국을 godot/stats.json 에 남겼다 — node tools/dash.mjs")
+	for zid in unlocked_at:
+		print("   구역 %s 열림: %s" % [zid, _mm(unlocked_at[zid])])
 	print("   뽑기 %d회(%d단계) · 손님 %d/%d · 성 합계 %d · 남은 젬 %d · 가게 %d/%d" % [
 		int(s.pulls), s.gacha_lv(), s.guests.size(), Content.GUESTS.size(),
 		stars_sum, int(s.gems), s.shops.size(), Content.SHOPS.size()])

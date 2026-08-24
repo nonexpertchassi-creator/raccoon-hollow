@@ -416,7 +416,30 @@ func _tap(p: Vector2) -> void:
 			sfx.play("catch")
 			return
 
-	# 2) 촌장 — 마을을 돌아다닌다. 누르면 의뢰 창.
+	# 2) 잠긴 구역 — 안개 안 어디를 눌러도 '열기'로 간다.
+	#    세계 좌표를 칸 줄(ty)로 되돌려서 띠 안인지 본다.
+	var tyf: float = (p.y / (Iso.TH * 0.5) - p.x / (Iso.TW * 0.5)) * 0.5
+	for dz in Content.DISTRICTS:
+		if sim.zones.has(String(dz.id)):
+			continue
+		if tyf < float(dz.rows[0]) or tyf > float(dz.rows[1]) + 1.0:
+			continue
+		if sim.unlock_district(String(dz.id)):
+			sfx.play("open")
+			village.reveal_zone(String(dz.id))
+			card.show_zone(dz)
+		else:
+			# 왜 안 열리는지를 그 자리에 띄운다. 조용히 아무 일도 없으면
+			# "고장 났나"가 된다 — 모자란 조건을 말로 한다.
+			var r: Variant = sim.district_reqs(String(dz.id))
+			for x in (r as Dictionary).list:
+				if not x.ok:
+					village.floats.append({"pos": p + Vector2(0, -30),
+						"text": "아직 — " + String(x.text), "t": 2.2})
+					break
+		return
+
+	# 3) 촌장 — 마을을 돌아다닌다. 누르면 의뢰 창.
 	#    가게보다 먼저 본다. 가게 마당 위를 지나갈 때 그 밑에 깔리면 못 누른다.
 	if not village.mayor.is_empty():
 		var mp: Vector2 = village.mayor.pos

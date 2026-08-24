@@ -225,6 +225,37 @@ func _process(_d: float) -> void:
 			fails.append("성 올리기를 눌렀는데 안 올랐다")
 	main.panel.close()
 
+	# 10) 잠긴 구역 — 안 열리고, 조건이 차면 눌러서 열리고, 그다음에야 가게가 열린다
+	if s.district_open("gaekju"):
+		fails.append("저잣거리가 처음부터 열려 있다")
+	s.money = 1.0e15
+	if s.open_shop("gaekju"):
+		fails.append("잠긴 구역의 가게가 열렸다")
+	# 조건이 안 찼을 때 눌러 본다 — 아무 일도 없어야 하고, 왜 안 되는지가 떠야 한다
+	s.stars = {"rabbit": 3.0}
+	var band: Vector2 = Iso.w(8.5, 20.5)          # 저잣거리 한가운데 빈 풀밭
+	var floats0: int = main.village.floats.size()
+	main._tap(band)
+	if s.zones.has("jeoja"):
+		fails.append("조건이 안 찼는데 구역이 열렸다")
+	if main.village.floats.size() <= floats0:
+		fails.append("안 열리는 이유가 화면에 안 떴다")
+	# 조건을 채우고 누르면 열린다
+	s.stars = {"rabbit": 15.0}
+	var money_b4: float = s.money
+	main._tap(band)
+	if not s.zones.has("jeoja"):
+		fails.append("조건이 찼는데 구역이 안 열렸다")
+	# ★ 값을 치렀는지도 본다. 처음엔 이 줄이 없었고, 일부러 돈을 안 받게
+	#   고장 낸 판을 넣어도 시험이 통과했다 — 시험이 못 보는 것은 없는 것이다.
+	elif s.money != money_b4 - Content.DISTRICTS[1].cost:
+		fails.append("구역을 열었는데 값을 안 치렀다")
+	if not main.card.visible:
+		fails.append("구역이 열렸는데 축하 카드가 안 떴다")
+	main.card.close()
+	if not s.open_shop("gaekju"):
+		fails.append("구역을 열었는데 객주가 안 열린다")
+
 	# 소리도 여기서 본다. 소리는 안 나는 게 고장인지 원래 그런 건지 귀로 못 가르고,
 	# 지금은 더미라 **아예 안 들린다** — 셈으로 볼 수밖에 없다.
 	# 위에서 매대를 눌렀으니 강화 소리가 한 번은 울렸어야 한다.

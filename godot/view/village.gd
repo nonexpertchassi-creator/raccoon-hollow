@@ -43,6 +43,12 @@ const SHAPE := 40.0
 ## 값을 색으로 말하는 것이라 물건이 쇠든 종이든 상관없이 통한다.
 const RANK_RING := [Color(0, 0, 0, 0), Color("cfd6dd"), Color("e8b93f")]
 var _grng: Rng = Rng.new(20260821)
+## 구역이 열리는 순간의 안개 걷힘. 구역 id → 남은 안개(1→0으로 줄어든다).
+## 툭 사라지면 "열렸다"는 순간이 없다 — 1.4초에 걸쳐 걷힌다.
+var _zoneFade: Dictionary = {}
+
+func reveal_zone(id: String) -> void:
+	_zoneFade[id] = 1.0
 func _gate() -> Vector2i:
 	return Iso.GATES[int(_grng.next() * Iso.GATES.size()) % Iso.GATES.size()]
 const LINE_MAX := 4          # 한 가게 앞에 세우는 손님 수
@@ -190,6 +196,10 @@ func _advance(delta: float) -> void:
 		if f.t > 0.0:
 			live.append(f)
 	floats = live
+	for zid in _zoneFade.keys():
+		_zoneFade[zid] = float(_zoneFade[zid]) - delta / 1.4
+		if float(_zoneFade[zid]) <= 0.0:
+			_zoneFade.erase(zid)
 	_walk_mayor(delta)
 	var keep: Array = []
 	for wk in walkers:
@@ -894,6 +904,39 @@ func _draw() -> void:
 	layer.sort_custom(func(a, b): return a.z < b.z if a.z != b.z else a.i < b.i)
 	for e in layer:
 		e.f.call()
+	# ── 잠긴 구역 — 안개로 덮는다 ──
+	# 지붕 실루엣은 안개 **아래로** 비친다(무너진 집들은 이미 그려져 있고
+	# 안개는 반투명이다). "저 너머에 뭐가 있다"가 보여야 열고 싶어진다.
+	for dz in Content.DISTRICTS:
+		var locked: bool = not sim.zones.has(String(dz.id))
+		var fade: float = float(_zoneFade.get(String(dz.id), 0.0))
+		if not locked and fade <= 0.0:
+			continue
+		var a2: float = (1.0 if locked else fade)
+		var r0: int = int(dz.rows[0])
+		var r1: int = int(dz.rows[1])
+		# 마을 밖 풀밭(EDGE)까지 덮는다 — 띠가 마을에서 뚝 끊기면 무대장치처럼 보인다
+		var q := PackedVector2Array([
+			Iso.w(-Iso.EDGE, r0), Iso.w(Iso.GW + Iso.EDGE, r0),
+			Iso.w(Iso.GW + Iso.EDGE, r1 + 1), Iso.w(-Iso.EDGE, r1 + 1)])
+		draw_colored_polygon(q, Color(0.24, 0.27, 0.22, 0.58 * a2))
+		# 구역 경계 울타리 — 어디까지가 닫힌 데인지 금을 긋는다
+		draw_line(Iso.w(-Iso.EDGE, r0), Iso.w(Iso.GW + Iso.EDGE, r0),
+			Color(0.32, 0.27, 0.2, 0.85 * a2), 3.0)
+		if not locked:
+			continue
+		# 장승 — 구역 이름과 여는 조건. 마을 어디서 보든 눈에 띄는 크기로.
+		var mid: Vector2 = Iso.w((Iso.GW as float) * 0.5, float(r0) + 2.0)
+		_chip(mid + Vector2(0, -30), 150, 30, Color(0.17, 0.14, 0.11, 0.88))
+		_text(mid + Vector2(0, -8), "🔒 %s" % String(dz.name), 17, Color("f3e9d2"))
+		var cond: String = "성 합계 %d · 🪙%s" % [int(dz.stars), Num.fmt(dz.cost)]
+		var can: bool = sim.can_unlock_district(String(dz.id))
+		_chip(mid + Vector2(0, 4), 30.0 + cond.length() * 8.0, 22, C.jade if can else Color(0.24, 0.2, 0.14, 0.6))
+		_text(mid + Vector2(0, 20), cond, 12, Color.WHITE if can else Color("d8cfbc"))
+		if can:
+			var bob: float = absf(sin(_t * 3.2)) * 5.0
+			_text(mid + Vector2(0, 44 + bob), "누르면 열린다!", 13, Color("ffe9a8"))
+
 	for f in floats:
 		var a: float = clampf(f.t, 0.0, 1.0)
 		_chip(f.pos, 22.0 + String(f.text).length() * 11.0, 21, Color(0.17, 0.14, 0.11, 0.82 * a))

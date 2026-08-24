@@ -13,6 +13,12 @@ static func act(s: Sim, rng: Rng) -> void:
 	if s.pest != null:
 		s.catch_pest(rng)
 		return
+	# 잠긴 구역 — 조건이 차면 바로 연다. 이걸 안 가르치면 배우는
+	# 가게 여섯에서 영영 멈춘다(next_shop이 잠긴 구역을 없는 셈 치니까).
+	for dz in Content.DISTRICTS:
+		if s.can_unlock_district(String(dz.id)):
+			s.unlock_district(String(dz.id))
+			return
 	var ns: Variant = s.next_shop()
 	if ns != null and s.money >= ns.cost:
 		s.open_shop(ns.id)
