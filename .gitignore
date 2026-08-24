@@ -2,3 +2,5 @@ node_modules/
 shots/
 package*.json
 shots/
+dash.html
+godot/stats.json

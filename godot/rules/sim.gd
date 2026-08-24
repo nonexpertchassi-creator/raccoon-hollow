@@ -71,6 +71,19 @@ var cards: Dictionary = {"rabbit": 0.0}
 var stars: Dictionary = {}
 ## 여태 뽑은 총 횟수. 뽑기 레벨이 여기서 나온다.
 var pulls: float = 0.0
+
+## ── 세는 것 ──
+##
+## ★ 규칙에 **한 번도 안 쓰인다.** 오직 더하기만 하고 아무것도 읽어서
+##   판단하지 않는다. 그래야 계측을 넣거나 빼도 같은 게임이다.
+##   무엇을 왜 세는지는 METRICS.md에 있다.
+##
+## 처음이 빈 사전인 이유: 세는 칸이 늘어도 옛 저장본은 그 칸이 없다.
+## 없으면 0으로 시작해야 하고, 빈 사전이면 그게 저절로 된다.
+var stats: Dictionary = {}
+
+func bump(key: String, by: float = 1.0) -> void:
+	stats[key] = float(stats.get(key, 0.0)) + by
 ## 룰렛 — 오늘 남은 무료/광고 횟수와, 마지막으로 채운 날.
 var roulFree: float = 1.0
 var roulAd: float = 3.0
@@ -231,6 +244,7 @@ func buy_guard() -> bool:
 	if not can_buy_guard():
 		return false
 	money -= guard_cost()
+	bump("open.guard")
 	guards += 1.0
 	guard = true
 	_ev("%s을 들였다 — 자리를 비워도 지켜준다" % Content.GUARD.name, "shop")
@@ -273,6 +287,7 @@ func _pest_escape(rng: Rng) -> void:
 func catch_pest(rng: Rng) -> Variant:
 	if pest == null:
 		return null
+	bump("tap.pest")
 	var tt: Dictionary = pest
 	var P: Dictionary = {}
 	for p in Content.PESTS:
@@ -308,6 +323,7 @@ func can_star_up(gid: String) -> bool:
 func star_up(gid: String) -> bool:
 	if not can_star_up(gid):
 		return false
+	bump("star.up")
 	cards[gid] = cards.get(gid, 0.0) - float(star_need(gid))
 	stars[gid] = float(regular_lv(gid) + 1)
 	_ev("%s %d성이 되었다" % [_guest_by_id[gid].name, regular_star(gid)], "guest")
@@ -371,6 +387,7 @@ func hire_staff(shop_id: String) -> bool:
 	if not can_hire_staff(shop_id):
 		return false
 	money -= staff_cost(shop_id)
+	bump("open.staff")
 	staff[shop_id] = staff_of(shop_id) + 1.0
 	_ev("%s에 일손을 들였다 (%s명)" % [shop_by_id(shop_id).name, str(int(staff[shop_id]))], "shop")
 	return true
@@ -500,11 +517,15 @@ func affordable_levels(id: String) -> int:
 		n += 1
 	return n
 
+## want가 1이면 '한 번 눌렀다', 여럿이면 '최대로 올렸다'로 센다.
 func level_up_many(id: String, want: int) -> int:
 	var n: int = int(min(float(want), min(float(affordable_levels(id)), max_lv(id) - lv(id))))
 	if n <= 0:
 		return 0
 	money -= level_cost_many(id, n)
+	# 한 번 눌러 한 단계인지, '최대'로 한꺼번에인지를 갈라 센다 —
+	# 꾹 누르기와 최대 단추가 쓸모 있나를 이 둘의 비로 본다.
+	bump("tap.level" if n == 1 else "tap.levelMany")
 	var before: float = floor(lv(id) / Content.MILESTONE_EVERY)
 	items[id].lv += n
 	var after: float = floor(lv(id) / Content.MILESTONE_EVERY)
@@ -521,6 +542,7 @@ func open_item(id: String) -> bool:
 	if not can_open_item(id):
 		return false
 	money -= item_by_id(id).cost
+	bump("open.item")
 	items[id] = {"lv": 1.0, "stock": 0.0, "prog": 0.0}
 	_ev("%s 칸을 열었다" % item_by_id(id).name, "open")
 	return true
@@ -659,6 +681,7 @@ func promote(shop_id: String) -> bool:
 		return false
 	var shop: Dictionary = shop_by_id(shop_id)
 	money -= shop.promote[rank_of(shop_id)]
+	bump("open.promote")
 	rank[shop_id] = rank_of(shop_id) + 1
 	for it in shop.items:
 		if items.has(it.id):
@@ -681,6 +704,7 @@ func open_shop(id: String) -> bool:
 		return false
 	money -= s.cost
 	shops.append(id)
+	bump("open.shop")
 	var first: Dictionary = s.items[0]
 	items[first.id] = {"lv": 1.0, "stock": 0.0, "prog": 0.0}
 	if not asked.has(first.id):
@@ -710,6 +734,7 @@ func tap_small(idx: int) -> bool:
 	if idx != busy:
 		return false
 	busy = -1
+	bump("tap.fair")
 	fair = Content.FAIR.boost
 	_ev("장이 섰다 — 손님이 몰린다!", "shop")
 	_event_gain("fair", 1.0)
@@ -791,6 +816,7 @@ func _event_gain(kind: String, n: float = 1.0) -> void:
 	gems += e.gems
 	if not skins.has(e.skin):
 		skins.append(e.skin)
+	bump("event.clear")
 	cleared[e.id] = cleared.get(e.id, 0.0) + 1.0
 	_ev("%s %s을(를) 깼다 — 💎%s · %s" % [e.face, e.name, str(int(e.gems)), e.skinName], "event")
 	_evDone = (e as Dictionary).duplicate()
@@ -869,6 +895,7 @@ func _quest_gain(gid: String, item_id: String, n: float) -> void:
 	_event_gain("quest", 1.0)
 	var d: Dictionary = (q as Dictionary).duplicate()
 	d["coin"] = coin
+	bump("quest.done")
 	_questDone.append(d)
 
 ## 지금 등급의 만렙에 닿았으면 젬 한 알. 등급이 오르면 다시 한 번 받는다.
@@ -1224,6 +1251,8 @@ func pull(n: int, rng: Rng) -> Array:
 	if not can_pull(n):
 		return []
 	gems -= float(gacha_cost(n))
+	bump("gacha.pull", float(n))
+	bump("gacha.pull%d" % n)
 	var out: Array = []
 	var best: int = 0
 	for i in range(n):
@@ -1236,8 +1265,10 @@ func pull(n: int, rng: Rng) -> Array:
 		var gid: String = _roll_guest(grade, rng)
 		if gid == "":
 			continue
+		bump("gacha.grade%d" % grade)
 		var isnew: bool = not guests.has(gid)
 		if isnew:
+			bump("gacha.newGuest")
 			guests.append(gid)
 			_guestAcc[gid] = 0.0
 			_ev("%s 마을에 왔다" % Num.josa(_guest_by_id[gid].name, "이", "가"), "guest")
@@ -1267,8 +1298,10 @@ func spin(by_ad: bool, rng: Rng) -> Variant:
 		return null
 	if by_ad:
 		roulAd -= 1.0
+		bump("roul.ad")
 	else:
 		roulFree -= 1.0
+		bump("roul.free")
 	var total: float = 0.0
 	for w in Content.ROULETTE.wedges:
 		total += float(w.weight)
@@ -1315,6 +1348,7 @@ func offline(seconds: float) -> Variant:
 	if real < 60.0:
 		return null
 	var earned: float = floor(income_per_sec() * real * Content.OFFLINE.efficiency)
+	bump("run.offline")
 	money += earned
 	revenue += earned
 	if auto:
@@ -1338,6 +1372,7 @@ const SAVE_KEYS: Array[String] = [
 	"orders", "_oid", "_hold", "_guestAcc", "_guestGap", "pest", "_pestAcc", "_pestGap", "_askAcc",
 	"ledger", "shopUp",
 	"cards", "stars", "pulls", "guards", "roulFree", "roulAd", "roulDay",
+	"stats",
 ]
 ## 글자로 저장했다 되돌리면 정수가 소수가 된다(-1 → -1.0). 자리를 세는 데
 ## 쓰는 것들은 도로 정수로 되돌린다 — 아니면 배열 자리를 못 찾는다.
@@ -1353,9 +1388,12 @@ const INT_KEYS: Array[String] = ["busy", "_qid", "_evIdx", "_oid"]
 ## 규칙: **저장본 모양을 바꾸면 이 번호를 올리고, 옛 판을 받아주는 코드를 남긴다.**
 ## 그리고 새 판 저장본을 옛 게임에 넣지 않는다(아래 _load에서 막는다) —
 ## 모르는 칸을 만나면 게임이 죽는 대신 그냥 안 읽는 게 낫다.
+## 3판: 세는 칸(stats)이 들어왔다. 없으면 빈 사전으로 시작하므로
+## 2판 저장본은 아무 손질 없이 그대로 읽힌다.
+##
 ## 2판: 뽑기·룰렛·카드가 들어오고 삽살개가 여러 마리가 됐다.
 ## 1판 저장본은 아래 load_from이 받아준다(개 한 마리, 카드 없음, 성은 방문 수로).
-const SAVE_VER: int = 2
+const SAVE_VER: int = 3
 
 func save() -> Dictionary:
 	var d: Dictionary = {}

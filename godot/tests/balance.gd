@@ -177,6 +177,24 @@ func _init() -> void:
 	var stars_sum: int = 0
 	for gid in s.guests:
 		stars_sum += s.regular_lv(String(gid))
+	# ★ 봇이 남긴 자국을 파일로 떨어뜨린다. 사람이 오기 전에 **판이 진짜
+	#   그려지는지** 보려면 이 자국이 필요하다. 계측이 빠진 칸은 여기서 0으로
+	#   드러난다 — 출시 뒤에 아는 것보다 지금 아는 게 훨씬 싸다.
+	var f: FileAccess = FileAccess.open("res://stats.json", FileAccess.WRITE)
+	if f != null:
+		var out: Dictionary = s.stats.duplicate()
+		out["_meta.hours"] = hours
+		out["_meta.seed"] = float(seed_value)
+		out["_meta.revenue"] = s.revenue
+		out["_meta.money"] = s.money
+		out["_meta.gems"] = s.gems
+		out["_meta.shops"] = float(s.shops.size())
+		out["_meta.guests"] = float(s.guests.size())
+		out["_meta.stars"] = float(stars_sum)
+		out["_meta.gachaLv"] = float(s.gacha_lv())
+		f.store_string(JSON.stringify(out, "  "))
+		f.close()
+		print("   자국을 godot/stats.json 에 남겼다 — node tools/dash.mjs")
 	print("   뽑기 %d회(%d단계) · 손님 %d/%d · 성 합계 %d · 남은 젬 %d · 가게 %d/%d" % [
 		int(s.pulls), s.gacha_lv(), s.guests.size(), Content.GUESTS.size(),
 		stars_sum, int(s.gems), s.shops.size(), Content.SHOPS.size()])

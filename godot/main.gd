@@ -100,6 +100,8 @@ func _ready() -> void:
 	rng = Rng.new(int(Time.get_unix_time_from_system()))
 	_standalone = get_parent() == get_tree().root
 	_away = _load() if _standalone else null
+	# 켠 횟수 — 며칠 만에 다시 오나를 여기서 센다
+	sim.bump("run.start")
 
 	village = Village.new()
 	village.setup(sim)
@@ -218,7 +220,14 @@ func _show_away(r: Dictionary) -> void:
 ##   실제로 소리를 붙이자마자 30분을 감아도 "소리 없음"이 나왔다 —
 ##   게임에서는 울리는데 도구에게만 안 울린 것이다. 한 자리에 모아 둔다.
 ##   (손님 걸음은 여기 없다. village가 제 _process에서 스스로 걷는다.)
+## 켜 두었던 시간을 초로 쌓는다. 한 번에 얼마나 하나가 여기서 나온다.
+var _secAcc: float = 0.0
+
 func step(delta: float) -> void:
+	_secAcc += delta
+	if _secAcc >= 1.0:
+		sim.bump("run.seconds", floor(_secAcc))
+		_secAcc -= floor(_secAcc)
 	var r: Dictionary = sim.tick(delta, rng)
 	for s in r.sales:
 		village.on_sale(s)

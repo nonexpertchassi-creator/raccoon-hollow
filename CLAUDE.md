@@ -24,6 +24,8 @@
   숫자를 만지기 전에 여기서 파급을 먼저 본다.
 - `FLOW.md` — **흐름과 꼬인 곳.** 무엇이 무엇과 이어지는지, 어디가 끊겼는지를
   그림으로 본다. 기능을 더 넣기 전에 여기부터 맞춘다.
+- `METRICS.md` — **무엇을 세는가.** 지표는 거슬러 올라가 모을 수 없다 —
+  사람이 오기 전에 심는 이유와 목록.
 - `MOTION.md` — **움직임과 손맛.** 무엇이 어떻게 움직여야 하는지.
   그림을 그리는 쪽이 "몇 장으로 나눠야 하나"를 물으면 여기를 본다.
 - `NAMES.md` — **이름과 뜻.** 같은 것을 다른 말로, 다른 것을 같은 말로 부르면
@@ -84,6 +86,7 @@ tools/shopup.sh                  # 가게 강화가 이득인지 — **씨앗 �
 node tools/gen-content.mjs       # content.js → godot/rules/content.gd 다시 뽑기
 node tools/guests.mjs 6          # 손님 등장 문턱을 목표 시각에 수렴시킨다
 tools/shots.sh                   # **게임의 모든 화면을 한 번에 찍는다** → shots/
+node tools/dash.mjs              # 봇이 남긴 자국(godot/stats.json) → dash.html
 node tools/art.mjs --write       # ASSETS.md 그림 목록 갱신
 node tools/bundle.mjs            # 자바스크립트판을 nogur.html 한 장으로
 ```
