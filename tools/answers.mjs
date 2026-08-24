@@ -17,7 +17,17 @@ const SUBJECT = process.argv[2] || 'fmt';
 const W = (name, arr) => fs.writeFileSync(`godot/${name}`, arr.join('\n') + '\n');
 /** gen-content.mjs와 **같은 규칙**으로 숫자를 글자로 만든다.
  *  정수는 12.0처럼 소수점을 붙인다 — content.gd가 그렇게 담고 있으니까. */
-const num = (n) => (Number.isInteger(n) ? n.toFixed(1) : String(n));
+/* ★ 2^53 위의 수는 **비트 그대로**(16진수 여덟 바이트) 찍는다.
+ * 글자로 찍으면 표기가 갈린다 — 1.2e21을 자바스크립트는 "1.2e+21"로,
+ * Godot은 자릿수를 다 펴서 찍는다. 코드는 같은데 껍데기만 다른 것이다.
+ * 비트는 껍데기가 없다 — 같은 수면 같은 열여섯 글자다. */
+const bits = (n) => {
+  const b = new ArrayBuffer(8);
+  new DataView(b).setFloat64(0, n, true);
+  return [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, '0')).join('');
+};
+const num = (n) => (Math.abs(n) >= 2 ** 53 ? '0x' + bits(n)
+  : Number.isInteger(n) ? n.toFixed(1) : String(n));
 
 /** balance.mjs가 쓰는 것과 같은 mulberry32 */
 const mulberry32 = (a) => () => {

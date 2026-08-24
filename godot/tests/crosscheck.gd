@@ -94,6 +94,12 @@ func _flat(v: Variant, path: String, out: Array[String]) -> void:
 				_flat(v[k], "%s.%s" % [path, k], out)
 		TYPE_FLOAT:
 			var f: float = v
-			out.append(path + "\t" + (("%.1f" % f) if f == floor(f) else str(f)))
+			# 2^53 위는 비트 그대로 — 글자 표기는 판마다 갈리지만 비트는 못 갈린다
+			if absf(f) >= 9007199254740992.0:
+				var spb := StreamPeerBuffer.new()
+				spb.put_double(f)
+				out.append(path + "\t0x" + spb.data_array.hex_encode())
+			else:
+				out.append(path + "\t" + (("%.1f" % f) if f == floor(f) else str(f)))
 		_:
 			out.append(path + "\t" + str(v))

@@ -11,10 +11,10 @@ class_name Iso
 const TW := 96.0
 const TH := 48.0
 const GW := 15
-## 마을이 길어졌다(18 → 30). 가게가 다섯에서 열이 되면서 자리가 모자랐다.
+## 마을이 또 길어졌다(18 → 30 → 48). 3구역(큰장마당)이 들어왔다.
 ## 가로로 늘리지 않고 **세로로만** 늘린 이유: 이 시점(비스듬히 내려다본 격자)에서
 ## 가로로 늘리면 화면이 마름모로 넓게 퍼져 폰에서 양옆이 잘린다.
-const GH := 30
+const GH := 48
 ## 마을 바깥으로 더 까는 풀밭 두께(칸). 여기까지는 밀어서 볼 수 있다.
 const EDGE := 2
 
@@ -26,7 +26,7 @@ static func w(tx: float, ty: float) -> Vector2:
 ## 손님은 **길로만 다닌다.**
 static func is_road(tx: int, ty: int) -> bool:
 	return tx == 5 or tx == 6 or tx == 12 or tx == 13 \
-		or ty == 5 or ty == 11 or ty == 17 or ty == 23
+		or ty == 5 or ty == 11 or ty == 17 or ty == 23 or ty == 29 or ty == 35 or ty == 41
 
 ## 마당의 **길 쪽 모서리**(계산대가 있는 앞 모서리). 마당은 여기를 붙박이로
 ## 두고 길 반대쪽(뒤)으로 자란다 — 넓어지는 건 뒷마당이다.
@@ -46,10 +46,15 @@ const SHOP_T := [
 	Vector2i(12, 23),  # 꼬치집
 	Vector2i(5, 29),   # 떡집
 	Vector2i(12, 29),  # 푸줏간
+	Vector2i(5, 35),   # 어물전     ── 여기부터 큰장마당(3구역)
+	Vector2i(12, 35),  # 포목전
+	Vector2i(5, 41),   # 갓방
+	Vector2i(12, 41),  # 유기전
+	Vector2i(5, 47),   # 나전방     (12,47)은 비워 뒀다 — 나중 것의 자리
 ]
 ## 마당 생김새는 **돌려 가며** 준다. 열 채가 다 같은 모양이면 마을이 아니라
 ## 창고가 된다. 어느 것을 줘도 규칙은 같다 — 계산대가 길 쪽에 붙기만 하면 된다.
-const YARD_KIND := ["A", "B", "D", "C", "C", "A", "D", "B", "C", "A"]
+const YARD_KIND := ["A", "B", "D", "C", "C", "A", "D", "B", "C", "A", "B", "C", "A", "D", "C"]
 ## 마을 드나드는 목 — 길이 마을 가장자리에 닿는 칸 전부.
 ##
 ## ★ 예전엔 위쪽 한 곳(6,0)뿐이었다. 그래서 손님이 **늘 같은 데서 같은 줄로**
@@ -58,7 +63,9 @@ const GATES := [
 	Vector2i(5, 0), Vector2i(6, 0), Vector2i(12, 0), Vector2i(13, 0),          # 위
 	Vector2i(5, GH - 1), Vector2i(6, GH - 1), Vector2i(12, GH - 1), Vector2i(13, GH - 1),  # 아래
 	Vector2i(0, 5), Vector2i(0, 11), Vector2i(0, 17), Vector2i(0, 23),         # 왼쪽 골목
+	Vector2i(0, 29), Vector2i(0, 35), Vector2i(0, 41),
 	Vector2i(GW - 1, 5), Vector2i(GW - 1, 11), Vector2i(GW - 1, 17), Vector2i(GW - 1, 23),  # 오른쪽
+	Vector2i(GW - 1, 29), Vector2i(GW - 1, 35), Vector2i(GW - 1, 41),
 ]
 ## 작은 건물과 개집 — 가게가 열이 되면서 안쪽 칸을 내줬다.
 ## 오른쪽 끝 줄(x=14)은 길도 마당도 아니라 늘 비어 있다. 거기로 옮긴다.

@@ -195,6 +195,91 @@ export const SHOPS = [
       { id: 'hanwoo',    name: '한우 등심', price: 160_000_000, time: 14.2, cost: 960_000_000_000_000_000, icon: '👑' },
     ],
   },
+  {
+    id: 'fish', name: '어물전', sign: '魚', cost: 5_100_000_000_000_000,
+    desc: '바닷것을 절이고 말려 판다',
+    color: '#8a6a45',
+    ranks: ['갯', '말린', '진상'],
+    promote: [350_000_000_000_000, 4_700_000_000_000_000],
+    items: [
+      { id: 'gulbi',         name: '굴비', price: 430_000, time: 9.2, cost: 0, icon: '🐟' },
+      { id: 'miyeok',        name: '미역', price: 1_100_000, time: 10.0, cost: 50_000_000, icon: '🌿' },
+      { id: 'jeotgal',       name: '젓갈', price: 2_900_000, time: 10.8, cost: 130_000_000, icon: '🫙' },
+      { id: 'bugeo',         name: '북어', price: 7_500_000, time: 11.6, cost: 340_000_000, icon: '🎣' },
+      { id: 'gim',           name: '김', price: 20_000_000, time: 12.4, cost: 840_000_000_000_000_000, icon: '🍙' },
+      { id: 'jaban',         name: '자반', price: 51_000_000, time: 13.2, cost: 2_100_000_000_000_000_000, icon: '🐠' },
+      { id: 'muneo',         name: '문어', price: 130_000_000, time: 14.0, cost: 5_500_000_000_000_000_000, icon: '🐙' },
+      { id: 'jeonbok',       name: '전복', price: 340_000_000, time: 14.8, cost: 14_000_000_000_000_000_000, icon: '🦪' },
+    ],
+  },
+  {
+    id: 'cloth', name: '포목전', sign: '布', cost: 110_000_000_000_000_000,
+    desc: '베를 짜고 물들여 판다',
+    color: '#8a6a45',
+    ranks: ['무명', '명주', '비단'],
+    promote: [2_500_000_000_000_000, 28_000_000_000_000_000],
+    items: [
+      { id: 'mumyeong',      name: '무명', price: 900_000, time: 9.8, cost: 0, icon: '🧵' },
+      { id: 'sambe',         name: '삼베', price: 2_300_000, time: 10.6, cost: 100_000_000, icon: '🪢' },
+      { id: 'mosi',          name: '모시', price: 6_100_000, time: 11.4, cost: 270_000_000, icon: '🎽' },
+      { id: 'myeongju',      name: '명주', price: 16_000_000, time: 12.2, cost: 720_000_000, icon: '🧣' },
+      { id: 'yeomnang',      name: '염낭', price: 41_000_000, time: 13.0, cost: 12_000_000_000_000_000_000, icon: '👛' },
+      { id: 'bidan',         name: '비단', price: 110_000_000, time: 13.8, cost: 32_000_000_000_000_000_000, icon: '🎀' },
+      { id: 'gwanbok',       name: '관복감', price: 280_000_000, time: 14.6, cost: 82_000_000_000_000_000_000, icon: '🥻' },
+      { id: 'hollye',        name: '혼례비단', price: 720_000_000, time: 15.4, cost: 210_000_000_000_000_000_000, icon: '💒' },
+    ],
+  },
+  {
+    id: 'hat', name: '갓방', sign: '笠', cost: 2_400_000_000_000_000_000,
+    desc: '갓을 겯고 다듬어 판다',
+    color: '#8a6a45',
+    ranks: ['대', '중', '진상'],
+    promote: [17_000_000_000_000_000, 170_000_000_000_000_000],
+    items: [
+      { id: 'satgat',        name: '삿갓', price: 1_900_000, time: 10.4, cost: 0, icon: '👒' },
+      { id: 'manggeon',      name: '망건', price: 4_900_000, time: 11.2, cost: 220_000_000, icon: '🪖' },
+      { id: 'tanggeon',      name: '탕건', price: 13_000_000, time: 12.0, cost: 580_000_000, icon: '🎩' },
+      { id: 'gatkkeun',      name: '갓끈', price: 33_000_000, time: 12.8, cost: 1_500_000_000, icon: '📿' },
+      { id: 'heungnip',      name: '흑립', price: 86_000_000, time: 13.6, cost: 180_000_000_000_000_000_000, icon: '🎓' },
+      { id: 'jurip',         name: '주립', price: 220_000_000, time: 14.4, cost: 450_000_000_000_000_000_000, icon: '⛑️' },
+      { id: 'jeongjagwan',   name: '정자관', price: 580_000_000, time: 15.2, cost: 1_200_000_000_000_000_000_000, icon: '👑' },
+      { id: 'oknorip',       name: '옥로립', price: 1_500_000_000, time: 16.0, cost: 3_100_000_000_000_000_000_000, icon: '💎' },
+    ],
+  },
+  {
+    id: 'brass', name: '유기전', sign: '鍮', cost: 54_000_000_000_000_000_000,
+    desc: '놋쇠를 두드려 그릇을 만든다',
+    color: '#8a6a45',
+    ranks: ['방짜', '상', '왕실'],
+    promote: [120_000_000_000_000_000, 1_000_000_000_000_000_000],
+    items: [
+      { id: 'notsujeo',      name: '놋수저', price: 4_000_000, time: 11.0, cost: 0, icon: '🥄' },
+      { id: 'notjubal',      name: '놋주발', price: 10_000_000, time: 11.8, cost: 450_000_000, icon: '🥣' },
+      { id: 'notjaengban',   name: '놋쟁반', price: 27_000_000, time: 12.6, cost: 1_200_000_000, icon: '🍽️' },
+      { id: 'notchotdae',    name: '놋촛대', price: 70_000_000, time: 13.4, cost: 3_200_000_000, icon: '🕯️' },
+      { id: 'nothwaro',      name: '놋화로', price: 180_000_000, time: 14.2, cost: 2_600_000_000_000_000_000_000, icon: '🔥' },
+      { id: 'notdaeya',      name: '놋대야', price: 470_000_000, time: 15.0, cost: 6_800_000_000_000_000_000_000, icon: '🛁' },
+      { id: 'jegi',          name: '제기', price: 1_200_000_000, time: 15.8, cost: 17_000_000_000_000_000_000_000, icon: '⚱️' },
+      { id: 'bansangki',     name: '반상기', price: 3_200_000_000, time: 16.6, cost: 46_000_000_000_000_000_000_000, icon: '🍱' },
+    ],
+  },
+  {
+    id: 'lacquer', name: '나전방', sign: '螺', cost: 1_200_000_000_000_000_000_000,
+    desc: '자개를 박아 세간을 꾸민다',
+    color: '#8a6a45',
+    ranks: ['자개', '진주', '왕실'],
+    promote: [850_000_000_000_000_000, 6_000_000_000_000_000_000],
+    items: [
+      { id: 'najeonbit',     name: '나전빗', price: 8_300_000, time: 11.6, cost: 0, icon: '💈' },
+      { id: 'gyeongdae',     name: '경대', price: 22_000_000, time: 12.4, cost: 990_000_000, icon: '🪞' },
+      { id: 'ham',           name: '함', price: 56_000_000, time: 13.2, cost: 2_500_000_000, icon: '🎁' },
+      { id: 'mungap',        name: '문갑', price: 150_000_000, time: 14.0, cost: 6_800_000_000, icon: '🗄️' },
+      { id: 'jwagyeong',     name: '좌경', price: 380_000_000, time: 14.8, cost: 38_000_000_000_000_000_000_000, icon: '🔍' },
+      { id: 'samcheungjang',  name: '삼층장', price: 990_000_000, time: 15.6, cost: 100_000_000_000_000_000_000_000, icon: '🪜' },
+      { id: 'byeongpung',    name: '자개병풍', price: 2_600_000_000, time: 16.4, cost: 260_000_000_000_000_000_000_000, icon: '🖼️' },
+      { id: 'najeonnong',    name: '나전롱', price: 6_700_000_000, time: 17.2, cost: 680_000_000_000_000_000_000_000, icon: '👘' },
+    ],
+  },
 ];
 
 /* ───────────── 손님 ─────────────
@@ -707,6 +792,13 @@ export const DISTRICTS = [
   { id: 'jeoja', name: '저잣거리', rows: [18, 29], cost: 2_000_000_000, stars: 15,
     shops: ['gaekju', 'skewer', 'ricecake', 'butcher'],
     desc: '객주와 먹거리 가게가 늘어선 아랫동네' },
+  /* ★ 이 문턱은 **곡선에서 이은 값**이지 아직 재지 못한 값이다.
+   * 봇이 여기 닿으려면 여덟 시간을 훌쩍 넘겨야 해서(어물전 값이 5Qa다)
+   * 지금 도구로는 한 판이 너무 길다. 긴 판을 돌릴 수 있게 되면 잰다 —
+   * 저잣거리(성 15·2B)가 6시간55분에 열린 비율을 따라 놓았다. */
+  { id: 'keunjang', name: '큰장마당', rows: [30, 47], cost: 500_000_000_000_000, stars: 40,
+    shops: ['fish', 'cloth', 'hat', 'brass', 'lacquer'],
+    desc: '팔도의 물산이 모이는 큰 장' },
 ];
 
 export const GUARD = {
