@@ -13,6 +13,14 @@ class_name CardPopup
 
 var sim: Sim
 var _t: float = 0.0
+## 뽑기 연출의 단계. "" = 연출 없음(바로 보여줌) · back → flip → done.
+## 백 번 뽑는 게임이라 **어디서든 누르면 즉시 끝으로 간다** — 연출은
+## 첫 열 번의 설렘이지 백 번째의 기다림이 아니다.
+var _phase: String = ""
+var _pt: float = 0.0
+var _front: Dictionary = {}          ## 뒤집힌 뒤에 보여줄 앞면
+var _bg: StyleBoxFlat                ## 테두리 색을 등급 색으로 물들이려고 잡아 둔다
+var _flash: ColorRect                ## 진귀 이상에서 한 번 번쩍이는 막
 var _cardbox: PanelContainer
 var _art: TextureRect
 var _title: Label
@@ -50,6 +58,7 @@ func _ready() -> void:
 	bg.content_margin_top = 14; bg.content_margin_bottom = 14
 	bg.shadow_color = Color(0, 0, 0, 0.3)
 	bg.shadow_size = 14
+	_bg = bg
 	_cardbox.add_theme_stylebox_override("panel", bg)
 	center.add_child(_cardbox)
 
@@ -86,6 +95,18 @@ func _ready() -> void:
 	ok.text = "받는다"
 	ok.pressed.connect(close)
 	box.add_child(ok)
+	# 번쩍이는 막 — 제일 위에. 진귀 이상이 나올 때 한 번 하얗게 스친다.
+	_flash = ColorRect.new()
+	_flash.color = Color(1, 0.98, 0.9, 0.0)
+	_flash.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_flash)
+	# 연출 중에 아무 데나 누르면 끝으로 건너뛴다
+	gui_input.connect(_on_input)
+
+func _on_input(e: InputEvent) -> void:
+	if e is InputEventMouseButton and (e as InputEventMouseButton).pressed and _phase != "":
+		_finish_flip()
 
 func show_card(shop_id: String, rank: int) -> void:
 	_t = 0.0
@@ -105,6 +126,10 @@ func show_card(shop_id: String, rank: int) -> void:
 
 ## 뽑은 카드. 여러 장이면 **제일 좋은 것 한 장**을 크게 띄우고 나머지는 줄로 적는다.
 ## 열 장을 한 장씩 넘겨 보여주면 그게 더 지루하다.
+##
+## 순서(MOTION.md): 뒷면 → 테두리가 등급 색으로 물든다 → 뒤집힌다 → 앞면.
+## **등급이 뒤집히기 전에 새어 나오는 것**이 이 연출의 전부다 — "뭐가 나올까"가
+## 그 0.45초 동안 있어야 뽑는 맛이 난다.
 func show_pull(got: Array) -> void:
 	if got.is_empty():
 		return
@@ -115,12 +140,6 @@ func show_pull(got: Array) -> void:
 			best = r
 	var g: Dictionary = Sim.guest_by_id(String(best.id))
 	var gr: Dictionary = Content.CARD_GRADES[int(best.grade) - 1]
-	_art.texture = Art.tex("guests", String(best.id))
-	_art.visible = _art.texture != null
-	_sign.visible = _art.texture == null
-	_sign.text = String(g.face)
-	_title.text = "%s %s" % [g.name, "— 처음 만났다!" if best.get("isNew", false) else ""]
-	_title.add_theme_color_override("font_color", Color(gr.color))
 	var counts: Dictionary = {}
 	for r in got:
 		var k: int = int(r.grade)
@@ -129,9 +148,56 @@ func show_pull(got: Array) -> void:
 	for k in range(6, 0, -1):
 		if counts.has(k):
 			parts.append("%s%s %d" % [Content.CARD_GRADES[k - 1].face, Content.CARD_GRADES[k - 1].name, int(counts[k])])
-	_sub.text = "%s %s · %d장 뽑음\n%s" % [gr.face, gr.name, got.size(), " · ".join(parts)]
-	_head_label.text = "새 손님!" if best.get("isNew", false) else "카드를 뽑았다"
+	# 앞면은 아직 안 보여준다 — 뒤집힌 뒤에 입힐 것만 챙겨 둔다
+	_front = {
+		"tex": _pull_art(String(best.id)),
+		"face": String(g.face),
+		"title": "%s %s" % [g.name, "— 처음 만났다!" if best.get("isNew", false) else ""],
+		"color": Color(gr.color),
+		"sub": "%s %s · %d장 뽑음\n%s" % [gr.face, gr.name, got.size(), " · ".join(parts)],
+		"head": "새 손님!" if best.get("isNew", false) else "카드를 뽑았다",
+		"grade": int(best.grade),
+	}
+	# 뒷면부터
+	_art.visible = false
+	_sign.visible = true
+	_sign.text = "🎴"
+	_title.text = "…"
+	_title.add_theme_color_override("font_color", Color("8a7a63"))
+	_sub.text = " \n "
+	_head_label.text = "뽑는 중"
+	_bg.border_color = Color("a8763e")
+	_phase = "back"
+	_pt = 0.0
 	visible = true
+
+## 카드에 띄울 그림 — 초상(cards/<id>-1)이 있으면 그것, 없으면 걷는 그림,
+## 둘 다 없으면 이모지. 그림 주문서의 '카드 1단'이 들어오면 여기가 살아난다.
+func _pull_art(gid: String) -> Texture2D:
+	var t: Texture2D = Art.tex("cards", gid + "-1")
+	if t != null:
+		return t
+	return Art.tex("guests", gid)
+
+## 연출을 끝까지 감는다 — 눌러서 건너뛰든, 시간이 다 됐든 여기로 온다.
+func _finish_flip() -> void:
+	if _front.is_empty():
+		_phase = ""
+		return
+	_art.texture = _front.tex
+	_art.visible = _art.texture != null
+	_sign.visible = _art.texture == null
+	_sign.text = String(_front.face)
+	_title.text = String(_front.title)
+	_title.add_theme_color_override("font_color", _front.color)
+	_sub.text = String(_front.sub)
+	_head_label.text = String(_front.head)
+	_bg.border_color = _front.color
+	_cardbox.scale = Vector2.ONE
+	# 진귀 이상은 한 번 번쩍인다. 흔함은 조용히 — 전부 요란하면 아무것도 요란하지 않다.
+	_flash.color.a = 0.75 if int(_front.grade) >= 4 else 0.0
+	_phase = ""
+	_front = {}
 
 ## 룰렛 결과.
 func show_spin(got: Dictionary) -> void:
@@ -167,12 +233,52 @@ func show_zone(dz: Dictionary) -> void:
 
 func close() -> void:
 	visible = false
+	_phase = ""
+	_front = {}
+	_bg.border_color = Color("a8763e")
+	_cardbox.scale = Vector2.ONE
 
 ## 뜰 때 살짝 커지며 나타난다. 툭 나타나면 "언제 떴지" 하고 지나친다.
 func _process(delta: float) -> void:
 	if not visible or _cardbox == null:
 		return
-	_t = min(_t + delta * 4.0, 1.0)
-	var e: float = 1.0 - pow(1.0 - _t, 3.0)
 	_cardbox.pivot_offset = _cardbox.size * 0.5
-	_cardbox.scale = Vector2.ONE * (0.86 + 0.14 * e)
+	if _flash.color.a > 0.0:
+		_flash.color.a = max(0.0, _flash.color.a - delta * 2.6)
+	match _phase:
+		"back":
+			# 테두리가 등급 색으로 차오른다 — 등급이 먼저 새어 나온다
+			_pt += delta
+			var gr: Dictionary = Content.CARD_GRADES[int(_front.grade) - 1]
+			var p: float = clampf(_pt / 0.45, 0.0, 1.0)
+			_bg.border_color = Color("a8763e").lerp(Color(gr.color), p)
+			_cardbox.scale = Vector2.ONE * (0.86 + 0.14 * p)
+			if _pt >= 0.45:
+				_phase = "flip"
+				_pt = 0.0
+		"flip":
+			# 옆으로 납작해졌다가 다시 펴진다 — 반 넘어가는 순간 앞면으로 갈아입는다
+			_pt += delta
+			var q: float = clampf(_pt / 0.25, 0.0, 1.0)
+			_cardbox.scale = Vector2(absf(cos(q * PI)), 1.0)
+			if q >= 0.5 and _sign.text == "🎴":
+				_finish_flip_face()
+			if q >= 1.0:
+				_finish_flip()
+		_:
+			_t = min(_t + delta * 4.0, 1.0)
+			var e: float = 1.0 - pow(1.0 - _t, 3.0)
+			_cardbox.scale = Vector2.ONE * (0.86 + 0.14 * e)
+
+## 뒤집히는 중간에 앞면만 갈아입는다(연출은 계속 돈다)
+func _finish_flip_face() -> void:
+	if _front.is_empty():
+		return
+	_art.texture = _front.tex
+	_art.visible = _art.texture != null
+	_sign.visible = _art.texture == null
+	_sign.text = String(_front.face)
+	_title.text = String(_front.title)
+	_title.add_theme_color_override("font_color", _front.color)
+	_sub.text = String(_front.sub)
+	_head_label.text = String(_front.head)

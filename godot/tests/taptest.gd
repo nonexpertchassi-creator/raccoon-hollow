@@ -178,6 +178,15 @@ func _process(_d: float) -> void:
 			fails.append("1회 뽑기를 눌렀는데 안 뽑혔다")
 		if not main.card.visible:
 			fails.append("뽑았는데 카드가 안 떴다")
+		# 연출 — 뒷면으로 시작해서, 시간이 흐르면 앞면으로 뒤집혀 끝난다
+		if main.card._phase != "back":
+			fails.append("뽑았는데 뒷면 연출이 시작 안 됐다")
+		for i in range(40):
+			main.card._process(0.05)
+		if main.card._phase != "":
+			fails.append("연출이 2초가 지나도 안 끝났다")
+		if main.card._title.text == "…":
+			fails.append("카드가 앞면으로 안 뒤집혔다")
 		main.card.close()
 	# 열 장 뽑기 — 드묾 보장이 걸리는 자리
 	var pull10: Button = _find_btn(main.panel, "10회")
@@ -186,6 +195,14 @@ func _process(_d: float) -> void:
 		pull10.emit_signal("pressed")
 		if s.gems >= g0:
 			fails.append("10회 뽑기를 눌렀는데 젬이 안 줄었다")
+		# 건너뛰기 — 연출 중에 아무 데나 누르면 즉시 앞면이다.
+		# 백 번째 뽑기에서 이게 안 되면 연출이 손맛이 아니라 형벌이 된다.
+		var tapev := InputEventMouseButton.new()
+		tapev.button_index = MOUSE_BUTTON_LEFT
+		tapev.pressed = true
+		main.card._on_input(tapev)
+		if main.card._phase != "":
+			fails.append("연출 중에 눌렀는데 안 건너뛰어진다")
 		main.card.close()
 	# 룰렛 — 무료 한 번
 	main.panel.tab = "work"
