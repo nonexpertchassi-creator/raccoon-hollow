@@ -20,6 +20,8 @@
 - `PLAN.md` — **하루하루의 결정과 실패가 전부 적혀 있다.** 뭘 왜 그렇게 했는지
   모르겠으면 여기부터 읽는다. 길지만 이 프로젝트의 기억이다.
 - `PROCESS.md` — 제작 회고와 다음 순서.
+- `SYSTEMS.md` — **기능 지도.** *"이걸 고치면 어디가 흔들리나."*
+  숫자를 만지기 전에 여기서 파급을 먼저 본다.
 - `FLOW.md` — **흐름과 꼬인 곳.** 무엇이 무엇과 이어지는지, 어디가 끊겼는지를
   그림으로 본다. 기능을 더 넣기 전에 여기부터 맞춘다.
 - `MOTION.md` — **움직임과 손맛.** 무엇이 어떻게 움직여야 하는지.
@@ -81,6 +83,7 @@ node tools/balance.mjs 8 1       # 옛 자바스크립트판 측정(답안지 �
 tools/shopup.sh                  # 가게 강화가 이득인지 — **씨앗 다섯으로** 잰다
 node tools/gen-content.mjs       # content.js → godot/rules/content.gd 다시 뽑기
 node tools/guests.mjs 6          # 손님 등장 문턱을 목표 시각에 수렴시킨다
+tools/shots.sh                   # **게임의 모든 화면을 한 번에 찍는다** → shots/
 node tools/art.mjs --write       # ASSETS.md 그림 목록 갱신
 node tools/bundle.mjs            # 자바스크립트판을 nogur.html 한 장으로
 ```
