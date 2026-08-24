@@ -24,6 +24,8 @@ var on_card: Callable = Callable()
 var on_pull: Callable = Callable()
 ## 룰렛을 돌려 달라고 부탁한다. 광고 기다리기가 있어서 main이 맡는다.
 var on_spin: Callable = Callable()
+## 바퀴가 멈췄다고 알리는 줄 — 그때 결과 창을 띄운다
+var on_landed: Callable = Callable()
 ## 뽑기용 주사위. sim의 주사위는 tick이 쓰고 있으니 여기서 따로 굴린다.
 var _rng: Rng = Rng.new(20260822)
 ## 꾹 누르고 있는 품목. 누르는 동안 계속 오른다.
@@ -469,8 +471,20 @@ func _do_pull(n: int) -> void:
 	rebuild()
 
 ## ── 룰렛 ──
+## 창을 다시 그려도 바퀴는 **살려 둔다.** 돌고 있는 중에 새로 만들면
+## 그 순간 각도가 0으로 돌아가 바퀴가 튄다.
+var wheel: Wheel = null
+
 func _roulette_body() -> void:
 	sim.roul_refill()
+	if wheel == null:
+		wheel = Wheel.new()
+		wheel.sim = sim
+		if on_landed.is_valid():
+			wheel.landed.connect(func(_w: int): on_landed.call())
+	if wheel.get_parent() != null:
+		wheel.get_parent().remove_child(wheel)
+	_box.add_child(wheel)
 	_box.add_child(_label("오늘 남은 횟수 — 무료 %d · 광고 %d" % [
 		int(sim.roulFree), int(sim.roulAd)], 15, Color("a8763e")))
 	_box.add_child(_label("매일 자정에 다시 찬다", 11, Color("8a7a63")))
@@ -482,6 +496,8 @@ func _roulette_body() -> void:
 		11, Color("8a7a63"), true))
 
 	_box.add_child(_label("칸과 확률", 15, Color("5a4e3d")))
+	_box.add_child(_label("바퀴가 멈추는 칸은 **돌리기 전에 이미 정해진다.** 바퀴는 그 칸에 맞춰 도는 것이다.",
+		11, Color("8a7a63"), true))
 	for w in Content.ROULETTE.wedges:
 		var line := HBoxContainer.new()
 		var nm: Label = _label(String(w.label), 13)

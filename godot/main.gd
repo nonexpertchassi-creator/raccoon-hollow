@@ -157,6 +157,10 @@ func _ready() -> void:
 	panel.on_card = _show_card
 	panel.on_pull = _show_pull
 	panel.on_spin = _spin
+	panel.on_landed = func():
+		if _spinResult != null:
+			_reveal_spin(_spinResult)
+			_spinResult = null
 	_layer.add_child(panel)
 	card = CardPopup.new()
 	card.sim = sim
@@ -338,6 +342,18 @@ func _finish_spin(by_ad: bool) -> void:
 	var got: Variant = sim.spin(by_ad, rng)
 	if got == null:
 		return
+	# ★ 상은 여기서 이미 정해졌다. 바퀴는 **그 칸에 맞춰** 돌 뿐이다.
+	#   순서를 뒤집으면 화면의 오차가 확률이 되어 고지한 표가 거짓말이 된다.
+	if panel.wheel != null and panel.wheel.is_inside_tree():
+		_spinResult = got
+		panel.wheel.spin_to(int(got.wedge))
+		return
+	_reveal_spin(got)
+
+var _spinResult: Variant = null
+
+## 바퀴가 멈춘 뒤에 결과 창을 띄운다. 먼저 띄우면 바퀴를 볼 이유가 없어진다.
+func _reveal_spin(got: Dictionary) -> void:
 	sfx.play("quest")
 	card.show_spin(got)
 	panel.rebuild()

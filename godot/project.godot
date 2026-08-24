@@ -12,6 +12,20 @@ config_version=5
 
 config/name="너구리 만물상"
 run/main_scene="res://main.tscn"
+
+; ── 켤 때 뜨는 Godot 로고를 끈다 ──
+; Godot은 무료·로열티 0이고 **로고를 지우는 것도 허락한다**(MIT 허가서).
+; 유니티처럼 "만든 도구를 반드시 보여줘야 한다"는 조건이 없다.
+;
+; show_image=false 면 아무 그림도 안 뜨고 bg_color만 잠깐 보인다.
+; 그 색을 마을 풀색으로 맞춰 뒀다 — 검정에서 초록으로 튀는 것보다
+; 처음부터 그 색이면 '켜졌다'는 느낌만 남고 로고 자리가 안 보인다.
+;
+; 나중에 우리 그림을 넣으려면 image 에 파일을 대고 show_image 를 도로 켠다.
+application/boot_splash/show_image=false
+application/boot_splash/bg_color=Color(0.435, 0.506, 0.349, 1)
+application/boot_splash/fullsize=false
+application/boot_splash/use_filter=true
 config/features=PackedStringArray("4.7", "GL Compatibility")
 "프로젝트가 손상됐다ê³ ë§íë¤(ì¬ì¤ì'ìë¤'ëë»).config/icon"="res://art/icon.png"
 
