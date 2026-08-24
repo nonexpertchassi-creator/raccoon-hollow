@@ -242,13 +242,19 @@ func _process(_d: float) -> void:
 	s.cards["rabbit"] = 999.0
 	var lv0: int = s.regular_lv("rabbit")
 	main.panel.open_kind("guests")
-	var starbtn: Button = _find_btn(main.panel, "%d성으로" % (lv0 + 2))
-	if starbtn == null:
-		fails.append("도감에 성 올리는 단추가 없다")
+	if not main.panel.codex_tiles.has("rabbit"):
+		fails.append("도감 판에 토끼 칸이 없다")
 	else:
-		starbtn.emit_signal("pressed")
-		if s.regular_lv("rabbit") != lv0 + 1:
-			fails.append("성 올리기를 눌렀는데 안 올랐다")
+		(main.panel.codex_tiles["rabbit"] as Button).emit_signal("pressed")
+		if not main.card.visible:
+			fails.append("도감 칸을 눌렀는데 큰 카드가 안 떴다")
+		elif not main.card._action.visible:
+			fails.append("카드가 넉넉한데 성 올리기 단추가 없다")
+		else:
+			main.card._action.emit_signal("pressed")
+			if s.regular_lv("rabbit") != lv0 + 1:
+				fails.append("성 올리기를 눌렀는데 안 올랐다")
+		main.card.close()
 	main.panel.close()
 
 	# 10) 잠긴 구역 — 안 열리고, 조건이 차면 눌러서 열리고, 그다음에야 가게가 열린다

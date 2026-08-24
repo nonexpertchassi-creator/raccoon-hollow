@@ -159,6 +159,7 @@ func _ready() -> void:
 	panel.on_card = _show_card
 	panel.on_pull = _show_pull
 	panel.on_spin = _spin
+	panel.on_guest = func(gid: String): card.show_guest(gid)
 	panel.on_landed = func():
 		if _spinResult != null:
 			_reveal_spin(_spinResult)

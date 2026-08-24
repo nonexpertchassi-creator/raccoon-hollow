@@ -367,40 +367,66 @@ func _cards_body() -> void:
 			row.add_child(slot)
 		_box.add_child(row)
 
+## 도감 — **카드가 판으로 깔린다.** 뽑기 결과와 같은 말이다.
+## 만난 손님은 카드로, 아직 못 만난 손님은 ?로. 누르면 크게 뜨고 거기서 성을 올린다.
+## 글줄로 서른 줄을 쌓으면 도감이 아니라 장부가 된다 — 모은 것은 펼쳐 보여야 한다.
+var codex_tiles: Dictionary = {}     ## 손님 id → 단추 (시험이 눌러 보려고 잡아 둔다)
+var on_guest: Callable = Callable()  ## 카드를 눌렀다 — 크게 띄우는 것은 main이 맡는다
+
 func _guest_list() -> void:
 	_box.add_child(_label("만난 손님 %d / %d · 성 합계 %d" % [
 		sim.guests.size(), Content.GUESTS.size(), sim.regular_sum()], 13, Color("5a4e3d")))
-	_box.add_child(_label("손님은 뽑기로 만난다. 같은 손님의 카드를 모으면 성을 올린다.",
-		11, Color("8a7a63"), true))
+	codex_tiles = {}
+	var grid := GridContainer.new()
+	grid.columns = 5
+	grid.add_theme_constant_override("h_separation", 6)
+	grid.add_theme_constant_override("v_separation", 6)
+	_box.add_child(grid)
 	for g in Content.GUESTS:
 		var gid: String = String(g.id)
+		var met: bool = sim.guests.has(gid)
 		var gr: Dictionary = Content.CARD_GRADES[int(g.grade) - 1]
-		if not sim.guests.has(gid):
-			# 아직 안 만난 손님. **등급만 알려준다** — 무엇이 남았는지는 보여야
-			# 뽑을 마음이 생기고, 누구인지까지 보여주면 뽑을 이유가 없다.
-			_box.add_child(_label("%s  ? ? ?   %s" % [gr.face, gr.name], 13, Color("b3a992")))
-			continue
-		var lv: int = sim.regular_lv(gid)
-		var have: float = sim.cards.get(gid, 0.0)
-		var need: Variant = sim.star_need(gid)
-		_box.add_child(_label("%s %s   %d성 %s   %s%s" % [
-			g.face, g.name, lv + 1, Content.REGULARS[lv].name, gr.face, gr.name], 14))
-		if need == null:
-			_box.add_child(_label("20성 — 더 오를 곳이 없다 · 카드 %s장" % Num.fmt(have), 11, Color("a8763e")))
+		var b := Button.new()
+		b.custom_minimum_size = Vector2(70, 96)
+		var st := StyleBoxFlat.new()
+		st.bg_color = Color("f6efdc") if met else Color("e2d6bb")
+		st.border_color = Color(gr.color) if met else Color("c9bda1")
+		st.set_border_width_all(2)
+		st.set_corner_radius_all(8)
+		b.add_theme_stylebox_override("normal", st)
+		b.add_theme_stylebox_override("hover", st)
+		b.add_theme_stylebox_override("pressed", st)
+		b.add_theme_stylebox_override("disabled", st)
+		var v := VBoxContainer.new()
+		v.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		v.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		v.alignment = BoxContainer.ALIGNMENT_CENTER
+		b.add_child(v)
+		var face := _label(String(g.face) if met else "?", 24, Color("2b241b") if met else Color("b3a992"))
+		face.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		face.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		v.add_child(face)
+		var nm := _label(String(g.name) if met else String(gr.name), 10,
+			Color("5a4e3d") if met else Color("b3a992"))
+		nm.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		nm.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		v.add_child(nm)
+		if met:
+			# ★n성, 그리고 올릴 수 있으면 비취색으로 알린다 — 서른 칸을
+			# 하나하나 열어 보게 하면 아무도 안 올린다
+			var can: bool = sim.can_star_up(gid)
+			var tail := _label("▲ 올릴 수 있다" if can else "★%d" % sim.regular_star(gid), 9.5,
+				Color("4a7c59") if can else Color("a8763e"))
+			tail.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			tail.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			v.add_child(tail)
+			b.pressed.connect(func():
+				if on_guest.is_valid():
+					on_guest.call(gid))
 		else:
-			_bar(have / float(need), Color(gr.color))
-			var row := HBoxContainer.new()
-			var txt: Label = _label("카드 %s / %s장" % [Num.fmt(have), Num.fmt(float(need))], 12, Color("5a4e3d"))
-			txt.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			row.add_child(txt)
-			# ★ 성은 **눌러서** 올린다. 저절로 오르면 "왜 올랐지"가 되고,
-			#   모은 카드를 쓰는 그 순간이 사라진다.
-			row.add_child(_btn("%d성으로" % (lv + 2), sim.can_star_up(gid),
-				func(): sim.star_up(gid); rebuild(), false))
-			_box.add_child(row)
-		_box.add_child(_label("%s · %d초마다 %d개 · 값 ×%s · 누적 %s개" % [
-			g.desc, int(g.every), int(g.qty), str(g.pay),
-			Num.fmt(sim.bought.get(gid, 0.0))], 11, Color("8a7a63"), true))
+			b.disabled = true
+		grid.add_child(b)
+		codex_tiles[gid] = b
 
 ## ── 뽑기 ──
 ##

@@ -31,6 +31,8 @@
 - `NAMES.md` — **이름과 뜻.** 같은 것을 다른 말로, 다른 것을 같은 말로 부르면
   거기서부터 대화가 어긋난다. 새 이름을 만들기 전에 여기부터 본다.
 - `ASSETS.md` — 필요한 그림 목록(자동 생성).
+- `BESTIARY.md` — **동물 도감**(자동 생성). 손님 서른의 성격·생김새·버릇.
+  그림 그리는 쪽이 "이 짐승이 누구냐"를 물으면 여기다. 고치려면 content.js의 `look`.
 
 ## 반드시 지키는 것
 
@@ -88,6 +90,7 @@ node tools/guests.mjs 6          # 손님 등장 문턱을 목표 시각에 수�
 tools/shots.sh                   # **게임의 모든 화면을 한 번에 찍는다** → shots/
 node tools/dash.mjs              # 봇이 남긴 자국(godot/stats.json) → dash.html
 node tools/art.mjs --write       # ASSETS.md 그림 목록 갱신
+node tools/bestiary.mjs          # BESTIARY.md 동물 도감 갱신
 node tools/bundle.mjs            # 자바스크립트판을 nogur.html 한 장으로
 ```
 

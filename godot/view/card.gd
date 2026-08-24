@@ -36,6 +36,7 @@ var _mode: String = ""               ## "" 한 장짜리 · "grid" 판
 var _ci: int = 0                     ## 다음에 뒤집을 자리
 var _ct: float = 0.0
 var _after_new: Array = []           ## 판이 끝난 뒤 크게 띄울 '처음 만난 손님'들
+var _action: Button                  ## 성 올리기 단추 — 도감에서 볼 때만
 var _cardbox: PanelContainer
 var _art: TextureRect
 var _title: Label
@@ -106,6 +107,10 @@ func _ready() -> void:
 	_sub.add_theme_font_size_override("font_size", 12)
 	_sub.add_theme_color_override("font_color", Color("8a7a63"))
 	box.add_child(_sub)
+	# 성 올리기 — 도감에서 카드를 눌러 크게 볼 때만 나온다
+	_action = Button.new()
+	_action.visible = false
+	box.add_child(_action)
 	var ok := Button.new()
 	ok.text = "받는다"
 	ok.pressed.connect(close)
@@ -160,6 +165,7 @@ func _on_input(e: InputEvent) -> void:
 
 func show_card(shop_id: String, rank: int) -> void:
 	_t = 0.0
+	_action.visible = false
 	_mode = ""
 	_gridbox.visible = false
 	_cardbox.visible = true
@@ -226,8 +232,45 @@ func show_pull(got: Array) -> void:
 	visible = true
 
 ## 한 장짜리 — 뒷면에서 뒤집힌다 (판이 끝난 뒤 '처음 만난 손님'도 이걸로 띄운다)
+## 도감에서 카드 하나를 크게 본다. 여기서 성을 올린다 —
+## 판에 서른 칸이 깔리니, 올리는 단추는 연 카드 안에 두는 것이 맞다.
+func show_guest(gid: String) -> void:
+	_mode = ""
+	_phase = ""
+	_t = 0.0
+	_gridbox.visible = false
+	_cardbox.visible = true
+	var g: Dictionary = Sim.guest_by_id(gid)
+	var gr: Dictionary = Content.CARD_GRADES[int(g.grade) - 1]
+	_art.texture = _pull_art(gid)
+	_art.visible = _art.texture != null
+	_sign.visible = _art.texture == null
+	_sign.text = String(g.face)
+	_head_label.text = "손님 도감"
+	_title.text = "%s — %d성 %s" % [g.name, sim.regular_star(gid), sim.regular_name(gid)]
+	_title.add_theme_color_override("font_color", Color(gr.color))
+	var need: Variant = sim.star_need(gid)
+	var have: float = sim.cards.get(gid, 0.0)
+	_sub.text = "%s %s · %s\n%d초마다 %d개 · 값 ×%s\n%s" % [
+		gr.face, gr.name, g.desc, int(g.every), int(g.qty), str(g.pay),
+		("20성 — 더 오를 곳이 없다" if need == null
+			else "카드 %s / %s장" % [Num.fmt(have), Num.fmt(float(need))])]
+	_bg.border_color = Color(gr.color)
+	if need != null and sim.can_star_up(gid):
+		_action.text = "%d성으로 올린다" % (sim.regular_star(gid) + 1)
+		_action.visible = true
+		for c in _action.pressed.get_connections():
+			_action.pressed.disconnect(c.callable)
+		_action.pressed.connect(func():
+			if sim.star_up(gid):
+				show_guest(gid))       # 오른 것을 그 자리에서 보여준다
+	else:
+		_action.visible = false
+	visible = true
+
 func _show_one(r: Dictionary, total: int) -> void:
 	_t = 0.0
+	_action.visible = false
 	var g: Dictionary = Sim.guest_by_id(String(r.id))
 	var gr: Dictionary = Content.CARD_GRADES[int(r.grade) - 1]
 	_front = {
@@ -337,6 +380,7 @@ func _finish_flip() -> void:
 ## 룰렛 결과.
 func show_spin(got: Dictionary) -> void:
 	_t = 0.0
+	_action.visible = false
 	_mode = ""
 	_gridbox.visible = false
 	_cardbox.visible = true
@@ -360,6 +404,7 @@ func show_spin(got: Dictionary) -> void:
 ## 구역이 열렸다 — 동네째 하나가 드러나는 순간이라 카드로 축하한다.
 func show_zone(dz: Dictionary) -> void:
 	_t = 0.0
+	_action.visible = false
 	_mode = ""
 	_gridbox.visible = false
 	_cardbox.visible = true
