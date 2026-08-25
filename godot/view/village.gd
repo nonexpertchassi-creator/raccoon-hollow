@@ -623,7 +623,34 @@ func _plot_base(i: int, n: int) -> void:
 	var E: Vector2 = Iso.w(o.x + n, o.y)
 	var S: Vector2 = Iso.w(o.x + n, o.y + n)
 	var W: Vector2 = Iso.w(o.x, o.y + n)
-	_quad(N, E, S, W, C.yardfloor)
+	# ★ 바닥도 등급 따라 자란다(2026-08-26, 유저): 모래 → 나무 마루 → 돌판.
+	#   담(초가→돌담→기와)과 같은 원칙 — 승급이 창 안 숫자가 아니라
+	#   마을 풍경에서 보여야 한다. 전부 코드 그림이라 그림 장수는 안 는다.
+	var frank: int = sim.rank_of(shop.id)
+	var o5: Vector2i = Iso.org(sim, i)
+	match frank:
+		0:
+			# 모래 — 누런 흙바닥에 잔돌 몇 개
+			_quad(N, E, S, W, C.yardfloor)
+			for g5 in range(n * 2):
+				var gx: float = fmod(float(g5) * 0.37 + 0.2, 1.0) * float(n)
+				var gy: float = fmod(float(g5) * 0.61 + 0.1, 1.0) * float(n)
+				draw_circle(Iso.w(o5.x + gx, o5.y + gy), 2.0, Color(0.72, 0.64, 0.48, 0.5))
+		1:
+			# 나무 마루 — 널빤지 결이 한 방향으로
+			_quad(N, E, S, W, Color("cfa878"))
+			for k5 in range(1, n * 2):
+				var f5: float = float(k5) * 0.5
+				draw_line(Iso.w(o5.x + f5, float(o5.y)), Iso.w(o5.x + f5, float(o5.y + n)),
+					Color(0.68, 0.52, 0.36, 0.5), 1.5)
+		_:
+			# 돌판 — 잿빛 판석을 격자로 깐다
+			_quad(N, E, S, W, Color("bcb6a8"))
+			for k5 in range(1, n):
+				draw_line(Iso.w(o5.x + float(k5), float(o5.y)), Iso.w(o5.x + float(k5), float(o5.y + n)),
+					Color(0.6, 0.58, 0.52, 0.6), 1.5)
+				draw_line(Iso.w(float(o5.x), o5.y + float(k5)), Iso.w(float(o5.x + n), o5.y + float(k5)),
+					Color(0.6, 0.58, 0.52, 0.6), 1.5)
 	_outline(N, E, S, W, _shade(col, 0.16), 2.0)
 
 	# 담은 뒤 두 변에만. 앞에 세우면 마당 안이 가려진다.
