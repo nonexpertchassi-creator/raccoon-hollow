@@ -258,6 +258,43 @@ func rebuild() -> void:
 		"guests": _guests_body()
 		"ledger": _ledger_body()
 		"gacha": _fair_body()
+		"profile": _profile_body()
+
+## ── 프로필 ── 별명·얼굴·띠. 머리띠(위 표시줄)의 얼굴을 누르면 열린다.
+func _profile_body() -> void:
+	_head("프로필")
+	_box.add_child(_label("별명 (누르고 고쳐 쓴 뒤 줄바꿈)", 12, Color("8a7a63")))
+	var ne := LineEdit.new()
+	ne.text = String(sim.profile.name)
+	ne.max_length = 10
+	# 창을 다시 그리면 쓰던 글이 날아간다 — 확정(줄바꿈·포커스 이탈)에만 반영
+	ne.text_submitted.connect(func(t: String): sim.set_profile(t); rebuild())
+	ne.focus_exited.connect(func(): sim.set_profile(ne.text))
+	_box.add_child(ne)
+
+	_box.add_child(_label("얼굴 — 뽑기로 만난 손님만 고를 수 있다", 12, Color("8a7a63")))
+	var row: HBoxContainer = null
+	var faces: Array = [""]
+	for g in Content.GUESTS:
+		if sim.guests.has(String(g.id)):
+			faces.append(String(g.id))
+	for fi in range(faces.size()):
+		if fi % 6 == 0:
+			row = HBoxContainer.new()
+			row.add_theme_constant_override("separation", 6)
+			_box.add_child(row)
+		var fid: String = String(faces[fi])
+		var emoji: String = "🦝" if fid == "" else String(Sim.guest_by_id(fid).face)
+		var fb := _btn(emoji, String(sim.profile.face) != fid,
+			func(): sim.set_profile(null, fid); rebuild())
+		row.add_child(fb)
+
+	_box.add_child(_label("띠 — 단골 칭호를 딴 데까지 고를 수 있다", 12, Color("8a7a63")))
+	for bi in range(sim.band_max() + 1):
+		var b2: int = bi
+		var bb := _btn(String(Content.REGULARS[bi].name), sim.band_of() != bi,
+			func(): sim.set_profile(null, null, b2); rebuild())
+		_box.add_child(bb)
 
 ## ── 마을 의뢰와 젬 ──
 func _quests_body() -> void:

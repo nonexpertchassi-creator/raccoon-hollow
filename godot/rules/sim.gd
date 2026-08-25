@@ -85,6 +85,9 @@ var pulls: float = 0.0
 ## 처음이 빈 사전인 이유: 세는 칸이 늘어도 옛 저장본은 그 칸이 없다.
 ## 없으면 0으로 시작해야 하고, 빈 사전이면 그게 저절로 된다.
 var stats: Dictionary = {}
+## 프로필 — 별명·얼굴(뽑은 손님 얼굴만)·띠(단골 칭호). 머리띠(HUD)가 읽는다.
+## face가 ""이면 기본 너구리, band가 -1이면 지금 딴 제일 높은 칭호를 쓴다.
+var profile: Dictionary = {"name": "너구리", "face": "", "band": -1}
 
 func bump(key: String, by: float = 1.0) -> void:
 	stats[key] = float(stats.get(key, 0.0)) + by
@@ -357,6 +360,32 @@ func regular_lv_old(gid: String) -> int:
 		if n >= regular_need_old(gid, i):
 			out = i
 	return out
+
+## 딸 수 있는 제일 높은 띠(칭호) — 손님들 중 제일 높은 성이 곧 자격이다.
+func band_max() -> int:
+	var m: int = 0
+	for g in guests:
+		m = max(m, regular_lv(String(g)))
+	return m
+
+## 지금 두른 띠. 고른 적 없으면(-1) 제일 높은 것을 쓴다.
+func band_of() -> int:
+	var b: int = int(profile.get("band", -1))
+	if b >= 0 and b <= band_max():
+		return b
+	return band_max()
+
+## 프로필 고치기 — null인 칸은 안 건드린다. 얼굴은 **뽑은 손님만** 된다.
+func set_profile(nm: Variant = null, face: Variant = null, band: Variant = null) -> void:
+	if nm != null:
+		var t: String = String(nm).strip_edges().left(10)
+		if t != "":
+			profile.name = t
+	if face != null and (String(face) == "" or guests.has(String(face))):
+		profile.face = String(face)
+	if band != null and int(band) >= -1 and int(band) <= band_max():
+		profile.band = int(band)
+	bump("profile.set")
 
 func regular_name(gid: String) -> String: return Content.REGULARS[regular_lv(gid)].name
 func regular_star(gid: String) -> int: return regular_lv(gid) + 1
@@ -1476,6 +1505,7 @@ const SAVE_KEYS: Array[String] = [
 	"ledger", "shopUp",
 	"cards", "stars", "pulls", "guards", "roulFree", "roulAd", "roulDay",
 	"stats", "zones",
+	"profile",
 ]
 ## 글자로 저장했다 되돌리면 정수가 소수가 된다(-1 → -1.0). 자리를 세는 데
 ## 쓰는 것들은 도로 정수로 되돌린다 — 아니면 배열 자리를 못 찾는다.
@@ -1499,7 +1529,10 @@ const INT_KEYS: Array[String] = ["busy", "_qid", "_evIdx", "_oid"]
 ## 4판: 구역(zones)이 들어왔다. 3판 저장본은 zones 칸이 없어 기본값으로
 ## 시작하는데, 아래 load_from이 **열린 가게에서 구역을 되짚는다** —
 ## 저잣거리 가게를 이미 연 판이면 그 구역도 열린 것으로 친다.
-const SAVE_VER: int = 4
+## 5판: 프로필(profile)이 들어왔다. 4판 저장본은 그 칸이 없고, load_from이
+## 없는 칸을 건너뛰므로 기본값(너구리·기본 얼굴·자동 띠)으로 시작한다 —
+## 따로 옮길 것이 없다.
+const SAVE_VER: int = 5
 
 func save() -> Dictionary:
 	var d: Dictionary = {}

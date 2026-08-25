@@ -7,9 +7,16 @@ var sim: Sim
 var rng: Rng
 var village: Village
 var cam: Camera2D
+## 띠(칭호) 색 — 스무 계단을 다섯 켜로. 갈수록 귀한 색.
+const BAND_COLORS := [Color("8a7a63"), Color("4a7c59"), Color("3f6f9f"), Color("7d5fa0"), Color("a8763e")]
 var _hud: Label
+var _gemlbl: Label
+var _clock: Label
+var _avatar: Button
+var _avstyle: StyleBoxFlat
+var _namelbl: Label
+var _titlelbl: Label
 var _sub: Label
-var _log: Label
 var _acc: float = 0.0
 var panel: ShopPanel
 var card: CardPopup
@@ -122,15 +129,53 @@ func _ready() -> void:
 	box.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	box.offset_left = 16; box.offset_top = 12; box.offset_right = -16
 	_layer.add_child(box)
+	# 머리띠 — 왼쪽에 프로필(얼굴·별명·칭호 띠), 오른쪽에 엽전·젬·시각 그림.
+	# 소식 세 줄은 뺐다(유저) — 늘 펴 놓을 글이 아니다. 아래 '소식' 단추에 있다.
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 10)
+	box.add_child(row)
+	_avatar = Button.new()
+	_avatar.custom_minimum_size = Vector2(52, 52)
+	_avatar.expand_icon = true
+	_avatar.add_theme_font_size_override("font_size", 26)
+	_avstyle = StyleBoxFlat.new()
+	_avstyle.bg_color = Color(0.98, 0.96, 0.9)
+	_avstyle.set_border_width_all(3)
+	_avstyle.set_corner_radius_all(26)
+	for st in ["normal", "hover", "pressed"]:
+		_avatar.add_theme_stylebox_override(st, _avstyle)
+	_avatar.pressed.connect(func(): panel.open_kind("profile"))
+	row.add_child(_avatar)
+	var nb := VBoxContainer.new()
+	nb.add_theme_constant_override("separation", 0)
+	nb.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_child(nb)
+	_namelbl = Label.new()
+	_namelbl.add_theme_font_size_override("font_size", 16)
+	nb.add_child(_namelbl)
+	_titlelbl = Label.new()
+	_titlelbl.add_theme_font_size_override("font_size", 11)
+	nb.add_child(_titlelbl)
+	var sp := Control.new()
+	sp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(sp)
+	var money_box := VBoxContainer.new()
+	money_box.add_theme_constant_override("separation", 0)
+	money_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_child(money_box)
 	_hud = Label.new()
-	_hud.add_theme_font_size_override("font_size", 27)
-	box.add_child(_hud)
+	_hud.add_theme_font_size_override("font_size", 19)     # 엽전과 젬은 같은 크기(유저)
+	money_box.add_child(_hud)
+	_gemlbl = Label.new()
+	_gemlbl.add_theme_font_size_override("font_size", 19)
+	money_box.add_child(_gemlbl)
+	_clock = Label.new()
+	_clock.add_theme_font_size_override("font_size", 24)
+	row.add_child(_clock)
 	_sub = Label.new()
-	_sub.add_theme_font_size_override("font_size", 13)
+	_sub.add_theme_font_size_override("font_size", 12)
+	_sub.add_theme_color_override("font_color", Color(0.28, 0.24, 0.18, 0.8))
 	box.add_child(_sub)
-	_log = Label.new()
-	_log.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	box.add_child(_log)
 	# 아래 단추 줄 — 지도에서 못 누르는 것들
 	var bar := HBoxContainer.new()
 	bar.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
@@ -266,21 +311,30 @@ func _process(delta: float) -> void:
 func _paint() -> void:
 	# 폰 폭에 맞춘다. 한 줄에 다 넣으면 오른쪽이 잘려서 젬이 안 보인다.
 	_hud.text = "🪙 " + Num.fmt(sim.money)
-	# 맨 앞이 시각이다 — 낮과 밤이 돌기 시작했으니 지금이 언제인지 보여야
-	# "왜 어두워지지"가 안 나온다. 십이지시 한 글자면 자리도 안 먹는다.
-	_sub.text = "%s · 초당 🪙%s · 가게 %d/%d · 품목 %d · 손님 %d · 💎%d" % [
-		village.day_label(), Num.fmt(sim.income_per_sec()), sim.shops.size(), Content.SHOPS.size(),
-		sim.items.size(), sim.guests.size(), int(sim.gems)]
+	_gemlbl.text = "💎 %d" % int(sim.gems)
+	_clock.text = village.day_icon()
+	_sub.text = "초당 🪙" + Num.fmt(sim.income_per_sec())
+	_namelbl.text = String(sim.profile.name)
+	var bi: int = sim.band_of()
+	var bc: Color = BAND_COLORS[mini(bi / 4, BAND_COLORS.size() - 1)]
+	_titlelbl.text = String(Content.REGULARS[bi].name)
+	_titlelbl.add_theme_color_override("font_color", bc)
+	_avstyle.border_color = bc
+	var face: String = String(sim.profile.face)
+	var ft: Texture2D = null
+	if face != "":
+		ft = Art.tex("guests", face + "-front")
+		if ft == null:
+			ft = Art.tex("guests", face)
+	_avatar.icon = ft
+	_avatar.text = "" if ft != null else ("🦝" if face == "" else String(Sim.guest_by_id(face).face))
 	_guestbtn.text = "손님 %d/%d" % [sim.guests.size(), Content.GUESTS.size()]
 	_questbtn.text = "의뢰 %d" % sim.quests.size()
 	sim.roul_refill()
 	# 남은 횟수를 단추에 적는다 — 안 적으면 매일 열어 보고 확인해야 한다
 	var left: int = int(sim.roulFree) + int(sim.roulAd)
 	_fairbtn.text = "뽑기" if left == 0 else "뽑기 ●%d" % left
-	var lines: Array[String] = []
-	for i in range(min(3, sim.events.size())):
-		lines.append("· " + String(sim.events[i].msg))
-	_log.text = "\n".join(lines)
+
 
 ## 화면을 끌어서 마을을 둘러보고, 눌러서 논다.
 ## 마을 밖으로는 못 나간다 — 끝없는 초록 벌판이 나오면 길을 잃는다.

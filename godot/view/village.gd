@@ -763,20 +763,16 @@ func _dog() -> void:
 ## 해질녘·밤·새벽이다. 진짜 시계(폰 시각)를 안 쓰는 이유: 방치형은 한 번에
 ## 2~5분 논다 — 점심에만 켜는 사람은 밤을 영영 못 본다. 게임 시계면 한 판
 ## 안에서 낮과 밤을 다 만난다. 색은 화면 전체에 얇게 한 겹만 얹는다.
-const DAY_CYCLE := 1200.0
+const DAY_CYCLE := 2400.0    # 40분 하루 — 20분은 빨라 보였다(유저)
 func day_phase() -> float:
 	return clock_override if clock_override >= 0.0 else fmod(sim.t, DAY_CYCLE) / DAY_CYCLE
 
-## 하루 어디쯤인가 — 머리띠(위 표시줄)에 적는 글. 0은 아침 여섯 시.
-## ★ 처음엔 십이지시(사시·자시)로 적었다가 바로 지웠다(유저: "너무 한국풍이면
-##   플레이어가 더 어려워한다"). 멋보다 읽히는 게 먼저다 — 그냥 몇 시.
-##   분(分)은 안 적는다: 게임 한 시간이 현실 50초라 분까지 적으면 숫자가
-##   쉴 새 없이 돌아 소음이 된다.
-func day_label() -> String:
+## 하루 어디쯤인가 — 머리띠 오른쪽 끝의 그림 한 개.
+## ★ 십이지시(사시·자시) → 몇 시 → **그림만**, 두 번 깎였다(유저).
+##   글자는 결국 소음이었다 — 해가 떠 있으면 낮이고 달이 떠 있으면 밤이다.
+func day_icon() -> String:
 	var ph: float = day_phase()
-	var hour: int = int(fmod(6.0 + ph * 24.0, 24.0))
-	var icon: String = "☀️" if ph < 0.5 else ("🌆" if ph < 0.66 else ("🌙" if ph < 0.9 else "🌄"))
-	return "%s%d시" % [icon, hour]
+	return "☀️" if ph < 0.5 else ("🌆" if ph < 0.66 else ("🌙" if ph < 0.9 else "🌄"))
 
 func _sky() -> Color:
 	var ph: float = day_phase()

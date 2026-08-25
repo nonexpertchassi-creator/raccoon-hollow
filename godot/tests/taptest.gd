@@ -212,6 +212,26 @@ func _process(_d: float) -> void:
 		if undone > 0:
 			fails.append("건너뛰었는데 %d장이 아직 뒷면이다" % undone)
 		main.card.close()
+
+	# 프로필 — 얼굴을 누르면 창이 열리고, 별명·얼굴·띠가 규칙대로만 바뀐다
+	main.panel.open_kind("profile")
+	if not main.panel.visible or main.panel.kind != "profile":
+		fails.append("프로필 창이 안 열렸다")
+	# 다음 시험(룰렛)은 뽑기 창이 열려 있는 채로 이어진다 — 되돌려 놓는다
+	main.panel.open_kind("gacha")
+	main.sim.set_profile("검은너구리")
+	if String(main.sim.profile.name) != "검은너구리":
+		fails.append("별명을 바꿨는데 안 바뀌었다")
+	main.sim.set_profile("")                 # 빈 이름은 거절해야 한다
+	if String(main.sim.profile.name) != "검은너구리":
+		fails.append("빈 별명이 받아들여졌다")
+	main.sim.set_profile(null, "tiger")      # 안 뽑은 손님 얼굴은 거절
+	if String(main.sim.profile.face) == "tiger" and not main.sim.guests.has("tiger"):
+		fails.append("안 뽑은 손님 얼굴이 받아들여졌다")
+	main.sim.set_profile(null, null, 99)     # 못 딴 띠도 거절
+	if int(main.sim.profile.band) == 99:
+		fails.append("못 딴 띠가 받아들여졌다")
+
 	# 룰렛 — 무료 한 번
 	main.panel.tab = "work"
 	main.panel.rebuild()

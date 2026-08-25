@@ -54,7 +54,7 @@ func _ready() -> void:
 		var k: String = OS.get_environment("SHOT_PANEL")
 		# ★ 창 종류를 여기 안 적으면 도구가 그 창을 **가게 이름으로 알아듣는다**.
 		#   실제로 뽑기 창을 찍으려다 "gacha라는 가게가 없다"로 죽었다.
-		if k in ["quests", "guests", "ledger", "gacha"]:
+		if k in ["quests", "guests", "ledger", "gacha", "profile"]:
 			main.panel.open_kind(k)
 		else:
 			main.panel.open_for(k)
