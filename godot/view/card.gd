@@ -128,7 +128,7 @@ func _ready() -> void:
 	box.add_child(_action)
 	var ok := Button.new()
 	ok.text = "받는다"
-	ok.pressed.connect(close)
+	ok.pressed.connect(_ok_pressed)
 	box.add_child(ok)
 	# ── 판(여러 장 뽑기) ──
 	_gridbox = PanelContainer.new()
@@ -369,15 +369,14 @@ func _grid_finish() -> void:
 	_grid_ok.visible = true
 
 func _grid_done_pressed() -> void:
-	# 처음 만난 손님이 있으면 제일 귀한 것 하나를 크게 띄운다 — 유저가 남기자고 한 그 한 장
+	# 처음 만난 손님들을 **한 장씩 전부** 크게 띄운다(2026-08-25, 유저 —
+	# "새로운 건 다 보여야지"). 예전엔 제일 귀한 하나만 남기고 버렸다.
+	# 귀한 것부터 보여준다 — 받는다를 누르면 다음 장이 이어진다(아래 close).
 	if not _after_new.is_empty():
-		var best: Dictionary = _after_new[0]
-		for r in _after_new:
-			if int(r.grade) > int(best.grade):
-				best = r
-		_after_new = []
+		_after_new.sort_custom(func(a, b): return int(a.grade) > int(b.grade))
+		var head: Dictionary = _after_new.pop_front()
 		_mode = ""
-		_show_one(best, _tiles.size())
+		_show_one(head, _tiles.size())
 		return
 	close()
 
@@ -455,6 +454,16 @@ func show_zone(dz: Dictionary) -> void:
 	_title.add_theme_color_override("font_color", Color("2b241b"))
 	_sub.text = "%s\n무너진 집 %d채가 드러났다 — 하나씩 되살리자" % [String(dz.desc), (dz.shops as Array).size()]
 	visible = true
+
+## "받는다" — 새 손님이 줄 서 있으면 닫는 대신 다음 장을 잇는다.
+## ★ 이 고리를 close()에 넣었더니 **강제로 닫는 자리**(창 갈이, 시험)에서도
+##   다음 장이 떠 버렸다. 잇기는 단추의 일이고, 닫기는 닫기의 일이다.
+func _ok_pressed() -> void:
+	if not _after_new.is_empty():
+		var head: Dictionary = _after_new.pop_front()
+		_show_one(head, 1)      # 1 = "n장 중" 꼬리표 생략
+		return
+	close()
 
 func close() -> void:
 	visible = false

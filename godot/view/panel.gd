@@ -251,6 +251,7 @@ func _bar(ratio: float, col: Color) -> void:
 
 func rebuild() -> void:
 	for c in _box.get_children():
+		c.visible = false       # queue_free는 프레임 끝에 지워진다 — 그동안 겹쳐 보이면 깜박인다
 		c.queue_free()
 	match kind:
 		"shop": _shop_body()
@@ -455,7 +456,18 @@ func _fair_body() -> void:
 func _gacha_body() -> void:
 	var lv: int = sim.gacha_lv()
 	var nxt: Variant = sim.gacha_next()
-	_box.add_child(_label("뽑기 %d단계 · 여태 %s번 뽑았다" % [lv, Num.fmt(sim.pulls)], 15, Color("a8763e")))
+	# 단계 옆 물음표 — 누르면 확률표가 작은 글씨로 펴진다(유저). 표를 늘
+	# 펴 두면 뽑기 단추가 화면 아래로 밀렸다. 숨기는 게 아니라 접는 것이다 —
+	# 한 번 누르면 나오고, 낱낱이 다 적혀 있다.
+	var lvrow := HBoxContainer.new()
+	var lvlbl: Label = _label("뽑기 %d단계 · 여태 %s번 뽑았다" % [lv, Num.fmt(sim.pulls)], 15, Color("a8763e"))
+	lvlbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	lvrow.add_child(lvlbl)
+	var qb := _btn("?", true, func(): show_rates = not show_rates; rebuild())
+	qb.custom_minimum_size = Vector2(34, 0)
+	qb.size_flags_horizontal = Control.SIZE_SHRINK_END   # 안 그러면 줄 반을 먹는다
+	lvrow.add_child(qb)
+	_box.add_child(lvrow)
 	if nxt == null:
 		_box.add_child(_label("만렙이다 — 제일 좋은 확률이다", 12, Color("4a7c59")))
 	else:
@@ -474,21 +486,22 @@ func _gacha_body() -> void:
 	if int(Content.GACHA.tenPity) <= lv:
 		_box.add_child(_label("열 장 이상 뽑으면 드묾 이상 한 장은 반드시 나온다", 11, Color("4a7c59")))
 
-	_box.add_child(_label("지금 단계의 확률", 15, Color("5a4e3d")))
-	var rates: Array = sim.gacha_rates()
-	for i in range(rates.size()):
-		var gr: Dictionary = Content.CARD_GRADES[i]
-		var pct: float = float(rates[i])
-		var line := HBoxContainer.new()
-		var nm: Label = _label("%s %s" % [gr.face, gr.name], 13,
-			Color(gr.color) if pct > 0.0 else Color("b3a992"))
-		nm.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		line.add_child(nm)
-		line.add_child(_label(("%.1f%%" % pct) if pct > 0.0 else "안 나옴", 13,
-			Color("2b241b") if pct > 0.0 else Color("b3a992"), false))
-		_box.add_child(line)
-	_box.add_child(_label("등급 안에서는 손님마다 똑같은 확률이다. 흔함 8종 · 드묾 7종 · 귀함 6종 · 진귀 5종 · 영물 3종 · 신수 1종.",
-		11, Color("8a7a63"), true))
+	if show_rates:
+		_box.add_child(_label("지금 단계의 확률", 13, Color("5a4e3d")))
+		var rates: Array = sim.gacha_rates()
+		for i in range(rates.size()):
+			var gr: Dictionary = Content.CARD_GRADES[i]
+			var pct: float = float(rates[i])
+			var line := HBoxContainer.new()
+			var nm: Label = _label("%s %s" % [gr.face, gr.name], 11,
+				Color(gr.color) if pct > 0.0 else Color("b3a992"))
+			nm.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			line.add_child(nm)
+			line.add_child(_label(("%.1f%%" % pct) if pct > 0.0 else "안 나옴", 11,
+				Color("2b241b") if pct > 0.0 else Color("b3a992"), false))
+			_box.add_child(line)
+		_box.add_child(_label("등급 안에서는 손님마다 똑같은 확률이다. 흔함 8종 · 드묾 7종 · 귀함 6종 · 진귀 5종 · 영물 3종 · 신수 1종.",
+			10, Color("8a7a63"), true))
 
 func _do_pull(n: int) -> void:
 	var got: Array = sim.pull(n, _rng)
@@ -502,6 +515,8 @@ func _do_pull(n: int) -> void:
 ## 창을 다시 그려도 바퀴는 **살려 둔다.** 돌고 있는 중에 새로 만들면
 ## 그 순간 각도가 0으로 돌아가 바퀴가 튄다.
 var wheel: Wheel = null
+## 뽑기 확률표를 펴 놨나 — 물음표(?)로 접었다 편다
+var show_rates: bool = false
 
 func _roulette_body() -> void:
 	sim.roul_refill()
