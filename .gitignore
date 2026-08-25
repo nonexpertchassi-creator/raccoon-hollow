@@ -1,3 +1,6 @@
 node_modules/
 shots/
 package*.json
+
+# Image generation working masters are large and reproducible; runtime PNGs and final previews are tracked.
+docs/art/generated/runtime-masters/

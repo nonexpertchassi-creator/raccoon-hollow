@@ -670,3 +670,26 @@
 4. `확정`은 최신 규격·Godot 화면 검수·사용자 승인을 모두 통과했을 때만 사용한다.
 5. 생성물이 추가될 때마다 이 문서에 썸네일을 먼저 놓고 생성 로그 ID를 연결한다.
 6. 파일명 목록만 있는 문서는 주문서이고, 이 문서는 실제 이미지를 보는 기록이다.
+
+---
+
+## 점장 A~D 런타임 레이어와 대장간 세트 · 2026-08-26
+
+<table>
+  <tr>
+    <td align="center"><img src="./generated/HERO-TYPES-RUNTIME-PREVIEW-V0.1.png" width="360" alt="A B C D 점장 본체와 꼬리 런타임 미리보기"></td>
+    <td align="center"><img src="./generated/SMITH-GEAR-RUNTIME-PREVIEW-V0.4.png" width="360" alt="대장간 점장 장비 1 2 3단 세 방향 미리보기"></td>
+  </tr>
+  <tr>
+    <td><strong>Generated · LOG-MODULAR-001</strong><br>B·C·D 본체 9장과 꼬리 6장. A와 같은 방향별 윤곽·핀을 쓰고 본체 발끝을 아래 변에 맞췄다.</td>
+    <td><strong>Generated · LOG-MODULAR-001</strong><br>앞치마+망치만 있는 스티커 9장. 손을 덮지 않도록 두 조각을 따로 정렬했다.</td>
+  </tr>
+</table>
+
+<table>
+  <tr><td align="center"><img src="./generated/SMITH-ITEMS-RUNTIME-PREVIEW-V0.1.png" width="760" alt="대장간 물건 7종의 무쇠 참쇠 강철 3단"></td></tr>
+  <tr><td><strong>Generated · LOG-MODULAR-001</strong><br>곡괭이·낫·호미·도끼·가위·부엌칼·자물쇠의 3단 21장. 현실적인 가는 도구를 작은 화면용 도톰한 크레용 실루엣으로 바꿨다.</td></tr>
+</table>
+
+게임 연결 파일은 `godot/art/hero-body/`, `hero-tail/`, `gear/`, `items/`에 있다.
+사용자 화면 승인 전까지 새 런타임 파생본과 대장간 장비·물건은 `초안`이다.

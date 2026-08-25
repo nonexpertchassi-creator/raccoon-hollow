@@ -1779,6 +1779,34 @@
         actual: '144×144 RGBA · 뒷본체 위 레이어 · 코드 회전축 정렬', status: 'approved',
         src: '../../godot/art/hero-tail/a-back.png', path: 'godot/art/hero-tail/a-back.png'
       },
+      ...['b', 'c', 'd'].flatMap((type) => [
+        ['front', '정면'], ['side', '오른쪽 훼이크 측면'], ['back', '뒷모습']
+      ].map(([direction, label]) => ({
+        c: 'clerks', label: `점장 본체 · ${type.toUpperCase()}타입 · ${label} (게임용)`,
+        file: `${type}-${direction}.png`, icon: '🦝', size: '144×144',
+        actual: '144×144 RGBA · 장비와 꼬리 없는 본체 · 발끝 아래 변 정렬', status: 'draft',
+        src: `../../godot/art/hero-body/${type}-${direction}.png`,
+        path: `godot/art/hero-body/${type}-${direction}.png`
+      }))),
+      ...['b', 'c', 'd'].flatMap((type) => [
+        ['side', '오른쪽 측면'], ['back', '뒷모습']
+      ].map(([direction, label]) => ({
+        c: 'clerks', label: `점장 꼬리 · ${type.toUpperCase()}타입 · ${label} (게임용)`,
+        file: `${type}-${direction}.png`, icon: '〰️', size: '144×144',
+        actual: '144×144 RGBA · A타입과 같은 뿌리 핀 · 코드 흔들림용 단일 레이어', status: 'draft',
+        src: `../../godot/art/hero-tail/${type}-${direction}.png`,
+        path: `godot/art/hero-tail/${type}-${direction}.png`
+      }))),
+      ...[1, 2, 3].flatMap((tier) => [
+        ['front', '정면'], ['side', '오른쪽 훼이크 측면'], ['back', '뒷모습']
+      ].map(([direction, label]) => ({
+        c: 'clerks', dir: 'gear', shop: '대장간',
+        label: `대장간 점장 장비 · ${tier}단 · ${label}`,
+        file: `smith-${tier}-${direction}.png`, icon: '⚒️', size: '144×144',
+        actual: '144×144 RGBA · 본체 픽셀 없는 앞치마+망치 스티커 · 손 노출', status: 'draft',
+        src: `../../godot/art/gear/smith-${tier}-${direction}.png`,
+        path: `godot/art/gear/smith-${tier}-${direction}.png`
+      }))),
       {
         c: 'clerks', label: '점장 벌거벗은 본체 · B타입 무늬 · 방향 시트 (확정)',
         file: 'CLERK-BASE-TYPE-B-TURNAROUND-V0.1-P01.png', icon: '🦝',
@@ -1831,13 +1859,19 @@
       }))
     ];
 
+    const smithUpgradeIds = new Set(['pick', 'sickle', 'hoe', 'axe', 'shears', 'knife', 'lock']);
     const itemUpgradeAssets = assets
       .filter((asset) => asset.c === 'items' && !/-[12]\.png$/.test(asset.file))
-      .flatMap((asset) => [2, 3].map((tier) => ({
-        c: 'items', shop: asset.shop, label: `${asset.label} · ${tier}단 승급판`,
-        file: asset.file.replace(/\.png$/, `-${tier - 1}.png`), icon: asset.icon,
-        size: asset.size, status: 'none'
-      })));
+      .flatMap((asset) => [2, 3].map((tier) => {
+        const file = asset.file.replace(/\.png$/, `-${tier - 1}.png`);
+        const made = asset.shop === '대장간' && smithUpgradeIds.has(asset.file.replace(/\.png$/, ''));
+        return {
+          c: 'items', shop: asset.shop, label: `${asset.label} · ${tier}단 승급판`,
+          file, icon: asset.icon, size: asset.size, status: made ? 'draft' : 'none',
+          src: made ? `../../godot/art/items/${file}` : undefined,
+          path: made ? `godot/art/items/${file}` : undefined
+        };
+      }));
     assets.push(...itemUpgradeAssets);
 
     const categoryName = {
