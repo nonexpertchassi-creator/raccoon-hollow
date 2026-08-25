@@ -970,7 +970,10 @@ func _staff_goal(i: int, k: int) -> Vector2:
 	var ci: Array = _craft_idx(i)
 	var idx: int = k if sim._hold.get(String(Content.SHOPS[i].id), 0.0) > 0.0 else k + 1
 	if idx >= ci.size():
-		return _staff_pos(i, k)          # 맡을 매대가 없으면 제자리(작업대 곁)
+		# 맡을 매대가 없으면 **작업대 곁에 모인다 — 겹쳐도 된다**(유저).
+		# 예전엔 겹침을 피한다고 담벼락 빈 칸까지 흩어져서, 일 없는 직원이
+		# 마당 구석으로 "막 벗어나는" 그림이 됐다. 옹기종기가 맞다.
+		return (Iso.foot(sim, i).work as Vector2) + Vector2(12.0 * float((k % 3) - 1), 7.0 * float(k / 3))
 	# 매대 칸으로 파고들면 안 된다(유저: "매대 안으로 들어가는 느낌") —
 	# 매대는 한 칸을 차지한 가구다. **앞 칸에 서서** 몸만 살짝 기울인다.
 	return _stall_front(i, ci[idx])
