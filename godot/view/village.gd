@@ -190,7 +190,9 @@ func _walk(wk: Dictionary, delta: float) -> bool:
 		var t: Vector2i = wk.path[wk.step]
 		# 길을 걸을 때만 좌우로 조금 흩뜨린다. 다들 한 줄로 겹쳐 걸으면
 		# 열 마리가 한 마리처럼 보인다. 줄에 설 때는 안 흩뜨린다(줄이 흐트러진다).
-		target = Iso.w(t.x + 0.5, t.y + 0.5) + Vector2(wk.off, wk.off * 0.4)
+		# 흩뜨림은 **가로로만**. 위아래로도 흩뜨렸더니 발끝(앞뒤 판정)이
+		# 길가 매대와 어긋나서, 웃돈(+7)으로 때우는 악순환이 됐다.
+		target = Iso.w(t.x + 0.5, t.y + 0.5) + Vector2(wk.off, 0)
 	else:
 		return true
 	var d: Vector2 = target - wk.pos
@@ -806,10 +808,15 @@ func _shadow(foot: Vector2, r: float) -> void:
 ## 앞뒤 가리기(깊이)도 발끝 높이로 정한다.
 func _sprite(t: Texture2D, foot: Vector2, kind: String, flip: bool = false) -> void:
 	var sz: Vector2 = Art.SIZE[kind]
-	# 짐승은 그림 밑 여백만큼 내려 앉힌다 — 발이 진짜로 땅(그림자)에 닿게.
-	# 가구(매대·가마·계산대)는 손으로 맞춘 자리가 있으니 안 건드린다.
-	var pad: float = Art.foot_pad(t) if kind in ["hero", "clerks", "staff", "guests", "pests"] else 0.0
-	var r := Rect2(foot - Vector2(sz.x * 0.5, sz.y * (1.0 - pad)), sz)
+	# 짐승은 그림을 재서 앉힌다 — 밑 여백만큼 내리고(발이 그림자에 닿게),
+	# 몸이 액자에서 옆으로 치우쳐 있으면 그만큼 당긴다(그림자와 몸이 어긋나던
+	# "밀린 느낌"의 범인). 가구는 손으로 맞춘 자리가 있으니 안 건드린다.
+	var r := Rect2(foot - Vector2(sz.x * 0.5, sz.y), sz)
+	if kind in ["hero", "clerks", "staff", "guests", "pests"]:
+		var ft: Dictionary = Art.fit(t)
+		r.position.y += float(ft.pad) * sz.y
+		var dx: float = (0.5 - float(ft.cx)) * sz.x
+		r.position.x += -dx if flip else dx
 	if flip:
 		# 그림은 오른쪽 보는 것 한 장만 받는다. 왼쪽은 여기서 뒤집는다 —
 		# 두 장씩 그리게 하면 장수가 두 배가 되고, 둘이 미묘하게 달라진다.
@@ -940,14 +947,10 @@ func _stall_front(i: int, k: int) -> Vector2:
 	var y: Dictionary = Iso.yard(Iso.YARD_KIND[i], n)
 	var o: Vector2i = Iso.org(sim, i)
 	var sp: Vector2i = y.stalls[k]
-	# ★ 앞줄 매대(화면 아래쪽 변)는 안쪽 칸이 매대 **뒤 대각선**이라, 거기
-	#   서면 매대 그림에 몸이 거의 다 가려졌다(유저: "점장이 매대에 가려진다").
-	#   앞줄에서는 계산대 뒤 점원처럼 **매대 바로 뒤 가운데**에 선다 — 머리와
-	#   어깨가 매대 위로 보이고, 아랫도리는 매대가 가리는 게 자연스럽다.
-	if sp.x == n - 1 or sp.y == n - 1:
-		return Iso.w(o.x + sp.x + 0.5, o.y + sp.y + 0.5) + Vector2(0, -30)
-	# 뒷줄 매대는 안쪽 칸이 매대 앞이다 — 빈 안쪽 칸(3×3이면 4·5·8)
-	# 한가운데 선다. 가구 칸은 가구의 것이다(유저).
+	# 일꾼은 늘 **빈 안쪽 칸**(3×3이면 4·5·8) 한가운데 선다. 앞줄 매대를
+	# 맡으면 매대 뒤에 반쯤 가리는데, 그게 맞다 — "매대 바로 뒤 가운데(-30)"
+	# 로 붙여 봤더니 매대 그림과 몸이 겹쳤다(유저: "매대에 너구리가 안
+	# 겹치면 좋겠다"). 가리는 것과 겹치는 것 중에선 가리는 쪽이 덜 이상하다.
 	var inn := Vector2i(clampi(sp.x, 1, n - 2), clampi(sp.y, 1, n - 2))
 	return Iso.w(o.x + inn.x + 0.5, o.y + inn.y + 0.5)
 
@@ -1210,9 +1213,9 @@ func _draw() -> void:
 			layer.append({"z": _staff_cur(i, k).y, "i": seq, "f": _staff.bind(i, k)})
 			seq += 1
 	for wk in walkers:
-		# +7 웃돈: 걷는 손님은 겹침 방지로 위아래 6px까지 흩어진다 — 그만큼
-		# 길가 매대 뒤로 밀려 가려졌다(유저). 한 칸 차이(24px)는 그대로 이긴다.
-		layer.append({"z": wk.pos.y + 7.0, "i": seq, "f": _walker.bind(wk)})
+		# 웃돈 없음 — 흩뜨림을 가로로만 하니(위 _walk) 발끝 그대로가 정답이다.
+		# 같은 줄이면 나중에 넣은 손님이 매대 위에 그려진다(넣는 차례 규칙).
+		layer.append({"z": wk.pos.y, "i": seq, "f": _walker.bind(wk)})
 		seq += 1
 
 	# 같은 z일 때 순서가 흔들리면 화면이 깜빡인다 — 넣은 차례로 못 박는다
