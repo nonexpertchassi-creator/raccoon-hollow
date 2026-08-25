@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>너구리 만물상 · 그림 장부</title>
-  <meta name="description" content="너구리 만물상의 실제 이미지, 제작 상태, Godot 연결 상태를 함께 보는 시각 아카이브">
+  <title>너구리 만물상 · 그림 라이브러리</title>
+  <meta name="description" content="너구리 만물상에 실제로 필요한 게임 이미지와 제작 상태를 보는 라이브러리">
   <style>
     :root {
       --ink: #2b241b;
@@ -569,48 +569,515 @@
       .section { break-inside: avoid; }
     }
   </style>
+  <style>
+    :root {
+      --page: #ffffff;
+      --surface: #ffffff;
+      --surface-soft: #f6f7f8;
+      --line: #e4e7eb;
+      --line-strong: #cfd5dc;
+      --text: #20252b;
+      --muted: #66707b;
+      --green: #3f7658;
+      --green-soft: #edf5f0;
+      --orange: #b96319;
+      --orange-soft: #fff4e8;
+      --blue: #536fa6;
+      --blue-soft: #eef3fb;
+      --body: "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", system-ui, sans-serif;
+      --rounded: ui-rounded, "Arial Rounded MT Bold", "Apple SD Gothic Neo", sans-serif;
+      --mono: "SFMono-Regular", Menlo, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      font-family: var(--body);
+      line-height: 1.5;
+      background: var(--page);
+    }
+
+    a { color: inherit; }
+    button, input { font: inherit; }
+
+    button:focus-visible,
+    input:focus-visible,
+    a:focus-visible {
+      outline: 3px solid rgba(63, 118, 88, .34);
+      outline-offset: 2px;
+    }
+
+    .shell {
+      width: min(1440px, 100%);
+      margin: 0 auto;
+      border: 0;
+      background: var(--surface);
+      box-shadow: none;
+    }
+
+    .library-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 26px clamp(20px, 4vw, 54px);
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, .96);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      width: 48px;
+      height: 48px;
+      border: 1px solid #cfe0d5;
+      border-radius: 15px;
+      background: var(--green-soft);
+      font-size: 25px;
+    }
+
+    .library-head h1 {
+      margin: 0;
+      font-family: var(--rounded);
+      font-size: clamp(22px, 3vw, 32px);
+      letter-spacing: -.035em;
+      line-height: 1.15;
+    }
+
+    .library-head p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .head-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .head-action {
+      display: inline-flex;
+      align-items: center;
+      min-height: 40px;
+      padding: 9px 13px;
+      border: 1px solid var(--line-strong);
+      border-radius: 10px;
+      color: #38414a;
+      background: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .head-action.primary {
+      color: #fff;
+      border-color: var(--green);
+      background: var(--green);
+    }
+
+    .status-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      border-bottom: 1px solid var(--line);
+      background: var(--surface-soft);
+    }
+
+    .status-item {
+      padding: 18px clamp(16px, 3vw, 28px);
+      border-right: 1px solid var(--line);
+    }
+
+    .status-item:last-child { border-right: 0; }
+    .status-item span { display: block; color: var(--muted); font-size: 11px; font-weight: 700; }
+    .status-item strong { display: block; margin-top: 2px; font: 800 22px/1.2 var(--rounded); }
+    .status-item.draft strong { color: var(--orange); }
+    .status-item.approved strong { color: var(--green); }
+
+    .guide {
+      padding: 34px clamp(20px, 4vw, 54px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .guide-head,
+    .catalog-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 20px;
+    }
+
+    .guide h2,
+    .catalog-section h2 {
+      margin: 0;
+      font-family: var(--rounded);
+      font-size: clamp(22px, 3vw, 30px);
+      letter-spacing: -.03em;
+    }
+
+    .guide-head p,
+    .catalog-head p {
+      max-width: 560px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .guide-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr;
+      gap: 12px;
+    }
+
+    .guide-card {
+      min-width: 0;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .guide-card h3 {
+      margin: 0 0 13px;
+      font-family: var(--body);
+      font-size: 13px;
+    }
+
+    .rule-list,
+    .spec-list {
+      display: grid;
+      gap: 9px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .rule-list li {
+      position: relative;
+      padding-left: 17px;
+      color: #424b54;
+      font-size: 12px;
+    }
+
+    .rule-list li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: .55em;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+
+    .palette {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .swatch { min-width: 0; }
+    .swatch-color { display: block; height: 42px; border: 1px solid rgba(32,37,43,.12); border-radius: 9px; }
+    .swatch code { display: block; margin-top: 6px; color: var(--muted); font: 9px/1.2 var(--mono); text-align: center; }
+
+    .spec-list li {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 7px;
+      border-bottom: 1px solid #eef0f2;
+      color: #424b54;
+      font-size: 12px;
+    }
+
+    .spec-list li:last-child { padding-bottom: 0; border-bottom: 0; }
+    .spec-list code { color: var(--text); font: 700 11px/1.4 var(--mono); }
+
+    .catalog-section { padding: 34px clamp(20px, 4vw, 54px) 64px; }
+
+    .catalog-tools {
+      display: grid;
+      grid-template-columns: minmax(240px, .8fr) minmax(0, 2fr);
+      gap: 12px;
+      align-items: start;
+      margin-bottom: 18px;
+    }
+
+    .search-wrap { position: relative; }
+    .search-wrap::before { content: none; }
+
+    .search {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 13px;
+      border: 1px solid var(--line-strong);
+      border-radius: 10px;
+      color: var(--text);
+      background: #fff;
+    }
+
+    .search::placeholder { color: #98a0a9; }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      gap: 7px;
+    }
+
+    .filter {
+      min-height: 38px;
+      padding: 7px 12px;
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      color: #4a545e;
+      background: #fff;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .filter[aria-pressed="true"] {
+      color: #fff;
+      border-color: var(--green);
+      background: var(--green);
+    }
+
+    .result-line {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font: 11px/1.4 var(--mono);
+    }
+
+    .asset-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .asset-card,
+    .asset-card.is-draft,
+    .asset-card.is-approved {
+      position: relative;
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: #fff;
+    }
+
+    .asset-card:hover { border-color: #bdc5cd; box-shadow: 0 8px 24px rgba(25, 34, 43, .07); }
+
+    .asset-preview {
+      display: grid;
+      place-items: center;
+      height: 150px;
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      background-color: #f8f9fa;
+      background-image:
+        linear-gradient(45deg, #eef0f2 25%, transparent 25%),
+        linear-gradient(-45deg, #eef0f2 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #eef0f2 75%),
+        linear-gradient(-45deg, transparent 75%, #eef0f2 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+      text-decoration: none;
+    }
+
+    .asset-preview img {
+      max-width: 100%;
+      max-height: 126px;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 6px rgba(25, 34, 43, .1));
+    }
+
+    .asset-preview.is-empty { color: #a7afb8; font-size: 40px; }
+    .asset-body { padding: 12px; }
+
+    .asset-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    .asset-card h3 {
+      min-height: 2.45em;
+      margin: 0;
+      color: var(--text);
+      font-family: var(--body);
+      font-size: 13px;
+      line-height: 1.25;
+    }
+
+    .file {
+      display: block;
+      margin-top: 7px;
+      color: #7b858f;
+      font: 9px/1.4 var(--mono);
+      overflow-wrap: anywhere;
+    }
+
+    .mini-state {
+      position: absolute;
+      z-index: 2;
+      top: 8px;
+      right: 8px;
+      padding: 4px 7px;
+      border: 1px solid #f0c89e;
+      border-radius: 999px;
+      color: var(--orange);
+      background: rgba(255, 244, 232, .94);
+      font: 800 9px/1.2 var(--body);
+    }
+
+    .is-approved .mini-state { color: var(--green); border-color: #bfd6c7; background: rgba(237,245,240,.95); }
+    .actual-spec { display: block; margin-top: 6px; color: #a44444; font: 9px/1.35 var(--mono); }
+    .empty-result { grid-column: 1 / -1; padding: 56px 20px; border: 1px dashed var(--line-strong); border-radius: 12px; color: var(--muted); text-align: center; }
+
+    .foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 18px clamp(20px, 4vw, 54px);
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      background: #fff;
+      font-size: 11px;
+    }
+
+    .foot code { font-family: var(--mono); }
+
+    @media (max-width: 1160px) {
+      .asset-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+      .guide-grid { grid-template-columns: 1fr 1fr; }
+      .guide-card:first-child { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 900px) {
+      .library-head { align-items: flex-start; }
+      .status-strip { grid-template-columns: repeat(2, 1fr); }
+      .status-item:nth-child(2) { border-right: 0; }
+      .status-item:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+      .catalog-tools { grid-template-columns: 1fr; }
+      .asset-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 680px) {
+      .library-head, .guide-head, .catalog-head { display: block; }
+      .head-actions { justify-content: flex-start; margin-top: 16px; }
+      .guide-head p, .catalog-head p { margin-top: 8px; }
+      .guide-grid { grid-template-columns: 1fr; }
+      .guide-card:first-child { grid-column: auto; }
+      .asset-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 470px) {
+      .brand { align-items: flex-start; }
+      .brand-mark { width: 42px; height: 42px; border-radius: 13px; font-size: 22px; }
+      .head-action { flex: 1 1 auto; justify-content: center; }
+      .asset-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .asset-preview { height: 132px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .asset-card { transition: none; }
+    }
+
+    @media print {
+      .head-actions, .catalog-tools { display: none; }
+      .asset-grid { grid-template-columns: repeat(5, 1fr); }
+    }
+  </style>
 </head>
 <body>
   <main class="shell">
-    <header class="masthead">
-      <section class="mast-copy">
-        <p class="eyebrow">Raccoon Hollow · Art Ledger</p>
-        <h1>너구리 만물상<br>그림 장부</h1>
-        <p class="mast-lede">그림이 저장됐는지가 아니라 지금 어디까지 쓸 수 있는지를 기록한다. 없음, 초안, 확정의 세 단계와 Godot 적용 결과를 한곳에서 눈으로 확인한다.</p>
-      </section>
-      <aside class="audit-card" aria-label="Godot 전환 감사 요약">
+    <header class="library-head">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">🦝</span>
         <div>
-          <div class="audit-top">
-            <div>
-              <p class="eyebrow" style="color: var(--red);">Godot audit</p>
-              <h2>전환 뒤<br>그림 현황</h2>
-            </div>
-            <div class="stamp" aria-label="필수 초안 백칠십 장">초<br>안</div>
-          </div>
-          <dl class="audit-list">
-            <div><dt>확인 커밋</dt><dd>5dacb82</dd></div>
-            <div><dt>화면 기준</dt><dd>430 × 932</dd></div>
-            <div><dt>필수 그림</dt><dd>170장</dd></div>
-            <div><dt>확정</dt><dd>0장</dd></div>
-            <div><dt>초안</dt><dd>170장</dd></div>
-            <div><dt>없음</dt><dd>0장</dd></div>
-            <div><dt>선택 작업</dt><dd>+110장</dd></div>
-          </dl>
+          <h1>너구리 만물상 · 그림 라이브러리</h1>
+          <p>필요한 그림을 찾고, 크게 열고, 내려받는 곳</p>
         </div>
-        <div>
-          <div class="slot-label"><span>필수 그림 선반</span><strong>확정 0 · 초안 170</strong></div>
-          <div class="progress-slots" id="progressSlots" aria-label="필수 170장 중 초안 170장, 확정 0장"></div>
-        </div>
-      </aside>
+      </div>
+      <nav class="head-actions" aria-label="그림 다운로드">
+        <a class="head-action primary" href="https://github.com/nonexpertchassi-creator/raccoon-hollow/tree/codex/art-production-20260822/godot/art">게임용 PNG</a>
+        <a class="head-action" href="https://github.com/nonexpertchassi-creator/raccoon-hollow/archive/refs/heads/codex/art-production-20260822.zip">전체 ZIP</a>
+      </nav>
     </header>
 
-    <section class="section" id="catalog">
-      <div class="section-head">
-        <div>
-          <p class="section-kicker">자동 주문 목록 기준</p>
-          <h2>필수 170장 + 선택 110장</h2>
-        </div>
-        <p class="section-note">붉은 도장은 없음, 황토색 도장은 초안, 초록 도장은 확정이다. 필수 170장은 모두 카드에서 실제 그림으로 비교할 수 있는 초안이다.</p>
+    <section class="status-strip" aria-label="그림 상태 요약">
+      <div class="status-item"><span>전체</span><strong id="totalCount">335장</strong></div>
+      <div class="status-item draft"><span>초안</span><strong id="draftCount">280장</strong></div>
+      <div class="status-item approved"><span>확정</span><strong id="approvedCount">0장</strong></div>
+      <div class="status-item"><span>없음</span><strong id="noneCount">55장</strong></div>
+    </section>
+    <div id="progressSlots" hidden></div>
+
+    <section class="guide" id="guide">
+      <div class="guide-head">
+        <h2>제작 가이드</h2>
+        <p>새 그림을 만들거나 고칠 때 필요한 값만 모았다. 아직 승인되지 않은 이미지는 모두 초안이다.</p>
+      </div>
+      <div class="guide-grid">
+        <article class="guide-card">
+          <h3>그림 규칙</h3>
+          <ul class="rule-list">
+            <li>한국 너구리: 작은 둥근 귀, 통통한 몸, 고리무늬 없는 꼬리</li>
+            <li>볕 좋은 장날: 밝은 바닥이 중심이고 갈색 건물·소품은 화면의 30% 이하</li>
+            <li>굵은 먹갈색 외곽선, 평면 색, 최소한의 명암과 한지 질감</li>
+            <li>작은 모바일 화면에서 얼굴보다 실루엣과 행동이 먼저 읽혀야 함</li>
+            <li>투명 에셋에는 글자·UI·테두리·배경을 넣지 않음</li>
+          </ul>
+        </article>
+        <article class="guide-card">
+          <h3>핵심 색</h3>
+          <div class="palette" aria-label="핵심 색상 팔레트">
+            <div class="swatch"><span class="swatch-color" style="background:#ece2cb"></span><code>#ece2cb</code></div>
+            <div class="swatch"><span class="swatch-color" style="background:#2b241b"></span><code>#2b241b</code></div>
+            <div class="swatch"><span class="swatch-color" style="background:#efe0b4"></span><code>#efe0b4</code></div>
+            <div class="swatch"><span class="swatch-color" style="background:#b3cc88"></span><code>#b3cc88</code></div>
+            <div class="swatch"><span class="swatch-color" style="background:#4a7c59"></span><code>#4a7c59</code></div>
+          </div>
+        </article>
+        <article class="guide-card">
+          <h3>파일 규격</h3>
+          <ul class="spec-list">
+            <li><span>점장·직원</span><code>144×144</code></li>
+            <li><span>손님</span><code>128×128</code></li>
+            <li><span>물건</span><code>128×224</code></li>
+            <li><span>손님 카드</span><code>512×768</code></li>
+            <li><span>좌판</span><code>192×176</code></li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="catalog-section" id="catalog">
+      <div class="catalog-head">
+        <h2 id="catalogTitle">이미지 335장</h2>
+        <p>그림을 누르면 원본 PNG가 열린다. 이름·파일명으로 찾거나 필요한 종류만 골라서 볼 수 있다.</p>
       </div>
       <div class="catalog-tools">
         <label class="search-wrap">
@@ -618,13 +1085,13 @@
           <input class="search" id="assetSearch" type="search" placeholder="곡괭이, rabbit, 점장…" autocomplete="off">
         </label>
         <div class="filters" role="group" aria-label="이미지 목록 필터">
-          <button class="filter" type="button" data-filter="all" aria-pressed="true">전체 280</button>
-          <button class="filter" type="button" data-filter="none" aria-pressed="false">없음 0</button>
+          <button class="filter" type="button" data-filter="all" aria-pressed="true">전체 335</button>
+          <button class="filter" type="button" data-filter="none" aria-pressed="false">없음 55</button>
           <button class="filter" type="button" data-filter="draft" aria-pressed="false">초안 280</button>
-          <button class="filter" type="button" data-filter="approved" aria-pressed="false">확정 0</button>
-          <button class="filter" type="button" data-filter="required" aria-pressed="false">필수 170</button>
-          <button class="filter" type="button" data-filter="optional" aria-pressed="false">선택 110</button>
+          <button class="filter" type="button" data-filter="required" aria-pressed="false">필수 215</button>
+          <button class="filter" type="button" data-filter="optional" aria-pressed="false">선택 120</button>
           <button class="filter" type="button" data-filter="hero" aria-pressed="false">점장</button>
+          <button class="filter" type="button" data-filter="clerks" aria-pressed="false">전용 점장</button>
           <button class="filter" type="button" data-filter="staff" aria-pressed="false">직원</button>
           <button class="filter" type="button" data-filter="guests" aria-pressed="false">손님</button>
           <button class="filter" type="button" data-filter="cards" aria-pressed="false">손님 카드</button>
@@ -636,115 +1103,11 @@
       </div>
       <p class="result-line" id="resultLine" aria-live="polite"></p>
       <div class="asset-grid" id="assetGrid"></div>
-      <details>
-        <summary>선택 작업 설명 · 성장 카드 90장 + 가게별 전용 점장 20장</summary>
-        <div class="optional-copy">
-          <p>필수 170장에는 포함하지 않는다. 손님 카드 2~4단은 없으면 1단 그림을 계속 쓰고, 가게별 점장은 없으면 공용 점장이 선다.</p>
-          <p><strong>성장 카드:</strong> 손님 30종 × 2·3·4단<br><strong>전용 점장:</strong> 가게 10곳 × make·sell<br><strong>파일 규칙:</strong> <code>godot/art/cards/&lt;손님&gt;-&lt;단계&gt;.png</code> · <code>godot/art/clerks/&lt;가게&gt;-&lt;포즈&gt;.png</code></p>
-        </div>
-      </details>
-    </section>
-
-    <section class="section" id="growth-card-qa">
-      <div class="section-head">
-        <div>
-          <p class="section-kicker">성장 카드 제작 완료 · 실제 비교표</p>
-          <h2>4단 마지막 다섯 장과 전체 30종</h2>
-        </div>
-        <p class="section-note">모두 Generated/초안이다. 같은 개체와 계절을 유지하면서 길·담·수로·열린 문 같은 공동 관리 상태로만 최종 성장을 표현했다.</p>
-      </div>
-      <div class="reference-grid">
-        <figure class="reference-card">
-          <img src="./qa/guest-cards-tier4-batch-06.png" alt="백로 표범 사향노루 반달곰 해태의 4단 성장 카드 초안">
-          <figcaption><strong>Tier 4 · Batch 06 · Draft</strong><p>백로·표범·사향노루·반달곰·해태. 희귀도 광택 없이 종별 생활 장소의 정비로 닫은 마지막 묶음.</p></figcaption>
-        </figure>
-        <figure class="reference-card">
-          <img src="./qa/guest-cards-tier4-all-30.png" alt="손님 성장 카드 4단 30종 전체 초안">
-          <figcaption><strong>Tier 4 · All 30 · Draft</strong><p>손님 30종 전체 비교표. 실제 카드 화면과 사용자 승인을 통과하기 전에는 확정으로 승격하지 않는다.</p></figcaption>
-        </figure>
-      </div>
-    </section>
-
-    <section class="section" id="versions">
-      <div class="section-head">
-        <div>
-          <p class="section-kicker">생성 이력 · 실제 원화</p>
-          <h2>점장 디자인 변천</h2>
-        </div>
-        <p class="section-note">반려본도 지우지 않는다. 무엇을 줄였고 왜 앞치마만 남았는지 이미지 자체로 비교한다.</p>
-      </div>
-      <div class="versions">
-        <article class="version-column">
-          <header class="version-head">
-            <small>V0.1 · REVISION</small>
-            <h3>전신 서민복</h3>
-            <p>역할은 분명했지만 작은 화면에서 옷의 세부가 사라지고 몸이 무거워졌다.</p>
-          </header>
-          <figure class="version-image">
-            <img src="./generated/hero/HERO-V0.1-make-master.png" alt="V0.1 전신 서민복 제작 포즈">
-            <figcaption>HERO-V0.1-make-master.png</figcaption>
-          </figure>
-          <figure class="version-image">
-            <img src="./generated/hero/HERO-V0.1-sell-master.png" alt="V0.1 전신 서민복 판매 포즈">
-            <figcaption>HERO-V0.1-sell-master.png</figcaption>
-          </figure>
-        </article>
-        <article class="version-column">
-          <header class="version-head">
-            <small>V0.2 · REVISION</small>
-            <h3>무복식</h3>
-            <p>털 실루엣은 또렷해졌지만 손님과 구별되는 점장 표식이 약했다.</p>
-          </header>
-          <figure class="version-image">
-            <img src="./generated/hero/HERO-V0.2-make-master.png" alt="V0.2 무복식 제작 포즈">
-            <figcaption>HERO-V0.2-make-master.png</figcaption>
-          </figure>
-          <figure class="version-image">
-            <img src="./generated/hero/HERO-V0.2-sell-master.png" alt="V0.2 무복식 판매 포즈">
-            <figcaption>HERO-V0.2-sell-master.png</figcaption>
-          </figure>
-        </article>
-        <article class="version-column">
-          <header class="version-head">
-            <small>V0.3 · CURRENT CANDIDATE</small>
-            <h3>짧은 앞치마</h3>
-            <p>털과 행동 실루엣을 가리지 않으면서 점장의 역할만 한 색면으로 남겼다.</p>
-          </header>
-          <figure class="version-image">
-            <img src="./generated/hero/HERO-V0.3-make-master.png" alt="V0.3 짧은 앞치마 제작 포즈">
-            <figcaption>HERO-V0.3-make-master.png</figcaption>
-          </figure>
-          <figure class="version-image">
-            <img src="./generated/hero/HERO-V0.3-sell-master.png" alt="V0.3 짧은 앞치마 판매 포즈">
-            <figcaption>HERO-V0.3-sell-master.png</figcaption>
-          </figure>
-        </article>
-      </div>
-    </section>
-
-    <section class="section" id="references">
-      <div class="section-head">
-        <div>
-          <p class="section-kicker">장면 기록</p>
-          <h2>세계관과 과거 화면</h2>
-        </div>
-        <p class="section-note">콘셉트의 분위기는 유지하되, 과거 HTML 화면 배치를 현재 Godot 구조의 답으로 착각하지 않는다.</p>
-      </div>
-      <div class="reference-grid">
-        <figure class="reference-card">
-          <img src="./generated/BP-V0.1-P01.png" alt="승인된 너구리 만물상 Art Concept Blueprint">
-          <figcaption><strong>Art Concept Blueprint · Approved</strong><p>따뜻한 조선 서민 마을, 폐허와 복구, 재료감과 한국 생활소품의 기준.</p></figcaption>
-        </figure>
-        <figure class="reference-card">
-          <img src="./qa/village-map-v1.png" alt="Godot 전환 전 HTML 세로 마을 화면">
-          <figcaption><strong>Legacy HTML QA</strong><p>Godot 전환 전 화면 구조 시험. 현재 카메라와 배치 기준으로 사용하지 않는다.</p></figcaption>
-        </figure>
-      </div>
     </section>
 
     <footer class="foot">
-      <span>너구리 만물상 · 실제 이미지 아카이브</span>
-      <code>source: 5dacb82 · updated: 2026-08-23</code>
+      <span>너구리 만물상 · 그림 라이브러리</span>
+      <code id="footerCount">280 drafts · 55 needed · updated 2026-08-25</code>
     </footer>
   </main>
 
@@ -765,14 +1128,30 @@
     const extraItems = [
       ['국밥집', 'bap', '국밥', '🍲', 'draft'], ['국밥집', 'kuk', '장국', '🥣', 'draft'], ['국밥집', 'sujebi', '수제비', '🥟', 'draft'], ['국밥집', 'naeng', '냉국', '🧊', 'draft'],
       ['국밥집', 'gomtang', '곰탕', '🍜', 'draft'], ['국밥집', 'samgye', '삼계탕', '🐔', 'draft'], ['국밥집', 'chueo', '추어탕', '🐟', 'draft'], ['국밥집', 'yongbong', '용봉탕', '🐲', 'draft'],
-      ['주막', 'makgeol', '막걸리', '🍶', 'draft'], ['주막', 'jeon', '파전', '🥞', 'draft'], ['주막', 'dongdong', '동동주', '🍯', 'draft'], ['주막', 'muk', '묵무침', '🥗', 'draft'],
-      ['주막', 'cheongju', '청주', '🍾', 'draft'], ['주막', 'bossam', '보쌈', '🥬', 'draft'], ['주막', 'beopju', '법주', '🏺', 'draft'], ['주막', 'gujeol', '구절판', '🍱', 'draft'],
+      ['객주', 'makgeol', '막걸리', '🍶', 'draft'], ['객주', 'jeon', '파전', '🥞', 'draft'], ['객주', 'dongdong', '동동주', '🍯', 'draft'], ['객주', 'muk', '묵무침', '🥗', 'draft'],
+      ['객주', 'cheongju', '청주', '🍾', 'draft'], ['객주', 'bossam', '보쌈', '🥬', 'draft'], ['객주', 'beopju', '법주', '🏺', 'draft'], ['객주', 'gujeol', '구절판', '🍱', 'draft'],
       ['꼬치집', 'tteokggo', '떡꼬치', '🍡', 'draft'], ['꼬치집', 'dakggo', '닭꼬치', '🍢', 'draft'], ['꼬치집', 'beoseot', '버섯꼬치', '🍄', 'draft'], ['꼬치집', 'saengseon', '생선꼬치', '🐠', 'draft'],
       ['꼬치집', 'sanjeok', '산적', '🍖', 'draft'], ['꼬치집', 'jangeo', '장어구이', '🐍', 'draft'], ['꼬치집', 'neobiani', '너비아니', '🥩', 'draft'], ['꼬치집', 'yukhoe', '육회', '🌶️', 'draft'],
       ['떡집', 'garae', '가래떡', '🍥', 'draft'], ['떡집', 'injeol', '인절미', '🍡', 'draft'], ['떡집', 'songpyeon', '송편', '🥠', 'draft'], ['떡집', 'baekseol', '백설기', '🍚', 'draft'],
       ['떡집', 'yaksik', '약식', '🍯', 'draft'], ['떡집', 'hwajeon', '화전', '🌸', 'draft'], ['떡집', 'dasik', '다식', '🍪', 'draft'], ['떡집', 'yugwa', '유과', '🍬', 'draft'],
       ['푸줏간', 'dwaeji', '돼지고기', '🥓', 'draft'], ['푸줏간', 'dak', '닭고기', '🍗', 'draft'], ['푸줏간', 'sogogi', '쇠고기', '🥩', 'draft'], ['푸줏간', 'galbi', '갈비', '🍖', 'draft'],
       ['푸줏간', 'ugeoji', '우거지', '🥬', 'draft'], ['푸줏간', 'gopchang', '곱창', '🌭', 'draft'], ['푸줏간', 'ansim', '안심', '🍽️', 'draft'], ['푸줏간', 'hanwoo', '한우 등심', '👑', 'draft']
+    ];
+    const pendingItems = [
+      ['어물전', 'gulbi', '굴비', '🐟'], ['어물전', 'miyeok', '미역', '🌿'], ['어물전', 'jeotgal', '젓갈', '🫙'], ['어물전', 'bugeo', '북어', '🎣'],
+      ['어물전', 'gim', '김', '🍙'], ['어물전', 'jaban', '자반', '🐠'], ['어물전', 'muneo', '문어', '🐙'], ['어물전', 'jeonbok', '전복', '🦪'],
+      ['포목전', 'mumyeong', '무명', '🧵'], ['포목전', 'sambe', '삼베', '🪢'], ['포목전', 'mosi', '모시', '🎽'], ['포목전', 'myeongju', '명주', '🧣'],
+      ['포목전', 'yeomnang', '염낭', '👛'], ['포목전', 'bidan', '비단', '🎀'], ['포목전', 'gwanbok', '관복감', '🥻'], ['포목전', 'hollye', '혼례비단', '💒'],
+      ['갓방', 'satgat', '삿갓', '👒'], ['갓방', 'manggeon', '망건', '🪖'], ['갓방', 'tanggeon', '탕건', '🎩'], ['갓방', 'gatkkeun', '갓끈', '📿'],
+      ['갓방', 'heungnip', '흑립', '🎓'], ['갓방', 'jurip', '주립', '⛑️'], ['갓방', 'jeongjagwan', '정자관', '👑'], ['갓방', 'oknorip', '옥로립', '💎'],
+      ['유기전', 'notsujeo', '놋수저', '🥄'], ['유기전', 'notjubal', '놋주발', '🥣'], ['유기전', 'notjaengban', '놋쟁반', '🍽️'], ['유기전', 'notchotdae', '놋촛대', '🕯️'],
+      ['유기전', 'nothwaro', '놋화로', '🔥'], ['유기전', 'notdaeya', '놋대야', '🛁'], ['유기전', 'jegi', '제기', '⚱️'], ['유기전', 'bansangki', '반상기', '🍱'],
+      ['나전방', 'najeonbit', '나전빗', '💈'], ['나전방', 'gyeongdae', '경대', '🪞'], ['나전방', 'ham', '함', '🎁'], ['나전방', 'mungap', '문갑', '🗄️'],
+      ['나전방', 'jwagyeong', '좌경', '🔍'], ['나전방', 'samcheungjang', '삼층장', '🪜'], ['나전방', 'byeongpung', '자개병풍', '🖼️'], ['나전방', 'najeonnong', '나전롱', '👘']
+    ];
+    const pendingShops = [
+      ['어물전', 'fish', '🐟'], ['포목전', 'cloth', '🧵'], ['갓방', 'hat', '🎩'],
+      ['유기전', 'brass', '🥣'], ['나전방', 'lacquer', '🪞']
     ];
     const draftGuestIds = new Set(['rabbit', 'magpie', 'squirrel', 'badger', 'fox', 'deer', 'boar', 'bear', 'turtle', 'crane', 'ox', 'tiger', 'sparrow', 'frog', 'mole', 'hedgehog', 'duck', 'otter', 'roe', 'weasel', 'wildcat', 'goral', 'marten', 'mandarin', 'wolf', 'egret', 'leopard', 'muskdeer', 'moonbear', 'haetae']);
     const draftCardIds = new Set(['rabbit', 'magpie', 'squirrel', 'badger', 'fox', 'deer', 'boar', 'bear', 'turtle', 'crane', 'ox', 'tiger', 'sparrow', 'frog', 'mole', 'hedgehog', 'duck', 'otter', 'roe', 'weasel', 'wildcat', 'goral', 'marten', 'mandarin', 'wolf', 'egret', 'leopard', 'muskdeer', 'moonbear', 'haetae']);
@@ -844,6 +1223,9 @@
         c: 'items', shop, label, file: `${id}.png`, icon, size: '128×224', status,
         src: status === 'draft' ? `../../godot/art/items/${id}.png` : undefined
       })),
+      ...pendingItems.map(([shop, id, label, icon]) => ({
+        c: 'items', shop, label, file: `${id}.png`, icon, size: '128×224', status: 'none'
+      })),
 
       ...guestCatalog.map(([id, name, icon, grade]) => ({
         c: 'guests', label: `${name} · ${gradeName[grade - 1]}`, file: `${id}.png`, icon, size: '128×128',
@@ -877,10 +1259,14 @@
       { c: 'stalls', shop: '옹기점', label: '옹기점 좌판', file: 'pot.png', icon: '🏺', size: '192×176', status: 'draft', src: '../../godot/art/stalls/pot.png' },
       { c: 'stalls', shop: '약재상', label: '약재상 좌판', file: 'herb.png', icon: '🌿', size: '192×176', status: 'draft', src: '../../godot/art/stalls/herb.png' },
       { c: 'stalls', shop: '국밥집', label: '국밥집 좌판', file: 'soup.png', icon: '🍲', size: '192×176', status: 'draft', src: '../../godot/art/stalls/soup.png' },
-      { c: 'stalls', shop: '주막', label: '주막 좌판', file: 'inn.png', icon: '🍶', size: '192×176', status: 'draft', src: '../../godot/art/stalls/inn.png' },
+      { c: 'stalls', shop: '객주', label: '객주 좌판', file: 'gaekju.png', icon: '🍶', size: '192×176', status: 'draft', src: '../../godot/art/stalls/gaekju.png' },
       { c: 'stalls', shop: '꼬치집', label: '꼬치집 좌판', file: 'skewer.png', icon: '🍢', size: '192×176', status: 'draft', src: '../../godot/art/stalls/skewer.png' },
       { c: 'stalls', shop: '떡집', label: '떡집 좌판', file: 'ricecake.png', icon: '🍡', size: '192×176', status: 'draft', src: '../../godot/art/stalls/ricecake.png' },
       { c: 'stalls', shop: '푸줏간', label: '푸줏간 좌판', file: 'butcher.png', icon: '🥩', size: '192×176', status: 'draft', src: '../../godot/art/stalls/butcher.png' },
+      ...pendingShops.map(([shop, id, icon]) => ({
+        c: 'stalls', shop, label: `${shop} 좌판`, file: `${id}.png`, icon,
+        size: '192×176', status: 'none'
+      })),
 
       { c: 'ui', label: '카드 뒷면', file: 'back.png', icon: '🂠', size: '512×768', status: 'draft', src: '../../godot/art/ui/back.png' },
       { c: 'ui', label: '룰렛 원판 · 12칸', file: 'wheel.png', icon: '🎡', size: '512×512', status: 'draft', src: '../../godot/art/ui/wheel.png' },
@@ -898,14 +1284,18 @@
       { c: 'clerks', shop: '약재상', label: '약재상 점장 · 판매', file: 'herb-sell.png', icon: '🌿', size: '144×144', status: 'draft', src: '../../godot/art/clerks/herb-sell.png', optional: true },
       { c: 'clerks', shop: '국밥집', label: '국밥집 점장 · 제작', file: 'soup-make.png', icon: '🍲', size: '144×144', status: 'draft', src: '../../godot/art/clerks/soup-make.png', optional: true },
       { c: 'clerks', shop: '국밥집', label: '국밥집 점장 · 판매', file: 'soup-sell.png', icon: '🍲', size: '144×144', status: 'draft', src: '../../godot/art/clerks/soup-sell.png', optional: true },
-      { c: 'clerks', shop: '주막', label: '주막 점장 · 제작', file: 'inn-make.png', icon: '🍶', size: '144×144', status: 'draft', src: '../../godot/art/clerks/inn-make.png', optional: true },
-      { c: 'clerks', shop: '주막', label: '주막 점장 · 판매', file: 'inn-sell.png', icon: '🍶', size: '144×144', status: 'draft', src: '../../godot/art/clerks/inn-sell.png', optional: true },
+      { c: 'clerks', shop: '객주', label: '객주 점장 · 제작', file: 'gaekju-make.png', icon: '🍶', size: '144×144', status: 'draft', src: '../../godot/art/clerks/gaekju-make.png', optional: true },
+      { c: 'clerks', shop: '객주', label: '객주 점장 · 판매', file: 'gaekju-sell.png', icon: '🍶', size: '144×144', status: 'draft', src: '../../godot/art/clerks/gaekju-sell.png', optional: true },
       { c: 'clerks', shop: '꼬치집', label: '꼬치집 점장 · 제작', file: 'skewer-make.png', icon: '🍢', size: '144×144', status: 'draft', src: '../../godot/art/clerks/skewer-make.png', optional: true },
       { c: 'clerks', shop: '꼬치집', label: '꼬치집 점장 · 판매', file: 'skewer-sell.png', icon: '🍢', size: '144×144', status: 'draft', src: '../../godot/art/clerks/skewer-sell.png', optional: true },
       { c: 'clerks', shop: '떡집', label: '떡집 점장 · 제작', file: 'ricecake-make.png', icon: '🍡', size: '144×144', status: 'draft', src: '../../godot/art/clerks/ricecake-make.png', optional: true },
       { c: 'clerks', shop: '떡집', label: '떡집 점장 · 판매', file: 'ricecake-sell.png', icon: '🍡', size: '144×144', status: 'draft', src: '../../godot/art/clerks/ricecake-sell.png', optional: true },
       { c: 'clerks', shop: '푸줏간', label: '푸줏간 점장 · 제작', file: 'butcher-make.png', icon: '🥩', size: '144×144', status: 'draft', src: '../../godot/art/clerks/butcher-make.png', optional: true },
-      { c: 'clerks', shop: '푸줏간', label: '푸줏간 점장 · 판매', file: 'butcher-sell.png', icon: '🥩', size: '144×144', status: 'draft', src: '../../godot/art/clerks/butcher-sell.png', optional: true }
+      { c: 'clerks', shop: '푸줏간', label: '푸줏간 점장 · 판매', file: 'butcher-sell.png', icon: '🥩', size: '144×144', status: 'draft', src: '../../godot/art/clerks/butcher-sell.png', optional: true },
+      ...pendingShops.flatMap(([shop, id, icon]) => ['make', 'sell'].map((pose) => ({
+        c: 'clerks', shop, label: `${shop} 점장 · ${pose === 'make' ? '제작' : '판매'}`,
+        file: `${id}-${pose}.png`, icon, size: '144×144', status: 'none', optional: true
+      })))
     ];
 
     const categoryName = { hero: '점장', staff: '직원', items: '물건', guests: '손님', cards: '손님 카드', pests: '상호작용', stalls: '좌판', ui: '뽑기·룰렛', clerks: '선택 점장' };
@@ -917,7 +1307,32 @@
     const resultLine = document.querySelector('#resultLine');
     const search = document.querySelector('#assetSearch');
     const filters = [...document.querySelectorAll('.filter')];
+    const statusCount = (status) => assets.filter((asset) => asset.status === status).length;
+    const draftCount = statusCount('draft');
+    const approvedCount = statusCount('approved');
+    const noneCount = statusCount('none');
+    const optionalCount = assets.length - requiredAssets.length;
     let activeFilter = 'all';
+
+    document.querySelector('#totalCount').textContent = `${assets.length}장`;
+    document.querySelector('#draftCount').textContent = `${draftCount}장`;
+    document.querySelector('#approvedCount').textContent = `${approvedCount}장`;
+    document.querySelector('#noneCount').textContent = `${noneCount}장`;
+    document.querySelector('#catalogTitle').textContent = `이미지 ${assets.length}장`;
+    document.querySelector('#footerCount').textContent = `${draftCount} drafts · ${noneCount} needed · updated 2026-08-25`;
+
+    const filterCounts = {
+      all: assets.length,
+      none: noneCount,
+      draft: draftCount,
+      required: requiredAssets.length,
+      optional: optionalCount
+    };
+    const filterLabels = { all: '전체', none: '없음', draft: '초안', required: '필수', optional: '선택' };
+    filters.forEach((button) => {
+      const key = button.dataset.filter;
+      if (key in filterCounts) button.textContent = `${filterLabels[key]} ${filterCounts[key]}`;
+    });
 
     document.querySelector('#progressSlots').innerHTML = requiredAssets.map((asset) =>
       `<span class="progress-slot is-${asset.status}" title="${asset.label} · ${stateName[asset.status]}"></span>`
@@ -936,10 +1351,9 @@
     function card(asset) {
       const path = `godot/art/${asset.dir || categoryDir[asset.c]}/${asset.file}`;
       const preview = asset.status !== 'none'
-        ? `<div class="asset-preview"><img src="${asset.src}" data-fallback="${asset.fallback || ''}" alt="${asset.label}"></div>`
+        ? `<a class="asset-preview" href="${asset.src}" download="${asset.file}" target="_blank" rel="noreferrer" title="원본 PNG 열기"><img src="${asset.src}" data-fallback="${asset.fallback || ''}" loading="lazy" alt="${asset.label}"></a>`
         : `<div class="asset-preview is-empty" aria-label="아직 이미지 없음">${asset.icon}</div>`;
       return `<article class="asset-card is-${asset.status}">
-        <span class="mini-state">${stateName[asset.status]}</span>
         ${preview}
         <div class="asset-body">
           <div class="asset-meta"><span>${asset.optional ? '선택 · ' : ''}${asset.shop || categoryName[asset.c]}</span><span>목표 ${asset.size}</span></div>
