@@ -732,6 +732,14 @@ func _stall(i: int, k: int, spot: Vector2i) -> void:
 		# 윗줄(y=0)은 모서리라도 ↙다 — 3번 칸(윗줄의 오른끝)이 세로줄로
 		# 잘못 분류돼 ↘로 뒤집혔고, 마당 밖으로 빠져나간 것처럼 보였다(유저).
 		var flip4: bool = (spot.x == n4 - 1 or spot.x == 0) and spot.y > 0
+		# ↘판 그림(<가게>-r)이 있으면 뒤집는 대신 그걸 쓴다 — 거울은 빛 방향
+		# (왼쪽 위 광원)까지 뒤집어서, 비대칭 매대는 어색할 수 있다(유저 물음).
+		# 기본은 뒤집기, 어색한 가게만 ↘판을 따로 받는 중간 길이다.
+		if flip4:
+			var tr4: Texture2D = Art.ranked("stalls", String(shop.id) + "-r", sim.rank_of(String(shop.id)))
+			if tr4 != null:
+				table = tr4
+				flip4 = false
 		_sprite(table, p + Vector2(0, 14), "stalls", flip4)
 	else:
 		_box(o.x + spot.x + 0.14, o.y + spot.y + 0.14, 0.72, 0.72, 14, C.paper, C.wood)
