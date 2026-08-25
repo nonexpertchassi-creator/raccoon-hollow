@@ -39,6 +39,8 @@ var _after_new: Array = []           ## 판이 끝난 뒤 크게 띄울 '처음 
 var _action: Button                  ## 성 올리기 단추 — 도감에서 볼 때만
 var _cardbox: PanelContainer
 var _art: TextureRect
+var _art_tail: TextureRect
+var _art_gear: TextureRect
 var _title: Label
 var _sub: Label
 var _sign: Label
@@ -97,6 +99,19 @@ func _ready() -> void:
 	_art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	box.add_child(_art)
+	# 겹그림 점장용 겹 — 꼬리는 본체 뒤(형제 순서상 앞이 뒤에 깔린다), 장비는 앞.
+	# 카드와 마을 점장이 **같은 재료**를 겹쳐 같은 모습이 되게 한다(유저 규칙).
+	_art_tail = TextureRect.new()
+	_art_tail.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_art_tail.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_art_tail.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_art_tail.show_behind_parent = true
+	_art.add_child(_art_tail)
+	_art_gear = TextureRect.new()
+	_art_gear.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_art_gear.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_art_gear.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_art.add_child(_art_gear)
 	_title = Label.new()
 	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_title.add_theme_font_size_override("font_size", 22)
@@ -170,9 +185,19 @@ func show_card(shop_id: String, rank: int) -> void:
 	_gridbox.visible = false
 	_cardbox.visible = true
 	var shop: Dictionary = Sim.shop_by_id(shop_id)
-	# 카드 초상(cards/<가게id>-<등급+1>) → 가게별 점장 → 공통 점장 순서.
-	# 주문서에서 점장 카드 초상이 빠져 있었다(유저가 잡았다) — 자리부터 만든다.
-	var t: Texture2D = Art.tex("cards", "%s-%d" % [shop_id, rank + 1])
+	# 겹그림 점장(무늬 본체+꼬리+장비)이 있으면 **마을과 같은 재료**로 겹친다 —
+	# 카드와 필드가 반드시 같은 무늬·장비여야 한다(유저 규칙). 그림이 없으면
+	# 옛 순서: 카드 초상 → 가게별 점장 → 공통 점장.
+	_art_tail.texture = null
+	_art_gear.texture = null
+	var body: Texture2D = Art.tex("hero-body", sim.fur_of(shop_id))
+	var t: Texture2D = null
+	if body != null:
+		t = body
+		_art_tail.texture = Art.tex("hero-tail", sim.fur_of(shop_id))
+		_art_gear.texture = Art.tex("gear", "%s-%d" % [shop_id, rank + 1])
+	if t == null:
+		t = Art.tex("cards", "%s-%d" % [shop_id, rank + 1])
 	if t == null:
 		t = Art.ranked("clerks", "%s-make" % shop_id, rank)
 	if t == null:
@@ -246,6 +271,8 @@ func show_guest(gid: String) -> void:
 	_cardbox.visible = true
 	var g: Dictionary = Sim.guest_by_id(gid)
 	var gr: Dictionary = Content.CARD_GRADES[int(g.grade) - 1]
+	_art_tail.texture = null
+	_art_gear.texture = null
 	_art.texture = _pull_art(gid)
 	_art.visible = _art.texture != null
 	_sign.visible = _art.texture == null

@@ -88,6 +88,10 @@ var stats: Dictionary = {}
 ## 프로필 — 별명·얼굴(뽑은 손님 얼굴만)·띠(단골 칭호). 머리띠(HUD)가 읽는다.
 ## face가 ""이면 기본 너구리, band가 -1이면 지금 딴 제일 높은 칭호를 쓴다.
 var profile: Dictionary = {"name": "너구리", "face": "", "band": -1}
+## 점장 무늬 — 가게마다 벌거벗은 본체 무늬(a~d)를 **저장본마다 한 번** 배정한다.
+## 재실행·승급에 다시 추첨하지 않는다(유저 규칙). 화면과 카드가 같이 읽는다.
+const FURS := ["a", "b", "c", "d"]
+var furs: Dictionary = {}
 
 func bump(key: String, by: float = 1.0) -> void:
 	stats[key] = float(stats.get(key, 0.0)) + by
@@ -792,6 +796,27 @@ func unlock_district(id: String) -> bool:
 
 ## 다음에 열 가게. **잠긴 구역의 가게는 없는 셈 친다** — 무너진 집 표시도,
 ## 가상 플레이어의 판단도 전부 여기를 거친다.
+func fur_of(id: String) -> String:
+	return String(furs.get(id, "a"))
+
+## 무늬 주머니 — 덜 쓴 무늬만 담아 뽑는다(초반 중복 방지, 유저 규칙).
+## 뽑는 손은 여는 순간의 게임 시계다 — 저장본마다 다르고(여는 시각이 다르니),
+## 같은 판을 다시 돌리면 늘 같다(sim은 주사위 없이도 결정적이어야 한다).
+func _deal_fur(id: String) -> void:
+	if furs.has(id):
+		return
+	var used: Dictionary = {}
+	for f in furs.values():
+		used[f] = int(used.get(f, 0)) + 1
+	var low: int = 1 << 30
+	for f in FURS:
+		low = min(low, int(used.get(f, 0)))
+	var bag: Array = []
+	for f in FURS:
+		if int(used.get(f, 0)) == low:
+			bag.append(f)
+	furs[id] = bag[int(fposmod(t * 977.0, float(bag.size())))]
+
 func next_shop() -> Variant:
 	for s in Content.SHOPS:
 		if not shops.has(s.id) and district_open(String(s.id)):
@@ -806,6 +831,7 @@ func open_shop(id: String) -> bool:
 		return false
 	money -= s.cost
 	shops.append(id)
+	_deal_fur(id)
 	bump("open.shop")
 	var first: Dictionary = s.items[0]
 	items[first.id] = {"lv": 1.0, "stock": 0.0, "prog": 0.0}
@@ -1505,7 +1531,7 @@ const SAVE_KEYS: Array[String] = [
 	"ledger", "shopUp",
 	"cards", "stars", "pulls", "guards", "roulFree", "roulAd", "roulDay",
 	"stats", "zones",
-	"profile",
+	"profile", "furs",
 ]
 ## 글자로 저장했다 되돌리면 정수가 소수가 된다(-1 → -1.0). 자리를 세는 데
 ## 쓰는 것들은 도로 정수로 되돌린다 — 아니면 배열 자리를 못 찾는다.
@@ -1532,7 +1558,10 @@ const INT_KEYS: Array[String] = ["busy", "_qid", "_evIdx", "_oid"]
 ## 5판: 프로필(profile)이 들어왔다. 4판 저장본은 그 칸이 없고, load_from이
 ## 없는 칸을 건너뛰므로 기본값(너구리·기본 얼굴·자동 띠)으로 시작한다 —
 ## 따로 옮길 것이 없다.
-const SAVE_VER: int = 5
+## 6판: 점장 무늬(furs). 옛 저장본은 **연 순서대로 주머니를 돌려** 배정한다 —
+## 약속은 "한 번 정하면 안 바뀐다"이지 "무작위"가 아니라서, 옛 판은
+## 규칙적이어도 된다. 이후 새로 여는 가게부터 주머니 뽑기를 탄다.
+const SAVE_VER: int = 6
 
 func save() -> Dictionary:
 	var d: Dictionary = {}
@@ -1584,6 +1613,10 @@ func load_from(d: Dictionary, ver: int = SAVE_VER) -> void:
 	for g in Content.GUESTS:
 		if not _guestAcc.has(g.id):
 			_guestAcc[g.id] = 0.0
+	# 6판 전 저장본 — 무늬 칸이 없다. 연 순서대로 배정한다(위 SAVE_VER 참고).
+	if ver < 6 and furs.is_empty():
+		for k in range(shops.size()):
+			furs[String(shops[k])] = FURS[k % FURS.size()]
 	# ── 옛 저장본(1판) 받아주기 ──
 	# 개: 있다/없다 → 마리 수
 	if ver < 2 and guards <= 0.0 and guard:

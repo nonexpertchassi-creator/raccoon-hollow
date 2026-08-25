@@ -231,6 +231,21 @@ func _process(_d: float) -> void:
 	if int(main.sim.profile.band) == 99:
 		fails.append("못 딴 띠가 받아들여졌다")
 
+	# 점장 무늬 — 열 때 한 번 배정되고, 저장을 오가도·옛 판을 받아도 지켜진다
+	if not s.furs.has("smith"):
+		fails.append("가게를 열었는데 점장 무늬가 배정 안 됐다")
+	var fur0: String = s.fur_of("smith")
+	var s2 := Sim.new()
+	s2.load_from(Sim.from_blob(s.to_blob()))
+	if s2.fur_of("smith") != fur0:
+		fails.append("저장을 오가니 점장 무늬가 바뀌었다")
+	var oldsave: Dictionary = Sim.from_blob(s.to_blob())
+	oldsave.erase("furs")                    # 6판 전 저장본 흉내
+	var s3 := Sim.new()
+	s3.load_from(oldsave, 5)
+	if not s3.furs.has("smith"):
+		fails.append("옛 저장본(5판)에 무늬가 배정 안 됐다")
+
 	# 룰렛 — 무료 한 번
 	main.panel.tab = "work"
 	main.panel.rebuild()

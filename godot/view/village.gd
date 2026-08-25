@@ -910,6 +910,12 @@ func _clerk(i: int) -> void:
 	elif _idle(i):
 		pose = "sleep"
 	var id: String = String(Content.SHOPS[i].id)
+	# 겹그림 점장(무늬 본체+꼬리+장비)이 준비된 무늬면 그쪽으로 —
+	# 본체 그림이 없으면 여태의 완성형 그림으로 돈다.
+	if Art.tex("hero-body", sim.fur_of(id)) != null:
+		_shadow(c.pos, 14.0)
+		_clerk_layers(c.pos, id, pose, bool(c.get("flip", false)))
+		return
 	var t: Texture2D = _hero_tex(id, pose)
 	if t == null:                       # 그 자세가 아직 없으면 만드는 자세로
 		t = _hero_tex(id, "make")
@@ -919,6 +925,39 @@ func _clerk(i: int) -> void:
 			bool(c.get("flip", false)))
 		return
 	_raccoon(c.pos, SHAPE, Color("a8815a"))
+
+## 겹그림 점장 — **본체 무늬 + 독립 꼬리 + 가게 장비(등급별)** 세 겹을
+## 같은 144×144 판에 핀 맞춰 겹친다(주문서의 새 계약). 왜 겹그림인가:
+## 완성형이면 무늬 4 × 가게 15 × 자세 × 등급 3이 곱해져 그림이 수백 장이
+## 된다 — 겹치면 본체 4 + 꼬리 4 + 장비 45로 끝난다.
+## 꼬리는 그림 여러 장 대신 **코드가 엉덩이 축으로 천천히 흔든다.**
+## 측면은 훼이크다 — 몸과 얼굴은 정면 그대로, 팔 그림 하나만 얹고 좌우는 뒤집는다.
+func _clerk_layers(foot: Vector2, shop_id: String, pose: String, flip: bool) -> void:
+	var fur: String = sim.fur_of(shop_id)
+	var sz: Vector2 = Art.SIZE["hero"]
+	var r := Rect2(foot - Vector2(sz.x * 0.5, sz.y), sz)
+	var tail: Texture2D = Art.tex("hero-tail", fur)
+	if tail != null:
+		var hip: Vector2 = foot + Vector2(sz.x * (0.22 if flip else -0.22), -sz.y * 0.28)
+		draw_set_transform(hip, sin(_t * 1.7 + foot.x * 0.05) * 0.12,
+			Vector2(-1, 1) if flip else Vector2.ONE)
+		draw_texture_rect(tail, Rect2(Vector2(-sz.x * 0.5, -sz.y * 0.45), sz * 0.9), false)
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	_flat_tex(Art.tex("hero-body", fur), r, flip)
+	var gear: Texture2D = Art.tex("gear", "%s-%d" % [shop_id, sim.rank_of(shop_id) + 1])
+	if gear != null:
+		_flat_tex(gear, r, flip)
+	if pose in ["walk1", "walk2", "sell"]:
+		var arm: Texture2D = Art.tex("hero-arm", "arm")
+		if arm != null:
+			_flat_tex(arm, r, flip)
+
+func _flat_tex(t: Texture2D, r: Rect2, flip: bool) -> void:
+	if flip:
+		draw_texture_rect_region(t, Rect2(r.position + Vector2(r.size.x, 0),
+			Vector2(-r.size.x, r.size.y)), Rect2(Vector2.ZERO, t.get_size()))
+	else:
+		draw_texture_rect(t, r, false)
 
 ## 직원 — 작업대 옆에 서서 계속 만든다.
 ##
