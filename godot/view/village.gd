@@ -372,6 +372,8 @@ func _advance(delta: float) -> void:
 		var d: Vector2 = tgt - c.pos
 		var step: float = CLERK_SPEED * delta
 		c.walking = d.length() > step        # 걷는 중이면 걷는 그림을 쓴다
+		if c.walking and absf(d.y) > 0.2:
+			c.up = d.y < 0.0                 # 위로 걸으면 뒷모습을 쓴다(3방향 계약)
 		# 계산대 근처(30px)에서는 방향을 **절대 안 바꾼다** — 팔꿈치를 오가는
 		# 짧은 걸음마다 좌우가 뒤집혀 파닥거렸다(유저가 두 번 잡았다).
 		var near_ct: bool = c.pos.distance_to(f.serve) < 30.0
@@ -1027,9 +1029,16 @@ func _clerk(i: int) -> void:
 	var id: String = String(Content.SHOPS[i].id)
 	# 겹그림 점장(무늬 본체+꼬리+장비)이 준비된 무늬면 그쪽으로 —
 	# 본체 그림이 없으면 여태의 완성형 그림으로 돈다.
-	if Art.tex("hero-body", sim.fur_of(id)) != null:
+	if Art.tex("hero-body", sim.fur_of(id) + "-front") != null:
+		# 방향 셋(확정 원화 규칙): 계산·생산 = 오른쪽 훼이크 측면(왼쪽은 뒤집기),
+		# 위로 걸으면 뒷모습, 나머지(대기·아래로 걷기·졸기) = 정면.
+		var dir3: String = "front"
+		if pose in ["make", "sell"]:
+			dir3 = "side"
+		elif c.walking and bool(c.get("up", false)):
+			dir3 = "back"
 		_shadow(c.pos, 14.0)
-		_clerk_layers(c.pos, id, pose, bool(c.get("flip", false)))
+		_clerk_layers(c.pos, id, dir3, bool(c.get("flip", false)))
 		return
 	var t: Texture2D = _hero_tex(id, pose)
 	if t == null:                       # 그 자세가 아직 없으면 만드는 자세로
@@ -1041,33 +1050,43 @@ func _clerk(i: int) -> void:
 		return
 	_raccoon(c.pos, SHAPE, Color("a8815a"))
 
-## 겹그림 점장 — **본체 무늬 + 독립 꼬리 + 가게 장비(등급별)** 세 겹을
-## 같은 144×144 판에 핀 맞춰 겹친다(주문서의 새 계약). 왜 겹그림인가:
-## 완성형이면 무늬 4 × 가게 15 × 자세 × 등급 3이 곱해져 그림이 수백 장이
-## 된다 — 겹치면 본체 4 + 꼬리 4 + 장비 45로 끝난다.
-## 꼬리는 그림 여러 장 대신 **코드가 엉덩이 축으로 천천히 흔든다.**
-## 측면은 훼이크다 — 몸과 얼굴은 정면 그대로, 팔 그림 하나만 얹고 좌우는 뒤집는다.
-func _clerk_layers(foot: Vector2, shop_id: String, pose: String, flip: bool) -> void:
+## 겹그림 점장 — 확정 3방향 원화 규칙(2026-08-26, 유저).
+## 본체 12장(무늬4×방향3) + 꼬리 8장(무늬4×side·back) + 장비 스티커(가게×단계×방향).
+## 방향: front 정면 · side 오른쪽 훼이크 측면 · back 뒷모습. **왼쪽은 side를 뒤집는다.**
+## 겹 순서 — front: 몸→장비(꼬리 없음) · side: 꼬리→몸→장비 · back: 몸→장비→꼬리.
+## 장비는 투명 스티커다(몸·손·얼굴·무늬·꼬리·그림자 픽셀 금지) — 본체 위에 핀만 맞춘다.
+## 꼬리는 방향별 뿌리 축으로 코드가 천천히 흔든다 — 프레임 그림은 없다.
+func _clerk_layers(foot: Vector2, shop_id: String, dir3: String, flip: bool) -> void:
 	var fur: String = sim.fur_of(shop_id)
 	var sz: Vector2 = Art.SIZE["hero"]
 	var r := Rect2(foot - Vector2(sz.x * 0.5, sz.y), sz)
-	var tail: Texture2D = Art.tex("hero-tail", fur)
-	if tail != null:
-		var hip: Vector2 = foot + Vector2(sz.x * (0.22 if flip else -0.22), -sz.y * 0.28)
-		draw_set_transform(hip, sin(_t * 1.7 + foot.x * 0.05) * 0.12,
-			Vector2(-1, 1) if flip else Vector2.ONE)
-		draw_texture_rect(tail, Rect2(Vector2(-sz.x * 0.5, -sz.y * 0.45), sz * 0.9), false)
-		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-	_flat_tex(Art.tex("hero-body", fur), r, flip)
-	var gear: Texture2D = Art.tex("gear", "%s-%d" % [shop_id, sim.rank_of(shop_id) + 1])
+	var body: Texture2D = Art.tex("hero-body", "%s-%s" % [fur, dir3])
+	if body == null:
+		body = Art.tex("hero-body", "%s-front" % fur)   # 방향이 아직 없으면 정면으로 때운다
+	var gkey: String = "%s-%d" % [shop_id, sim.rank_of(shop_id) + 1]
+	var gear: Texture2D = Art.tex("gear", "%s-%s" % [gkey, dir3])
+	if gear == null:
+		gear = Art.tex("gear", "%s-front" % gkey)
+	if dir3 == "side":
+		_tail_wag(foot, fur, "side", flip, false)       # 측면: 꼬리가 몸 뒤에 먼저
+	_flat_tex(body, r, flip)
 	if gear != null:
 		_flat_tex(gear, r, flip)
-	# 유저 구도: 이동·대기 = 정면 몸 그대로, **계산·생산 = 팔을 얹은 훼이크
-	# 측면.** 걷는 건 정면 몸+들썩임이면 충분하다 — 팔은 일하는 표시다.
-	if pose in ["make", "sell"]:
-		var arm: Texture2D = Art.tex("hero-arm", "arm")
-		if arm != null:
-			_flat_tex(arm, r, flip)
+	if dir3 == "back":
+		_tail_wag(foot, fur, "back", flip, true)        # 뒷모습: 꼬리가 맨 위, 엉덩이 가운데
+
+## 꼬리 — 방향별 뿌리 축(측면: 엉덩이 뒤쪽 · 뒷모습: 엉덩이 한가운데)으로 흔든다.
+func _tail_wag(foot: Vector2, fur: String, dir3: String, flip: bool, center: bool) -> void:
+	var tail: Texture2D = Art.tex("hero-tail", "%s-%s" % [fur, dir3])
+	if tail == null:
+		return
+	var sz: Vector2 = Art.SIZE["hero"]
+	var hip: Vector2 = foot + (Vector2(0, -sz.y * 0.30) if center
+		else Vector2(sz.x * (0.22 if flip else -0.22), -sz.y * 0.28))
+	draw_set_transform(hip, sin(_t * 1.7 + foot.x * 0.05) * 0.12,
+		Vector2(-1, 1) if flip else Vector2.ONE)
+	draw_texture_rect(tail, Rect2(Vector2(-sz.x * 0.5, -sz.y * 0.45), sz * 0.9), false)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 func _flat_tex(t: Texture2D, r: Rect2, flip: bool) -> void:
 	if flip:

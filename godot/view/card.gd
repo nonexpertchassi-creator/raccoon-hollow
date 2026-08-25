@@ -190,12 +190,12 @@ func show_card(shop_id: String, rank: int) -> void:
 	# 옛 순서: 카드 초상 → 가게별 점장 → 공통 점장.
 	_art_tail.texture = null
 	_art_gear.texture = null
-	var body: Texture2D = Art.tex("hero-body", sim.fur_of(shop_id))
+	# 카드는 **정면 본체 + 정면 장비**다(확정 원화 규칙). 정면엔 꼬리가 없다.
+	var body: Texture2D = Art.tex("hero-body", sim.fur_of(shop_id) + "-front")
 	var t: Texture2D = null
 	if body != null:
 		t = body
-		_art_tail.texture = Art.tex("hero-tail", sim.fur_of(shop_id))
-		_art_gear.texture = Art.tex("gear", "%s-%d" % [shop_id, rank + 1])
+		_art_gear.texture = Art.tex("gear", "%s-%d-front" % [shop_id, rank + 1])
 	if t == null:
 		t = Art.tex("cards", "%s-%d" % [shop_id, rank + 1])
 	if t == null:

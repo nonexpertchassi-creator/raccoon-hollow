@@ -123,7 +123,7 @@ Godot이 그림을 제 방식으로 한 번 읽어 두는 과정이다(에디터
 |---|---|---|---|
 | **1차** | 손님 30종 (걷는 모습) | **30** | 마을이 회색 덩어리를 벗는다. 지금 제일 어색한 자리 |
 | **2차** | 손님 카드 1단 30장 | **30** | 뽑기에서 크게 뜨고 도감에 모인다 — **제일 오래 들여다보는 그림** |
-| **3차** | 점장 겹그림 — 본체 무늬 4 + 꼬리 4 + 팔 1 | **9** | 이 9장이 들어오면 모든 가게 점장이 살아난다(장비는 나중에 겹친다) |
+| **3차** | 점장 겹그림 — 본체 12(무늬4×방향3) + 꼬리 8 | **20** | 이 20장이 들어오면 모든 가게 점장이 살아난다(장비는 나중에 겹친다) |
 | **4차** | 직원 너구리 4등급 (두건) | **8** | 공용 몸에 **머리에 쓴 것만** 다르다 — 머리띠 → 흰 두건 → 회색 두건 → 검정 두건 |
 | **5차** | 물건 40종 | **40** | 제일 많다. 매대와 가게 창 두 군데에 쓰인다 |
 | **6차** | 매대 5종 · 나쁜 놈 3종 | **8** | 가게마다 좌판이 달라진다 |
@@ -135,18 +135,20 @@ Godot이 그림을 제 방식으로 한 번 읽어 두는 과정이다(에디터
 **점장은 겹그림이다.** 완성형 한 장이 아니라 네 겹을 포개서 만든다:
 
 ```
-hero-body/a~d   벌거벗은 본체 — 몸 윤곽은 넷이 똑같고 털 무늬만 다르다
-hero-tail/a~d   꼬리만 따로 — 코드가 뿌리 축으로 천천히 흔든다
-gear/<가게>-1~3  가게 장비+도구 — 승급하면 이것만 갈아입는다
-hero-arm/arm    훼이크 측면용 뻗은 팔 한 장
+hero-body/a~d-{front·side·back}   벌거벗은 본체 3방향 — 몸 윤곽은 넷이 똑같고 털 무늬만 다르다
+hero-tail/a~d-{side·back}         꼬리 — 정면엔 없다. side는 몸 뒤, back은 몸 위(코드가 흔든다)
+gear/<가게>-1~3-{front·side·back} 장비 스티커 — 몸·손·얼굴·무늬·꼬리·그림자 픽셀 금지
 ```
+
+겹 순서: front `몸→장비` · side `꼬리→몸→장비` · back `몸→장비→꼬리`.
+왼쪽은 side 겹 전체를 코드가 뒤집는다. 카드는 front 본체+장비를 쓴다.
 
 - **무늬는 저장본이 정한다** — 가게를 여는 순간 a~d 중 하나가 배정되고
   다시는 안 바뀐다(재실행·승급 무관). 같은 저장본에서도 대장간은 A,
   필방은 C처럼 가게마다 다를 수 있다(덜 쓴 무늬 주머니에서 뽑는다).
 - **승급은 몸을 안 바꾼다.** 장비(gear)만 1→2→3단으로 갈아입는다.
-- **측면은 훼이크다.** 실제 옆모습을 그리지 않는다 — 정면에 가까운 몸에
-  팔 한 장을 얹고, 좌우는 코드가 뒤집는다.
+- **측면은 오른쪽 하나만 그린다**(정면에 가까운 몸에 팔을 뻗은 훼이크 측면).
+  왼쪽은 코드가 뒤집는다. 위로 걸을 땐 뒷모습, 카드는 정면을 쓴다.
 - **카드와 마을의 점장은 같은 재료를 겹친다** — 같은 무늬, 같은 단계 장비.
 - 옛 완성형 점장 20장(`clerks/`)은 본체가 올 때까지의 **폴백**이다.
   추가로 그리지 않는다.
@@ -839,80 +841,183 @@ hero-arm/arm    훼이크 측면용 뻗은 팔 한 장
 - [ ] `moonbear.png` — 반달곰 — 뽑으면 고를 수 있다
 - [ ] `haetae.png` — 해태 — 뽑으면 고를 수 있다
 
-### 점장 본체 무늬 (선택) — `godot/art/hero-body/` · 144×144 · **4장 남음**
+### 점장 본체 무늬 (3방향) (선택) — `godot/art/hero-body/` · 144×144 · **12장 남음**
 
-벌거벗은 너구리 정면 본체. **장비도 꼬리도 없이** 몸통·팔·얼굴만.
+벌거벗은 너구리 본체. **장비도 꼬리도 없이** 몸통·팔·얼굴만.
 네 무늬는 몸 윤곽이 완전히 같고 털 무늬(색·줄·점)만 다르다.
+방향은 셋 — 정면(front) · **오른쪽** 훼이크 측면(side) · 뒷모습(back).
+왼쪽은 코드가 뒤집으니 그리지 않는다.
 
-- [ ] `a.png` — 무늬 A — 같은 몸, 다른 털
-- [ ] `b.png` — 무늬 B — 같은 몸, 다른 털
-- [ ] `c.png` — 무늬 C — 같은 몸, 다른 털
-- [ ] `d.png` — 무늬 D — 같은 몸, 다른 털
+- [ ] `a-front.png` — 무늬 A 정면 — 대기·아래로 걷기·카드
+- [ ] `a-side.png` — 무늬 A 오른쪽 훼이크 측면 — 계산·생산
+- [ ] `a-back.png` — 무늬 A 뒷모습 — 위로 걸을 때
+- [ ] `b-front.png` — 무늬 B 정면 — 대기·아래로 걷기·카드
+- [ ] `b-side.png` — 무늬 B 오른쪽 훼이크 측면 — 계산·생산
+- [ ] `b-back.png` — 무늬 B 뒷모습 — 위로 걸을 때
+- [ ] `c-front.png` — 무늬 C 정면 — 대기·아래로 걷기·카드
+- [ ] `c-side.png` — 무늬 C 오른쪽 훼이크 측면 — 계산·생산
+- [ ] `c-back.png` — 무늬 C 뒷모습 — 위로 걸을 때
+- [ ] `d-front.png` — 무늬 D 정면 — 대기·아래로 걷기·카드
+- [ ] `d-side.png` — 무늬 D 오른쪽 훼이크 측면 — 계산·생산
+- [ ] `d-back.png` — 무늬 D 뒷모습 — 위로 걸을 때
 
-### 점장 꼬리 (선택) — `godot/art/hero-tail/` · 144×144 · **4장 남음**
+### 점장 꼬리 (side·back) (선택) — `godot/art/hero-tail/` · 144×144 · **8장 남음**
 
-꼬리만 따로 한 장. 뿌리를 판의 한가운데 근처(엉덩이 자리)에 두면
-코드가 그 축으로 천천히 흔든다 — 여러 프레임을 그리지 않는다.
+꼬리만 따로. **정면에는 꼬리가 없다** — side와 back 두 방향뿐이다.
+side는 몸 뒤에 깔리고(뿌리: 엉덩이 뒤쪽), back은 몸 위에 얹힌다
+(뿌리: 엉덩이 한가운데). 흔드는 것은 코드다 — 프레임 그림 금지.
 
-- [ ] `a.png` — 무늬 A 꼬리
-- [ ] `b.png` — 무늬 B 꼬리
-- [ ] `c.png` — 무늬 C 꼬리
-- [ ] `d.png` — 무늬 D 꼬리
+- [ ] `a-side.png` — 무늬 A 측면 꼬리 — 몸 뒤에 깔린다
+- [ ] `a-back.png` — 무늬 A 뒷모습 꼬리 — 몸 위에 얹힌다
+- [ ] `b-side.png` — 무늬 B 측면 꼬리 — 몸 뒤에 깔린다
+- [ ] `b-back.png` — 무늬 B 뒷모습 꼬리 — 몸 위에 얹힌다
+- [ ] `c-side.png` — 무늬 C 측면 꼬리 — 몸 뒤에 깔린다
+- [ ] `c-back.png` — 무늬 C 뒷모습 꼬리 — 몸 위에 얹힌다
+- [ ] `d-side.png` — 무늬 D 측면 꼬리 — 몸 뒤에 깔린다
+- [ ] `d-back.png` — 무늬 D 뒷모습 꼬리 — 몸 위에 얹힌다
 
-### 점장 훼이크 측면 팔 (선택) — `godot/art/hero-arm/` · 144×144 · **1장 남음**
+### 가게 장비 스티커 (등급×3방향) (선택) — `godot/art/gear/` · 144×144 · **135장 남음**
 
-- [ ] `arm.png` — 옆으로 뻗은 팔 한 장 — 걷기·계산 때 몸은 정면인 채 이것만 얹는다
+본체 위에 겹치는 옷+도구 **스티커**다 — PNG에 몸·손·꼬리 픽셀이
+있으면 안 된다(본체와 이중으로 겹친다). 본체 3방향과 핀이 맞아야 한다.
+1단은 수수하게, 3단은 화려하게 — 승급하면 너구리는 그대로고 장비만 갈아입는다.
+방향별 파일: `smith-1-front.png` · `smith-1-side.png` · `smith-1-back.png`.
 
-### 가게 장비 (등급별) (선택) — `godot/art/gear/` · 144×144 · **45장 남음**
-
-본체 위에 겹치는 옷+도구 한 장. 1단은 수수하게, 3단은 화려하게 —
-승급하면 너구리는 그대로고 **이 장비만** 갈아입는다.
-
-- [ ] `smith-1.png` — 대장간 1단 장비와 도구
-- [ ] `smith-2.png` — 대장간 2단 장비와 도구
-- [ ] `smith-3.png` — 대장간 3단 장비와 도구
-- [ ] `brush-1.png` — 필방 1단 장비와 도구
-- [ ] `brush-2.png` — 필방 2단 장비와 도구
-- [ ] `brush-3.png` — 필방 3단 장비와 도구
-- [ ] `paper-1.png` — 지물포 1단 장비와 도구
-- [ ] `paper-2.png` — 지물포 2단 장비와 도구
-- [ ] `paper-3.png` — 지물포 3단 장비와 도구
-- [ ] `pot-1.png` — 옹기점 1단 장비와 도구
-- [ ] `pot-2.png` — 옹기점 2단 장비와 도구
-- [ ] `pot-3.png` — 옹기점 3단 장비와 도구
-- [ ] `herb-1.png` — 약재상 1단 장비와 도구
-- [ ] `herb-2.png` — 약재상 2단 장비와 도구
-- [ ] `herb-3.png` — 약재상 3단 장비와 도구
-- [ ] `soup-1.png` — 국밥집 1단 장비와 도구
-- [ ] `soup-2.png` — 국밥집 2단 장비와 도구
-- [ ] `soup-3.png` — 국밥집 3단 장비와 도구
-- [ ] `gaekju-1.png` — 객주 1단 장비와 도구
-- [ ] `gaekju-2.png` — 객주 2단 장비와 도구
-- [ ] `gaekju-3.png` — 객주 3단 장비와 도구
-- [ ] `skewer-1.png` — 꼬치집 1단 장비와 도구
-- [ ] `skewer-2.png` — 꼬치집 2단 장비와 도구
-- [ ] `skewer-3.png` — 꼬치집 3단 장비와 도구
-- [ ] `ricecake-1.png` — 떡집 1단 장비와 도구
-- [ ] `ricecake-2.png` — 떡집 2단 장비와 도구
-- [ ] `ricecake-3.png` — 떡집 3단 장비와 도구
-- [ ] `butcher-1.png` — 푸줏간 1단 장비와 도구
-- [ ] `butcher-2.png` — 푸줏간 2단 장비와 도구
-- [ ] `butcher-3.png` — 푸줏간 3단 장비와 도구
-- [ ] `fish-1.png` — 어물전 1단 장비와 도구
-- [ ] `fish-2.png` — 어물전 2단 장비와 도구
-- [ ] `fish-3.png` — 어물전 3단 장비와 도구
-- [ ] `cloth-1.png` — 포목전 1단 장비와 도구
-- [ ] `cloth-2.png` — 포목전 2단 장비와 도구
-- [ ] `cloth-3.png` — 포목전 3단 장비와 도구
-- [ ] `hat-1.png` — 갓방 1단 장비와 도구
-- [ ] `hat-2.png` — 갓방 2단 장비와 도구
-- [ ] `hat-3.png` — 갓방 3단 장비와 도구
-- [ ] `brass-1.png` — 유기전 1단 장비와 도구
-- [ ] `brass-2.png` — 유기전 2단 장비와 도구
-- [ ] `brass-3.png` — 유기전 3단 장비와 도구
-- [ ] `lacquer-1.png` — 나전방 1단 장비와 도구
-- [ ] `lacquer-2.png` — 나전방 2단 장비와 도구
-- [ ] `lacquer-3.png` — 나전방 3단 장비와 도구
+- [ ] `smith-1-front.png` — 대장간 1단 장비 (front)
+- [ ] `smith-1-side.png` — 대장간 1단 장비 (side)
+- [ ] `smith-1-back.png` — 대장간 1단 장비 (back)
+- [ ] `smith-2-front.png` — 대장간 2단 장비 (front)
+- [ ] `smith-2-side.png` — 대장간 2단 장비 (side)
+- [ ] `smith-2-back.png` — 대장간 2단 장비 (back)
+- [ ] `smith-3-front.png` — 대장간 3단 장비 (front)
+- [ ] `smith-3-side.png` — 대장간 3단 장비 (side)
+- [ ] `smith-3-back.png` — 대장간 3단 장비 (back)
+- [ ] `brush-1-front.png` — 필방 1단 장비 (front)
+- [ ] `brush-1-side.png` — 필방 1단 장비 (side)
+- [ ] `brush-1-back.png` — 필방 1단 장비 (back)
+- [ ] `brush-2-front.png` — 필방 2단 장비 (front)
+- [ ] `brush-2-side.png` — 필방 2단 장비 (side)
+- [ ] `brush-2-back.png` — 필방 2단 장비 (back)
+- [ ] `brush-3-front.png` — 필방 3단 장비 (front)
+- [ ] `brush-3-side.png` — 필방 3단 장비 (side)
+- [ ] `brush-3-back.png` — 필방 3단 장비 (back)
+- [ ] `paper-1-front.png` — 지물포 1단 장비 (front)
+- [ ] `paper-1-side.png` — 지물포 1단 장비 (side)
+- [ ] `paper-1-back.png` — 지물포 1단 장비 (back)
+- [ ] `paper-2-front.png` — 지물포 2단 장비 (front)
+- [ ] `paper-2-side.png` — 지물포 2단 장비 (side)
+- [ ] `paper-2-back.png` — 지물포 2단 장비 (back)
+- [ ] `paper-3-front.png` — 지물포 3단 장비 (front)
+- [ ] `paper-3-side.png` — 지물포 3단 장비 (side)
+- [ ] `paper-3-back.png` — 지물포 3단 장비 (back)
+- [ ] `pot-1-front.png` — 옹기점 1단 장비 (front)
+- [ ] `pot-1-side.png` — 옹기점 1단 장비 (side)
+- [ ] `pot-1-back.png` — 옹기점 1단 장비 (back)
+- [ ] `pot-2-front.png` — 옹기점 2단 장비 (front)
+- [ ] `pot-2-side.png` — 옹기점 2단 장비 (side)
+- [ ] `pot-2-back.png` — 옹기점 2단 장비 (back)
+- [ ] `pot-3-front.png` — 옹기점 3단 장비 (front)
+- [ ] `pot-3-side.png` — 옹기점 3단 장비 (side)
+- [ ] `pot-3-back.png` — 옹기점 3단 장비 (back)
+- [ ] `herb-1-front.png` — 약재상 1단 장비 (front)
+- [ ] `herb-1-side.png` — 약재상 1단 장비 (side)
+- [ ] `herb-1-back.png` — 약재상 1단 장비 (back)
+- [ ] `herb-2-front.png` — 약재상 2단 장비 (front)
+- [ ] `herb-2-side.png` — 약재상 2단 장비 (side)
+- [ ] `herb-2-back.png` — 약재상 2단 장비 (back)
+- [ ] `herb-3-front.png` — 약재상 3단 장비 (front)
+- [ ] `herb-3-side.png` — 약재상 3단 장비 (side)
+- [ ] `herb-3-back.png` — 약재상 3단 장비 (back)
+- [ ] `soup-1-front.png` — 국밥집 1단 장비 (front)
+- [ ] `soup-1-side.png` — 국밥집 1단 장비 (side)
+- [ ] `soup-1-back.png` — 국밥집 1단 장비 (back)
+- [ ] `soup-2-front.png` — 국밥집 2단 장비 (front)
+- [ ] `soup-2-side.png` — 국밥집 2단 장비 (side)
+- [ ] `soup-2-back.png` — 국밥집 2단 장비 (back)
+- [ ] `soup-3-front.png` — 국밥집 3단 장비 (front)
+- [ ] `soup-3-side.png` — 국밥집 3단 장비 (side)
+- [ ] `soup-3-back.png` — 국밥집 3단 장비 (back)
+- [ ] `gaekju-1-front.png` — 객주 1단 장비 (front)
+- [ ] `gaekju-1-side.png` — 객주 1단 장비 (side)
+- [ ] `gaekju-1-back.png` — 객주 1단 장비 (back)
+- [ ] `gaekju-2-front.png` — 객주 2단 장비 (front)
+- [ ] `gaekju-2-side.png` — 객주 2단 장비 (side)
+- [ ] `gaekju-2-back.png` — 객주 2단 장비 (back)
+- [ ] `gaekju-3-front.png` — 객주 3단 장비 (front)
+- [ ] `gaekju-3-side.png` — 객주 3단 장비 (side)
+- [ ] `gaekju-3-back.png` — 객주 3단 장비 (back)
+- [ ] `skewer-1-front.png` — 꼬치집 1단 장비 (front)
+- [ ] `skewer-1-side.png` — 꼬치집 1단 장비 (side)
+- [ ] `skewer-1-back.png` — 꼬치집 1단 장비 (back)
+- [ ] `skewer-2-front.png` — 꼬치집 2단 장비 (front)
+- [ ] `skewer-2-side.png` — 꼬치집 2단 장비 (side)
+- [ ] `skewer-2-back.png` — 꼬치집 2단 장비 (back)
+- [ ] `skewer-3-front.png` — 꼬치집 3단 장비 (front)
+- [ ] `skewer-3-side.png` — 꼬치집 3단 장비 (side)
+- [ ] `skewer-3-back.png` — 꼬치집 3단 장비 (back)
+- [ ] `ricecake-1-front.png` — 떡집 1단 장비 (front)
+- [ ] `ricecake-1-side.png` — 떡집 1단 장비 (side)
+- [ ] `ricecake-1-back.png` — 떡집 1단 장비 (back)
+- [ ] `ricecake-2-front.png` — 떡집 2단 장비 (front)
+- [ ] `ricecake-2-side.png` — 떡집 2단 장비 (side)
+- [ ] `ricecake-2-back.png` — 떡집 2단 장비 (back)
+- [ ] `ricecake-3-front.png` — 떡집 3단 장비 (front)
+- [ ] `ricecake-3-side.png` — 떡집 3단 장비 (side)
+- [ ] `ricecake-3-back.png` — 떡집 3단 장비 (back)
+- [ ] `butcher-1-front.png` — 푸줏간 1단 장비 (front)
+- [ ] `butcher-1-side.png` — 푸줏간 1단 장비 (side)
+- [ ] `butcher-1-back.png` — 푸줏간 1단 장비 (back)
+- [ ] `butcher-2-front.png` — 푸줏간 2단 장비 (front)
+- [ ] `butcher-2-side.png` — 푸줏간 2단 장비 (side)
+- [ ] `butcher-2-back.png` — 푸줏간 2단 장비 (back)
+- [ ] `butcher-3-front.png` — 푸줏간 3단 장비 (front)
+- [ ] `butcher-3-side.png` — 푸줏간 3단 장비 (side)
+- [ ] `butcher-3-back.png` — 푸줏간 3단 장비 (back)
+- [ ] `fish-1-front.png` — 어물전 1단 장비 (front)
+- [ ] `fish-1-side.png` — 어물전 1단 장비 (side)
+- [ ] `fish-1-back.png` — 어물전 1단 장비 (back)
+- [ ] `fish-2-front.png` — 어물전 2단 장비 (front)
+- [ ] `fish-2-side.png` — 어물전 2단 장비 (side)
+- [ ] `fish-2-back.png` — 어물전 2단 장비 (back)
+- [ ] `fish-3-front.png` — 어물전 3단 장비 (front)
+- [ ] `fish-3-side.png` — 어물전 3단 장비 (side)
+- [ ] `fish-3-back.png` — 어물전 3단 장비 (back)
+- [ ] `cloth-1-front.png` — 포목전 1단 장비 (front)
+- [ ] `cloth-1-side.png` — 포목전 1단 장비 (side)
+- [ ] `cloth-1-back.png` — 포목전 1단 장비 (back)
+- [ ] `cloth-2-front.png` — 포목전 2단 장비 (front)
+- [ ] `cloth-2-side.png` — 포목전 2단 장비 (side)
+- [ ] `cloth-2-back.png` — 포목전 2단 장비 (back)
+- [ ] `cloth-3-front.png` — 포목전 3단 장비 (front)
+- [ ] `cloth-3-side.png` — 포목전 3단 장비 (side)
+- [ ] `cloth-3-back.png` — 포목전 3단 장비 (back)
+- [ ] `hat-1-front.png` — 갓방 1단 장비 (front)
+- [ ] `hat-1-side.png` — 갓방 1단 장비 (side)
+- [ ] `hat-1-back.png` — 갓방 1단 장비 (back)
+- [ ] `hat-2-front.png` — 갓방 2단 장비 (front)
+- [ ] `hat-2-side.png` — 갓방 2단 장비 (side)
+- [ ] `hat-2-back.png` — 갓방 2단 장비 (back)
+- [ ] `hat-3-front.png` — 갓방 3단 장비 (front)
+- [ ] `hat-3-side.png` — 갓방 3단 장비 (side)
+- [ ] `hat-3-back.png` — 갓방 3단 장비 (back)
+- [ ] `brass-1-front.png` — 유기전 1단 장비 (front)
+- [ ] `brass-1-side.png` — 유기전 1단 장비 (side)
+- [ ] `brass-1-back.png` — 유기전 1단 장비 (back)
+- [ ] `brass-2-front.png` — 유기전 2단 장비 (front)
+- [ ] `brass-2-side.png` — 유기전 2단 장비 (side)
+- [ ] `brass-2-back.png` — 유기전 2단 장비 (back)
+- [ ] `brass-3-front.png` — 유기전 3단 장비 (front)
+- [ ] `brass-3-side.png` — 유기전 3단 장비 (side)
+- [ ] `brass-3-back.png` — 유기전 3단 장비 (back)
+- [ ] `lacquer-1-front.png` — 나전방 1단 장비 (front)
+- [ ] `lacquer-1-side.png` — 나전방 1단 장비 (side)
+- [ ] `lacquer-1-back.png` — 나전방 1단 장비 (back)
+- [ ] `lacquer-2-front.png` — 나전방 2단 장비 (front)
+- [ ] `lacquer-2-side.png` — 나전방 2단 장비 (side)
+- [ ] `lacquer-2-back.png` — 나전방 2단 장비 (back)
+- [ ] `lacquer-3-front.png` — 나전방 3단 장비 (front)
+- [ ] `lacquer-3-side.png` — 나전방 3단 장비 (side)
+- [ ] `lacquer-3-back.png` — 나전방 3단 장비 (back)
 
 ### 가게별 점장 (옛 계약 · 폴백) (선택) — `godot/art/clerks/` · 144×144 · **0장 남음**
 

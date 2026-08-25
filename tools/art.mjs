@@ -156,21 +156,30 @@ const GROUPS = [
    *  · 꼬리는 붙이지 말 것 — 코드가 엉덩이 축으로 천천히 흔든다
    *  · 손님 중 너구리는 없다 — 이 겹그림은 점장 전용이다
    *  · 아래 clerks/의 옛 완성형 20장은 본체가 올 때까지의 폴백으로만 쓰인다 */
-  { dir: 'hero-body', size: '144×144', title: '점장 본체 무늬', optional: true,
-    note: '벌거벗은 너구리 정면 본체. **장비도 꼬리도 없이** 몸통·팔·얼굴만.\n' +
-          '네 무늬는 몸 윤곽이 완전히 같고 털 무늬(색·줄·점)만 다르다.',
-    rows: ['a', 'b', 'c', 'd'].map((f) => ({ id: f, why: `무늬 ${f.toUpperCase()} — 같은 몸, 다른 털` })) },
-  { dir: 'hero-tail', size: '144×144', title: '점장 꼬리', optional: true,
-    note: '꼬리만 따로 한 장. 뿌리를 판의 한가운데 근처(엉덩이 자리)에 두면\n' +
-          '코드가 그 축으로 천천히 흔든다 — 여러 프레임을 그리지 않는다.',
-    rows: ['a', 'b', 'c', 'd'].map((f) => ({ id: f, why: `무늬 ${f.toUpperCase()} 꼬리` })) },
-  { dir: 'hero-arm', size: '144×144', title: '점장 훼이크 측면 팔', optional: true,
-    rows: [{ id: 'arm', why: '옆으로 뻗은 팔 한 장 — 걷기·계산 때 몸은 정면인 채 이것만 얹는다' }] },
-  { dir: 'gear', size: '144×144', title: '가게 장비 (등급별)', optional: true,
-    note: '본체 위에 겹치는 옷+도구 한 장. 1단은 수수하게, 3단은 화려하게 —\n' +
-          '승급하면 너구리는 그대로고 **이 장비만** 갈아입는다.',
-    rows: SHOPS.flatMap((sh) => [1, 2, 3].map((r) =>
-      ({ id: `${sh.id}-${r}`, why: `${sh.name} ${r}단 장비와 도구` }))) },
+  { dir: 'hero-body', size: '144×144', title: '점장 본체 무늬 (3방향)', optional: true,
+    note: '벌거벗은 너구리 본체. **장비도 꼬리도 없이** 몸통·팔·얼굴만.\n' +
+          '네 무늬는 몸 윤곽이 완전히 같고 털 무늬(색·줄·점)만 다르다.\n' +
+          '방향은 셋 — 정면(front) · **오른쪽** 훼이크 측면(side) · 뒷모습(back).\n' +
+          '왼쪽은 코드가 뒤집으니 그리지 않는다.',
+    rows: ['a', 'b', 'c', 'd'].flatMap((f) => [
+      ['front', '정면 — 대기·아래로 걷기·카드'], ['side', '오른쪽 훼이크 측면 — 계산·생산'],
+      ['back', '뒷모습 — 위로 걸을 때']]
+      .map(([d, why]) => ({ id: `${f}-${d}`, why: `무늬 ${f.toUpperCase()} ${why}` }))) },
+  { dir: 'hero-tail', size: '144×144', title: '점장 꼬리 (side·back)', optional: true,
+    note: '꼬리만 따로. **정면에는 꼬리가 없다** — side와 back 두 방향뿐이다.\n' +
+          'side는 몸 뒤에 깔리고(뿌리: 엉덩이 뒤쪽), back은 몸 위에 얹힌다\n' +
+          '(뿌리: 엉덩이 한가운데). 흔드는 것은 코드다 — 프레임 그림 금지.',
+    rows: ['a', 'b', 'c', 'd'].flatMap((f) => [
+      ['side', '측면 꼬리 — 몸 뒤에 깔린다'], ['back', '뒷모습 꼬리 — 몸 위에 얹힌다']]
+      .map(([d, why]) => ({ id: `${f}-${d}`, why: `무늬 ${f.toUpperCase()} ${why}` }))) },
+  { dir: 'gear', size: '144×144', title: '가게 장비 스티커 (등급×3방향)', optional: true,
+    note: '본체 위에 겹치는 옷+도구 **스티커**다 — PNG에 몸·손·꼬리 픽셀이\n' +
+          '있으면 안 된다(본체와 이중으로 겹친다). 본체 3방향과 핀이 맞아야 한다.\n' +
+          '1단은 수수하게, 3단은 화려하게 — 승급하면 너구리는 그대로고 장비만 갈아입는다.\n' +
+          '방향별 파일: `smith-1-front.png` · `smith-1-side.png` · `smith-1-back.png`.',
+    rows: SHOPS.flatMap((sh) => [1, 2, 3].flatMap((r) =>
+      ['front', 'side', 'back'].map((d) =>
+        ({ id: `${sh.id}-${r}-${d}`, why: `${sh.name} ${r}단 장비 (${d})` })))) },
   /* 옛 완성형 — 폴백용. 새로 그리지 말 것(위 겹그림 계약으로 대체됐다). */
   { dir: 'clerks', size: '144×144', title: '가게별 점장 (옛 계약 · 폴백)', optional: true,
     note: '이미 들어온 20장은 본체 무늬가 올 때까지 그대로 쓰인다. **추가 주문 없음.**',
