@@ -170,7 +170,11 @@ func show_card(shop_id: String, rank: int) -> void:
 	_gridbox.visible = false
 	_cardbox.visible = true
 	var shop: Dictionary = Sim.shop_by_id(shop_id)
-	var t: Texture2D = Art.ranked("clerks", "%s-make" % shop_id, rank)
+	# 카드 초상(cards/<가게id>-<등급+1>) → 가게별 점장 → 공통 점장 순서.
+	# 주문서에서 점장 카드 초상이 빠져 있었다(유저가 잡았다) — 자리부터 만든다.
+	var t: Texture2D = Art.tex("cards", "%s-%d" % [shop_id, rank + 1])
+	if t == null:
+		t = Art.ranked("clerks", "%s-make" % shop_id, rank)
 	if t == null:
 		t = Art.tex("hero", "raccoon-make")
 	_art.texture = t

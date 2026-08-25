@@ -63,6 +63,19 @@ const GROUPS = [
           '파일 이름은 `<손님id>-1.png`. 6~10성은 `-2`, 11~15성은 `-3`, 16~20성은 `-4`.',
     rows: GUESTS.map((g) => ({ id: `${g.id}-1`,
       why: `${g.name} (${CARD_GRADES[g.grade - 1].name}) — 1~5성` })) },
+  { dir: 'cards', size: '512×768', title: '점장 카드 (가게를 열 때 뜨는 초상)',
+    note: '가게를 되살리거나 승급하면 화면 가운데에 카드가 뜬다 — **그 초상이 여태 없었다.**\n' +
+          '손님 카드와 같은 규격(세로 초상, 배경까지). 그 가게 점장 너구리가 제 일터에서\n' +
+          '일하는 모습으로. 파일명은 `<가게id>-1.png`(첫 등급). 승급 등급(-2, -3)은 선택.',
+    rows: SHOPS.map((sh) => ({ id: `${sh.id}-1`, why: `${sh.name} 점장 초상 — ${sh.desc}` })) },
+  { dir: 'cards', size: '512×768', title: '점장 카드 승급판 (2·3등급)', optional: true,
+    rows: SHOPS.flatMap((sh) => [2, 3].map((k) => ({ id: `${sh.id}-${k}`,
+      why: `${sh.name} — ${sh.ranks[k - 1]} 등급` }))) },
+  { dir: 'kilns', size: '168×192', title: '가마·풀무',
+    note: '마당 뒤쪽의 만드는 기계 — 대장간은 풀무·화덕, 옹기점은 가마, 국밥집은 가마솥.\n' +
+          '승급 그림(`smith-1.png`·`smith-2.png`)을 넣으면 등급 따라 갈아입는다(선택).\n' +
+          '없으면 코드가 등급 따라 키우고 불을 세게 피운다.',
+    rows: SHOPS.map((sh) => ({ id: sh.id, why: `${sh.name} — ${sh.desc}` })) },
   { dir: 'cards', size: '512×768', title: '손님 카드 2~4단 (6~20성)', optional: true,
     note: '**나중에.** 없으면 1단 그림을 계속 쓴다.\n' +
           '같은 짐승이 성이 오를수록 차림이 좋아지는 식으로 — 옷·장신구·배경이 달라진다.',

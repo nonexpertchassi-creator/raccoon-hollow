@@ -450,11 +450,35 @@ func _plot_base(i: int, n: int) -> void:
 	_outline(N, E, S, W, _shade(col, 0.16), 2.0)
 
 	# 담은 뒤 두 변에만. 앞에 세우면 마당 안이 가려진다.
+	#
+	# ★ 담이 등급 따라 자란다(2026-08-25, 유저): 초가(짚) → 돌담 → 기와.
+	#   승급이 창 안의 숫자로만 남지 않고 **마을 풍경에서 보이게** 된다.
+	#   전부 코드 그림이라 그림 장수는 안 는다.
+	var wrank: int = sim.rank_of(shop.id)
 	for pair in [[W, N], [N, E]]:
 		var A: Vector2 = pair[0]
 		var B: Vector2 = pair[1]
-		_quad(A, B, B + Vector2(0, -16), A + Vector2(0, -16), _shade(col, -0.03))
-		draw_line(A + Vector2(0, -16), B + Vector2(0, -16), _shade(col, 0.10), 3.0)
+		match wrank:
+			0:
+				# 초가 — 누런 짚단 담. 위가 삐죽삐죽하다
+				_quad(A, B, B + Vector2(0, -14), A + Vector2(0, -14), Color("d8c078"))
+				for t2 in range(6):
+					var q2: Vector2 = A.lerp(B, (t2 + 0.5) / 6.0)
+					draw_line(q2 + Vector2(0, -14), q2 + Vector2(0, -19 - (t2 % 2) * 2), Color("c4aa5e"), 3.0)
+			1:
+				# 돌담 — 잿빛 벽에 돌덩이 몇 개
+				_quad(A, B, B + Vector2(0, -17), A + Vector2(0, -17), Color("a9a396"))
+				for t2 in range(5):
+					var q2: Vector2 = A.lerp(B, (t2 + 0.5) / 5.0)
+					draw_circle(q2 + Vector2(0, -8 - (t2 % 3) * 3), 3.5, Color("8f8a7c"))
+				draw_line(A + Vector2(0, -17), B + Vector2(0, -17), Color("c2bdb0"), 2.5)
+			_:
+				# 기와 — 가게 색 벽 위에 검은 기와 갓
+				_quad(A, B, B + Vector2(0, -18), A + Vector2(0, -18), _shade(col, -0.03))
+				_quad(A + Vector2(0, -18), B + Vector2(0, -18), B + Vector2(0, -24), A + Vector2(0, -24), C.ink)
+				for t2 in range(7):
+					var q2: Vector2 = A.lerp(B, (t2 + 0.5) / 7.0)
+					draw_line(q2 + Vector2(0, -18), q2 + Vector2(0, -24), Color("4a4139"), 1.5)
 
 	# ★ 현판(가게 이름)과 "승급하면 매대 +2" 문구는 지웠다(2026-08-25, 유저).
 	#   매대 그림이 들어온 뒤로는 무엇을 파는 가게인지 눈으로 보인다 —
@@ -478,10 +502,20 @@ func _kiln(i: int) -> void:
 	var o: Vector2i = Iso.org(sim, i)
 	var k: Vector2i = Iso.yard(Iso.YARD_KIND[i], Iso.plot_dim(sim, i)).kiln
 	var p: Vector2 = Iso.w(o.x + k.x + 0.5, o.y + k.y + 0.5)
-	_box(o.x + k.x + 0.22, o.y + k.y + 0.22, 0.56, 0.56, 26, _shade(col, 0.10), _shade(col, -0.07))
+	var rk2: int = sim.rank_of(String(shop.id))
+	# 가마(풀무)도 등급 그림을 받는다: kilns/<가게id>.png, 등급은 -1·-2.
+	# 그림이 오기 전엔 등급 따라 **커지고 불이 세진다** — 승급이 눈에 보이게.
+	var pic2: Texture2D = Art.ranked("kilns", String(shop.id), rk2)
+	if pic2 != null:
+		_sprite(pic2, p + Vector2(0, 18), "kilns")
+	else:
+		var grow: float = 1.0 + 0.18 * rk2
+		_box(o.x + k.x + 0.22, o.y + k.y + 0.22, 0.56 * grow, 0.56 * grow, 26 + 6 * rk2,
+			_shade(col, 0.10), _shade(col, -0.07))
 	var fl: float = 0.6 + absf(sin(_t * 3.0 + i)) * 0.4
-	draw_circle(p + Vector2(0, -30), 5.0 * fl, Color("f0a24b"))
-	draw_circle(p + Vector2(0, -36), 3.0 * fl, Color("f6d27a"))
+	var fs: float = 1.0 + 0.35 * rk2
+	draw_circle(p + Vector2(0, -30 - 6 * rk2), 5.0 * fl * fs, Color("f0a24b"))
+	draw_circle(p + Vector2(0, -36 - 6 * rk2), 3.0 * fl * fs, Color("f6d27a"))
 
 ## 매대 한 칸 = 좌대 + 재고·진행 계기 + 이름패
 func _stall(i: int, k: int, spot: Vector2i) -> void:
