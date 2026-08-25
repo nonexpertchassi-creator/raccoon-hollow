@@ -301,7 +301,10 @@ func _advance(delta: float) -> void:
 	#   폰에서 유저가 바로 알아챈 것이 이것이다.
 	for i in range(Content.SHOPS.size()):
 		for wk in line[i]:
-			if wk.state == "buy" and _line_index(wk) == 0:
+			# 줄에 손님이 하나라도 있으면 파는 자세 유지 — 맨 앞이 잠깐 비는
+			# 사이(앞사람 떠나고 뒷사람 걸어오는 사이)마다 팔기↔만들기 그림이
+			# 홱홱 바뀌어 깜박거렸다(유저). 자세는 줄이 다 빠져야 바뀐다.
+			if wk.state == "buy":
 				clerks[i].busy = 0.25       # 서 있는 동안 계속 새로 채워진다
 				break
 	for i in range(Content.SHOPS.size()):
@@ -689,7 +692,9 @@ func _stall(i: int, k: int, spot: Vector2i) -> void:
 		# 매대는 보여줄 쪽이 ↘라서 뒤집는다 — 필방·옹기점·약재상의 길가 매대가
 		# 등을 보이고 있었다(유저가 두 번 잡았다).
 		var n4: int = Iso.plot_dim(sim, i)
-		var flip4: bool = spot.x == n4 - 1 or (spot.x == 0 and spot.y > 0)
+		# 윗줄(y=0)은 모서리라도 ↙다 — 3번 칸(윗줄의 오른끝)이 세로줄로
+		# 잘못 분류돼 ↘로 뒤집혔고, 마당 밖으로 빠져나간 것처럼 보였다(유저).
+		var flip4: bool = (spot.x == n4 - 1 or spot.x == 0) and spot.y > 0
 		_sprite(table, p + Vector2(0, 14), "stalls", flip4)
 	else:
 		_box(o.x + spot.x + 0.14, o.y + spot.y + 0.14, 0.72, 0.72, 14, C.paper, C.wood)
