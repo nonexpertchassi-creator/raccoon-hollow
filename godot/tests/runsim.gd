@@ -31,6 +31,11 @@ static func act(s: Sim, rng: Rng) -> void:
 		if s.can_promote(sh):
 			s.promote(sh)
 			return
+	# 다 찬 의뢰의 삯 받기 — 저절로 안 들어온다(2026-08-25, 수동 수령)
+	for q in s.quests:
+		if bool(q.get("done", false)):
+			s.claim_quest(float(q.id))
+			return
 	if s.can_buy_auto():
 		s.buy_auto()
 		return

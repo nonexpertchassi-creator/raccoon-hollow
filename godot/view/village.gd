@@ -307,8 +307,10 @@ func _advance(delta: float) -> void:
 		var f: Dictionary = Iso.foot(sim, i)
 		# 점장도 직원처럼 **만드는 매대 앞**으로 간다. 작업대에 서 있는데
 		# 저쪽 매대가 만들어지면 오류로 보인다(유저). 만들 게 없으면 작업대.
+		# 줄에 손님이 남아 있으면 계산대를 안 떠난다 — 손님 사이마다 매대로
+		# 갔다 오며 몸이 좌우로 홱홱 뒤집혔다(유저: "자세를 한가지로").
 		var goal: Vector2 = f.serve
-		if c.busy <= 0.0:
+		if c.busy <= 0.0 and line[i].is_empty():
 			var ci: Array = _craft_idx(i)
 			goal = _stall_front(i, ci[0]) if not ci.is_empty() else f.work
 		# ★ 곧장 가면 매대·계산대 칸을 밟고 지나간다(유저: "6번 매대 들렀다
@@ -330,6 +332,9 @@ func _advance(delta: float) -> void:
 		c.walking = d.length() > step        # 걷는 중이면 걷는 그림을 쓴다
 		if c.walking and absf(d.x) > 0.5:
 			c.flip = d.x < 0.0
+		if not c.walking and goal == f.serve:
+			# 계산대에 선 동안은 방향 고정 — 길 쪽을 본다(문 방향이 곧 길이다)
+			c.flip = String(f.yard.gate) == "y"
 		c.pos = tgt if d.length() <= step else c.pos + d.normalized() * step
 
 ## 촌장 걸음 — 길 위의 아무 데나 한 곳을 골라 걸어가고, 닿으면 잠깐 쉬었다 또 간다.
@@ -675,7 +680,12 @@ func _stall(i: int, k: int, spot: Vector2i) -> void:
 	# 그림이 없으면 여태처럼 나무 상자를 그린다.
 	var table: Texture2D = Art.ranked("stalls", String(shop.id), sim.rank_of(String(shop.id)))
 	if table != null:
-		_sprite(table, p + Vector2(0, 14), "stalls")
+		# 매대 그림은 ↙를 보는 한 장이다. 세로 변(왼담 x=0, 길가 x=n-1)에 선
+		# 매대는 보여줄 쪽이 ↘라서 뒤집는다 — 필방·옹기점·약재상의 길가 매대가
+		# 등을 보이고 있었다(유저가 두 번 잡았다).
+		var n4: int = Iso.plot_dim(sim, i)
+		var flip4: bool = spot.x == n4 - 1 or (spot.x == 0 and spot.y > 0)
+		_sprite(table, p + Vector2(0, 14), "stalls", flip4)
 	else:
 		_box(o.x + spot.x + 0.14, o.y + spot.y + 0.14, 0.72, 0.72, 14, C.paper, C.wood)
 	# 등급이 오르면 그림도 바뀐다 — 그 등급 그림이 있으면 그것,

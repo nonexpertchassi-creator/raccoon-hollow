@@ -1003,27 +1003,44 @@ func _quest_gain(gid: String, item_id: String, n: float) -> void:
 			break
 	if q == null:
 		return
+	if bool(q.get("done", false)):
+		return                            # 이미 찼다 — 받아 가기를 기다리는 중
 	q.got += n
 	if q.got < q.need:
 		return
-	# 고유 번호로 찾아 지운다 — 딕셔너리끼리의 비교는 믿지 않는다
+	# ★ 저절로 끝내지 않는다(2026-08-25, 유저 — "의뢰는 자동완성하지 말자").
+	#   다 차면 '받아 가시오' 상태로 멈추고, 보상은 눌러야 나온다.
+	#   자리도 계속 차지한다 — 안 받으면 새 의뢰가 안 들어오는 게 독촉이다.
+	q["done"] = true
+	_ev("%s마을 의뢰가 다 찼다 — 눌러서 삯을 받아 가시오" % _guest_by_id[gid].name, "quest")
+
+## 다 찬 의뢰의 삯을 받는다 — 여기서야 돈·젬이 들어온다.
+func claim_quest(qid: float) -> bool:
+	var q: Variant = null
+	for x in quests:
+		if float(x.id) == qid and bool(x.get("done", false)):
+			q = x
+			break
+	if q == null:
+		return false
 	for k in range(quests.size()):
-		if quests[k].id == q.id:
+		if float(quests[k].id) == qid:
 			quests.remove_at(k)
 			break
 	_qCool = Content.QUEST.every
-	var coin: float = floor(price(item_id) * q.need * Content.QUEST.payMul)
+	var coin: float = floor(price(String(q.itemId)) * q.need * Content.QUEST.payMul)
 	money += coin
 	revenue += coin
 	if auto:
 		_purse += coin * Content.AUTO_SHARE
 	gems += q.gems
-	_ev("%s마을 의뢰를 마쳤다 — 🪙%s · 💎%s" % [_guest_by_id[gid].name, Num.fmt(coin), str(int(q.gems))], "quest")
+	_ev("%s마을 의뢰를 마쳤다 — 🪙%s · 💎%s" % [_guest_by_id[String(q.gid)].name, Num.fmt(coin), str(int(q.gems))], "quest")
 	_event_gain("quest", 1.0)
 	var d: Dictionary = (q as Dictionary).duplicate()
 	d["coin"] = coin
 	bump("quest.done")
 	_questDone.append(d)
+	return true
 
 ## 지금 등급의 만렙에 닿았으면 젬 한 알. 등급이 오르면 다시 한 번 받는다.
 func _check_max(id: String) -> void:

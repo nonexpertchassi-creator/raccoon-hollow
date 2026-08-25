@@ -250,6 +250,10 @@ func _bar(ratio: float, col: Color) -> void:
 	_box.add_child(p)
 
 func rebuild() -> void:
+	# ★ 바퀴부터 빼낸다. queue_free는 자리를 옮겨도 프레임 끝에 **반드시 죽인다** —
+	#   바퀴가 매 갈이마다 죽고 다시 태어나며 깜박였다(유저가 두 번 잡았다).
+	if wheel != null and is_instance_valid(wheel) and wheel.get_parent() == _box:
+		_box.remove_child(wheel)
 	for c in _box.get_children():
 		c.visible = false       # queue_free는 프레임 끝에 지워진다 — 그동안 겹쳐 보이면 깜박인다
 		c.queue_free()
@@ -291,10 +295,17 @@ func _quests_body() -> void:
 		var g: Dictionary = Sim.guest_by_id(q.gid)
 		_box.add_child(_label("%s %s마을 — %s %d개  💎%d" % [
 			g.face, g.name, sim.item_name(q.itemId), int(q.need), int(q.gems)], 14))
-		_bar(q.got / q.need, Color("4a7c59"))
-		_box.add_child(_label("%d / %d · %d성 %s · 마치면 🪙%s" % [
-			int(q.got), int(q.need), sim.regular_star(q.gid), sim.regular_name(q.gid),
-			Num.fmt(floor(sim.price(q.itemId) * q.need * Content.QUEST.payMul))], 11, Color("8a7a63")))
+		_bar(minf(q.got / q.need, 1.0), Color("4a7c59"))
+		if bool(q.get("done", false)):
+			# 저절로 안 끝난다(유저) — 삯은 눌러야 들어온다
+			var qid: float = float(q.id)
+			_box.add_child(_btn("삯 받기 — 🪙%s · 💎%d" % [
+				Num.fmt(floor(sim.price(q.itemId) * q.need * Content.QUEST.payMul)), int(q.gems)],
+				true, func(): sim.claim_quest(qid); rebuild()))
+		else:
+			_box.add_child(_label("%d / %d · %d성 %s · 마치면 🪙%s" % [
+				int(q.got), int(q.need), sim.regular_star(q.gid), sim.regular_name(q.gid),
+				Num.fmt(floor(sim.price(q.itemId) * q.need * Content.QUEST.payMul))], 11, Color("8a7a63")))
 	if sim.quests.size() < sim.quest_slots():
 		_box.add_child(_label("다음 의뢰가 오는 중… (%d초)" % int(ceil(max(0.0, sim._qCool))), 12, Color("8a7a63")))
 
@@ -520,13 +531,14 @@ var show_rates: bool = false
 
 func _roulette_body() -> void:
 	sim.roul_refill()
-	if wheel == null:
+	if wheel == null or not is_instance_valid(wheel):
 		wheel = Wheel.new()
 		wheel.sim = sim
 		if on_landed.is_valid():
 			wheel.landed.connect(func(_w: int): on_landed.call())
 	if wheel.get_parent() != null:
 		wheel.get_parent().remove_child(wheel)
+	wheel.visible = true        # 갈이 때 숨긴 채 빼돌린 것을 다시 켠다
 	_box.add_child(wheel)
 	_box.add_child(_label("오늘 남은 횟수 — 무료 %d · 광고 %d" % [
 		int(sim.roulFree), int(sim.roulAd)], 15, Color("a8763e")))
