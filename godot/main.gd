@@ -321,8 +321,10 @@ func _paint() -> void:
 	_titlelbl.add_theme_color_override("font_color", bc)
 	_avstyle.border_color = bc
 	var face: String = String(sim.profile.face)
-	var ft: Texture2D = null
-	if face != "":
+	# 초상 전용 그림(portraits/)이 오면 그것부터, 없으면 걷는 그림, 그마저
+	# 없으면 이모지 — 그림이 어디서 멈춰도 얼굴 자리는 안 빈다.
+	var ft: Texture2D = Art.tex("portraits", "raccoon" if face == "" else face)
+	if ft == null and face != "":
 		ft = Art.tex("guests", face + "-front")
 		if ft == null:
 			ft = Art.tex("guests", face)
