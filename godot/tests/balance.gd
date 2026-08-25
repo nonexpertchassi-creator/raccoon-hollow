@@ -108,10 +108,7 @@ static func act(s: Sim, rng: Rng, use_shop_up: bool) -> void:
 	if not any_left and s.can_rush():
 		s.call_rush()
 		return
-	var sm: int = s.next_small()
-	if sm >= 0 and s.can_build_small(sm):
-		s.build_small(sm)
-		return
+	# 작은 건물은 게임에서 빠졌다(2026-08-25) — 배우도 안 짓는다.
 	if s.auto:
 		return
 	var cheap: String = ""

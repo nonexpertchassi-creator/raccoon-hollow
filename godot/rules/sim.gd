@@ -979,11 +979,16 @@ func tick(dt: float, rng: Rng) -> Dictionary:
 		_busyT -= dt
 		if _busyT <= 0.0:
 			busy = -1
-	elif fair <= 0.0 and not smalls.is_empty():
+	elif fair <= 0.0 and shops.size() >= 2:
+		# ★ 장은 이제 **촌장이 연다**(2026-08-25). 작은 건물(점포·포장마차)이
+		#   장 여는 단추였는데 의미 없어 보인다고 빼면서, 북적임이 서면 촌장
+		#   머리 위에 '장 서다!'가 뜨고 촌장을 누르면 열린다. 문턱은 가게 둘 —
+		#   의뢰 창의 "가게를 둘 열면 장이 선다"와 같은 말이 됐다.
+		#   busy는 이제 자리 번호가 아니라 깃발이다(0 = 서 있다).
 		_fairAcc += dt
 		if _fairAcc >= Content.FAIR.every:
 			_fairAcc = 0.0
-			busy = smalls[int(floor(rng.next() * smalls.size()))]
+			busy = 0
 			_busyT = Content.FAIR.window
 
 	# 1) 생산

@@ -85,11 +85,14 @@ func _process(_d: float) -> void:
 			fails.append("마당 빈 칸을 눌렀는데 가게 창이 안 열렸다")
 		main.panel.close()
 
-	# 3) 작은 건물 자리를 누르면 세워진다
-	var before_small: int = s.smalls.size()
-	main._tap(Iso.w(Iso.SMALL_T[0].x + 1, Iso.SMALL_T[0].y + 1) + Vector2(0, -20))
-	if s.smalls.size() != before_small + 1:
-		fails.append("작은 건물 자리를 눌렀는데 안 세워졌다")
+	# 3) 장이 설 참일 때 촌장을 누르면 장이 열린다 (작은 건물의 일을 물려받았다)
+	s.busy = 0
+	main.village.mayor.pos = Iso.w(3.5, 8.5)     # 아무 데도 안 겹치는 풀밭 위
+	main._tap(main.village.mayor.pos + Vector2(0, -10))
+	if s.fair <= 0.0:
+		fails.append("장이 설 참에 촌장을 눌렀는데 장이 안 열렸다")
+	if s.busy != -1:
+		fails.append("장을 열었는데 북적임 깃발이 안 내려갔다")
 
 	# 4) 삽살개 자리
 	main._tap(Iso.w(Iso.DOG_T.x + 1, Iso.DOG_T.y + 1) + Vector2(0, -20))

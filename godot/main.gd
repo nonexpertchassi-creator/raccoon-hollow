@@ -446,6 +446,10 @@ func _tap(p: Vector2) -> void:
 	if not village.mayor.is_empty():
 		var mp: Vector2 = village.mayor.pos
 		if absf(p.x - mp.x) < 34.0 and p.y > mp.y - 92.0 and p.y < mp.y + 14.0:
+			# 장이 설 참이면 장부터 — 작은 건물이 하던 일을 촌장이 물려받았다
+			if sim.busy >= 0 and sim.tap_small(sim.busy):
+				sfx.play("fair")
+				return
 			panel.open_kind("quests")
 			return
 
@@ -455,17 +459,6 @@ func _tap(p: Vector2) -> void:
 		if sim.buy_guard():
 			sfx.play("open")
 		return
-
-	# 4) 작은 건물 — 세우거나, 북적일 때 눌러 장을 연다
-	for i in range(Iso.SMALL_T.size()):
-		var sp: Vector2 = Iso.w(Iso.SMALL_T[i].x + 1, Iso.SMALL_T[i].y + 1)
-		if absf(p.x - sp.x) < 62.0 and p.y > sp.y - 92.0 and p.y < sp.y + 24.0:
-			if not sim.smalls.has(i):
-				if sim.build_small(i):
-					sfx.play("open")
-			elif sim.tap_small(i):
-				sfx.play("fair")
-			return
 
 	# 5) 가게 — 매대는 그 자리에서 강화, 나머지는 창
 	for i in range(Content.SHOPS.size()):
