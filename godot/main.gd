@@ -160,16 +160,13 @@ func _ready() -> void:
 	var sp := Control.new()
 	sp.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(sp)
+	# 지갑 — 레퍼런스(유저가 가져온 캡처)처럼 짙은 알약 캡슐에 아이콘+숫자.
 	var money_box := VBoxContainer.new()
-	money_box.add_theme_constant_override("separation", 0)
+	money_box.add_theme_constant_override("separation", 4)
 	money_box.alignment = BoxContainer.ALIGNMENT_CENTER
 	row.add_child(money_box)
-	_hud = Label.new()
-	_hud.add_theme_font_size_override("font_size", 19)     # 엽전과 젬은 같은 크기(유저)
-	money_box.add_child(_hud)
-	_gemlbl = Label.new()
-	_gemlbl.add_theme_font_size_override("font_size", 19)
-	money_box.add_child(_gemlbl)
+	_hud = _pill(money_box)
+	_gemlbl = _pill(money_box)
 	_clock = Label.new()
 	_clock.add_theme_font_size_override("font_size", 24)
 	row.add_child(_clock)
@@ -195,6 +192,8 @@ func _ready() -> void:
 	_newsbtn.text = "소식"
 	_newsbtn.pressed.connect(func(): panel.open_kind("ledger"))
 	bar.add_child(_newsbtn)
+	for b in [_guestbtn, _questbtn, _fairbtn, _newsbtn]:
+		_dress_btn(b)
 
 	sfx = Sfx.new()
 	add_child(sfx)
@@ -312,6 +311,39 @@ func _process(delta: float) -> void:
 		return
 	_acc = 0.0
 	_paint()
+
+## 지갑 알약 하나 — 짙은 갈색 캡슐에 흰 글자. 값 라벨을 돌려준다.
+func _pill(into: Node) -> Label:
+	var pn := PanelContainer.new()
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.32, 0.22, 0.15, 0.92)
+	sb.set_corner_radius_all(13)
+	sb.content_margin_left = 12.0
+	sb.content_margin_right = 12.0
+	sb.content_margin_top = 2.0
+	sb.content_margin_bottom = 2.0
+	pn.add_theme_stylebox_override("panel", sb)
+	into.add_child(pn)
+	var l := Label.new()
+	l.add_theme_font_size_override("font_size", 16)      # 엽전과 젬은 같은 크기(유저)
+	l.add_theme_color_override("font_color", Color(1, 0.97, 0.9))
+	l.custom_minimum_size = Vector2(96, 0)
+	pn.add_child(l)
+	return l
+
+## 아래 단추 — 레퍼런스처럼 크림색 둥근 네모에 갈색 글자.
+func _dress_btn(b: Button) -> void:
+	var sb := StyleBoxFlat.new()
+	sb.bg_color = Color(0.95, 0.91, 0.82)
+	sb.set_corner_radius_all(10)
+	sb.set_border_width_all(2)
+	sb.border_color = Color(0.55, 0.42, 0.3)
+	sb.set_content_margin_all(8.0)
+	for st in ["normal", "hover", "pressed"]:
+		b.add_theme_stylebox_override(st, sb)
+	b.add_theme_color_override("font_color", Color(0.3, 0.23, 0.16))
+	b.add_theme_color_override("font_pressed_color", Color(0.3, 0.23, 0.16))
+	b.add_theme_color_override("font_hover_color", Color(0.2, 0.15, 0.1))
 
 func _paint() -> void:
 	# 폰 폭에 맞춘다. 한 줄에 다 넣으면 오른쪽이 잘려서 젬이 안 보인다.

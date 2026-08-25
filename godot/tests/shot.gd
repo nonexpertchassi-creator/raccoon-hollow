@@ -98,6 +98,11 @@ func _scene_has(main: Node, want: String) -> bool:
 		return _grumpy(main) > 0
 	if want == "coin":
 		return not main.village.floats.is_empty()      # 팔린 순간 뜨는 엽전 표
+	if want == "order":
+		for wk in main.village.walkers:                 # 줄 서서 주문 풍선을 띄운 손님
+			if wk.state == "buy" and not (wk.sold as Array).is_empty():
+				return true
+		return false
 	return true
 
 func _process(_delta: float) -> void:

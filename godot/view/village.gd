@@ -1056,33 +1056,26 @@ func _order(wk: Dictionary) -> void:
 	var sold: Array = wk.sold
 	if sold.is_empty():
 		return
-	# 줄이 길 때 전부 띄우면 주문표끼리 겹쳐 어느 것도 안 읽힌다.
-	# **맨 앞사람만** — 줄을 세운 이유의 절반이 이것이다(자바스크립트판에서 얻은 답).
-	if _line_index(wk) != 0:
-		return
-	# 레퍼런스(고양이 스낵바) 말: **흰 말풍선 + 꼬리 + 물건 그림 + 개수.**
-	# ★ 처음엔 첫 물건만 크게 + 나머지 "+N"이었는데 유저가 바로 물었다 —
-	#   "물건×n+n이 머야?" 읽는 사람이 셈을 해야 하는 표는 표가 아니다.
-	#   종류마다 그림×개수를 나란히 놓고, 말풍선이 그만큼 넓어진다(셋까지).
-	var kinds: int = mini(sold.size(), 3)
-	var more: int = sold.size() - kinds
-	var wd: float = 12.0 + 52.0 * kinds + (20.0 if more > 0 else 0.0)
-	var y: Vector2 = wk.pos + Vector2(4, -92 + sin(_t * 3.4) * 1.6)
-	_chip(y, wd, 34, Color(1.0, 0.99, 0.96, 0.97))
+	# ★ 세 번째 판(2026-08-25, 유저가 찾아온 레퍼런스): **동그란 흰 풍선에
+	#   물건 하나 크게, 오른쪽 아래 개수 동그라미.** 그리고 맨 앞사람만이
+	#   아니라 **줄 선 전원**에게 하나씩 — 여럿이 각자 다른 걸 기다리는 게
+	#   한눈에 보인다. 여러 종류를 담았어도 첫 것만 띄운다(풍선 하나에 하나).
+	var first: Dictionary = sold[0]
+	var bob2: float = sin(_t * 2.6 + wk.pos.x * 0.13) * 1.8
+	var c0: Vector2 = wk.pos + Vector2(2, -86 + bob2)
+	draw_circle(c0, 21.0, Color(1.0, 0.99, 0.96, 0.97))
 	draw_colored_polygon(PackedVector2Array([
-		y + Vector2(-7, 33), y + Vector2(7, 33), y + Vector2(-2, 44)]), Color(1.0, 0.99, 0.96, 0.97))
-	var x0: float = y.x - wd * 0.5 + 6.0
-	for q in range(kinds):
-		var ln: Dictionary = sold[q]
-		var pic4: Texture2D = Art.ranked("items", String(ln.id), sim.rank_of(String(Content.SHOPS[wk.shop].id)))
-		if pic4 != null:
-			draw_texture_rect(pic4, Rect2(Vector2(x0, y.y + 3), Vector2(24, 28)), false)
-		else:
-			_text(Vector2(x0 + 12, y.y + 24), String(ln.icon), 19, Color.WHITE)
-		_text(Vector2(x0 + 38, y.y + 25), "×%d" % int(ln.n), 14, C.ink)
-		x0 += 52.0
-	if more > 0:
-		_text(Vector2(x0 + 4, y.y + 24), "+%d" % more, 12, C.ink2)
+		c0 + Vector2(-7, 18), c0 + Vector2(6, 18), c0 + Vector2(-1, 29)]),
+		Color(1.0, 0.99, 0.96, 0.97))
+	var pic4: Texture2D = Art.ranked("items", String(first.id), sim.rank_of(String(Content.SHOPS[wk.shop].id)))
+	if pic4 != null:
+		draw_texture_rect(pic4, Rect2(c0 - Vector2(11, 16), Vector2(22, 28)), false)
+	else:
+		_text(c0 + Vector2(0, 7), String(first.icon), 20, Color.WHITE)
+	# 개수 동그라미 — 레퍼런스의 초록 배지 그대로
+	draw_circle(c0 + Vector2(14, 12), 9.0, C.jade)
+	draw_circle(c0 + Vector2(14, 12), 9.0, Color(1, 1, 1, 0.9), false, 1.5)
+	_text(c0 + Vector2(14, 17), "%d" % int(first.n), 11, Color.WHITE)
 
 ## 물어보는 말풍선 — 현판 바로 위. 깊이 정렬 밖에 그린다(지붕에 가리면 못 읽는다).
 func _bubble() -> void:
