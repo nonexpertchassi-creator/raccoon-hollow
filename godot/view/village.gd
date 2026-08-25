@@ -1150,8 +1150,12 @@ func _tail_wag(r: Rect2, fur: String, dir3: String, flip: bool) -> void:
 	var pl: Vector2 = Vector2(sz.x * 0.32, sz.y * 0.74) if dir3 == "side" else Vector2(sz.x * 0.5, sz.y * 0.74)
 	var pw: Vector2 = r.position + (Vector2(sz.x - pl.x, pl.y) if flip else pl)
 	var ang: float = sin(_t * 1.7 + r.position.x * 0.05) * 0.09
+	# 핀에 딱 맞추면 통통한 몸이 꼬리를 다 삼킨다(그림 속 꼬리 자리가 몸
+	# 실루엣 안쪽이다). 바깥으로 13%만 밀어 몸 뒤로 삐져나오게 — 처음(너무
+	# 빠짐)과 핀(사라짐)의 중간이다(유저).
+	var out: Vector2 = Vector2(-sz.x * 0.13, sz.y * 0.02) if dir3 == "side" else Vector2(0, sz.y * 0.04)
 	draw_set_transform(pw, -ang if flip else ang, Vector2(-1, 1) if flip else Vector2.ONE)
-	draw_texture_rect(tail, Rect2(-pl, sz), false)
+	draw_texture_rect(tail, Rect2(-pl + out, sz), false)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 func _flat_tex(t: Texture2D, r: Rect2, flip: bool) -> void:
