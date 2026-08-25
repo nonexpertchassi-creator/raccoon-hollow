@@ -255,8 +255,13 @@ func show_guest(gid: String) -> void:
 	_title.add_theme_color_override("font_color", Color(gr.color))
 	var need: Variant = sim.star_need(gid)
 	var have: float = sim.cards.get(gid, 0.0)
-	_sub.text = "%s %s · %s\n%d초마다 %d개 · 값 ×%s\n%s" % [
-		gr.face, gr.name, g.desc, int(g.every), int(g.qty), str(g.pay),
+	# 바탕 수치가 아니라 **지금 성 기준 실제 값**을 보여준다 — 성을 올렸는데
+	# 숫자가 그대로면 "올려서 뭐가 좋아졌나"가 안 보인다(유저가 짚은 주제).
+	var reg: Dictionary = Content.REGULARS[sim.regular_lv(gid)]
+	var evry: float = g.every / (1.0 + Content.REGULAR_COME * sim.regular_lv(gid))
+	_sub.text = "%s %s · %s\n%d초마다 · 한 번에 %d개 · 값 ×%.2f\n%s" % [
+		gr.face, gr.name, g.desc, int(round(evry)),
+		int(max(1.0, round(g.qty * reg.qty))), g.pay * reg.pay,
 		("20성 — 더 오를 곳이 없다" if need == null
 			else "카드 %s / %s장" % [Num.fmt(have), Num.fmt(float(need))])]
 	_bg.border_color = Color(gr.color)

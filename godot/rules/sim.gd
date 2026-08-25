@@ -171,7 +171,9 @@ func milestone(id: String) -> float:
 	return pow(Content.MILESTONE_MULT, floor(lv(id) / Content.MILESTONE_EVERY))
 
 func _gap(g: Dictionary, rng: Rng) -> float:
-	return _wild_gap(g.every, g.get("wild", 0.0), rng)
+	# 성이 오르면 발걸음도 잦아진다 — content.js의 REGULAR_COME 참고
+	return _wild_gap(g.every / (1.0 + Content.REGULAR_COME * regular_lv(String(g.id))),
+		g.get("wild", 0.0), rng)
 
 ## wild가 0이면 시계처럼, 1이면 완전히 운. 평균 간격은 어느 쪽이든 every 그대로다.
 func _wild_gap(every: float, w: float, rng: Rng) -> float:

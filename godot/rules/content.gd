@@ -1029,6 +1029,8 @@ const REGULARS := [
 	}
 ]
 
+const REGULAR_COME := 0.05
+
 const ROULETTE := {
 	"freePerDay": 1.0,
 	"adPerDay": 3.0,
