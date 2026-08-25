@@ -875,10 +875,18 @@ func _sprite(t: Texture2D, foot: Vector2, kind: String, flip: bool = false) -> v
 	if flip:
 		# 그림은 오른쪽 보는 것 한 장만 받는다. 왼쪽은 여기서 뒤집는다 —
 		# 두 장씩 그리게 하면 장수가 두 배가 되고, 둘이 미묘하게 달라진다.
-		draw_texture_rect_region(t, Rect2(r.position + Vector2(sz.x, 0), Vector2(-sz.x, sz.y)),
-			Rect2(Vector2.ZERO, t.get_size()))
+		# ★ 뒤집기 삽질의 역사(둘 다 유저가 잡았다): 목적지 네모를 음수로 —
+		#   한 칸 옆으로 밀려 그려짐(4·7 매대가 5·8로). 원본 네모를 음수로 —
+		#   아예 안 그려짐. **좌표계를 거울로 걸고 정상으로 그리는 것**만 확실하다.
+		_mirrored(t, r)
 	else:
 		draw_texture_rect(t, r, false)
+
+## 세로축 거울 — r 자리에 t를 좌우 반전으로 그린다. 자리는 절대 안 밀린다.
+func _mirrored(t: Texture2D, r: Rect2) -> void:
+	draw_set_transform(Vector2(r.position.x + r.size.x * 0.5, r.position.y), 0.0, Vector2(-1, 1))
+	draw_texture_rect(t, Rect2(Vector2(-r.size.x * 0.5, 0), r.size), false)
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 ## 너구리 한 마리 — 몸통·귀·눈가 무늬. 그림이 없을 때 그리는 임시 도형이다.
 func _raccoon(p: Vector2, size: float, tint: Color) -> void:
@@ -1009,8 +1017,7 @@ func _clerk_layers(foot: Vector2, shop_id: String, pose: String, flip: bool) -> 
 
 func _flat_tex(t: Texture2D, r: Rect2, flip: bool) -> void:
 	if flip:
-		draw_texture_rect_region(t, Rect2(r.position + Vector2(r.size.x, 0),
-			Vector2(-r.size.x, r.size.y)), Rect2(Vector2.ZERO, t.get_size()))
+		_mirrored(t, r)      # 거울 좌표계 — 뒤집기의 유일한 안전한 길(_sprite 참고)
 	else:
 		draw_texture_rect(t, r, false)
 
