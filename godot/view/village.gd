@@ -88,6 +88,8 @@ var _trashAcc: float = 0.0
 var clerks: Array = []
 ## 직원의 현재 자리("가게:번호" → 좌표). 만드는 매대가 바뀌면 걸어서 옮긴다.
 var _staffAt: Dictionary = {}
+## 줄 도착 순번표 — 늘어나기만 하는 번호. 도착한 차례가 곧 줄 차례다.
+var _lineSeq: int = 0
 ## 낮과 밤 — 도구가 시각을 못 박을 때 쓴다(0~1, 음수면 게임 시계를 따른다).
 var clock_override: float = -1.0
 const CLERK_SPEED := 130.0
@@ -146,7 +148,7 @@ func on_sale(sale: Dictionary) -> void:
 		"face": String(sale.guest.face), "id": String(sale.guest.id), "shop": idx, "state": "in",
 		"pos": Iso.w(enter.x + 0.5, enter.y + 0.5), "out_gate": _gate(),
 		"path": path, "step": 1, "wait": 0.0, "qwait": 0.0, "empty": empty,
-		"n": int(sale.n), "gain": float(sale.gain), "sold": _order_of(sale, shop_id),
+		"n": int(sale.n), "gain": float(sale.gain), "sold": _order_of(sale, shop_id), "q": 0,
 		"speed": float(sale.guest.get("speed", 1.0)), "off": (_grng.next() - 0.5) * 30.0,
 	})
 	line[idx].append(walkers[walkers.size() - 1])
@@ -165,18 +167,18 @@ func _order_of(sale: Dictionary, shop_id: String) -> Array:
 		out.append({"id": String(l.item.id), "icon": String(l.item.icon), "n": int(l.n)})
 	return out
 
-## 줄에서 **몇 번째인가.** 아직 걸어오는 중인 사람은 안 센다.
+## 줄에서 **몇 번째인가.** 줄 번호는 **줄에 도착한 순서**(wk.q)로 센다.
 ##
-## ★ 예전엔 `line.find(wk)`를 그대로 썼다. 그런데 줄자리는 **문에 들어서는
-##   순간** 잡히므로, 앞사람이 아직 길 위에 있는데 그 자리는 이미 찜해져 있었다.
-##   그래서 **맨 앞이 비었는데 뒷사람이 두 번째 자리에 서서 기다리는** 그림이 됐다.
-##   폰에서 유저가 바로 알아챈 것이 이것이다.
+## ★ 두 번 고쳤다. 처음엔 `line.find(wk)`(찜한 순서) — 앞사람이 길 위에
+##   있는데 자리가 찜돼서 맨 앞이 비었다. 다음엔 "걸어오는 사람은 빼고
+##   배열 순서" — 그런데 배열은 **마을에 나타난 순서**라, 느린 거북이
+##   걸어오는 동안 빠른 토끼가 맨 앞에 섰다가 거북이 도착하면 **뒤로
+##   밀려나는** 그림이 됐다(유저: "1번이 2번으로 밀린다"). 줄은 도착한
+##   순서다 — 한 번 선 사람은 뒷사람 때문에 절대 안 밀린다.
 func _line_index(wk: Dictionary) -> int:
 	var n: int = 0
 	for w in line[wk.shop]:
-		if w == wk:
-			break
-		if w.state == "buy":
+		if w != wk and w.state == "buy" and int(w.q) < int(wk.q):
 			n += 1
 	return n
 
@@ -257,6 +259,8 @@ func _advance(delta: float) -> void:
 			"in":
 				if _walk(wk, delta) and wk.step >= wk.path.size():
 					wk.state = "buy"
+					_lineSeq += 1
+					wk.q = _lineSeq       # 줄 번호는 **도착한 순서**다(아래 _line_index 참고)
 			"buy":
 				if _walk(wk, delta):
 					# 맨 앞에 설 때까지는 시계가 안 돈다 — 줄은 기다리는 곳이다
@@ -1029,8 +1033,13 @@ func _walker(wk: Dictionary) -> void:
 	if t == null:
 		t = Art.tex("guests", gid2)
 	if t != null:
+		# 걷는 동안 들썩인다 — 이게 없으면 미끄러지듯 떠다니는 유령이 된다
+		# (유저: "공중에 날라다니는 느낌"). 그림자는 땅에 남는다.
+		var stepbob: float = 0.0
+		if wk.state != "buy":
+			stepbob = absf(sin(_t * 7.0 + wk.pos.x * 0.06)) * 2.6
 		_shadow(wk.pos, 13.0)
-		_sprite(t, wk.pos, "guests", bool(wk.get("flip", false)))
+		_sprite(t, wk.pos + Vector2(0, -stepbob), "guests", bool(wk.get("flip", false)))
 	else:
 		_raccoon(wk.pos, SHAPE * 0.9, Color("9c8f7a"))
 		_text(wk.pos + Vector2(0, -58), wk.face, 20, Color.WHITE)
