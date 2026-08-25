@@ -13,6 +13,7 @@ var _hud: Label
 var _gemlbl: Label
 var _clock: Label
 var _avatar: Button
+var profile_modal: ProfileModal
 var _avstyle: StyleBoxFlat
 var _namelbl: Label
 var _titlelbl: Label
@@ -144,7 +145,7 @@ func _ready() -> void:
 	_avstyle.set_corner_radius_all(26)
 	for st in ["normal", "hover", "pressed"]:
 		_avatar.add_theme_stylebox_override(st, _avstyle)
-	_avatar.pressed.connect(func(): panel.open_kind("profile"))
+	_avatar.pressed.connect(func(): profile_modal.open())
 	row.add_child(_avatar)
 	var nb := VBoxContainer.new()
 	nb.add_theme_constant_override("separation", 0)
@@ -211,6 +212,10 @@ func _ready() -> void:
 			_reveal_spin(_spinResult)
 			_spinResult = null
 	_layer.add_child(panel)
+	profile_modal = ProfileModal.new()
+	profile_modal.setup(sim, BAND_COLORS)
+	_layer.add_child(profile_modal)
+
 	card = CardPopup.new()
 	card.sim = sim
 	_layer.add_child(card)
@@ -313,7 +318,7 @@ func _paint() -> void:
 	_hud.text = "🪙 " + Num.fmt(sim.money)
 	_gemlbl.text = "💎 %d" % int(sim.gems)
 	_clock.text = village.day_icon()
-	_sub.text = "초당 🪙" + Num.fmt(sim.income_per_sec())
+	_sub.text = "🪙%s/s" % Num.fmt(sim.income_per_sec())
 	_namelbl.text = String(sim.profile.name)
 	var bi: int = sim.band_of()
 	var bc: Color = BAND_COLORS[mini(bi / 4, BAND_COLORS.size() - 1)]

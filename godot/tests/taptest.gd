@@ -213,12 +213,11 @@ func _process(_d: float) -> void:
 			fails.append("건너뛰었는데 %d장이 아직 뒷면이다" % undone)
 		main.card.close()
 
-	# 프로필 — 얼굴을 누르면 창이 열리고, 별명·얼굴·띠가 규칙대로만 바뀐다
-	main.panel.open_kind("profile")
-	if not main.panel.visible or main.panel.kind != "profile":
-		fails.append("프로필 창이 안 열렸다")
-	# 다음 시험(룰렛)은 뽑기 창이 열려 있는 채로 이어진다 — 되돌려 놓는다
-	main.panel.open_kind("gacha")
+	# 프로필 — 모달이 열리고, 별명·얼굴·띠가 규칙대로만 바뀐다
+	main.profile_modal.open()
+	if not main.profile_modal.visible:
+		fails.append("프로필 모달이 안 열렸다")
+	main.profile_modal.close()
 	main.sim.set_profile("검은너구리")
 	if String(main.sim.profile.name) != "검은너구리":
 		fails.append("별명을 바꿨는데 안 바뀌었다")
