@@ -175,6 +175,13 @@ func _walk(wk: Dictionary, delta: float) -> bool:
 	else:
 		return true
 	var d: Vector2 = target - wk.pos
+	# ★ 걷는 방향으로 몸을 돌린다(왼쪽이면 그림을 뒤집는다). 이걸 안 해서
+	#   왼쪽으로 가는 손님이 전부 문워크를 했다 — 그림은 규칙대로 오른쪽
+	#   보는 것으로 왔는데 코드가 뒤집기를 빼먹은 것이다.
+	#   마름모 격자에서는 어느 길로 가든 화면상 좌우 성분이 있으므로,
+	#   옆모습 한 장 + 뒤집기로 네 방향이 전부 가려진다. 앞면·뒷면은 필요 없다.
+	if absf(d.x) > 0.5:
+		wk.flip = d.x < 0.0
 	# 손님마다 걸음이 다르다 — 토끼는 빠르고 거북은 느리다.
 	# 이 숫자는 content.js에 처음부터 있었는데 화면이 안 쓰고 있었다.
 	var step: float = WALK * float(wk.speed) * delta
@@ -253,6 +260,8 @@ func _advance(delta: float) -> void:
 		var d: Vector2 = goal - c.pos
 		var step: float = CLERK_SPEED * delta
 		c.walking = d.length() > step        # 걷는 중이면 걷는 그림을 쓴다
+		if c.walking and absf(d.x) > 0.5:
+			c.flip = d.x < 0.0
 		c.pos = goal if d.length() <= step else c.pos + d.normalized() * step
 
 ## 촌장 걸음 — 길 위의 아무 데나 한 곳을 골라 걸어가고, 닿으면 잠깐 쉬었다 또 간다.
@@ -275,6 +284,8 @@ func _walk_mayor(delta: float) -> void:
 	var t: Vector2i = mayor.path[mayor.step]
 	var target: Vector2 = Iso.w(t.x + 0.5, t.y + 0.5)
 	var d: Vector2 = target - mayor.pos
+	if absf(d.x) > 0.5:
+		mayor.flip = d.x < 0.0
 	var step: float = MAYOR_SPEED * delta
 	if d.length() <= step:
 		mayor.pos = target
@@ -661,7 +672,7 @@ func _mayor() -> void:
 		return
 	var t: Texture2D = Art.tex("hero", "mayor")
 	if t != null:
-		_sprite(t, mayor.pos, "hero")
+		_sprite(t, mayor.pos, "hero", bool(mayor.get("flip", false)))
 	else:
 		_raccoon(mayor.pos, SHAPE, Color("cbb79a"))
 		draw_line(mayor.pos + Vector2(15, -6), mayor.pos + Vector2(19, -44), C.wood2, 2.5)
@@ -687,7 +698,8 @@ func _clerk(i: int) -> void:
 	if t == null:                       # 그 자세가 아직 없으면 만드는 자세로
 		t = _hero_tex(id, "make")
 	if t != null:
-		_sprite(t, c.pos, "clerks" if Art.tex("clerks", "%s-%s" % [id, pose]) != null else "hero")
+		_sprite(t, c.pos, "clerks" if Art.tex("clerks", "%s-%s" % [id, pose]) != null else "hero",
+			bool(c.get("flip", false)))
 		return
 	_raccoon(c.pos, SHAPE, Color("a8815a"))
 
@@ -737,7 +749,7 @@ func _staff(i: int, k: int) -> void:
 func _walker(wk: Dictionary) -> void:
 	var t: Texture2D = Art.tex("guests", String(wk.get("id", "")))
 	if t != null:
-		_sprite(t, wk.pos, "guests")
+		_sprite(t, wk.pos, "guests", bool(wk.get("flip", false)))
 	else:
 		_raccoon(wk.pos, SHAPE * 0.9, Color("9c8f7a"))
 		_text(wk.pos + Vector2(0, -58), wk.face, 20, Color.WHITE)
