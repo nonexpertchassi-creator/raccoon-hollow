@@ -1750,6 +1750,36 @@
         path: 'docs/art/generated/CLERK-BASE-TYPE-A-TURNAROUND-V0.2-P01.png'
       },
       {
+        c: 'clerks', label: '점장 본체 · A타입 · 정면 (게임용 테스트)',
+        file: 'a-front.png', icon: '🦝', size: '144×144',
+        actual: '144×144 RGBA · 정면 · 꼬리 없음', status: 'approved',
+        src: '../../godot/art/hero-body/a-front.png', path: 'godot/art/hero-body/a-front.png'
+      },
+      {
+        c: 'clerks', label: '점장 본체 · A타입 · 오른쪽 훼이크 측면 (게임용 테스트)',
+        file: 'a-side.png', icon: '🦝', size: '144×144',
+        actual: '144×144 RGBA · 오른팔을 뻗은 측면 · 꼬리 없음', status: 'approved',
+        src: '../../godot/art/hero-body/a-side.png', path: 'godot/art/hero-body/a-side.png'
+      },
+      {
+        c: 'clerks', label: '점장 본체 · A타입 · 뒷모습 (게임용 테스트)',
+        file: 'a-back.png', icon: '🦝', size: '144×144',
+        actual: '144×144 RGBA · 뒷모습 · 꼬리 없음', status: 'approved',
+        src: '../../godot/art/hero-body/a-back.png', path: 'godot/art/hero-body/a-back.png'
+      },
+      {
+        c: 'clerks', label: '점장 꼬리 · A타입 · 오른쪽 측면 (게임용 테스트)',
+        file: 'a-side.png', icon: '〰️', size: '144×144',
+        actual: '144×144 RGBA · 측면 본체 뒤 레이어 · 코드 회전축 정렬', status: 'approved',
+        src: '../../godot/art/hero-tail/a-side.png', path: 'godot/art/hero-tail/a-side.png'
+      },
+      {
+        c: 'clerks', label: '점장 꼬리 · A타입 · 뒷모습 (게임용 테스트)',
+        file: 'a-back.png', icon: '〰️', size: '144×144',
+        actual: '144×144 RGBA · 뒷본체 위 레이어 · 코드 회전축 정렬', status: 'approved',
+        src: '../../godot/art/hero-tail/a-back.png', path: 'godot/art/hero-tail/a-back.png'
+      },
+      {
         c: 'clerks', label: '점장 벌거벗은 본체 · B타입 무늬 · 방향 시트 (확정)',
         file: 'CLERK-BASE-TYPE-B-TURNAROUND-V0.1-P01.png', icon: '🦝',
         size: '방향 원화', actual: '1774×887 RGB 검토 시트 · 정면 / 훼이크 측면 / 뒤 · 꼬리 파츠 분리 전', status: 'approved',
@@ -1912,7 +1942,7 @@
     }
 
     function assetKey(asset) {
-      return `${asset.c}/${asset.file}`;
+      return asset.path || `${asset.c}/${asset.file}`;
     }
 
     function card(asset) {
