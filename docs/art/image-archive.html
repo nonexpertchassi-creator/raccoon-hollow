@@ -839,6 +839,13 @@
       gap: 7px;
     }
 
+    .filter-tools {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
     .filter {
       min-height: 38px;
       padding: 7px 12px;
@@ -857,11 +864,95 @@
       background: var(--green);
     }
 
+    .category-picker {
+      display: flex;
+      align-items: center;
+      flex: 0 0 auto;
+      min-height: 38px;
+      padding-left: 11px;
+      border: 1px solid var(--line-strong);
+      border-radius: 10px;
+      color: var(--muted);
+      background: #fff;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .category-picker select {
+      min-height: 36px;
+      padding: 0 30px 0 8px;
+      border: 0;
+      color: var(--text);
+      background: transparent;
+      font: 700 12px/1 var(--body);
+    }
+
+    .shop-tabs {
+      display: flex;
+      gap: 7px;
+      margin: 0 calc(clamp(20px, 4vw, 54px) * -1) 14px;
+      padding: 2px clamp(20px, 4vw, 54px) 12px;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scrollbar-width: thin;
+    }
+
+    .shop-tab {
+      display: inline-flex;
+      align-items: center;
+      flex: 0 0 auto;
+      gap: 7px;
+      min-height: 42px;
+      padding: 8px 11px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      color: #4a545e;
+      background: #fff;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .shop-tab span[aria-hidden="true"] { font-size: 16px; }
+    .shop-tab small { color: #9a5b26; font: 800 9px/1 var(--mono); }
+    .shop-tab[aria-pressed="true"] { color: #fff; border-color: var(--green); background: var(--green); }
+    .shop-tab[aria-pressed="true"] small { color: #dcecdf; }
+
     .result-line {
       margin: 0 0 12px;
       color: var(--muted);
       font: 11px/1.4 var(--mono);
     }
+
+    .asset-groups { display: grid; gap: 34px; }
+
+    .shop-section {
+      min-width: 0;
+      scroll-margin-top: 18px;
+    }
+
+    .shop-section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .shop-section-title {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin: 0;
+      font: 800 18px/1.2 var(--rounded);
+      letter-spacing: -.02em;
+    }
+
+    .shop-section-title span { font-size: 20px; }
+    .shop-section-count { color: var(--muted); font: 10px/1.3 var(--mono); text-align: right; }
+    .shop-section-count b { color: var(--orange); }
 
     .asset-grid {
       display: grid;
@@ -885,8 +976,10 @@
     .asset-preview {
       display: grid;
       place-items: center;
+      width: 100%;
       height: 150px;
       padding: 12px;
+      border: 0;
       border-bottom: 1px solid var(--line);
       background-color: #f8f9fa;
       background-image:
@@ -896,6 +989,8 @@
         linear-gradient(-45deg, transparent 75%, #eef0f2 75%);
       background-size: 16px 16px;
       background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+      color: inherit;
+      cursor: zoom-in;
       text-decoration: none;
     }
 
@@ -906,7 +1001,7 @@
       filter: drop-shadow(0 4px 6px rgba(25, 34, 43, .1));
     }
 
-    .asset-preview.is-empty { color: #a7afb8; font-size: 40px; }
+    .asset-preview.is-empty { color: #a7afb8; cursor: default; font-size: 40px; }
     .asset-body { padding: 12px; }
 
     .asset-meta {
@@ -954,6 +1049,126 @@
     .actual-spec { display: block; margin-top: 6px; color: #a44444; font: 9px/1.35 var(--mono); }
     .empty-result { grid-column: 1 / -1; padding: 56px 20px; border: 1px dashed var(--line-strong); border-radius: 12px; color: var(--muted); text-align: center; }
 
+    .asset-viewer {
+      width: min(1120px, calc(100vw - 32px));
+      max-width: none;
+      max-height: calc(100vh - 32px);
+      padding: 0;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 18px;
+      color: var(--text);
+      background: #fff;
+      box-shadow: 0 28px 90px rgba(0,0,0,.35);
+    }
+
+    .asset-viewer::backdrop { background: rgba(17, 22, 27, .82); backdrop-filter: blur(5px); }
+
+    .viewer-shell {
+      position: relative;
+      display: grid;
+      grid-template-columns: 58px minmax(0, 1fr) 58px;
+      align-items: stretch;
+      min-height: min(820px, calc(100vh - 34px));
+    }
+
+    .viewer-figure {
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) auto;
+      min-width: 0;
+      margin: 0;
+    }
+
+    .viewer-stage {
+      display: grid;
+      place-items: center;
+      min-height: 0;
+      padding: 30px;
+      overflow: hidden;
+      background-color: #f7f8f9;
+      background-image:
+        linear-gradient(45deg, #eceff1 25%, transparent 25%),
+        linear-gradient(-45deg, #eceff1 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #eceff1 75%),
+        linear-gradient(-45deg, transparent 75%, #eceff1 75%);
+      background-size: 24px 24px;
+      background-position: 0 0, 0 12px, 12px -12px, -12px 0;
+    }
+
+    .viewer-stage img {
+      display: block;
+      width: min(720px, 100%);
+      height: min(68vh, 720px);
+      max-width: 100%;
+      max-height: calc(100vh - 190px);
+      object-fit: contain;
+      filter: drop-shadow(0 10px 18px rgba(25,34,43,.16));
+    }
+
+    .viewer-info {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 22px;
+      padding: 17px 20px 19px;
+      border-top: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .viewer-eyebrow { display: block; margin-bottom: 4px; color: var(--green); font-size: 11px; font-weight: 800; }
+    .viewer-info h2 { margin: 0; font: 800 20px/1.2 var(--rounded); letter-spacing: -.02em; }
+    .viewer-info code { display: block; margin-top: 5px; color: var(--muted); font: 10px/1.4 var(--mono); overflow-wrap: anywhere; }
+
+    .viewer-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 8px;
+      color: var(--muted);
+      font: 10px/1 var(--mono);
+    }
+
+    .viewer-actions a {
+      padding: 9px 11px;
+      border: 1px solid var(--line-strong);
+      border-radius: 9px;
+      color: var(--text);
+      background: #fff;
+      font: 800 11px/1 var(--body);
+      text-decoration: none;
+    }
+
+    .viewer-actions a:last-child { color: #fff; border-color: var(--green); background: var(--green); }
+
+    .viewer-nav,
+    .viewer-close {
+      border: 0;
+      color: #fff;
+      background: #242b31;
+      cursor: pointer;
+      font-family: var(--body);
+    }
+
+    .viewer-nav { font-size: 42px; font-weight: 300; }
+    .viewer-nav:hover { background: #343d45; }
+    .viewer-nav:disabled { cursor: default; opacity: .35; }
+
+    .viewer-close {
+      position: absolute;
+      z-index: 4;
+      top: 12px;
+      right: 70px;
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      font-size: 27px;
+      line-height: 1;
+      box-shadow: 0 4px 14px rgba(0,0,0,.2);
+    }
+
     .foot {
       display: flex;
       align-items: center;
@@ -989,7 +1204,15 @@
       .guide-head p, .catalog-head p { margin-top: 8px; }
       .guide-grid { grid-template-columns: 1fr; }
       .guide-card:first-child { grid-column: auto; }
+      .filter-tools { align-items: stretch; flex-direction: column; }
+      .category-picker { justify-content: space-between; }
+      .category-picker select { flex: 1; }
+      .shop-section-head { align-items: flex-start; }
       .asset-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .viewer-shell { grid-template-columns: 44px minmax(0, 1fr) 44px; }
+      .viewer-info { align-items: flex-start; flex-direction: column; }
+      .viewer-actions { justify-content: flex-start; }
+      .viewer-close { right: 54px; }
     }
 
     @media (max-width: 470px) {
@@ -998,6 +1221,14 @@
       .head-action { flex: 1 1 auto; justify-content: center; }
       .asset-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .asset-preview { height: 132px; }
+      .asset-viewer { width: calc(100vw - 12px); max-height: calc(100vh - 12px); border-radius: 13px; }
+      .viewer-shell { grid-template-columns: 38px minmax(0, 1fr) 38px; min-height: calc(100vh - 14px); }
+      .viewer-stage { padding: 16px; }
+      .viewer-stage img { width: 100%; height: min(62vh, 620px); max-height: calc(100vh - 220px); }
+      .viewer-nav { font-size: 32px; }
+      .viewer-close { top: 8px; right: 45px; width: 34px; height: 34px; }
+      .viewer-info { padding: 13px 14px 15px; }
+      .viewer-info h2 { font-size: 17px; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -1006,7 +1237,7 @@
     }
 
     @media print {
-      .head-actions, .catalog-tools { display: none; }
+      .head-actions, .catalog-tools, .shop-tabs, .asset-viewer { display: none; }
       .asset-grid { grid-template-columns: repeat(5, 1fr); }
     }
   </style>
@@ -1028,10 +1259,10 @@
     </header>
 
     <section class="status-strip" aria-label="그림 상태 요약">
-      <div class="status-item"><span>전체</span><strong id="totalCount">335장</strong></div>
+      <div class="status-item"><span>전체</span><strong id="totalCount">410장</strong></div>
       <div class="status-item draft"><span>초안</span><strong id="draftCount">280장</strong></div>
       <div class="status-item approved"><span>확정</span><strong id="approvedCount">0장</strong></div>
-      <div class="status-item"><span>없음</span><strong id="noneCount">55장</strong></div>
+      <div class="status-item"><span>없음</span><strong id="noneCount">130장</strong></div>
     </section>
     <div id="progressSlots" hidden></div>
 
@@ -1048,7 +1279,6 @@
             <li>볕 좋은 장날: 밝은 바닥이 중심이고 갈색 건물·소품은 화면의 30% 이하</li>
             <li>굵은 먹갈색 외곽선, 평면 색, 최소한의 명암과 한지 질감</li>
             <li>작은 모바일 화면에서 얼굴보다 실루엣과 행동이 먼저 읽혀야 함</li>
-            <li>투명 에셋에는 글자·UI·테두리·배경을 넣지 않음</li>
           </ul>
         </article>
         <article class="guide-card">
@@ -1067,8 +1297,10 @@
             <li><span>점장·직원</span><code>144×144</code></li>
             <li><span>손님</span><code>128×128</code></li>
             <li><span>물건</span><code>128×224</code></li>
-            <li><span>손님 카드</span><code>512×768</code></li>
+            <li><span>손님·점장 카드</span><code>512×768</code></li>
             <li><span>좌판</span><code>192×176</code></li>
+            <li><span>계산대</span><code>168×144</code></li>
+            <li><span>가마·풀무</span><code>168×192</code></li>
           </ul>
         </article>
       </div>
@@ -1076,40 +1308,75 @@
 
     <section class="catalog-section" id="catalog">
       <div class="catalog-head">
-        <h2 id="catalogTitle">이미지 335장</h2>
-        <p>그림을 누르면 원본 PNG가 열린다. 이름·파일명으로 찾거나 필요한 종류만 골라서 볼 수 있다.</p>
+        <h2 id="catalogTitle">이미지 410장</h2>
+        <p>매장을 고르거나 그림을 눌러 크게 본다. 큰 화면에서는 좌우 버튼과 방향키로 다음 그림을 넘길 수 있다.</p>
       </div>
       <div class="catalog-tools">
         <label class="search-wrap">
           <span class="sr-only" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">이미지 검색</span>
           <input class="search" id="assetSearch" type="search" placeholder="곡괭이, rabbit, 점장…" autocomplete="off">
         </label>
-        <div class="filters" role="group" aria-label="이미지 목록 필터">
-          <button class="filter" type="button" data-filter="all" aria-pressed="true">전체 335</button>
-          <button class="filter" type="button" data-filter="none" aria-pressed="false">없음 55</button>
+        <div class="filter-tools">
+          <div class="filters" role="group" aria-label="제작 상태 필터">
+          <button class="filter" type="button" data-filter="all" aria-pressed="true">전체 410</button>
+          <button class="filter" type="button" data-filter="none" aria-pressed="false">없음 130</button>
           <button class="filter" type="button" data-filter="draft" aria-pressed="false">초안 280</button>
-          <button class="filter" type="button" data-filter="required" aria-pressed="false">필수 215</button>
-          <button class="filter" type="button" data-filter="optional" aria-pressed="false">선택 120</button>
-          <button class="filter" type="button" data-filter="hero" aria-pressed="false">점장</button>
-          <button class="filter" type="button" data-filter="clerks" aria-pressed="false">전용 점장</button>
-          <button class="filter" type="button" data-filter="staff" aria-pressed="false">직원</button>
-          <button class="filter" type="button" data-filter="guests" aria-pressed="false">손님</button>
-          <button class="filter" type="button" data-filter="cards" aria-pressed="false">손님 카드</button>
-          <button class="filter" type="button" data-filter="items" aria-pressed="false">물건</button>
-          <button class="filter" type="button" data-filter="stalls" aria-pressed="false">좌판</button>
-          <button class="filter" type="button" data-filter="pests" aria-pressed="false">상호작용</button>
-          <button class="filter" type="button" data-filter="ui" aria-pressed="false">뽑기·룰렛</button>
+          <button class="filter" type="button" data-filter="required" aria-pressed="false">필수 245</button>
+          <button class="filter" type="button" data-filter="optional" aria-pressed="false">선택 165</button>
+          </div>
+          <label class="category-picker">
+            <span>종류</span>
+            <select id="categoryFilter" aria-label="그림 종류">
+              <option value="all">모든 종류</option>
+              <option value="shopcards">점장 카드</option>
+              <option value="clerks">가게별 점장</option>
+              <option value="items">물건</option>
+              <option value="stalls">좌판</option>
+              <option value="counters">계산대</option>
+              <option value="kilns">가마·풀무</option>
+              <option value="hero">공통 점장</option>
+              <option value="staff">직원</option>
+              <option value="guests">손님</option>
+              <option value="cards">손님 카드</option>
+              <option value="pests">상호작용</option>
+              <option value="ui">뽑기·룰렛</option>
+            </select>
+          </label>
         </div>
       </div>
+      <nav class="shop-tabs" id="shopTabs" aria-label="매장별 그림"></nav>
       <p class="result-line" id="resultLine" aria-live="polite"></p>
-      <div class="asset-grid" id="assetGrid"></div>
+      <div class="asset-groups" id="assetGrid"></div>
     </section>
 
     <footer class="foot">
       <span>너구리 만물상 · 그림 라이브러리</span>
-      <code id="footerCount">280 drafts · 55 needed · updated 2026-08-25</code>
+      <code id="footerCount">280 drafts · 130 needed · updated 2026-08-25</code>
     </footer>
   </main>
+
+  <dialog class="asset-viewer" id="assetViewer" aria-labelledby="viewerTitle">
+    <div class="viewer-shell">
+      <button class="viewer-close" id="viewerClose" type="button" aria-label="큰 이미지 닫기">×</button>
+      <button class="viewer-nav viewer-prev" id="viewerPrev" type="button" aria-label="이전 이미지">‹</button>
+      <figure class="viewer-figure">
+        <div class="viewer-stage"><img id="viewerImage" alt=""></div>
+        <figcaption class="viewer-info">
+          <div>
+            <span class="viewer-eyebrow" id="viewerEyebrow"></span>
+            <h2 id="viewerTitle"></h2>
+            <code id="viewerFile"></code>
+          </div>
+          <div class="viewer-actions">
+            <span id="viewerPosition"></span>
+            <a id="viewerOriginal" target="_blank" rel="noreferrer">원본 열기</a>
+            <a id="viewerDownload" download>내려받기</a>
+          </div>
+        </figcaption>
+      </figure>
+      <button class="viewer-nav viewer-next" id="viewerNext" type="button" aria-label="다음 이미지">›</button>
+    </div>
+  </dialog>
 
   <script>
     const guestCatalog = [
@@ -1149,10 +1416,24 @@
       ['나전방', 'najeonbit', '나전빗', '💈'], ['나전방', 'gyeongdae', '경대', '🪞'], ['나전방', 'ham', '함', '🎁'], ['나전방', 'mungap', '문갑', '🗄️'],
       ['나전방', 'jwagyeong', '좌경', '🔍'], ['나전방', 'samcheungjang', '삼층장', '🪜'], ['나전방', 'byeongpung', '자개병풍', '🖼️'], ['나전방', 'najeonnong', '나전롱', '👘']
     ];
-    const pendingShops = [
-      ['어물전', 'fish', '🐟'], ['포목전', 'cloth', '🧵'], ['갓방', 'hat', '🎩'],
-      ['유기전', 'brass', '🥣'], ['나전방', 'lacquer', '🪞']
+    const shopCatalog = [
+      { id: 'smith', name: '대장간', icon: '⚒️' },
+      { id: 'brush', name: '필방', icon: '🖌️' },
+      { id: 'paper', name: '지물포', icon: '📜' },
+      { id: 'pot', name: '옹기점', icon: '🏺' },
+      { id: 'herb', name: '약재상', icon: '🌿' },
+      { id: 'soup', name: '국밥집', icon: '🍲' },
+      { id: 'gaekju', name: '객주', icon: '🍶' },
+      { id: 'skewer', name: '꼬치집', icon: '🍢' },
+      { id: 'ricecake', name: '떡집', icon: '🍡' },
+      { id: 'butcher', name: '푸줏간', icon: '🥩' },
+      { id: 'fish', name: '어물전', icon: '🐟' },
+      { id: 'cloth', name: '포목전', icon: '🧵' },
+      { id: 'hat', name: '갓방', icon: '🎩' },
+      { id: 'brass', name: '유기전', icon: '🥣' },
+      { id: 'lacquer', name: '나전방', icon: '🪞' }
     ];
+    const pendingShops = shopCatalog.slice(10).map(({ name, id, icon }) => [name, id, icon]);
     const draftGuestIds = new Set(['rabbit', 'magpie', 'squirrel', 'badger', 'fox', 'deer', 'boar', 'bear', 'turtle', 'crane', 'ox', 'tiger', 'sparrow', 'frog', 'mole', 'hedgehog', 'duck', 'otter', 'roe', 'weasel', 'wildcat', 'goral', 'marten', 'mandarin', 'wolf', 'egret', 'leopard', 'muskdeer', 'moonbear', 'haetae']);
     const draftCardIds = new Set(['rabbit', 'magpie', 'squirrel', 'badger', 'fox', 'deer', 'boar', 'bear', 'turtle', 'crane', 'ox', 'tiger', 'sparrow', 'frog', 'mole', 'hedgehog', 'duck', 'otter', 'roe', 'weasel', 'wildcat', 'goral', 'marten', 'mandarin', 'wolf', 'egret', 'leopard', 'muskdeer', 'moonbear', 'haetae']);
     const draftGrowthCardIds = new Set(['rabbit-2', 'magpie-2', 'squirrel-2', 'badger-2', 'fox-2', 'deer-2', 'boar-2', 'bear-2', 'turtle-2', 'crane-2', 'ox-2', 'tiger-2', 'sparrow-2', 'frog-2', 'mole-2', 'hedgehog-2', 'duck-2', 'otter-2', 'roe-2', 'weasel-2', 'wildcat-2', 'goral-2', 'marten-2', 'mandarin-2', 'wolf-2', 'egret-2', 'leopard-2', 'muskdeer-2', 'moonbear-2', 'haetae-2', 'rabbit-3', 'magpie-3', 'squirrel-3', 'badger-3', 'fox-3', 'deer-3', 'boar-3', 'bear-3', 'turtle-3', 'crane-3', 'ox-3', 'tiger-3', 'sparrow-3', 'frog-3', 'mole-3', 'hedgehog-3', 'duck-3', 'otter-3', 'roe-3', 'weasel-3', 'wildcat-3', 'goral-3', 'marten-3', 'mandarin-3', 'wolf-3', 'egret-3', 'leopard-3', 'muskdeer-3', 'moonbear-3', 'haetae-3', 'rabbit-4', 'magpie-4', 'squirrel-4', 'badger-4', 'fox-4', 'deer-4', 'boar-4', 'bear-4', 'turtle-4', 'crane-4', 'ox-4', 'tiger-4', 'sparrow-4', 'frog-4', 'mole-4', 'hedgehog-4', 'duck-4', 'otter-4', 'roe-4', 'weasel-4', 'wildcat-4', 'goral-4', 'marten-4', 'mandarin-4', 'wolf-4', 'egret-4', 'leopard-4', 'muskdeer-4', 'moonbear-4', 'haetae-4']);
@@ -1295,24 +1576,69 @@
       ...pendingShops.flatMap(([shop, id, icon]) => ['make', 'sell'].map((pose) => ({
         c: 'clerks', shop, label: `${shop} 점장 · ${pose === 'make' ? '제작' : '판매'}`,
         file: `${id}-${pose}.png`, icon, size: '144×144', status: 'none', optional: true
-      })))
+      }))),
+
+      ...shopCatalog.flatMap(({ id, name, icon }) => [1, 2, 3].map((tier) => ({
+        c: 'shopcards', shop: name, label: `${name} 점장 카드 · ${tier}단`,
+        file: `${id}-${tier}.png`, icon, size: '512×768', status: 'none', optional: tier > 1
+      }))),
+      ...shopCatalog.map(({ id, name, icon }) => ({
+        c: 'counters', shop: name, label: `${name} 계산대`, file: `${id}.png`, icon,
+        size: '168×144', status: 'none', optional: true
+      })),
+      ...shopCatalog.map(({ id, name, icon }) => ({
+        c: 'kilns', shop: name, label: `${name} 가마·풀무`, file: `${id}.png`, icon,
+        size: '168×192', status: 'none'
+      }))
     ];
 
-    const categoryName = { hero: '점장', staff: '직원', items: '물건', guests: '손님', cards: '손님 카드', pests: '상호작용', stalls: '좌판', ui: '뽑기·룰렛', clerks: '선택 점장' };
-    const categoryDir = { hero: 'hero', staff: 'staff', items: 'items', guests: 'guests', cards: 'cards', pests: 'pests', stalls: 'stalls', ui: 'ui', clerks: 'clerks' };
-    const categoryOrder = { hero: 0, staff: 1, guests: 2, cards: 3, items: 4, stalls: 5, pests: 6, ui: 7, clerks: 8 };
+    const categoryName = {
+      hero: '공통 점장', staff: '직원', items: '물건', guests: '손님', cards: '손님 카드',
+      shopcards: '점장 카드', pests: '상호작용', stalls: '좌판', counters: '계산대',
+      kilns: '가마·풀무', ui: '뽑기·룰렛', clerks: '가게별 점장'
+    };
+    const categoryDir = {
+      hero: 'hero', staff: 'staff', items: 'items', guests: 'guests', cards: 'cards',
+      shopcards: 'cards', pests: 'pests', stalls: 'stalls', counters: 'counters',
+      kilns: 'kilns', ui: 'ui', clerks: 'clerks'
+    };
+    const categoryOrder = {
+      hero: 0, staff: 1, guests: 2, cards: 3, shopcards: 4, clerks: 5,
+      items: 6, stalls: 7, counters: 8, kilns: 9, pests: 10, ui: 11
+    };
     const stateName = { none: '없음', draft: '초안', approved: '확정' };
     const requiredAssets = assets.filter((asset) => !asset.optional);
     const grid = document.querySelector('#assetGrid');
     const resultLine = document.querySelector('#resultLine');
     const search = document.querySelector('#assetSearch');
     const filters = [...document.querySelectorAll('.filter')];
+    const categoryFilter = document.querySelector('#categoryFilter');
+    const shopTabs = document.querySelector('#shopTabs');
+    const viewer = document.querySelector('#assetViewer');
+    const viewerImage = document.querySelector('#viewerImage');
+    const viewerTitle = document.querySelector('#viewerTitle');
+    const viewerEyebrow = document.querySelector('#viewerEyebrow');
+    const viewerFile = document.querySelector('#viewerFile');
+    const viewerPosition = document.querySelector('#viewerPosition');
+    const viewerOriginal = document.querySelector('#viewerOriginal');
+    const viewerDownload = document.querySelector('#viewerDownload');
+    const viewerPrev = document.querySelector('#viewerPrev');
+    const viewerNext = document.querySelector('#viewerNext');
     const statusCount = (status) => assets.filter((asset) => asset.status === status).length;
     const draftCount = statusCount('draft');
     const approvedCount = statusCount('approved');
     const noneCount = statusCount('none');
     const optionalCount = assets.length - requiredAssets.length;
+    const shopByName = new Map(shopCatalog.map((shop) => [shop.name, shop]));
+    const shopIdOf = (asset) => shopByName.get(asset.shop)?.id || 'common';
+    const groupOrder = new Map([['common', 0], ...shopCatalog.map((shop, index) => [shop.id, index + 1])]);
     let activeFilter = 'all';
+    let activeCategory = 'all';
+    let activeShop = 'all';
+    let visibleAssets = [];
+    let viewerAssets = [];
+    let viewerIndex = -1;
+    let touchStartX = 0;
 
     document.querySelector('#totalCount').textContent = `${assets.length}장`;
     document.querySelector('#draftCount').textContent = `${draftCount}장`;
@@ -1334,34 +1660,72 @@
       if (key in filterCounts) button.textContent = `${filterLabels[key]} ${filterCounts[key]}`;
     });
 
+    const tabData = [
+      { id: 'all', name: '전체', icon: '🏘️' },
+      { id: 'common', name: '공통 그림', icon: '🦝' },
+      ...shopCatalog
+    ];
+    shopTabs.innerHTML = tabData.map((shop) => {
+      const scoped = shop.id === 'all' ? assets : assets.filter((asset) => shopIdOf(asset) === shop.id);
+      const missing = scoped.filter((asset) => asset.status === 'none').length;
+      return `<button class="shop-tab" type="button" data-shop="${shop.id}" aria-pressed="${shop.id === 'all'}">
+        <span aria-hidden="true">${shop.icon}</span>${shop.name}<small>${missing ? `없음 ${missing}` : '초안 완료'}</small>
+      </button>`;
+    }).join('');
+
     document.querySelector('#progressSlots').innerHTML = requiredAssets.map((asset) =>
       `<span class="progress-slot is-${asset.status}" title="${asset.label} · ${stateName[asset.status]}"></span>`
     ).join('');
 
     function matches(asset, query) {
-      const filterMatch = activeFilter === 'all'
+      const statusMatch = activeFilter === 'all'
         || activeFilter === asset.status
-        || activeFilter === asset.c
         || (activeFilter === 'required' && !asset.optional)
         || (activeFilter === 'optional' && asset.optional);
+      const categoryMatch = activeCategory === 'all' || activeCategory === asset.c;
+      const shopMatch = activeShop === 'all' || activeShop === shopIdOf(asset);
       const haystack = `${asset.label} ${asset.file} ${asset.shop || ''} ${categoryName[asset.c]}`.toLowerCase();
-      return filterMatch && haystack.includes(query);
+      return statusMatch && categoryMatch && shopMatch && haystack.includes(query);
+    }
+
+    function assetPath(asset) {
+      return `godot/art/${asset.dir || categoryDir[asset.c]}/${asset.file}`;
+    }
+
+    function assetKey(asset) {
+      return `${asset.c}/${asset.file}`;
     }
 
     function card(asset) {
-      const path = `godot/art/${asset.dir || categoryDir[asset.c]}/${asset.file}`;
       const preview = asset.status !== 'none'
-        ? `<a class="asset-preview" href="${asset.src}" download="${asset.file}" target="_blank" rel="noreferrer" title="원본 PNG 열기"><img src="${asset.src}" data-fallback="${asset.fallback || ''}" loading="lazy" alt="${asset.label}"></a>`
+        ? `<button class="asset-preview" type="button" data-open-asset="${assetKey(asset)}" title="큰 이미지로 보기"><img src="${asset.src}" data-fallback="${asset.fallback || ''}" loading="lazy" alt="${asset.label}"></button>`
         : `<div class="asset-preview is-empty" aria-label="아직 이미지 없음">${asset.icon}</div>`;
+      const isStoreAsset = shopIdOf(asset) !== 'common';
+      const metaLabel = isStoreAsset ? categoryName[asset.c] : (asset.shop || categoryName[asset.c]);
       return `<article class="asset-card is-${asset.status}">
         ${preview}
         <div class="asset-body">
-          <div class="asset-meta"><span>${asset.optional ? '선택 · ' : ''}${asset.shop || categoryName[asset.c]}</span><span>목표 ${asset.size}</span></div>
+          <div class="asset-meta"><span>${asset.optional ? '선택 · ' : ''}${metaLabel}</span><span>목표 ${asset.size}</span></div>
           <h3>${asset.label}</h3>
-          <code class="file">${path}</code>
+          <code class="file">${assetPath(asset)}</code>
           ${asset.actual ? `<small class="actual-spec">${asset.actual}</small>` : ''}
         </div>
       </article>`;
+    }
+
+    function section(groupId, list) {
+      const shop = groupId === 'common'
+        ? { name: '공통 그림', icon: '🦝' }
+        : shopCatalog.find((item) => item.id === groupId);
+      const drafts = list.filter((asset) => asset.status === 'draft').length;
+      const missing = list.filter((asset) => asset.status === 'none').length;
+      return `<section class="shop-section" data-shop-section="${groupId}">
+        <header class="shop-section-head">
+          <h3 class="shop-section-title"><span aria-hidden="true">${shop.icon}</span>${shop.name}</h3>
+          <div class="shop-section-count">${list.length}장 · 초안 ${drafts}${missing ? ` · <b>없음 ${missing}</b>` : ''}</div>
+        </header>
+        <div class="asset-grid">${list.map(card).join('')}</div>
+      </section>`;
     }
 
     function connectFallbacks() {
@@ -1377,14 +1741,58 @@
 
     function render() {
       const query = search.value.trim().toLowerCase();
-      const visible = assets
+      visibleAssets = assets
         .filter((asset) => matches(asset, query))
-        .sort((a, b) => categoryOrder[a.c] - categoryOrder[b.c]);
-      resultLine.textContent = `${visible.length}장 표시 · 확정 ${visible.filter((asset) => asset.status === 'approved').length} · 초안 ${visible.filter((asset) => asset.status === 'draft').length} · 없음 ${visible.filter((asset) => asset.status === 'none').length}`;
-      grid.innerHTML = visible.length
-        ? visible.map(card).join('')
+        .sort((a, b) => (groupOrder.get(shopIdOf(a)) - groupOrder.get(shopIdOf(b)))
+          || (categoryOrder[a.c] - categoryOrder[b.c])
+          || a.label.localeCompare(b.label, 'ko'));
+      resultLine.textContent = `${visibleAssets.length}장 표시 · 확정 ${visibleAssets.filter((asset) => asset.status === 'approved').length} · 초안 ${visibleAssets.filter((asset) => asset.status === 'draft').length} · 없음 ${visibleAssets.filter((asset) => asset.status === 'none').length}`;
+      const groups = [...new Set(visibleAssets.map(shopIdOf))];
+      grid.innerHTML = visibleAssets.length
+        ? groups.map((groupId) => section(groupId, visibleAssets.filter((asset) => shopIdOf(asset) === groupId))).join('')
         : '<div class="empty-result">맞는 그림이 없다. 다른 이름이나 파일명으로 찾아보세요.</div>';
       connectFallbacks();
+    }
+
+    function updateViewer() {
+      const asset = viewerAssets[viewerIndex];
+      if (!asset) return;
+      const fallback = asset.fallback || '';
+      viewerImage.onerror = () => {
+        if (fallback && viewerImage.src !== new URL(fallback, document.baseURI).href) viewerImage.src = fallback;
+      };
+      viewerImage.src = asset.src;
+      viewerImage.alt = asset.label;
+      viewerTitle.textContent = asset.label;
+      viewerEyebrow.textContent = `${shopIdOf(asset) === 'common' ? '' : `${asset.shop} · `}${categoryName[asset.c]}${asset.optional ? ' · 선택' : ''}`;
+      viewerFile.textContent = assetPath(asset);
+      viewerPosition.textContent = `${viewerIndex + 1} / ${viewerAssets.length}`;
+      viewerOriginal.href = asset.src;
+      viewerDownload.href = asset.src;
+      viewerDownload.download = asset.file;
+      const single = viewerAssets.length < 2;
+      viewerPrev.disabled = single;
+      viewerNext.disabled = single;
+    }
+
+    function openViewer(key) {
+      viewerAssets = visibleAssets.filter((asset) => asset.status !== 'none');
+      viewerIndex = viewerAssets.findIndex((asset) => assetKey(asset) === key);
+      if (viewerIndex < 0) return;
+      updateViewer();
+      if (typeof viewer.showModal === 'function') viewer.showModal();
+      else viewer.setAttribute('open', '');
+    }
+
+    function closeViewer() {
+      if (typeof viewer.close === 'function') viewer.close();
+      else viewer.removeAttribute('open');
+    }
+
+    function moveViewer(delta) {
+      if (viewerAssets.length < 2) return;
+      viewerIndex = (viewerIndex + delta + viewerAssets.length) % viewerAssets.length;
+      updateViewer();
     }
 
     filters.forEach((button) => {
@@ -1395,7 +1803,39 @@
       });
     });
 
+    shopTabs.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-shop]');
+      if (!button) return;
+      activeShop = button.dataset.shop;
+      shopTabs.querySelectorAll('.shop-tab').forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
+      render();
+    });
+
+    grid.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-open-asset]');
+      if (button) openViewer(button.dataset.openAsset);
+    });
+
     search.addEventListener('input', render);
+    categoryFilter.addEventListener('change', () => {
+      activeCategory = categoryFilter.value;
+      render();
+    });
+    document.querySelector('#viewerClose').addEventListener('click', closeViewer);
+    viewerPrev.addEventListener('click', () => moveViewer(-1));
+    viewerNext.addEventListener('click', () => moveViewer(1));
+    viewer.addEventListener('click', (event) => { if (event.target === viewer) closeViewer(); });
+    viewer.addEventListener('close', () => viewerImage.removeAttribute('src'));
+    viewer.addEventListener('touchstart', (event) => { touchStartX = event.changedTouches[0].screenX; }, { passive: true });
+    viewer.addEventListener('touchend', (event) => {
+      const distance = event.changedTouches[0].screenX - touchStartX;
+      if (Math.abs(distance) > 55) moveViewer(distance > 0 ? -1 : 1);
+    }, { passive: true });
+    document.addEventListener('keydown', (event) => {
+      if (!viewer.open) return;
+      if (event.key === 'ArrowLeft') moveViewer(-1);
+      if (event.key === 'ArrowRight') moveViewer(1);
+    });
     connectFallbacks();
     render();
   </script>
