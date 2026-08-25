@@ -349,7 +349,7 @@ func _paint() -> void:
 	# 폰 폭에 맞춘다. 한 줄에 다 넣으면 오른쪽이 잘려서 젬이 안 보인다.
 	_hud.text = "🪙 " + Num.fmt(sim.money)
 	_gemlbl.text = "💎 %d" % int(sim.gems)
-	_clock.text = village.day_icon()
+	_clock.text = String(sim.weather_def().face) + village.day_icon()   # 날씨 + 시각
 	_sub.text = "🪙%s/s" % Num.fmt(sim.income_per_sec())
 	_namelbl.text = String(sim.profile.name)
 	var bi: int = sim.band_of()

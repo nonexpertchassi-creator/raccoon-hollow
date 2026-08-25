@@ -215,7 +215,9 @@ func _btn(text: String, enabled: bool, cb: Callable, expand: bool = true) -> But
 ## 그걸 "한 줄에 한 글자"로 받아들인다.
 func _label(text: String, size: int, col: Color = Color("2b241b"), wrap: bool = false) -> Label:
 	var l := Label.new()
-	l.text = text
+	# 굵게 표시(**)는 평범한 Label이 못 알아듣는다 — 화면에 별표가 그대로
+	# 찍혔다(검수에서 발견). 여기서 걷어내면 어디서 실수해도 화면은 깨끗하다.
+	l.text = text.replace("**", "")
 	l.add_theme_font_size_override("font_size", size)
 	l.add_theme_color_override("font_color", col)
 	if wrap:

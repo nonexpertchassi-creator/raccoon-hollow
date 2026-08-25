@@ -2508,3 +2508,48 @@ const STAR_CARDS := [
 ]
 
 const STOCK_CAP := 5.0
+
+const WEATHER := {
+	"every": [
+		300.0,
+		700.0
+	],
+	"kinds": [
+		{
+			"id": "clear",
+			"name": "맑음",
+			"face": "☀️",
+			"come": 1.0,
+			"craft": 1.0,
+			"pest": 1.0,
+			"weight": 5.0
+		},
+		{
+			"id": "breeze",
+			"name": "산들바람",
+			"face": "🍃",
+			"come": 1.25,
+			"craft": 1.0,
+			"pest": 1.0,
+			"weight": 2.0
+		},
+		{
+			"id": "cloud",
+			"name": "흐림",
+			"face": "☁️",
+			"come": 0.85,
+			"craft": 1.0,
+			"pest": 1.0,
+			"weight": 3.0
+		},
+		{
+			"id": "rain",
+			"name": "비",
+			"face": "🌧️",
+			"come": 0.55,
+			"craft": 0.9,
+			"pest": 1.7,
+			"weight": 2.0
+		}
+	]
+}

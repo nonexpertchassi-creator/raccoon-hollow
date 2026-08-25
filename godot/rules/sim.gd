@@ -147,6 +147,9 @@ var _crafting: Dictionary = {}
 var _switch: Dictionary = {}
 ## 마지막으로 손을 댄 지 얼마나 됐나(id → 초). regrip 유예 판정용.
 var _recent: Dictionary = {}
+## 날씨 — content.js의 WEATHER.kinds 중 하나. 손님 발길·손놀림·쥐가 탄다.
+var weather: String = "clear"
+var _wxT: float = 0.0
 var _pestEvents: Array = []
 var _guestAcc: Dictionary = {}
 var _guestGap: Dictionary = {}
@@ -183,9 +186,9 @@ func milestone(id: String) -> float:
 
 func _gap(g: Dictionary, rng: Rng) -> float:
 	# 성이 오르면 발걸음도 잦아진다 — content.js의 REGULAR_COME 참고
-	# 밤엔 발길이 뜸하다(DAY.nightCome) — 짐승도 잘 시간이다
+	# 밤엔 발길이 뜸하다(DAY.nightCome) — 짐승도 잘 시간이다. 날씨도 탄다.
 	return _wild_gap(g.every / (1.0 + Content.REGULAR_COME * regular_lv(String(g.id)))
-		* (Content.DAY.nightCome if is_night() else 1.0),
+		* (Content.DAY.nightCome if is_night() else 1.0) / float(weather_def().come),
 		g.get("wild", 0.0), rng)
 
 ## wild가 0이면 시계처럼, 1이면 완전히 운. 평균 간격은 어느 쪽이든 every 그대로다.
@@ -213,8 +216,9 @@ func _pests(dt: float, rng: Rng) -> void:
 	for P in Content.PESTS:
 		if revenue < P.at:
 			continue
-		# 밤엔 쥐가 설친다(DAY.nightPest) — 시계가 빨리 찬다
-		_pestAcc[P.id] = _pestAcc.get(P.id, 0.0) + dt / (Content.DAY.nightPest if is_night() else 1.0)
+		# 밤엔 쥐가 설친다(DAY.nightPest), 비 오면 뜸하다(WEATHER.pest)
+		_pestAcc[P.id] = _pestAcc.get(P.id, 0.0) \
+			+ dt / (Content.DAY.nightPest if is_night() else 1.0) / float(weather_def().pest)
 		if not _pestGap.has(P.id):
 			_pestGap[P.id] = _wild_gap(P.every, P.wild, rng)
 		if _pestAcc[P.id] < _pestGap[P.id]:
@@ -513,6 +517,12 @@ func price(id: String) -> float:
 func day_phase() -> float:
 	return fposmod(t, float(Content.DAY.cycle)) / float(Content.DAY.cycle)
 
+func weather_def() -> Dictionary:
+	for k in Content.WEATHER.kinds:
+		if String(k.id) == weather:
+			return k
+	return Content.WEATHER.kinds[0]
+
 func is_night() -> bool:
 	var ph: float = day_phase()
 	return ph >= float(Content.DAY.night[0]) and ph < float(Content.DAY.night[1])
@@ -522,7 +532,7 @@ func craft_time(id: String) -> float:
 	var f: float = max(Content.LEVEL.timeFloor, pow(Content.LEVEL.timeReduce, lv(id) - 1.0))
 	# handSpeed — 손 하나의 손놀림 배수(생산 개편 보정, content.js의 CRAFT 참고)
 	# 밤엔 손이 느리다(DAY.nightCraft) — 밤 규칙은 화면이 아니라 여기(sim)의 것이다
-	return it.time * f * forge_mul() * _forge_of(it.shop) / Content.CRAFT.handSpeed 		* (Content.DAY.nightCraft if is_night() else 1.0)
+	return it.time * f * forge_mul() * _forge_of(it.shop) / Content.CRAFT.handSpeed 		* (Content.DAY.nightCraft if is_night() else 1.0) * float(weather_def().craft)
 
 func cap_of(id: String) -> float:
 	return Content.STOCK_CAP + Content.STAFF.capAdd * staff_of(item_by_id(id).shop)
@@ -1096,6 +1106,33 @@ func tick(dt: float, rng: Rng) -> Dictionary:
 	#   가게의 손 수 = 점장 1 + 직원 수. 점장이 계산 중이면(_hold) 손이
 	#   하나 빠진다 — 직원은 만들기만 하고 점장은 만들다 계산도 한다.
 	#   매대 순서대로 앞에서부터 손을 배정한다. 다 찬 물건은 손을 안 쓴다.
+	# 0) 하늘 — 다음 날씨까지의 시계. 바뀌면 소식 한 줄.
+	_wxT -= dt
+	if _wxT <= 0.0:
+		var tot: float = 0.0
+		for k in Content.WEATHER.kinds:
+			tot += float(k.weight)
+		var pick: float = rng.next() * tot
+		var nw: String = String(Content.WEATHER.kinds[0].id)
+		for k in Content.WEATHER.kinds:
+			pick -= float(k.weight)
+			if pick <= 0.0:
+				nw = String(k.id)
+				break
+		_wxT = float(Content.WEATHER.every[0]) \
+			+ rng.next() * float(Content.WEATHER.every[1] - Content.WEATHER.every[0])
+		if nw != weather:
+			weather = nw
+			match weather:
+				"rain":
+					_ev("🌧️ 비가 온다 — 발길은 뜸해지고 일손은 집중한다", "weather")
+				"breeze":
+					_ev("🍃 산들바람 — 장 보기 좋은 날이다", "weather")
+				"cloud":
+					_ev("☁️ 하늘이 흐려졌다", "weather")
+				_:
+					_ev("☀️ 볕이 났다", "weather")
+
 	# 손이 매대를 옮겨 잡으면 **걸어가는 시간**(CRAFT.walk)이 든다 — 일꾼이
 	# 도착하기 전에 물건이 자라는 걸 규칙으로 막는다(2026-08-26, 유저).
 	# sim은 화면을 모르지만, "이동"이라는 사실은 안다.
@@ -1600,7 +1637,7 @@ const SAVE_KEYS: Array[String] = [
 	"ledger", "shopUp",
 	"cards", "stars", "pulls", "guards", "roulFree", "roulAd", "roulDay",
 	"stats", "zones",
-	"profile", "furs", "_crafting", "_switch", "_recent",
+	"profile", "furs", "_crafting", "_switch", "_recent", "weather", "_wxT",
 ]
 ## 글자로 저장했다 되돌리면 정수가 소수가 된다(-1 → -1.0). 자리를 세는 데
 ## 쓰는 것들은 도로 정수로 되돌린다 — 아니면 배열 자리를 못 찾는다.
@@ -1632,7 +1669,8 @@ const INT_KEYS: Array[String] = ["busy", "_qid", "_evIdx", "_oid"]
 ## 규칙적이어도 된다. 이후 새로 여는 가게부터 주머니 뽑기를 탄다.
 ## 7판: 손의 이동(_crafting·_switch). 옛 저장본은 칸이 없어 빈 값으로
 ## 시작한다 — 첫 틱에 모든 손이 이동 시간을 한 번 내는 것뿐, 옮길 것 없다.
-const SAVE_VER: int = 7
+## 8판: 날씨(weather·_wxT). 옛 저장본은 맑음으로 시작하면 된다.
+const SAVE_VER: int = 8
 
 func save() -> Dictionary:
 	var d: Dictionary = {}

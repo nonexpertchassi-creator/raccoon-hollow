@@ -101,6 +101,11 @@ var _staffJob: Dictionary = {}
 var show_grid: bool = true
 ## 낮과 밤 — 도구가 시각을 못 박을 때 쓴다(0~1, 음수면 게임 시계를 따른다).
 var clock_override: float = -1.0
+## 날씨 — 도구가 못 박을 때 쓴다(""면 sim을 따른다).
+var wx_override: String = ""
+
+func wx() -> String:
+	return wx_override if wx_override != "" else String(sim.weather)
 const CLERK_SPEED := 130.0
 
 func _ready() -> void:
@@ -1555,6 +1560,35 @@ func _draw() -> void:
 		if can:
 			var bob: float = absf(sin(_t * 3.2)) * 5.0
 			_text(mid + Vector2(0, 44 + bob), "누르면 열린다!", 13, Color("ffe9a8"))
+
+	# ── 하늘(날씨) ── 전부 코드 그림. 그림 주문 0장.
+	var wnow: String = wx()
+	if wnow == "cloud" or wnow == "rain":
+		# 잿빛 한 겹 — 비는 조금 더 짙다
+		draw_set_transform_matrix(get_canvas_transform().affine_inverse())
+		draw_rect(Rect2(Vector2.ZERO, get_viewport_rect().size),
+			Color(0.35, 0.4, 0.5, 0.10 if wnow == "cloud" else 0.16))
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	if wnow == "rain":
+		# 빗줄기 — 화면 좌표에 사선 줄. 자리는 시각의 함수라 매 프레임 흘러내린다.
+		draw_set_transform_matrix(get_canvas_transform().affine_inverse())
+		var vp: Vector2 = get_viewport_rect().size
+		for rr in range(46):
+			var rx: float = fmod(float(rr) * 97.3 + _t * 260.0, vp.x + 60.0) - 30.0
+			var ry: float = fmod(float(rr) * 61.7 + _t * 620.0, vp.y + 40.0) - 20.0
+			draw_line(Vector2(rx, ry), Vector2(rx - 5.0, ry + 15.0),
+				Color(0.62, 0.72, 0.85, 0.5), 1.5)
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	elif wnow == "breeze":
+		# 날리는 잎 — 초록 낱장이 물결치며 지나간다
+		draw_set_transform_matrix(get_canvas_transform().affine_inverse())
+		var vp2: Vector2 = get_viewport_rect().size
+		for lf in range(7):
+			var lx: float = fmod(float(lf) * 151.0 + _t * 110.0, vp2.x + 40.0) - 20.0
+			var ly: float = fmod(float(lf) * 233.0, vp2.y) + sin(_t * 3.0 + float(lf)) * 24.0
+			draw_circle(Vector2(lx, ly), 2.6, Color(0.45, 0.62, 0.3, 0.75))
+			draw_circle(Vector2(lx - 6.0, ly + 3.0), 1.8, Color(0.5, 0.68, 0.33, 0.55))
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 	# ── 낮과 밤 ── 알림 표·말풍선보다는 아래, 마을 전부보다는 위.
 	var sky: Color = _sky()
