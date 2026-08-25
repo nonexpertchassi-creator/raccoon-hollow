@@ -958,6 +958,12 @@ func _hero_tex(shop_id: String, pose: String) -> Texture2D:
 	var t: Texture2D = Art.ranked("clerks", "%s-%s" % [shop_id, pose], sim.rank_of(shop_id))
 	if t != null:
 		return t
+	# ★ 전용 그림이 있는 가게는 없는 자세도 **전용 만들기 그림**으로 때운다.
+	#   걷기만 공통 너구리로 갈아입으니 "점장이 두 모습"이 됐다(유저).
+	#   움직임(걷기 두 장 번갈아)보다 **같은 얼굴**이 먼저다.
+	t = Art.ranked("clerks", "%s-make" % shop_id, sim.rank_of(shop_id))
+	if t != null:
+		return t
 	return Art.tex("hero", "raccoon-" + pose)
 
 func _trash_draw(tr: Dictionary) -> void:
@@ -1085,19 +1091,31 @@ func _stall_front(i: int, k: int) -> Vector2:
 	var y: Dictionary = Iso.yard(Iso.YARD_KIND[i], n)
 	var o: Vector2i = Iso.org(sim, i)
 	var sp: Vector2i = y.stalls[k]
-	# 매대의 **수직 안쪽 이웃 칸**에 선다(유저 설계: 3번 매대는 6번 자리에서,
-	# 7번 매대는 8번 자리에서 매대를 바라본다). 예전엔 다 가운데로 뭉쳐
-	# 모서리 매대도 5번에서 일하는 그림이 됐다. 가구 칸은 여전히 안 밟는다.
-	var inn: Vector2i
-	if sp.y == 0:
-		inn = Vector2i(sp.x, 1)
-	elif sp.y == n - 1:
-		inn = Vector2i(sp.x, n - 2)
-	elif sp.x == 0:
-		inn = Vector2i(1, sp.y)
-	else:
-		inn = Vector2i(n - 2, sp.y)
-	return Iso.w(o.x + inn.x + 0.5, o.y + inn.y + 0.5)
+	# 매대의 이웃 칸 중 **가구가 없는 빈 칸**에서 마당 중심에 제일 가까운
+	# 곳에 선다(대각선 포함). 처음엔 "수직 안쪽 한 칸"으로 못 박았는데,
+	# 모서리 매대는 그 칸이 하필 다른 매대였다 — 필방 7번, 지물포 3·9번은
+	# 일하러 갈 자리가 아예 없었다(유저가 잡았다). 자리는 정하는 게 아니라
+	# **찾는** 것이다.
+	var taken: Dictionary = {}
+	for t5 in y.stalls:
+		taken[t5] = true
+	taken[y.counter] = true
+	taken[y.kiln] = true
+	var best: Vector2i = Vector2i(clampi(sp.x, 1, n - 2), clampi(sp.y, 1, n - 2))
+	var best_d: float = INF
+	var mid: Vector2 = Vector2(float(n) * 0.5, float(n) * 0.5)
+	for dy in [-1, 0, 1]:
+		for dx in [-1, 0, 1]:
+			if dx == 0 and dy == 0:
+				continue
+			var cnd := Vector2i(sp.x + dx, sp.y + dy)
+			if cnd.x < 0 or cnd.y < 0 or cnd.x >= n or cnd.y >= n or taken.has(cnd):
+				continue
+			var d5: float = Vector2(float(cnd.x) + 0.5, float(cnd.y) + 0.5).distance_to(mid)
+			if d5 < best_d:
+				best_d = d5
+				best = cnd
+	return Iso.w(o.x + best.x + 0.5, o.y + best.y + 0.5)
 
 ## 이 매대를 맡은 일꾼이 **지금 어디 있나**. 매대 앞에 닿기 전엔 만드는
 ## 효과(파이·먼지)를 안 띄우려고 본다 — 가지도 않았는데 만들어지면 오류로
