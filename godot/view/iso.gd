@@ -109,8 +109,13 @@ static func yard(kind: String, n: int) -> Dictionary:
 		return {"kind": kind, "gate": "x", "kiln": Vector2i(n - 1, 0), "counter": Vector2i(n - 1, m),
 			"stalls": (TL + BL.slice(1)).slice(0, need)}
 	if kind == "C":
-		return {"kind": kind, "gate": "x", "kiln": Vector2i(0, n - 1), "counter": Vector2i(n - 1, 0),
-			"stalls": (TR.slice(0, n - 1) + BR.slice(1)).slice(0, need)}
+		# ★ 계산대가 (n-1,0) — 뒷담 구석이었다(2026-08-25, 유저가 옹기점에서 잡았다).
+		#   뒤 두 변에는 담이 서는데 계산대가 그 모서리에 붙어 있으니
+		#   "길도 없는 구석에서 어떻게 들어가냐"가 됐다. 길가 변의 가운데로 옮긴다.
+		var cst: Array = (TR + BR.slice(1)).slice(0, need + 1)
+		cst.erase(Vector2i(n - 1, m))
+		return {"kind": kind, "gate": "x", "kiln": Vector2i(0, n - 1), "counter": Vector2i(n - 1, m),
+			"stalls": cst}
 	if kind == "D":
 		return {"kind": kind, "gate": "y", "kiln": Vector2i(0, 0), "counter": Vector2i(m, n - 1),
 			"stalls": (TR.slice(1) + BR.slice(1)).slice(0, need)}

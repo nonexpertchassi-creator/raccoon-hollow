@@ -2437,7 +2437,7 @@ const SMALL_SHOPS := [
 ]
 
 const STAFF := {
-	"capAdd": 10.0,
+	"capAdd": 0.0,
 	"max": 4.0,
 	"costMul": [
 		0.06,
@@ -2492,4 +2492,4 @@ const STAR_CARDS := [
 	700.0
 ]
 
-const STOCK_CAP := 40.0
+const STOCK_CAP := 5.0

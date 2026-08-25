@@ -1026,16 +1026,24 @@ func tick(dt: float, rng: Rng) -> Dictionary:
 			hands -= 1
 		if hands <= 0:
 			continue
-		var used: int = 0
+		# ★ 손님이 주문하고 기다리는 물건이 맨 먼저다(2026-08-25, 유저가 잡았다).
+		#   매대 순서대로만 손을 주면 앞 매대가 손을 다 먹어서, 뒤 매대를 주문한
+		#   손님은 영영 못 받고 빈손으로 갔다 — 기다리는 사람부터 만든다.
+		var first: Array = []
+		var rest: Array = []
 		for it in shop_by_id(String(sh)).items:
+			var cid: String = String(it.id)
+			if not items.has(cid):
+				continue
+			if _order_rem(cid) > 0.0:
+				first.append(cid)
+			elif items[cid].stock < cap_of(cid):
+				rest.append(cid)
+		var used: int = 0
+		for id in first + rest:
 			if used >= hands:
 				break
-			var id: String = String(it.id)
-			if not items.has(id):
-				continue
 			var st: Dictionary = items[id]
-			if st.stock >= cap_of(id) and _order_rem(id) == 0.0:
-				continue
 			st.prog += dt * speed
 			_crafting[id] = true
 			used += 1

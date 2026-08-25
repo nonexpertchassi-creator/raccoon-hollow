@@ -32,6 +32,14 @@ func _ready() -> void:
 		var z: float = float(OS.get_environment("SHOT_ZOOM"))
 		main.cam.zoom = Vector2(z, z)
 		main._clamp_cam()
+	# SHOT_SHOP=<가게id> — 그 가게를 가운데 놓고 찍는다. 계산대 자리 같은
+	# 마당 문제는 마을 전경으론 안 보인다 — 도구가 못 비추면 못 잡는다.
+	if OS.has_environment("SHOT_SHOP"):
+		var fid: String = OS.get_environment("SHOT_SHOP")
+		for si in range(Content.SHOPS.size()):
+			if String(Content.SHOPS[si].id) == fid:
+				main.cam.position = Iso.foot(main.sim, si).stand
+				main._clamp_cam()
 	# 카드는 **누르는 순간**에만 뜬다 — 도구가 스스로 누를 수는 없으니 띄워 보게 한다.
 	if OS.has_environment("SHOT_CARD"):
 		var sid: String = OS.get_environment("SHOT_CARD")
