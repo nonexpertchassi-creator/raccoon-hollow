@@ -295,7 +295,12 @@ func _advance(delta: float) -> void:
 		var c: Dictionary = clerks[i]
 		c.busy = max(0.0, c.busy - delta)
 		var f: Dictionary = Iso.foot(sim, i)
-		var goal: Vector2 = f.serve if c.busy > 0.0 else f.work
+		# 점장도 직원처럼 **만드는 매대 앞**으로 간다. 작업대에 서 있는데
+		# 저쪽 매대가 만들어지면 오류로 보인다(유저). 만들 게 없으면 작업대.
+		var goal: Vector2 = f.serve
+		if c.busy <= 0.0:
+			var ci: Array = _craft_idx(i)
+			goal = _stall_front(i, ci[0]) if not ci.is_empty() else f.work
 		var d: Vector2 = goal - c.pos
 		var step: float = CLERK_SPEED * delta
 		c.walking = d.length() > step        # 걷는 중이면 걷는 그림을 쓴다
@@ -663,7 +668,9 @@ func _stall(i: int, k: int, spot: Vector2i) -> void:
 	# 만드는 중인 물건에만 작은 로딩 파이 — 손 하나가 물건 하나를 만드니
 	# 이제 "지금 어느 것이 만들어지나"가 정보다(레퍼런스의 초록 원형 시계).
 	var st2: Dictionary = sim.items[it.id]
-	if sim._crafting.has(String(it.id)):
+	# 일꾼이 매대 앞에 닿기 전엔 파이도 먼지도 안 띄운다 — 아무도 없는데
+	# 만들어지는 그림은 오류로 보인다. sim은 계속 만들지만 화면은 기다린다.
+	if sim._crafting.has(String(it.id)) and _worker_of(i, k).distance_to(_stall_front(i, k)) < 8.0:
 		var pr2: float = clampf(st2.prog / sim.craft_time(String(it.id)), 0.0, 1.0)
 		var ry2: Vector2 = p + Vector2(16, -40)
 		draw_circle(ry2, 8.5, Color(0.13, 0.22, 0.14, 0.75))
@@ -904,29 +911,52 @@ func _clerk(i: int) -> void:
 ##   칸 한가운데에 세웠더니 매대 뒤에 가려서 **머리만 보였다.** 480K를 주고
 ##   머리 하나를 사는 셈이다. 안쪽으로 26px 당기면 매대 앞으로 나온다.
 ##   앞뒤 순서도 이 자리로 정해야 한다 — 안 그러면 그림과 순서가 따로 논다.
+## 지금 만드는 중인 매대 번호들(매대 순서). 손 배정을 화면이 따라가는 눈이다.
+func _craft_idx(i: int) -> Array:
+	var y: Dictionary = Iso.yard(Iso.YARD_KIND[i], Iso.plot_dim(sim, i))
+	var out: Array = []
+	for k2 in range(min(Content.SHOPS[i].items.size(), y.stalls.size())):
+		if sim._crafting.has(String(Content.SHOPS[i].items[k2].id)):
+			out.append(k2)
+	return out
+
+## k번 매대의 앞자리 — 안쪽 칸에 서서 매대 쪽으로 살짝 붙은 자리.
+func _stall_front(i: int, k: int) -> Vector2:
+	var n: int = Iso.plot_dim(sim, i)
+	var y: Dictionary = Iso.yard(Iso.YARD_KIND[i], n)
+	var o: Vector2i = Iso.org(sim, i)
+	var sp: Vector2i = y.stalls[k]
+	var inn := Vector2i(clampi(sp.x, 1, n - 2), clampi(sp.y, 1, n - 2))
+	var pin: Vector2 = Iso.w(o.x + inn.x + 0.5, o.y + inn.y + 0.5)
+	return pin.lerp(Iso.w(o.x + sp.x + 0.5, o.y + sp.y + 0.5), 0.15)
+
+## 이 매대를 맡은 일꾼이 **지금 어디 있나**. 매대 앞에 닿기 전엔 만드는
+## 효과(파이·먼지)를 안 띄우려고 본다 — 가지도 않았는데 만들어지면 오류로
+## 보인다(2026-08-25, 유저). 점장이 계산 중이면 첫 매대부터 직원 몫이다.
+func _worker_of(i: int, k: int) -> Vector2:
+	var ci: Array = _craft_idx(i)
+	var slot: int = ci.find(k)
+	if slot < 0:
+		return Vector2.INF
+	var hold: bool = sim._hold.get(String(Content.SHOPS[i].id), 0.0) > 0.0
+	if not hold:
+		if slot == 0:
+			return clerks[i].pos
+		slot -= 1
+	return _staffAt.get("%d:%d" % [i, slot], Vector2.INF)
+
 ## 직원이 지금 있어야 할 자리 — **만드는 매대 곁**이다(2026-08-25, 유저).
 ## 제작을 짐승의 동작으로 보여주면 등급×자세만큼 그림이 는다. 대신 직원이
 ## 그 매대로 걸어가 서고, "만들고 있다"는 매대 위 효과(먼지구름·불티)가 말한다.
 ## 점장이 계산 중이면 첫 매대부터 직원 몫이고, 아니면 점장이 첫 매대를 맡는다.
 func _staff_goal(i: int, k: int) -> Vector2:
-	var sid: String = String(Content.SHOPS[i].id)
-	var n: int = Iso.plot_dim(sim, i)
-	var y: Dictionary = Iso.yard(Iso.YARD_KIND[i], n)
-	var o: Vector2i = Iso.org(sim, i)
-	var cells: Array = []
-	for k2 in range(min(Content.SHOPS[i].items.size(), y.stalls.size())):
-		if sim._crafting.has(String(Content.SHOPS[i].items[k2].id)):
-			cells.append(y.stalls[k2])
-	var idx: int = k if sim._hold.get(sid, 0.0) > 0.0 else k + 1
-	if idx >= cells.size():
+	var ci: Array = _craft_idx(i)
+	var idx: int = k if sim._hold.get(String(Content.SHOPS[i].id), 0.0) > 0.0 else k + 1
+	if idx >= ci.size():
 		return _staff_pos(i, k)          # 맡을 매대가 없으면 제자리(작업대 곁)
-	var sp: Vector2i = cells[idx]
-	var inn := Vector2i(clampi(sp.x, 1, n - 2), clampi(sp.y, 1, n - 2))
-	var pin: Vector2 = Iso.w(o.x + inn.x + 0.5, o.y + inn.y + 0.5)
-	var pst: Vector2 = Iso.w(o.x + sp.x + 0.5, o.y + sp.y + 0.5)
 	# 매대 칸으로 파고들면 안 된다(유저: "매대 안으로 들어가는 느낌") —
 	# 매대는 한 칸을 차지한 가구다. **앞 칸에 서서** 몸만 살짝 기울인다.
-	return pin.lerp(pst, 0.15)
+	return _stall_front(i, ci[idx])
 
 ## 직원의 현재 자리(걸어가는 중일 수 있다). 그리기와 앞뒤 순서가 같이 쓴다.
 func _staff_cur(i: int, k: int) -> Vector2:
@@ -1158,7 +1188,9 @@ func _draw() -> void:
 			layer.append({"z": _staff_cur(i, k).y, "i": seq, "f": _staff.bind(i, k)})
 			seq += 1
 	for wk in walkers:
-		layer.append({"z": wk.pos.y, "i": seq, "f": _walker.bind(wk)})
+		# +7 웃돈: 걷는 손님은 겹침 방지로 위아래 6px까지 흩어진다 — 그만큼
+		# 길가 매대 뒤로 밀려 가려졌다(유저). 한 칸 차이(24px)는 그대로 이긴다.
+		layer.append({"z": wk.pos.y + 7.0, "i": seq, "f": _walker.bind(wk)})
 		seq += 1
 
 	# 같은 z일 때 순서가 흔들리면 화면이 깜빡인다 — 넣은 차례로 못 박는다
