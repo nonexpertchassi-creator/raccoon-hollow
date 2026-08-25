@@ -764,8 +764,21 @@ func _dog() -> void:
 ## 2~5분 논다 — 점심에만 켜는 사람은 밤을 영영 못 본다. 게임 시계면 한 판
 ## 안에서 낮과 밤을 다 만난다. 색은 화면 전체에 얇게 한 겹만 얹는다.
 const DAY_CYCLE := 1200.0
+func day_phase() -> float:
+	return clock_override if clock_override >= 0.0 else fmod(sim.t, DAY_CYCLE) / DAY_CYCLE
+
+## 하루 어디쯤인가 — 머리띠(위 표시줄)에 적는 글. 시각은 십이지시로 부른다
+## (자시·축시… 조선이 정체성이다, STORY.md). 0은 아침 여섯 시로 잡았다.
+func day_label() -> String:
+	var ph: float = day_phase()
+	var hour: float = fmod(6.0 + ph * 24.0, 24.0)
+	var names: Array = ["자", "축", "인", "묘", "진", "사", "오", "미", "신", "유", "술", "해"]
+	var idx: int = int(floor(fmod(hour + 1.0, 24.0) / 2.0))
+	var icon: String = "☀️" if ph < 0.5 else ("🌆" if ph < 0.66 else ("🌙" if ph < 0.9 else "🌄"))
+	return "%s%s시" % [icon, names[idx]]
+
 func _sky() -> Color:
-	var ph: float = clock_override if clock_override >= 0.0 else fmod(sim.t, DAY_CYCLE) / DAY_CYCLE
+	var ph: float = day_phase()
 	var day := Color(0, 0, 0, 0)
 	var dusk := Color(0.82, 0.42, 0.18, 0.15)      # 해질녘 — 주황이 얇게
 	var night := Color(0.06, 0.09, 0.24, 0.34)     # 밤 — 짙은 남색
@@ -927,8 +940,10 @@ func _stall_front(i: int, k: int) -> Vector2:
 	var o: Vector2i = Iso.org(sim, i)
 	var sp: Vector2i = y.stalls[k]
 	var inn := Vector2i(clampi(sp.x, 1, n - 2), clampi(sp.y, 1, n - 2))
-	var pin: Vector2 = Iso.w(o.x + inn.x + 0.5, o.y + inn.y + 0.5)
-	return pin.lerp(Iso.w(o.x + sp.x + 0.5, o.y + sp.y + 0.5), 0.15)
+	# ★ 처음엔 매대 쪽으로 15% 기울였는데 그 몇 픽셀 때문에 발끝이 매대보다
+	#   뒤로 가서 **앞뒤 판정까지 매대에 졌다**(유저가 잡았다). 일꾼은 마당의
+	#   빈 안쪽 칸(3×3이면 4·5·8) 한가운데에만 선다 — 가구 칸은 가구의 것이다.
+	return Iso.w(o.x + inn.x + 0.5, o.y + inn.y + 0.5)
 
 ## 이 매대를 맡은 일꾼이 **지금 어디 있나**. 매대 앞에 닿기 전엔 만드는
 ## 효과(파이·먼지)를 안 띄우려고 본다 — 가지도 않았는데 만들어지면 오류로

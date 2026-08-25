@@ -266,8 +266,10 @@ func _process(delta: float) -> void:
 func _paint() -> void:
 	# 폰 폭에 맞춘다. 한 줄에 다 넣으면 오른쪽이 잘려서 젬이 안 보인다.
 	_hud.text = "🪙 " + Num.fmt(sim.money)
-	_sub.text = "초당 🪙%s · 가게 %d/%d · 품목 %d · 손님 %d · 💎%d" % [
-		Num.fmt(sim.income_per_sec()), sim.shops.size(), Content.SHOPS.size(),
+	# 맨 앞이 시각이다 — 낮과 밤이 돌기 시작했으니 지금이 언제인지 보여야
+	# "왜 어두워지지"가 안 나온다. 십이지시 한 글자면 자리도 안 먹는다.
+	_sub.text = "%s · 초당 🪙%s · 가게 %d/%d · 품목 %d · 손님 %d · 💎%d" % [
+		village.day_label(), Num.fmt(sim.income_per_sec()), sim.shops.size(), Content.SHOPS.size(),
 		sim.items.size(), sim.guests.size(), int(sim.gems)]
 	_guestbtn.text = "손님 %d/%d" % [sim.guests.size(), Content.GUESTS.size()]
 	_questbtn.text = "의뢰 %d" % sim.quests.size()
