@@ -372,6 +372,8 @@ func _cards_body() -> void:
 ## 글줄로 서른 줄을 쌓으면 도감이 아니라 장부가 된다 — 모은 것은 펼쳐 보여야 한다.
 var codex_tiles: Dictionary = {}     ## 손님 id → 단추 (시험이 눌러 보려고 잡아 둔다)
 var on_guest: Callable = Callable()  ## 카드를 눌렀다 — 크게 띄우는 것은 main이 맡는다
+## 소리. 지도에서 하던 강화가 창으로 들어오면서 소리도 따라왔다.
+var sfx: Sfx = null
 
 func _guest_list() -> void:
 	_box.add_child(_label("만난 손님 %d / %d · 성 합계 %d" % [
@@ -715,6 +717,8 @@ func _level_btn(id: String, line: Label) -> Button:
 		#   사라진다. 시작에 걸면 다시 그려지든 말든 한 단계는 확실히 오른다.
 		b.button_down.connect(func():
 			sim.level_up_many(id, 1)
+			if sfx != null:
+				sfx.play("tap")
 			_held = id
 			_held_t = 0.0
 			_rep_t = 0.0

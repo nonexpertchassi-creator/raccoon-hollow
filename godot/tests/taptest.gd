@@ -32,7 +32,8 @@ func _process(_d: float) -> void:
 	#   고장이 아니라 시험이 운에 걸려 있었던 것이다. 나쁜 놈은 5번에서 따로 본다.
 	s.pest = null
 
-	# 1) 매대를 누르면 **그 품목**이 오른다
+	# 1) 매대를 누르면 **그 가게 창이 열린다** (2026-08-25부터 — 지도는 보는 곳,
+	#    창이 만지는 곳이다. 예전엔 그 자리에서 바로 강화했다.)
 	var y: Dictionary = Iso.yard(Iso.YARD_KIND[0], Iso.plot_dim(s, 0))
 	var o: Vector2i = Iso.org(s, 0)
 	for k in range(min(s.stall_cap("smith"), Content.SHOPS[0].items.size())):
@@ -42,16 +43,11 @@ func _process(_d: float) -> void:
 		var before: float = s.lv(it.id)
 		var sp: Vector2i = y.stalls[k]
 		main._tap(Iso.w(o.x + sp.x + 0.5, o.y + sp.y + 0.5) + Vector2(0, -18))
-		if s.lv(it.id) <= before:
-			fails.append("매대 %d(%s)를 눌렀는데 레벨이 안 올랐다" % [k, it.name])
-		# 옆 매대가 같이 오르면 안 된다
-		for k2 in range(min(s.stall_cap("smith"), Content.SHOPS[0].items.size())):
-			if k2 == k:
-				continue
-			var it2: Dictionary = Content.SHOPS[0].items[k2]
-			if s.is_open(it2.id) and s.lv(it2.id) != _snap.get(it2.id, s.lv(it2.id)):
-				fails.append("매대 %d를 눌렀는데 %s도 같이 올랐다" % [k, it2.name])
-		_snap[it.id] = s.lv(it.id)
+		if not main.panel.visible or main.panel.shop_id != "smith":
+			fails.append("매대 %d(%s)를 눌렀는데 가게 창이 안 열렸다" % [k, it.name])
+		if s.lv(it.id) != before:
+			fails.append("매대 %d를 눌렀는데 바로 강화됐다(창만 열려야 한다)" % k)
+		main.panel.close()
 
 	# 2) 현판을 누르면 창이 열린다.
 	#
@@ -290,7 +286,7 @@ func _process(_d: float) -> void:
 
 	# 소리도 여기서 본다. 소리는 안 나는 게 고장인지 원래 그런 건지 귀로 못 가르고,
 	# 지금은 더미라 **아예 안 들린다** — 셈으로 볼 수밖에 없다.
-	# 위에서 매대를 눌렀으니 강화 소리가 한 번은 울렸어야 한다.
+	# 위(7번)에서 창의 레벨업 단추를 눌렀으니 강화 소리가 한 번은 울렸어야 한다.
 	if int(main.sfx.counts.get("tap", 0)) == 0:
 		fails.append("매대를 눌렀는데 강화 소리를 안 울렸다")
 

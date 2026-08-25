@@ -155,6 +155,7 @@ func _ready() -> void:
 
 	panel = ShopPanel.new()
 	panel.sim = sim
+	panel.sfx = sfx
 	panel.on_focus = _focus_shop
 	panel.on_card = _show_card
 	panel.on_pull = _show_pull
@@ -493,18 +494,17 @@ func _tap(p: Vector2) -> void:
 					best_d = d
 					best = k
 			if best >= 0:
-				var it: Dictionary = shop.items[best]
-				if not sim.is_open(it.id):
-					if sim.open_item(it.id):
-						sfx.play("open")
-				# 매대를 누르면 그 품목을 살 수 있는 만큼 강화한다
-				elif sim.level_up_many(it.id, sim.affordable_levels(it.id)) > 0:
-					sfx.play("tap")
+				# ★ 매대를 눌러도 **창이 열린다**(2026-08-25, 유저 결정).
+				#   예전엔 그 자리에서 바로 강화했는데, 지도가 '보는 곳'이고
+				#   창이 '만지는 곳'으로 갈리는 편이 눌림 실수도 없고 깔끔하다.
+				#   지도에는 ▲(초록=레벨업 가능, 빨강=만렙 가능)만 띄운다.
+				panel.open_for(String(shop.id))
 				return
 		# 마당 나머지(현판 포함) — 가게 창을 연다
 		var n: int = Iso.plot_dim(sim, i) if open else 3
 		var M: Vector2 = Iso.w(o.x + n * 0.5, o.y + n * 0.5)
 		var in_plot: bool = absf(p.x - M.x) / (n * 50.0 + 4.0) + absf(p.y - M.y) / (n * 25.0 + 4.0) <= 1.0
+		# 현판은 없어졌지만 그 언저리(마당 위쪽)를 누르는 손버릇은 남는다 — 판정은 둔다
 		var N: Vector2 = Iso.w(o.x, o.y)
 		var on_sign: bool = absf(p.x - N.x) < 90.0 and p.y > N.y - 72.0 and p.y < N.y - 40.0
 		if in_plot or on_sign:

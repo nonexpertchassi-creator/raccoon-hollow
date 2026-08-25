@@ -456,25 +456,13 @@ func _plot_base(i: int, n: int) -> void:
 		_quad(A, B, B + Vector2(0, -16), A + Vector2(0, -16), _shade(col, -0.03))
 		draw_line(A + Vector2(0, -16), B + Vector2(0, -16), _shade(col, 0.10), 3.0)
 
-	# 현판 — 등급은 여기에만 적는다
-	var rk: int = sim.rank_of(shop.id)
-	var s_txt: String = "%s %s" % [shop.sign, shop.name]
-	if rk > 0:
-		s_txt += " · " + String(shop.ranks[rk])
-	var sw: float = 30.0 + s_txt.length() * 13.0
-	draw_rect(Rect2(N + Vector2(-3, -44), Vector2(6, 44)), C.wood2)
-	_chip(N + Vector2(0, -66), sw, 26, col)
-	# '가득' — 열린 물건이 전부 진열대까지 찼을 때 현판 위에 하나만.
-	# 생산이 멈췄으니 팔 곳(승급·직원·강화)을 늘리라는 신호다.
+	# ★ 현판(가게 이름)과 "승급하면 매대 +2" 문구는 지웠다(2026-08-25, 유저).
+	#   매대 그림이 들어온 뒤로는 무엇을 파는 가게인지 눈으로 보인다 —
+	#   글자는 그림이 없던 시절의 목발이었다. '가득' 신호만 그 자리에 남긴다.
 	if _idle(i):
 		var bob2: float = sin(_t * 3.0) * 2.5
-		_chip(N + Vector2(sw * 0.5 + 26, -70 + bob2), 46, 20, Color("c7563f"))
-		_text(N + Vector2(sw * 0.5 + 26, -56 + bob2), "가득!", 11, Color("fff3dd"))
-	_text(N + Vector2(0, -48), s_txt, 15, Color("fff8ec"))
-
-	var cap: int = sim.stall_cap(shop.id)
-	if shop.items.size() > cap:
-		_text(S + Vector2(0, 20), "승급하면 매대 +2", 12, Color(0.17, 0.14, 0.11, 0.55))
+		_chip(N + Vector2(0, -50 + bob2), 46, 20, Color("c7563f"))
+		_text(N + Vector2(0, -36 + bob2), "가득!", 11, Color("fff3dd"))
 
 	# 들어가서 좋은 일이 있을 때만 표 — 숙제가 아니라 초대장
 	if sim.shop_todo(shop.id) > 0:
@@ -503,18 +491,13 @@ func _stall(i: int, k: int, spot: Vector2i) -> void:
 	var it: Dictionary = shop.items[k]
 
 	if not sim.is_open(it.id):
-		var N: Vector2 = Iso.w(o.x + spot.x, o.y + spot.y)
-		var E: Vector2 = Iso.w(o.x + spot.x + 1, o.y + spot.y)
-		var S: Vector2 = Iso.w(o.x + spot.x + 1, o.y + spot.y + 1)
-		var W: Vector2 = Iso.w(o.x + spot.x, o.y + spot.y + 1)
-		_outline(N, E, S, W, Color(0.24, 0.2, 0.14, 0.45), 1.6)
-		if sim.asked.has(it.id):
-			var can: bool = sim.money >= it.cost
-			_text(p + Vector2(0, -26), String(it.name), 13, C.ink2)
-			_chip(p + Vector2(0, -16), 76, 21, C.jade if can else Color(0.24, 0.2, 0.14, 0.32))
-			_text(p + Vector2(0, -1), "🪙" + Num.fmt(it.cost), 12, Color.WHITE)
-		else:
-			_text(p + Vector2(0, -8), "? ? ?", 13, Color(0.24, 0.2, 0.14, 0.5))
+		# 안 연 칸은 **회색 네모에 +** 하나다(유저 결정 — "? ? ?"와 값 글자를
+		# 걷어냈다). 살 수 있으면 +가 초록으로 바뀐다. 값은 눌러서 창에서 본다.
+		var can: bool = sim.can_open_item(it.id)
+		var box := Rect2(p + Vector2(-16, -30), Vector2(32, 32))
+		draw_rect(box, Color(0.98, 0.96, 0.9, 0.55) if can else Color(0.55, 0.52, 0.45, 0.25))
+		draw_rect(box, C.jade if can else Color(0.4, 0.37, 0.3, 0.5), false, 2.0)
+		_text(p + Vector2(0, 0), "+", 26, C.jade if can else Color(0.4, 0.37, 0.3, 0.6))
 		return
 
 
@@ -544,9 +527,15 @@ func _stall(i: int, k: int, spot: Vector2i) -> void:
 	#   꼴이 됐다. 자세한 숫자는 가게 창에 있다.
 
 
-	var nm: String = String(it.name)
-	_chip(p + Vector2(0, 8), 14.0 + nm.length() * 12.0, 18, Color(0.17, 0.14, 0.11, 0.78))
-	_text(p + Vector2(0, 21), nm, 12, Color("fff8ec"))
+	# 이름표는 지웠다(유저 결정) — 물건 그림이 이름이다. 대신 **화살표**로
+	# 지금 할 수 있는 일을 알린다: 초록 ▲ = 레벨업 가능, 빨강 ▲ = 만렙까지 가능.
+	if not sim.at_max(it.id):
+		var need: int = int(sim.max_lv(it.id) - sim.lv(it.id))
+		var can_max: bool = sim.affordable_levels(it.id) >= need
+		var can_up: bool = sim.money >= sim.level_cost(it.id)
+		if can_max or can_up:
+			var bob3: float = sin(_t * 4.0) * 2.0
+			_text(p + Vector2(20, -34 + bob3), "▲", 15, Color("c7563f") if can_max else C.jade)
 
 func _counter(i: int) -> void:
 	var o: Vector2i = Iso.org(sim, i)
