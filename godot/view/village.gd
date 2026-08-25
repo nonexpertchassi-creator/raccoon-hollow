@@ -90,6 +90,12 @@ var clerks: Array = []
 var _staffAt: Dictionary = {}
 ## 줄 도착 순번표 — 늘어나기만 하는 번호. 도착한 차례가 곧 줄 차례다.
 var _lineSeq: int = 0
+## 일감표 — 누가 어느 매대를 잡았나(점장: 가게번호→매대번호, 직원: "가게:직원"→매대번호).
+## ★ 한 번 잡은 매대는 그 물건이 다 만들어질 때까지 안 놓는다(2026-08-25, 유저 —
+##   "5번 자리에서 탭 댄스"). 만드는 목록이 출렁일 때마다 목표를 갈아타면
+##   일꾼이 마당 가운데서 발만 동동 구른다.
+var _heroJob: Dictionary = {}
+var _staffJob: Dictionary = {}
 ## 마당 칸 번호(1~n²)를 바닥에 깐다 — "6번 매대" 같은 말이 통하게 하는
 ## **대화용 자**다(유저). G 키로 껐다 켠다. 내보내기 전에 기본값을 끈다.
 var show_grid: bool = true
@@ -241,6 +247,35 @@ func _advance(delta: float) -> void:
 		_trashAcc = 0.0
 		var tsp: Vector2i = _road_spot()
 		trash.append({"t": tsp, "pos": Iso.w(tsp.x + 0.5, tsp.y + 0.5)})
+	# 일감 배정 — 잡은 매대가 아직 만드는 중이면 **그대로 유지**한다.
+	# 목록 순서가 출렁여도 목표는 안 바뀐다 — 탭 댄스 방지의 핵심이다.
+	for i in range(Content.SHOPS.size()):
+		var sid5: String = String(Content.SHOPS[i].id)
+		if not sim.shops.has(sid5):
+			continue
+		var ci5: Array = _craft_idx(i)
+		var claimed: Dictionary = {}
+		if clerks[i].busy > 0.0 or not line[i].is_empty() or ci5.is_empty():
+			_heroJob[i] = -1                 # 계산대 차례 — 일감을 놓는다
+		else:
+			var hj: int = int(_heroJob.get(i, -1))
+			if not ci5.has(hj):
+				hj = int(ci5[0])
+			_heroJob[i] = hj
+			claimed[hj] = true
+		for k5 in range(int(sim.staff_of(sid5))):
+			var kk: String = "%d:%d" % [i, k5]
+			var sj: int = int(_staffJob.get(kk, -1))
+			if not ci5.has(sj) or claimed.has(sj):
+				sj = -1
+				for cx in ci5:
+					if not claimed.has(int(cx)):
+						sj = int(cx)
+						break
+			_staffJob[kk] = sj
+			if sj >= 0:
+				claimed[sj] = true
+
 	# 직원 — 만드는 매대 곁으로 걸어간다. 순간이동하면 "일하러 갔다"가 안 보인다.
 	for i in range(Content.SHOPS.size()):
 		if not sim.shops.has(String(Content.SHOPS[i].id)):
@@ -316,9 +351,9 @@ func _advance(delta: float) -> void:
 		# 줄에 손님이 남아 있으면 계산대를 안 떠난다 — 손님 사이마다 매대로
 		# 갔다 오며 몸이 좌우로 홱홱 뒤집혔다(유저: "자세를 한가지로").
 		var goal: Vector2 = f.serve
+		var hjob: int = int(_heroJob.get(i, -1))
 		if c.busy <= 0.0 and line[i].is_empty():
-			var ci: Array = _craft_idx(i)
-			goal = _stall_front(i, ci[0]) if not ci.is_empty() else f.work
+			goal = _stall_front(i, hjob) if hjob >= 0 else f.work
 		# ★ 곧장 가면 매대·계산대 칸을 밟고 지나간다(유저: "6번 매대 들렀다
 		#   계산대 가면 망가지는 기분"). 마당 안쪽 빈 칸들은 네모라 그 안에서는
 		#   어떤 직선도 가구를 안 지난다 — 계산대를 오갈 때만 **계산대 안쪽
@@ -343,6 +378,8 @@ func _advance(delta: float) -> void:
 			c.flip = d.x < 0.0
 		if near_ct:
 			c.flip = String(f.yard.gate) == "y"    # 계산대에선 길 쪽을 본다
+		elif not c.walking and hjob >= 0:
+			c.flip = _stall_at(i, hjob).x < c.pos.x   # 매대 앞에선 매대를 본다
 		c.pos = tgt if d.length() <= step else c.pos + d.normalized() * step
 
 ## 촌장 걸음 — 길 위의 아무 데나 한 곳을 골라 걸어가고, 닿으면 잠깐 쉬었다 또 간다.
@@ -1048,43 +1085,48 @@ func _stall_front(i: int, k: int) -> Vector2:
 	var y: Dictionary = Iso.yard(Iso.YARD_KIND[i], n)
 	var o: Vector2i = Iso.org(sim, i)
 	var sp: Vector2i = y.stalls[k]
-	# 일꾼은 늘 **빈 안쪽 칸**(3×3이면 4·5·8) 한가운데 선다. 앞줄 매대를
-	# 맡으면 매대 뒤에 반쯤 가리는데, 그게 맞다 — "매대 바로 뒤 가운데(-30)"
-	# 로 붙여 봤더니 매대 그림과 몸이 겹쳤다(유저: "매대에 너구리가 안
-	# 겹치면 좋겠다"). 가리는 것과 겹치는 것 중에선 가리는 쪽이 덜 이상하다.
-	var inn := Vector2i(clampi(sp.x, 1, n - 2), clampi(sp.y, 1, n - 2))
+	# 매대의 **수직 안쪽 이웃 칸**에 선다(유저 설계: 3번 매대는 6번 자리에서,
+	# 7번 매대는 8번 자리에서 매대를 바라본다). 예전엔 다 가운데로 뭉쳐
+	# 모서리 매대도 5번에서 일하는 그림이 됐다. 가구 칸은 여전히 안 밟는다.
+	var inn: Vector2i
+	if sp.y == 0:
+		inn = Vector2i(sp.x, 1)
+	elif sp.y == n - 1:
+		inn = Vector2i(sp.x, n - 2)
+	elif sp.x == 0:
+		inn = Vector2i(1, sp.y)
+	else:
+		inn = Vector2i(n - 2, sp.y)
 	return Iso.w(o.x + inn.x + 0.5, o.y + inn.y + 0.5)
 
 ## 이 매대를 맡은 일꾼이 **지금 어디 있나**. 매대 앞에 닿기 전엔 만드는
 ## 효과(파이·먼지)를 안 띄우려고 본다 — 가지도 않았는데 만들어지면 오류로
 ## 보인다(2026-08-25, 유저). 점장이 계산 중이면 첫 매대부터 직원 몫이다.
 func _worker_of(i: int, k: int) -> Vector2:
-	var ci: Array = _craft_idx(i)
-	var slot: int = ci.find(k)
-	if slot < 0:
-		return Vector2.INF
-	var hold: bool = sim._hold.get(String(Content.SHOPS[i].id), 0.0) > 0.0
-	if not hold:
-		if slot == 0:
-			return clerks[i].pos
-		slot -= 1
-	return _staffAt.get("%d:%d" % [i, slot], Vector2.INF)
+	if int(_heroJob.get(i, -1)) == k:
+		return clerks[i].pos
+	for s2 in range(int(sim.staff_of(String(Content.SHOPS[i].id)))):
+		if int(_staffJob.get("%d:%d" % [i, s2], -1)) == k:
+			return _staffAt.get("%d:%d" % [i, s2], Vector2.INF)
+	return Vector2.INF
 
 ## 직원이 지금 있어야 할 자리 — **만드는 매대 곁**이다(2026-08-25, 유저).
 ## 제작을 짐승의 동작으로 보여주면 등급×자세만큼 그림이 는다. 대신 직원이
 ## 그 매대로 걸어가 서고, "만들고 있다"는 매대 위 효과(먼지구름·불티)가 말한다.
 ## 점장이 계산 중이면 첫 매대부터 직원 몫이고, 아니면 점장이 첫 매대를 맡는다.
 func _staff_goal(i: int, k: int) -> Vector2:
-	var ci: Array = _craft_idx(i)
-	var idx: int = k if sim._hold.get(String(Content.SHOPS[i].id), 0.0) > 0.0 else k + 1
-	if idx >= ci.size():
+	var job: int = int(_staffJob.get("%d:%d" % [i, k], -1))
+	if job < 0:
 		# 맡을 매대가 없으면 **작업대 곁에 모인다 — 겹쳐도 된다**(유저).
-		# 예전엔 겹침을 피한다고 담벼락 빈 칸까지 흩어져서, 일 없는 직원이
-		# 마당 구석으로 "막 벗어나는" 그림이 됐다. 옹기종기가 맞다.
 		return (Iso.foot(sim, i).work as Vector2) + Vector2(12.0 * float((k % 3) - 1), 7.0 * float(k / 3))
-	# 매대 칸으로 파고들면 안 된다(유저: "매대 안으로 들어가는 느낌") —
-	# 매대는 한 칸을 차지한 가구다. **앞 칸에 서서** 몸만 살짝 기울인다.
-	return _stall_front(i, ci[idx])
+	return _stall_front(i, job)
+
+## k번 매대 칸의 화면 중심 — 일꾼이 어느 쪽을 바라볼지 정할 때 쓴다.
+func _stall_at(i: int, k: int) -> Vector2:
+	var y: Dictionary = Iso.yard(Iso.YARD_KIND[i], Iso.plot_dim(sim, i))
+	var o: Vector2i = Iso.org(sim, i)
+	var sp: Vector2i = y.stalls[k]
+	return Iso.w(o.x + sp.x + 0.5, o.y + sp.y + 0.5)
 
 ## 직원의 현재 자리(걸어가는 중일 수 있다). 그리기와 앞뒤 순서가 같이 쓴다.
 func _staff_cur(i: int, k: int) -> Vector2:
@@ -1122,8 +1164,10 @@ func _staff(i: int, k: int) -> void:
 	if t == null:
 		t = Art.tex("staff", "%s-work" % rank)
 	if t != null:
+		var job5: int = int(_staffJob.get("%d:%d" % [i, k], -1))
+		var sflip: bool = job5 >= 0 and _stall_at(i, job5).x < p.x   # 맡은 매대를 본다
 		_shadow(p, 14.0)
-		_sprite(t, p + Vector2(0, -bob), "staff")
+		_sprite(t, p + Vector2(0, -bob), "staff", sflip)
 		return
 	# 그림이 오기 전 임시 도형. 점장과 **같은 크기**로, 털빛만 조금 다르게.
 	_raccoon(p + Vector2(0, -bob), SHAPE, Color("bfa987"))
