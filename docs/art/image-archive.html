@@ -1,0 +1,2063 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>너구리 만물상 · 그림 라이브러리</title>
+  <meta name="description" content="너구리 만물상에 실제로 필요한 게임 이미지와 제작 상태를 보는 라이브러리">
+  <style>
+    :root {
+      --ink: #2b241b;
+      --ink-soft: #5a4e3d;
+      --paper: #ece2cb;
+      --paper-deep: #d8c9a7;
+      --wood: #8a6a45;
+      --wood-dark: #5f4630;
+      --tile: #4a4139;
+      --jade: #4a7c59;
+      --jade-pale: #c8d1b7;
+      --red: #a34a3a;
+      --gold: #a8763e;
+      --empty: #b9aa8b;
+      --white: #fffaf0;
+      --shadow: rgba(43, 36, 27, .16);
+      --display: "AppleMyungjo", "Batang", "Noto Serif KR", serif;
+      --body: "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+      --mono: "SFMono-Regular", Menlo, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: var(--body);
+      background-color: #c9bb9c;
+      background-image:
+        radial-gradient(circle at 20% 10%, rgba(255,255,255,.28) 0 1px, transparent 1.6px),
+        radial-gradient(circle at 80% 70%, rgba(43,36,27,.08) 0 1px, transparent 1.5px);
+      background-size: 21px 23px, 31px 29px;
+      line-height: 1.55;
+    }
+
+    a { color: inherit; }
+
+    button,
+    input { font: inherit; }
+
+    button:focus-visible,
+    input:focus-visible,
+    a:focus-visible,
+    summary:focus-visible {
+      outline: 3px solid var(--gold);
+      outline-offset: 3px;
+    }
+
+    .shell {
+      width: min(1280px, calc(100% - 28px));
+      margin: 18px auto 44px;
+      border: 1px solid rgba(43,36,27,.32);
+      background: var(--paper);
+      box-shadow: 0 22px 60px rgba(43,36,27,.22);
+    }
+
+    .masthead {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(270px, .75fr);
+      min-height: 340px;
+      border-bottom: 8px solid var(--tile);
+    }
+
+    .mast-copy {
+      position: relative;
+      overflow: hidden;
+      padding: clamp(34px, 6vw, 78px);
+      background: var(--tile);
+      color: var(--white);
+    }
+
+    .mast-copy::after {
+      content: "圖";
+      position: absolute;
+      right: -18px;
+      bottom: -84px;
+      color: rgba(255,255,255,.045);
+      font: 280px/1 var(--display);
+      transform: rotate(-7deg);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      margin: 0 0 18px;
+      color: #dbc69e;
+      font: 700 12px/1.2 var(--mono);
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 { font-family: var(--display); }
+
+    h1 {
+      max-width: 720px;
+      margin: 0;
+      font-size: clamp(44px, 8vw, 96px);
+      font-weight: 700;
+      letter-spacing: -.07em;
+      line-height: .94;
+    }
+
+    .mast-lede {
+      max-width: 620px;
+      margin: 28px 0 0;
+      color: #ddd0b6;
+      font-size: clamp(15px, 2vw, 19px);
+      word-break: keep-all;
+    }
+
+    .audit-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 36px 30px 28px;
+      background: var(--paper-deep);
+      border-left: 1px solid rgba(43,36,27,.28);
+    }
+
+    .audit-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .audit-card h2 {
+      margin: 0;
+      font-size: 26px;
+      line-height: 1.05;
+    }
+
+    .stamp {
+      display: grid;
+      place-items: center;
+      width: 64px;
+      aspect-ratio: 1;
+      border: 3px double var(--red);
+      color: var(--red);
+      font-family: var(--display);
+      font-weight: 800;
+      line-height: 1.05;
+      text-align: center;
+      transform: rotate(4deg);
+    }
+
+    .audit-list {
+      display: grid;
+      gap: 0;
+      margin: 26px 0;
+      border-top: 1px solid rgba(43,36,27,.22);
+    }
+
+    .audit-list div {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(43,36,27,.18);
+      font-size: 13px;
+    }
+
+    .audit-list dt { color: var(--ink-soft); }
+    .audit-list dd { margin: 0; font-weight: 800; text-align: right; }
+
+    .slot-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 9px;
+      font-size: 12px;
+      color: var(--ink-soft);
+    }
+
+    .slot-label strong {
+      color: var(--ink);
+      font: 800 19px/1 var(--mono);
+    }
+
+    .progress-slots {
+      display: grid;
+      grid-template-columns: repeat(15, 1fr);
+      gap: 4px;
+    }
+
+    .progress-slot {
+      aspect-ratio: 1;
+      border: 1px solid rgba(43,36,27,.26);
+      background: rgba(255,255,255,.24);
+    }
+
+    .progress-slot.is-draft {
+      background: var(--gold);
+      border-color: var(--gold);
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,.22);
+    }
+
+    .progress-slot.is-approved {
+      background: var(--jade);
+      border-color: var(--jade);
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,.22);
+    }
+
+    .section {
+      padding: clamp(34px, 6vw, 74px);
+      border-bottom: 1px solid rgba(43,36,27,.24);
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 28px;
+      margin-bottom: 30px;
+    }
+
+    .section-kicker {
+      margin: 0 0 7px;
+      color: var(--red);
+      font: 800 11px/1.2 var(--mono);
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+
+    .section h2 {
+      margin: 0;
+      font-size: clamp(29px, 4vw, 50px);
+      letter-spacing: -.045em;
+      line-height: 1;
+    }
+
+    .section-note {
+      max-width: 480px;
+      margin: 0;
+      color: var(--ink-soft);
+      font-size: 14px;
+      word-break: keep-all;
+    }
+
+    .file {
+      display: block;
+      margin-top: 7px;
+      color: var(--ink-soft);
+      font: 11px/1.45 var(--mono);
+      overflow-wrap: anywhere;
+    }
+
+    .catalog-tools {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) auto;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 22px;
+    }
+
+    .search-wrap { position: relative; }
+
+    .search-wrap::before {
+      content: "찾기";
+      position: absolute;
+      left: 13px;
+      top: 50%;
+      color: var(--ink-soft);
+      font: 800 10px/1 var(--mono);
+      letter-spacing: .08em;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    .search {
+      width: 100%;
+      min-height: 46px;
+      padding: 10px 14px 10px 58px;
+      border: 1px solid rgba(43,36,27,.35);
+      border-radius: 0;
+      color: var(--ink);
+      background: rgba(255,250,240,.72);
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 6px;
+    }
+
+    .filter {
+      min-height: 38px;
+      padding: 7px 12px;
+      border: 1px solid rgba(43,36,27,.34);
+      border-radius: 0;
+      color: var(--ink);
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .filter[aria-pressed="true"] {
+      color: var(--white);
+      background: var(--tile);
+      border-color: var(--tile);
+    }
+
+    .result-line {
+      margin: 0 0 12px;
+      color: var(--ink-soft);
+      font: 12px/1.4 var(--mono);
+    }
+
+    .asset-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .asset-card {
+      position: relative;
+      min-width: 0;
+      border: 1px solid rgba(43,36,27,.22);
+      background: rgba(255,250,240,.48);
+    }
+
+    .asset-card.is-draft {
+      border-color: rgba(168,118,62,.72);
+      background: rgba(255,250,240,.78);
+    }
+
+    .asset-card.is-approved {
+      border-color: rgba(74,124,89,.62);
+      background: rgba(255,250,240,.78);
+    }
+
+    .asset-preview {
+      display: grid;
+      place-items: center;
+      height: 126px;
+      border-bottom: 1px solid rgba(43,36,27,.18);
+      background: rgba(216,201,167,.42);
+    }
+
+    .asset-preview img {
+      max-width: 96px;
+      max-height: 104px;
+      object-fit: contain;
+      filter: drop-shadow(0 5px 5px rgba(43,36,27,.13));
+    }
+
+    .asset-preview.is-empty {
+      color: rgba(43,36,27,.28);
+      font-size: 43px;
+      background-image: repeating-linear-gradient(
+        -45deg,
+        rgba(43,36,27,.025) 0,
+        rgba(43,36,27,.025) 7px,
+        transparent 7px,
+        transparent 14px
+      );
+    }
+
+    .asset-body { padding: 12px; }
+
+    .asset-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      margin-bottom: 5px;
+      color: var(--ink-soft);
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .asset-card h3 {
+      min-height: 2.45em;
+      margin: 0;
+      font-family: var(--body);
+      font-size: 14px;
+      line-height: 1.25;
+    }
+
+    .asset-card .file { font-size: 9.5px; }
+
+    .mini-state {
+      position: absolute;
+      top: 7px;
+      right: 7px;
+      padding: 3px 6px;
+      color: var(--red);
+      background: rgba(236,226,203,.9);
+      border: 1px solid currentColor;
+      font: 800 9px/1.2 var(--mono);
+    }
+
+    .is-draft .mini-state { color: var(--gold); }
+    .is-approved .mini-state { color: var(--jade); }
+
+    .actual-spec {
+      display: block;
+      margin-top: 6px;
+      color: var(--red);
+      font: 9.5px/1.35 var(--mono);
+    }
+
+    .empty-result {
+      grid-column: 1 / -1;
+      padding: 50px 20px;
+      border: 1px dashed var(--empty);
+      text-align: center;
+      color: var(--ink-soft);
+    }
+
+    .versions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      border-top: 1px solid rgba(43,36,27,.28);
+      border-left: 1px solid rgba(43,36,27,.28);
+    }
+
+    .version-column {
+      min-width: 0;
+      border-right: 1px solid rgba(43,36,27,.28);
+      border-bottom: 1px solid rgba(43,36,27,.28);
+    }
+
+    .version-head {
+      min-height: 126px;
+      padding: 20px;
+      border-bottom: 1px solid rgba(43,36,27,.28);
+      background: var(--paper-deep);
+    }
+
+    .version-head small {
+      color: var(--red);
+      font: 800 10px/1.2 var(--mono);
+    }
+
+    .version-head h3 { margin: 7px 0 5px; font-size: 22px; }
+    .version-head p { margin: 0; color: var(--ink-soft); font-size: 12px; }
+
+    .version-image {
+      display: grid;
+      place-items: center;
+      min-height: 310px;
+      padding: 16px;
+      background: rgba(255,250,240,.46);
+      border-bottom: 1px solid rgba(43,36,27,.2);
+    }
+
+    .version-image:last-child { border-bottom: 0; }
+
+    .version-image img {
+      width: 100%;
+      max-width: 280px;
+      max-height: 280px;
+      object-fit: contain;
+    }
+
+    .version-image figcaption {
+      width: 100%;
+      margin-top: 12px;
+      color: var(--ink-soft);
+      font: 10px/1.4 var(--mono);
+      text-align: center;
+    }
+
+    .reference-grid {
+      display: grid;
+      grid-template-columns: 1.45fr .7fr;
+      gap: 18px;
+    }
+
+    .reference-card {
+      margin: 0;
+      padding: 16px;
+      border: 1px solid rgba(43,36,27,.25);
+      background: rgba(255,250,240,.55);
+    }
+
+    .reference-card img {
+      display: block;
+      width: 100%;
+      max-height: 620px;
+      object-fit: contain;
+      background: var(--paper-deep);
+    }
+
+    .reference-card figcaption { padding: 14px 2px 2px; }
+    .reference-card strong { font-family: var(--display); font-size: 18px; }
+    .reference-card p { margin: 5px 0 0; color: var(--ink-soft); font-size: 12px; }
+
+    details {
+      margin-top: 20px;
+      border: 1px solid rgba(43,36,27,.3);
+      background: rgba(255,250,240,.44);
+    }
+
+    summary {
+      padding: 16px 18px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .optional-copy {
+      padding: 0 18px 18px;
+      color: var(--ink-soft);
+      font-size: 13px;
+    }
+
+    .foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 22px clamp(28px, 6vw, 74px);
+      color: #ddd0b6;
+      background: var(--tile);
+      font-size: 12px;
+    }
+
+    .foot code { font-family: var(--mono); }
+
+    @media (max-width: 980px) {
+      .masthead { grid-template-columns: 1fr; }
+      .audit-card { border-left: 0; }
+      .asset-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 760px) {
+      .shell { width: 100%; margin: 0; border-left: 0; border-right: 0; }
+      .mast-copy { padding: 46px 24px; }
+      .audit-card { padding: 28px 22px; }
+      .section { padding: 42px 20px; }
+      .section-head { display: block; }
+      .section-note { margin-top: 14px; }
+      .catalog-tools { grid-template-columns: 1fr; }
+      .filters { justify-content: flex-start; }
+      .asset-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .versions { display: block; border-bottom: 0; }
+      .version-column { border-left: 0; }
+      .reference-grid { grid-template-columns: 1fr; }
+      .foot { align-items: flex-start; flex-direction: column; }
+    }
+
+    @media (max-width: 480px) {
+      h1 { font-size: 49px; }
+      .progress-slots { grid-template-columns: repeat(12, 1fr); }
+      .asset-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .asset-preview { height: 112px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+    }
+
+    @media print {
+      body { background: white; }
+      .shell { width: 100%; margin: 0; box-shadow: none; }
+      .catalog-tools { display: none; }
+      .asset-grid { grid-template-columns: repeat(5, 1fr); }
+      .section { break-inside: avoid; }
+    }
+  </style>
+  <style>
+    :root {
+      --page: #ffffff;
+      --surface: #ffffff;
+      --surface-soft: #f6f7f8;
+      --line: #e4e7eb;
+      --line-strong: #cfd5dc;
+      --text: #20252b;
+      --muted: #66707b;
+      --green: #3f7658;
+      --green-soft: #edf5f0;
+      --orange: #b96319;
+      --orange-soft: #fff4e8;
+      --blue: #536fa6;
+      --blue-soft: #eef3fb;
+      --body: "Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", system-ui, sans-serif;
+      --rounded: ui-rounded, "Arial Rounded MT Bold", "Apple SD Gothic Neo", sans-serif;
+      --mono: "SFMono-Regular", Menlo, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      font-family: var(--body);
+      line-height: 1.5;
+      background: var(--page);
+    }
+
+    a { color: inherit; }
+    button, input { font: inherit; }
+
+    button:focus-visible,
+    input:focus-visible,
+    a:focus-visible {
+      outline: 3px solid rgba(63, 118, 88, .34);
+      outline-offset: 2px;
+    }
+
+    .shell {
+      width: min(1440px, 100%);
+      margin: 0 auto;
+      border: 0;
+      background: var(--surface);
+      box-shadow: none;
+    }
+
+    .library-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 26px clamp(20px, 4vw, 54px);
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 255, 255, .96);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      width: 48px;
+      height: 48px;
+      border: 1px solid #cfe0d5;
+      border-radius: 15px;
+      background: var(--green-soft);
+      font-size: 25px;
+    }
+
+    .library-head h1 {
+      margin: 0;
+      font-family: var(--rounded);
+      font-size: clamp(22px, 3vw, 32px);
+      letter-spacing: -.035em;
+      line-height: 1.15;
+    }
+
+    .library-head p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .head-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .head-action {
+      display: inline-flex;
+      align-items: center;
+      min-height: 40px;
+      padding: 9px 13px;
+      border: 1px solid var(--line-strong);
+      border-radius: 10px;
+      color: #38414a;
+      background: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .head-action.primary {
+      color: #fff;
+      border-color: var(--green);
+      background: var(--green);
+    }
+
+    .status-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      border-bottom: 1px solid var(--line);
+      background: var(--surface-soft);
+    }
+
+    .status-item {
+      padding: 18px clamp(16px, 3vw, 28px);
+      border-right: 1px solid var(--line);
+    }
+
+    .status-item:last-child { border-right: 0; }
+    .status-item span { display: block; color: var(--muted); font-size: 11px; font-weight: 700; }
+    .status-item strong { display: block; margin-top: 2px; font: 800 22px/1.2 var(--rounded); }
+    .status-item.draft strong { color: var(--orange); }
+    .status-item.approved strong { color: var(--green); }
+
+    .guide {
+      padding: 34px clamp(20px, 4vw, 54px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .guide-head,
+    .catalog-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 20px;
+    }
+
+    .guide h2,
+    .catalog-section h2 {
+      margin: 0;
+      font-family: var(--rounded);
+      font-size: clamp(22px, 3vw, 30px);
+      letter-spacing: -.03em;
+    }
+
+    .guide-head p,
+    .catalog-head p {
+      max-width: 560px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .guide-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1fr;
+      gap: 12px;
+    }
+
+    .guide-card {
+      min-width: 0;
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .guide-card h3 {
+      margin: 0 0 13px;
+      font-family: var(--body);
+      font-size: 13px;
+    }
+
+    .story-section {
+      padding: 34px clamp(20px, 4vw, 54px) 42px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfc;
+    }
+
+    .story-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 20px;
+    }
+
+    .story-head h2 {
+      margin: 0;
+      font-family: var(--rounded);
+      font-size: clamp(22px, 3vw, 30px);
+      letter-spacing: -.03em;
+    }
+
+    .story-head p {
+      max-width: 560px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .synopsis-card {
+      display: grid;
+      grid-template-columns: minmax(120px, .28fr) minmax(0, 1fr);
+      gap: 22px;
+      margin-bottom: 18px;
+      padding: 18px 20px;
+      border: 1px solid #d8e4dc;
+      border-radius: 14px;
+      background: var(--green-soft);
+    }
+
+    .synopsis-card strong {
+      color: var(--green);
+      font: 800 13px/1.4 var(--rounded);
+    }
+
+    .synopsis-card p {
+      margin: 0;
+      color: #39443e;
+      font-size: 13px;
+      word-break: keep-all;
+    }
+
+    .storyboard {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .story-frame {
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .story-frame-visual {
+      position: relative;
+      display: grid;
+      place-items: center;
+      aspect-ratio: 9 / 16;
+      min-height: 0;
+      border-bottom: 1px solid var(--line);
+      color: #9da5ad;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.35), rgba(230,234,237,.68)),
+        repeating-linear-gradient(-45deg, #f7f8f9 0 12px, #f1f3f5 12px 24px);
+    }
+
+    .story-frame-number {
+      font: 800 clamp(46px, 6vw, 76px)/1 var(--rounded);
+      letter-spacing: -.08em;
+    }
+
+    .story-state {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 4px 8px;
+      border: 1px solid #efc4c4;
+      border-radius: 999px;
+      color: #a44444;
+      background: rgba(255,247,247,.94);
+      font-size: 9px;
+      font-weight: 800;
+    }
+
+    .story-frame-copy { padding: 14px; }
+    .story-frame-copy h3 { margin: 0; font: 800 14px/1.3 var(--body); }
+    .story-scene { min-height: 4.5em; margin: 8px 0 0; color: var(--muted); font-size: 11px; }
+
+    .story-line {
+      min-height: 4.9em;
+      margin: 12px 0 0;
+      padding-top: 11px;
+      border-top: 1px solid var(--line);
+      color: #303840;
+      font-size: 12px;
+      font-weight: 700;
+      word-break: keep-all;
+    }
+
+    .story-frame .file { margin-top: 11px; }
+
+    .rule-list,
+    .spec-list {
+      display: grid;
+      gap: 9px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .rule-list li {
+      position: relative;
+      padding-left: 17px;
+      color: #424b54;
+      font-size: 12px;
+    }
+
+    .rule-list li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: .55em;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+
+    .palette {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .swatch { min-width: 0; }
+    .swatch-color { display: block; height: 42px; border: 1px solid rgba(32,37,43,.12); border-radius: 9px; }
+    .swatch code { display: block; margin-top: 6px; color: var(--muted); font: 9px/1.2 var(--mono); text-align: center; }
+
+    .spec-list li {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding-bottom: 7px;
+      border-bottom: 1px solid #eef0f2;
+      color: #424b54;
+      font-size: 12px;
+    }
+
+    .spec-list li:last-child { padding-bottom: 0; border-bottom: 0; }
+    .spec-list code { color: var(--text); font: 700 11px/1.4 var(--mono); }
+
+    .catalog-section { padding: 34px clamp(20px, 4vw, 54px) 64px; }
+
+    .catalog-tools {
+      display: grid;
+      grid-template-columns: minmax(240px, .8fr) minmax(0, 2fr);
+      gap: 12px;
+      align-items: start;
+      margin-bottom: 18px;
+    }
+
+    .search-wrap { position: relative; }
+    .search-wrap::before { content: none; }
+
+    .search {
+      width: 100%;
+      min-height: 44px;
+      padding: 10px 13px;
+      border: 1px solid var(--line-strong);
+      border-radius: 10px;
+      color: var(--text);
+      background: #fff;
+    }
+
+    .search::placeholder { color: #98a0a9; }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      gap: 7px;
+    }
+
+    .filter-tools {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .filter {
+      min-height: 38px;
+      padding: 7px 12px;
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      color: #4a545e;
+      background: #fff;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .filter[aria-pressed="true"] {
+      color: #fff;
+      border-color: var(--green);
+      background: var(--green);
+    }
+
+    .category-picker {
+      display: flex;
+      align-items: center;
+      flex: 0 0 auto;
+      min-height: 38px;
+      padding-left: 11px;
+      border: 1px solid var(--line-strong);
+      border-radius: 10px;
+      color: var(--muted);
+      background: #fff;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .category-picker select {
+      min-height: 36px;
+      padding: 0 30px 0 8px;
+      border: 0;
+      color: var(--text);
+      background: transparent;
+      font: 700 12px/1 var(--body);
+    }
+
+    .shop-tabs {
+      display: flex;
+      gap: 7px;
+      margin: 0 calc(clamp(20px, 4vw, 54px) * -1) 14px;
+      padding: 2px clamp(20px, 4vw, 54px) 12px;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scrollbar-width: thin;
+    }
+
+    .shop-tab {
+      display: inline-flex;
+      align-items: center;
+      flex: 0 0 auto;
+      gap: 7px;
+      min-height: 42px;
+      padding: 8px 11px;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      color: #4a545e;
+      background: #fff;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .shop-tab span[aria-hidden="true"] { font-size: 16px; }
+    .shop-tab small { color: #9a5b26; font: 800 9px/1 var(--mono); }
+    .shop-tab[aria-pressed="true"] { color: #fff; border-color: var(--green); background: var(--green); }
+    .shop-tab[aria-pressed="true"] small { color: #dcecdf; }
+
+    .result-line {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font: 11px/1.4 var(--mono);
+    }
+
+    .asset-groups { display: grid; gap: 34px; }
+
+    .shop-section {
+      min-width: 0;
+      scroll-margin-top: 18px;
+    }
+
+    .shop-section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .shop-section-title {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin: 0;
+      font: 800 18px/1.2 var(--rounded);
+      letter-spacing: -.02em;
+    }
+
+    .shop-section-title span { font-size: 20px; }
+    .shop-section-count { color: var(--muted); font: 10px/1.3 var(--mono); text-align: right; }
+    .shop-section-count b { color: var(--orange); }
+
+    .asset-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .asset-card,
+    .asset-card.is-draft,
+    .asset-card.is-approved {
+      position: relative;
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      background: #fff;
+    }
+
+    .asset-card:hover { border-color: #bdc5cd; box-shadow: 0 8px 24px rgba(25, 34, 43, .07); }
+
+    .asset-preview {
+      display: grid;
+      place-items: center;
+      width: 100%;
+      height: 150px;
+      padding: 12px;
+      border: 0;
+      border-bottom: 1px solid var(--line);
+      background-color: #f8f9fa;
+      background-image:
+        linear-gradient(45deg, #eef0f2 25%, transparent 25%),
+        linear-gradient(-45deg, #eef0f2 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #eef0f2 75%),
+        linear-gradient(-45deg, transparent 75%, #eef0f2 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+      color: inherit;
+      cursor: zoom-in;
+      text-decoration: none;
+    }
+
+    .asset-preview img {
+      max-width: 100%;
+      max-height: 126px;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 6px rgba(25, 34, 43, .1));
+    }
+
+    .asset-preview.is-empty { color: #a7afb8; cursor: default; font-size: 40px; }
+    .asset-body { padding: 12px; }
+
+    .asset-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 9px;
+      font-weight: 700;
+    }
+
+    .asset-card h3 {
+      min-height: 2.45em;
+      margin: 0;
+      color: var(--text);
+      font-family: var(--body);
+      font-size: 13px;
+      line-height: 1.25;
+    }
+
+    .file {
+      display: block;
+      margin-top: 7px;
+      color: #7b858f;
+      font: 9px/1.4 var(--mono);
+      overflow-wrap: anywhere;
+    }
+
+    .mini-state {
+      position: absolute;
+      z-index: 2;
+      top: 8px;
+      right: 8px;
+      padding: 4px 7px;
+      border: 1px solid #f0c89e;
+      border-radius: 999px;
+      color: var(--orange);
+      background: rgba(255, 244, 232, .94);
+      font: 800 9px/1.2 var(--body);
+    }
+
+    .is-approved .mini-state { color: var(--green); border-color: #bfd6c7; background: rgba(237,245,240,.95); }
+    .actual-spec { display: block; margin-top: 6px; color: #a44444; font: 9px/1.35 var(--mono); }
+    .empty-result { grid-column: 1 / -1; padding: 56px 20px; border: 1px dashed var(--line-strong); border-radius: 12px; color: var(--muted); text-align: center; }
+
+    .asset-viewer {
+      width: min(1120px, calc(100vw - 32px));
+      max-width: none;
+      max-height: calc(100vh - 32px);
+      padding: 0;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 18px;
+      color: var(--text);
+      background: #fff;
+      box-shadow: 0 28px 90px rgba(0,0,0,.35);
+    }
+
+    .asset-viewer::backdrop { background: rgba(17, 22, 27, .82); backdrop-filter: blur(5px); }
+
+    .viewer-shell {
+      position: relative;
+      display: grid;
+      grid-template-columns: 58px minmax(0, 1fr) 58px;
+      align-items: stretch;
+      min-height: min(820px, calc(100vh - 34px));
+    }
+
+    .viewer-figure {
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) auto;
+      min-width: 0;
+      margin: 0;
+    }
+
+    .viewer-stage {
+      display: grid;
+      place-items: center;
+      min-height: 0;
+      padding: 30px;
+      overflow: hidden;
+      background-color: #f7f8f9;
+      background-image:
+        linear-gradient(45deg, #eceff1 25%, transparent 25%),
+        linear-gradient(-45deg, #eceff1 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #eceff1 75%),
+        linear-gradient(-45deg, transparent 75%, #eceff1 75%);
+      background-size: 24px 24px;
+      background-position: 0 0, 0 12px, 12px -12px, -12px 0;
+    }
+
+    .viewer-stage img {
+      display: block;
+      width: min(720px, 100%);
+      height: min(68vh, 720px);
+      max-width: 100%;
+      max-height: calc(100vh - 190px);
+      object-fit: contain;
+      filter: drop-shadow(0 10px 18px rgba(25,34,43,.16));
+    }
+
+    .viewer-info {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 22px;
+      padding: 17px 20px 19px;
+      border-top: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .viewer-eyebrow { display: block; margin-bottom: 4px; color: var(--green); font-size: 11px; font-weight: 800; }
+    .viewer-info h2 { margin: 0; font: 800 20px/1.2 var(--rounded); letter-spacing: -.02em; }
+    .viewer-info code { display: block; margin-top: 5px; color: var(--muted); font: 10px/1.4 var(--mono); overflow-wrap: anywhere; }
+
+    .viewer-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 8px;
+      color: var(--muted);
+      font: 10px/1 var(--mono);
+    }
+
+    .viewer-actions a {
+      padding: 9px 11px;
+      border: 1px solid var(--line-strong);
+      border-radius: 9px;
+      color: var(--text);
+      background: #fff;
+      font: 800 11px/1 var(--body);
+      text-decoration: none;
+    }
+
+    .viewer-actions a:last-child { color: #fff; border-color: var(--green); background: var(--green); }
+
+    .viewer-nav,
+    .viewer-close {
+      border: 0;
+      color: #fff;
+      background: #242b31;
+      cursor: pointer;
+      font-family: var(--body);
+    }
+
+    .viewer-nav { font-size: 42px; font-weight: 300; }
+    .viewer-nav:hover { background: #343d45; }
+    .viewer-nav:disabled { cursor: default; opacity: .35; }
+
+    .viewer-close {
+      position: absolute;
+      z-index: 4;
+      top: 12px;
+      right: 70px;
+      display: grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      font-size: 27px;
+      line-height: 1;
+      box-shadow: 0 4px 14px rgba(0,0,0,.2);
+    }
+
+    .foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 18px clamp(20px, 4vw, 54px);
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      background: #fff;
+      font-size: 11px;
+    }
+
+    .foot code { font-family: var(--mono); }
+
+    @media (max-width: 1160px) {
+      .asset-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+      .guide-grid { grid-template-columns: 1fr 1fr; }
+      .guide-card:first-child { grid-column: 1 / -1; }
+    }
+
+    @media (max-width: 900px) {
+      .library-head { align-items: flex-start; }
+      .status-strip { grid-template-columns: repeat(2, 1fr); }
+      .status-item:nth-child(2) { border-right: 0; }
+      .status-item:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+      .storyboard { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .catalog-tools { grid-template-columns: 1fr; }
+      .asset-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 680px) {
+      .library-head, .guide-head, .story-head, .catalog-head { display: block; }
+      .head-actions { justify-content: flex-start; margin-top: 16px; }
+      .guide-head p, .story-head p, .catalog-head p { margin-top: 8px; }
+      .synopsis-card { grid-template-columns: 1fr; gap: 8px; }
+      .guide-grid { grid-template-columns: 1fr; }
+      .guide-card:first-child { grid-column: auto; }
+      .filter-tools { align-items: stretch; flex-direction: column; }
+      .category-picker { justify-content: space-between; }
+      .category-picker select { flex: 1; }
+      .shop-section-head { align-items: flex-start; }
+      .asset-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .viewer-shell { grid-template-columns: 44px minmax(0, 1fr) 44px; }
+      .viewer-info { align-items: flex-start; flex-direction: column; }
+      .viewer-actions { justify-content: flex-start; }
+      .viewer-close { right: 54px; }
+    }
+
+    @media (max-width: 470px) {
+      .brand { align-items: flex-start; }
+      .brand-mark { width: 42px; height: 42px; border-radius: 13px; font-size: 22px; }
+      .head-action { flex: 1 1 auto; justify-content: center; }
+      .asset-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .storyboard { grid-template-columns: 1fr 1fr; gap: 9px; }
+      .story-frame-copy { padding: 11px; }
+      .story-scene { min-height: 6em; }
+      .story-line { min-height: 7em; font-size: 11px; }
+      .asset-preview { height: 132px; }
+      .asset-viewer { width: calc(100vw - 12px); max-height: calc(100vh - 12px); border-radius: 13px; }
+      .viewer-shell { grid-template-columns: 38px minmax(0, 1fr) 38px; min-height: calc(100vh - 14px); }
+      .viewer-stage { padding: 16px; }
+      .viewer-stage img { width: 100%; height: min(62vh, 620px); max-height: calc(100vh - 220px); }
+      .viewer-nav { font-size: 32px; }
+      .viewer-close { top: 8px; right: 45px; width: 34px; height: 34px; }
+      .viewer-info { padding: 13px 14px 15px; }
+      .viewer-info h2 { font-size: 17px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .asset-card { transition: none; }
+    }
+
+    @media print {
+      .head-actions, .catalog-tools, .shop-tabs, .asset-viewer { display: none; }
+      .asset-grid { grid-template-columns: repeat(5, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="library-head">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">🦝</span>
+        <div>
+          <h1>너구리 만물상 · 그림 라이브러리</h1>
+          <p>필요한 그림을 찾고, 크게 열고, 내려받는 곳</p>
+        </div>
+      </div>
+      <nav class="head-actions" aria-label="그림 다운로드">
+        <a class="head-action" href="#story">첫 진입 만화</a>
+        <a class="head-action primary" href="https://github.com/nonexpertchassi-creator/raccoon-hollow/tree/codex/art-production-20260822/godot/art">게임용 PNG</a>
+        <a class="head-action" href="https://github.com/nonexpertchassi-creator/raccoon-hollow/archive/refs/heads/codex/art-production-20260822.zip">전체 ZIP</a>
+      </nav>
+    </header>
+
+    <section class="status-strip" aria-label="그림 상태 요약">
+      <div class="status-item"><span>전체</span><strong id="totalCount">816장</strong></div>
+      <div class="status-item draft"><span>초안</span><strong id="draftCount">250장</strong></div>
+      <div class="status-item approved"><span>확정</span><strong id="approvedCount">1장</strong></div>
+      <div class="status-item"><span>없음</span><strong id="noneCount">565장</strong></div>
+    </section>
+    <div id="progressSlots" hidden></div>
+
+    <section class="guide" id="guide">
+      <div class="guide-head">
+        <h2>제작 가이드</h2>
+        <p>새 그림을 만들거나 고칠 때 필요한 값만 모았다. 아직 승인되지 않은 이미지는 모두 초안이다.</p>
+      </div>
+      <div class="guide-grid">
+        <article class="guide-card">
+          <h3>그림 규칙</h3>
+          <ul class="rule-list">
+            <li>한국 너구리: 작은 둥근 귀, 통통한 몸, 고리무늬 없는 꼬리</li>
+            <li>모든 동물은 아기 체형으로 단순화하고 두 발로 걷는다. 손님 30종에는 너구리가 없다</li>
+            <li>필드 너구리는 정면·오른팔을 뻗은 훼이크 측면·뒷모습 3장, 왼쪽은 코드로 뒤집는다</li>
+            <li>점장 본체는 벌거벗은 무늬 A·B·C·D 중 가게마다 하나를 저장해 쓰고, 승급해도 본체 무늬는 유지한다</li>
+            <li>점장 장비·도구만 가게와 1·2·3단에 맞춰 겹치며, 꼬리는 별도 조각으로 코드가 흔든다</li>
+            <li>점장 필드판은 중립 자세가 기본. 제작 효과와 먼지는 코드가 그린다</li>
+            <li>캐릭터 그림에 발밑 그림자를 넣지 않는다. 그림자는 코드가 땅에 붙여 그린다</li>
+            <li>마당 담은 그리지 않는다. 초가·돌담·기와 승급은 코드가 처리한다</li>
+            <li>볕 좋은 장날: 밝은 바닥이 중심이고 갈색 건물·소품은 화면의 30% 이하</li>
+            <li>굵은 적갈색 크레용 외곽선은 일부 자연스럽게 끊고, 색연필 질감은 작은 화면에서 뭉개지지 않을 만큼만 쓴다</li>
+            <li>귀 상처·얼굴 얼룩처럼 축소하면 사라지는 디테일은 넣지 않는다</li>
+            <li>작은 모바일 화면에서 얼굴보다 실루엣과 행동이 먼저 읽혀야 함</li>
+          </ul>
+        </article>
+        <article class="guide-card">
+          <h3>핵심 색</h3>
+          <div class="palette" aria-label="핵심 색상 팔레트">
+            <div class="swatch"><span class="swatch-color" style="background:#ece2cb"></span><code>#ece2cb</code></div>
+            <div class="swatch"><span class="swatch-color" style="background:#2b241b"></span><code>#2b241b</code></div>
+            <div class="swatch"><span class="swatch-color" style="background:#efe0b4"></span><code>#efe0b4</code></div>
+            <div class="swatch"><span class="swatch-color" style="background:#b3cc88"></span><code>#b3cc88</code></div>
+            <div class="swatch"><span class="swatch-color" style="background:#4a7c59"></span><code>#4a7c59</code></div>
+          </div>
+        </article>
+        <article class="guide-card">
+          <h3>파일 규격</h3>
+          <ul class="spec-list">
+            <li><span>점장·직원 (방향별)</span><code>144×144</code></li>
+            <li><span>손님</span><code>128×128</code></li>
+            <li><span>물건</span><code>128×224</code></li>
+            <li><span>손님·점장 카드</span><code>512×768</code></li>
+            <li><span>첫 진입 만화</span><code>576×1024</code></li>
+            <li><span>좌판</span><code>192×176</code></li>
+            <li><span>계산대</span><code>168×144</code></li>
+            <li><span>가마·풀무</span><code>168×192</code></li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="story-section" id="story">
+      <div class="story-head">
+        <h2>첫 진입 만화</h2>
+        <p>처음 켰을 때 한 번만 보여주는 9:16 세로 4컷. 누르면 다음 장으로 넘어가고 언제든 건너뛸 수 있다.</p>
+      </div>
+      <article class="synopsis-card">
+        <strong>전체 시놉시스</strong>
+        <p>한때 팔도의 물산이 모이던 산골 저잣거리 너구리 골은 큰 장마 뒤 폐허가 되었다. 촌장 너구리는 돌아온 주인공에게 곳간의 마지막 젬 세 알을 건네고, 주인공은 무너진 대장간에 다시 불을 넣는 일부터 마을의 장날을 되찾기 시작한다.</p>
+      </article>
+      <div class="storyboard" aria-label="첫 진입 만화 4컷 시나리오">
+        <article class="story-frame">
+          <div class="story-frame-visual"><span class="story-state">없음</span><span class="story-frame-number">1</span></div>
+          <div class="story-frame-copy">
+            <h3>붐비던 옛 장터</h3>
+            <p class="story-scene">등불과 좌판, 물건, 아기 동물 손님들로 가득한 가장 활기찬 시절.</p>
+            <p class="story-line">“한때 너구리 골 장날은 팔도에서 제일 붐볐다.”</p>
+            <code class="file">godot/art/story/1.png</code>
+          </div>
+        </article>
+        <article class="story-frame">
+          <div class="story-frame-visual"><span class="story-state">없음</span><span class="story-frame-number">2</span></div>
+          <div class="story-frame-copy">
+            <h3>장마 뒤의 빈 마을</h3>
+            <p class="story-scene">무너진 가게, 빗물 고인 빈 길, 걷힌 뒤에도 낮게 남은 안개.</p>
+            <p class="story-line">“큰 장마가 모든 것을 쓸어 갔다.”</p>
+            <code class="file">godot/art/story/2.png</code>
+          </div>
+        </article>
+        <article class="story-frame">
+          <div class="story-frame-visual"><span class="story-state">없음</span><span class="story-frame-number">3</span></div>
+          <div class="story-frame-copy">
+            <h3>촌장의 마지막 젬</h3>
+            <p class="story-scene">아기 체형의 주인공에게 촌장이 곳간의 젬 세 알을 두 손으로 건넨다.</p>
+            <p class="story-line">“곳간에 남은 건 이 세 알뿐일세. 불씨는 하나면 되네.”</p>
+            <code class="file">godot/art/story/3.png</code>
+          </div>
+        </article>
+        <article class="story-frame">
+          <div class="story-frame-visual"><span class="story-state">없음</span><span class="story-frame-number">4</span></div>
+          <div class="story-frame-copy">
+            <h3>첫 불씨 앞에 서다</h3>
+            <p class="story-scene">무너진 대장간 앞에 두 발로 선 아기 너구리의 뒷모습. 게임 화면과 같은 구도로 이어진다.</p>
+            <p class="story-line">글 없음 · 대장간을 비추며 “여기부터 되살리세!”로 연결</p>
+            <code class="file">godot/art/story/4.png</code>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="catalog-section" id="catalog">
+      <div class="catalog-head">
+        <h2 id="catalogTitle">이미지 815장</h2>
+        <p>매장을 고르거나 그림을 눌러 크게 본다. 큰 화면에서는 좌우 버튼과 방향키로 다음 그림을 넘길 수 있다.</p>
+      </div>
+      <div class="catalog-tools">
+        <label class="search-wrap">
+          <span class="sr-only" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">이미지 검색</span>
+          <input class="search" id="assetSearch" type="search" placeholder="곡괭이, rabbit, 점장…" autocomplete="off">
+        </label>
+        <div class="filter-tools">
+          <div class="filters" role="group" aria-label="제작 상태 필터">
+          <button class="filter" type="button" data-filter="all" aria-pressed="true">전체 816</button>
+          <button class="filter" type="button" data-filter="approved" aria-pressed="false">확정 1</button>
+          <button class="filter" type="button" data-filter="none" aria-pressed="false">없음 565</button>
+          <button class="filter" type="button" data-filter="draft" aria-pressed="false">초안 250</button>
+          <button class="filter" type="button" data-filter="required" aria-pressed="false">필수 681</button>
+          <button class="filter" type="button" data-filter="optional" aria-pressed="false">선택 135</button>
+          </div>
+          <label class="category-picker">
+            <span>종류</span>
+            <select id="categoryFilter" aria-label="그림 종류">
+              <option value="all">모든 종류</option>
+              <option value="story">첫 진입 만화</option>
+              <option value="shopcards">점장 카드</option>
+              <option value="clerks">가게별 점장</option>
+              <option value="items">물건</option>
+              <option value="stalls">좌판</option>
+              <option value="counters">계산대</option>
+              <option value="kilns">가마·풀무</option>
+              <option value="hero">촌장·공용 인물</option>
+              <option value="staff">직원</option>
+              <option value="guests">손님</option>
+              <option value="cards">손님 카드</option>
+              <option value="pests">상호작용</option>
+              <option value="ui">뽑기·룰렛</option>
+            </select>
+          </label>
+        </div>
+      </div>
+      <nav class="shop-tabs" id="shopTabs" aria-label="매장별 그림"></nav>
+      <p class="result-line" id="resultLine" aria-live="polite"></p>
+      <div class="asset-groups" id="assetGrid"></div>
+    </section>
+
+    <footer class="foot">
+      <span>너구리 만물상 · 그림 라이브러리</span>
+      <code id="footerCount">249 drafts · 565 needed · updated 2026-08-25</code>
+    </footer>
+  </main>
+
+  <dialog class="asset-viewer" id="assetViewer" aria-labelledby="viewerTitle">
+    <div class="viewer-shell">
+      <button class="viewer-close" id="viewerClose" type="button" aria-label="큰 이미지 닫기">×</button>
+      <button class="viewer-nav viewer-prev" id="viewerPrev" type="button" aria-label="이전 이미지">‹</button>
+      <figure class="viewer-figure">
+        <div class="viewer-stage"><img id="viewerImage" alt=""></div>
+        <figcaption class="viewer-info">
+          <div>
+            <span class="viewer-eyebrow" id="viewerEyebrow"></span>
+            <h2 id="viewerTitle"></h2>
+            <code id="viewerFile"></code>
+          </div>
+          <div class="viewer-actions">
+            <span id="viewerPosition"></span>
+            <a id="viewerOriginal" target="_blank" rel="noreferrer">원본 열기</a>
+            <a id="viewerDownload" download>내려받기</a>
+          </div>
+        </figcaption>
+      </figure>
+      <button class="viewer-nav viewer-next" id="viewerNext" type="button" aria-label="다음 이미지">›</button>
+    </div>
+  </dialog>
+
+  <script>
+    const guestCatalog = [
+      ['rabbit', '토끼', '🐰', 1], ['magpie', '까치', '🐦', 1], ['squirrel', '다람쥐', '🐿️', 1],
+      ['badger', '오소리', '🦡', 2], ['fox', '여우', '🦊', 2], ['deer', '사슴', '🦌', 3],
+      ['boar', '멧돼지', '🐗', 3], ['bear', '곰', '🐻', 4], ['turtle', '거북', '🐢', 4],
+      ['crane', '두루미', '🦢', 5], ['ox', '소', '🐂', 5], ['tiger', '호랑이', '🐯', 6],
+      ['sparrow', '참새', '🐦', 1], ['frog', '개구리', '🐸', 1], ['mole', '두더지', '🦫', 1],
+      ['hedgehog', '고슴도치', '🦔', 1], ['duck', '오리', '🦆', 1], ['otter', '수달', '🦦', 2],
+      ['roe', '노루', '🦌', 2], ['weasel', '족제비', '🦡', 2], ['wildcat', '살쾡이', '🐈', 2],
+      ['goral', '산양', '🐐', 2], ['marten', '담비', '🦫', 3], ['mandarin', '원앙', '🦆', 3],
+      ['wolf', '늑대', '🐺', 3], ['egret', '백로', '🕊️', 3], ['leopard', '표범', '🐆', 4],
+      ['muskdeer', '사향노루', '🦌', 4], ['moonbear', '반달곰', '🐻', 4], ['haetae', '해태', '🦁', 5]
+    ];
+    const gradeName = ['흔함', '드묾', '귀함', '진귀', '영물', '신수'];
+    const extraItems = [
+      ['국밥집', 'bap', '국밥', '🍲', 'draft'], ['국밥집', 'kuk', '장국', '🥣', 'draft'], ['국밥집', 'sujebi', '수제비', '🥟', 'draft'], ['국밥집', 'naeng', '냉국', '🧊', 'draft'],
+      ['국밥집', 'gomtang', '곰탕', '🍜', 'draft'], ['국밥집', 'samgye', '삼계탕', '🐔', 'draft'], ['국밥집', 'chueo', '추어탕', '🐟', 'draft'], ['국밥집', 'yongbong', '용봉탕', '🐲', 'draft'],
+      ['객주', 'makgeol', '막걸리', '🍶', 'draft'], ['객주', 'jeon', '파전', '🥞', 'draft'], ['객주', 'dongdong', '동동주', '🍯', 'draft'], ['객주', 'muk', '묵무침', '🥗', 'draft'],
+      ['객주', 'cheongju', '청주', '🍾', 'draft'], ['객주', 'bossam', '보쌈', '🥬', 'draft'], ['객주', 'beopju', '법주', '🏺', 'draft'], ['객주', 'gujeol', '구절판', '🍱', 'draft'],
+      ['꼬치집', 'tteokggo', '떡꼬치', '🍡', 'draft'], ['꼬치집', 'dakggo', '닭꼬치', '🍢', 'draft'], ['꼬치집', 'beoseot', '버섯꼬치', '🍄', 'draft'], ['꼬치집', 'saengseon', '생선꼬치', '🐠', 'draft'],
+      ['꼬치집', 'sanjeok', '산적', '🍖', 'draft'], ['꼬치집', 'jangeo', '장어구이', '🐍', 'draft'], ['꼬치집', 'neobiani', '너비아니', '🥩', 'draft'], ['꼬치집', 'yukhoe', '육회', '🌶️', 'draft'],
+      ['떡집', 'garae', '가래떡', '🍥', 'draft'], ['떡집', 'injeol', '인절미', '🍡', 'draft'], ['떡집', 'songpyeon', '송편', '🥠', 'draft'], ['떡집', 'baekseol', '백설기', '🍚', 'draft'],
+      ['떡집', 'yaksik', '약식', '🍯', 'draft'], ['떡집', 'hwajeon', '화전', '🌸', 'draft'], ['떡집', 'dasik', '다식', '🍪', 'draft'], ['떡집', 'yugwa', '유과', '🍬', 'draft'],
+      ['푸줏간', 'dwaeji', '돼지고기', '🥓', 'draft'], ['푸줏간', 'dak', '닭고기', '🍗', 'draft'], ['푸줏간', 'sogogi', '쇠고기', '🥩', 'draft'], ['푸줏간', 'galbi', '갈비', '🍖', 'draft'],
+      ['푸줏간', 'ugeoji', '우거지', '🥬', 'draft'], ['푸줏간', 'gopchang', '곱창', '🌭', 'draft'], ['푸줏간', 'ansim', '안심', '🍽️', 'draft'], ['푸줏간', 'hanwoo', '한우 등심', '👑', 'draft']
+    ];
+    const pendingItems = [
+      ['어물전', 'gulbi', '굴비', '🐟'], ['어물전', 'miyeok', '미역', '🌿'], ['어물전', 'jeotgal', '젓갈', '🫙'], ['어물전', 'bugeo', '북어', '🎣'],
+      ['어물전', 'gim', '김', '🍙'], ['어물전', 'jaban', '자반', '🐠'], ['어물전', 'muneo', '문어', '🐙'], ['어물전', 'jeonbok', '전복', '🦪'],
+      ['포목전', 'mumyeong', '무명', '🧵'], ['포목전', 'sambe', '삼베', '🪢'], ['포목전', 'mosi', '모시', '🎽'], ['포목전', 'myeongju', '명주', '🧣'],
+      ['포목전', 'yeomnang', '염낭', '👛'], ['포목전', 'bidan', '비단', '🎀'], ['포목전', 'gwanbok', '관복감', '🥻'], ['포목전', 'hollye', '혼례비단', '💒'],
+      ['갓방', 'satgat', '삿갓', '👒'], ['갓방', 'manggeon', '망건', '🪖'], ['갓방', 'tanggeon', '탕건', '🎩'], ['갓방', 'gatkkeun', '갓끈', '📿'],
+      ['갓방', 'heungnip', '흑립', '🎓'], ['갓방', 'jurip', '주립', '⛑️'], ['갓방', 'jeongjagwan', '정자관', '👑'], ['갓방', 'oknorip', '옥로립', '💎'],
+      ['유기전', 'notsujeo', '놋수저', '🥄'], ['유기전', 'notjubal', '놋주발', '🥣'], ['유기전', 'notjaengban', '놋쟁반', '🍽️'], ['유기전', 'notchotdae', '놋촛대', '🕯️'],
+      ['유기전', 'nothwaro', '놋화로', '🔥'], ['유기전', 'notdaeya', '놋대야', '🛁'], ['유기전', 'jegi', '제기', '⚱️'], ['유기전', 'bansangki', '반상기', '🍱'],
+      ['나전방', 'najeonbit', '나전빗', '💈'], ['나전방', 'gyeongdae', '경대', '🪞'], ['나전방', 'ham', '함', '🎁'], ['나전방', 'mungap', '문갑', '🗄️'],
+      ['나전방', 'jwagyeong', '좌경', '🔍'], ['나전방', 'samcheungjang', '삼층장', '🪜'], ['나전방', 'byeongpung', '자개병풍', '🖼️'], ['나전방', 'najeonnong', '나전롱', '👘']
+    ];
+    const shopCatalog = [
+      { id: 'smith', name: '대장간', icon: '⚒️' },
+      { id: 'brush', name: '필방', icon: '🖌️' },
+      { id: 'paper', name: '지물포', icon: '📜' },
+      { id: 'pot', name: '옹기점', icon: '🏺' },
+      { id: 'herb', name: '약재상', icon: '🌿' },
+      { id: 'soup', name: '국밥집', icon: '🍲' },
+      { id: 'gaekju', name: '객주', icon: '🍶' },
+      { id: 'skewer', name: '꼬치집', icon: '🍢' },
+      { id: 'ricecake', name: '떡집', icon: '🍡' },
+      { id: 'butcher', name: '푸줏간', icon: '🥩' },
+      { id: 'fish', name: '어물전', icon: '🐟' },
+      { id: 'cloth', name: '포목전', icon: '🧵' },
+      { id: 'hat', name: '갓방', icon: '🎩' },
+      { id: 'brass', name: '유기전', icon: '🥣' },
+      { id: 'lacquer', name: '나전방', icon: '🪞' }
+    ];
+    const pendingShops = shopCatalog.slice(10).map(({ name, id, icon }) => [name, id, icon]);
+    const draftGuestIds = new Set(['rabbit', 'magpie', 'squirrel', 'badger', 'fox', 'deer', 'boar', 'bear', 'turtle', 'crane', 'ox', 'tiger', 'sparrow', 'frog', 'mole', 'hedgehog', 'duck', 'otter', 'roe', 'weasel', 'wildcat', 'goral', 'marten', 'mandarin', 'wolf', 'egret', 'leopard', 'muskdeer', 'moonbear', 'haetae']);
+    const draftCardIds = new Set(['rabbit', 'magpie', 'squirrel', 'badger', 'fox', 'deer', 'boar', 'bear', 'turtle', 'crane', 'ox', 'tiger', 'sparrow', 'frog', 'mole', 'hedgehog', 'duck', 'otter', 'roe', 'weasel', 'wildcat', 'goral', 'marten', 'mandarin', 'wolf', 'egret', 'leopard', 'muskdeer', 'moonbear', 'haetae']);
+    const draftGrowthCardIds = new Set(['rabbit-2', 'magpie-2', 'squirrel-2', 'badger-2', 'fox-2', 'deer-2', 'boar-2', 'bear-2', 'turtle-2', 'crane-2', 'ox-2', 'tiger-2', 'sparrow-2', 'frog-2', 'mole-2', 'hedgehog-2', 'duck-2', 'otter-2', 'roe-2', 'weasel-2', 'wildcat-2', 'goral-2', 'marten-2', 'mandarin-2', 'wolf-2', 'egret-2', 'leopard-2', 'muskdeer-2', 'moonbear-2', 'haetae-2', 'rabbit-3', 'magpie-3', 'squirrel-3', 'badger-3', 'fox-3', 'deer-3', 'boar-3', 'bear-3', 'turtle-3', 'crane-3', 'ox-3', 'tiger-3', 'sparrow-3', 'frog-3', 'mole-3', 'hedgehog-3', 'duck-3', 'otter-3', 'roe-3', 'weasel-3', 'wildcat-3', 'goral-3', 'marten-3', 'mandarin-3', 'wolf-3', 'egret-3', 'leopard-3', 'muskdeer-3', 'moonbear-3', 'haetae-3', 'rabbit-4', 'magpie-4', 'squirrel-4', 'badger-4', 'fox-4', 'deer-4', 'boar-4', 'bear-4', 'turtle-4', 'crane-4', 'ox-4', 'tiger-4', 'sparrow-4', 'frog-4', 'mole-4', 'hedgehog-4', 'duck-4', 'otter-4', 'roe-4', 'weasel-4', 'wildcat-4', 'goral-4', 'marten-4', 'mandarin-4', 'wolf-4', 'egret-4', 'leopard-4', 'muskdeer-4', 'moonbear-4', 'haetae-4']);
+
+    const assets = [
+      { c: 'story', label: '첫 진입 만화 1 · 붐비던 옛 장터', file: '1.png', icon: '壹', size: '576×1024', status: 'none' },
+      { c: 'story', label: '첫 진입 만화 2 · 장마 뒤의 빈 마을', file: '2.png', icon: '貳', size: '576×1024', status: 'none' },
+      { c: 'story', label: '첫 진입 만화 3 · 촌장의 마지막 젬', file: '3.png', icon: '參', size: '576×1024', status: 'none' },
+      { c: 'story', label: '첫 진입 만화 4 · 첫 불씨 앞에 서다', file: '4.png', icon: '肆', size: '576×1024', status: 'none' },
+
+      { c: 'hero', label: '촌장 · 흰 수염과 지팡이', file: 'mayor.png', icon: '🦝', size: '144×144', status: 'draft', src: '../../godot/art/hero/mayor.png' },
+
+      { c: 'staff', label: '머리띠 알바 · 차렷 작업', file: 'band-work.png', icon: '🦝', size: '144×144', status: 'draft', src: '../../godot/art/staff/band-work.png' },
+      { c: 'staff', label: '머리띠 알바 · 몽글 수면', file: 'band-sleep.png', icon: '💤', size: '144×144', status: 'draft', src: '../../godot/art/staff/band-sleep.png' },
+      { c: 'staff', label: '흰 두건 일꾼 · 작업', file: 'whitehood-work.png', icon: '🦝', size: '144×144', status: 'none' },
+      { c: 'staff', label: '흰 두건 일꾼 · 수면', file: 'whitehood-sleep.png', icon: '💤', size: '144×144', status: 'none' },
+      { c: 'staff', label: '회색 두건 선임 · 작업', file: 'grayhood-work.png', icon: '🦝', size: '144×144', status: 'none' },
+      { c: 'staff', label: '회색 두건 선임 · 수면', file: 'grayhood-sleep.png', icon: '💤', size: '144×144', status: 'none' },
+      { c: 'staff', label: '검정 두건 숙련공 · 작업', file: 'blackhood-work.png', icon: '🦝', size: '144×144', status: 'none' },
+      { c: 'staff', label: '검정 두건 숙련공 · 수면', file: 'blackhood-sleep.png', icon: '💤', size: '144×144', status: 'none' },
+
+      { c: 'items', shop: '대장간', label: '곡괭이', file: 'pick.png', icon: '⛏️', size: '128×224', status: 'draft', src: '../../godot/art/items/pick.png' },
+      { c: 'items', shop: '대장간', label: '낫', file: 'sickle.png', icon: '🌾', size: '128×224', status: 'draft', src: '../../godot/art/items/sickle.png' },
+      { c: 'items', shop: '대장간', label: '호미', file: 'hoe.png', icon: '🪴', size: '128×224', status: 'draft', src: '../../godot/art/items/hoe.png' },
+      { c: 'items', shop: '대장간', label: '도끼', file: 'axe.png', icon: '🪓', size: '128×224', status: 'draft', src: '../../godot/art/items/axe.png' },
+      { c: 'items', shop: '대장간', label: '가위', file: 'shears.png', icon: '✂️', size: '128×224', status: 'draft', src: '../../godot/art/items/shears.png' },
+      { c: 'items', shop: '대장간', label: '부엌칼', file: 'knife.png', icon: '🔪', size: '128×224', status: 'draft', src: '../../godot/art/items/knife.png' },
+      { c: 'items', shop: '대장간', label: '자물쇠', file: 'lock.png', icon: '🔒', size: '128×224', status: 'draft', src: '../../godot/art/items/lock.png' },
+      { c: 'items', shop: '대장간', label: '가마솥', file: 'cauldr.png', icon: '🍲', size: '128×224', status: 'draft', src: '../../godot/art/items/cauldr.png' },
+
+      { c: 'items', shop: '필방', label: '붓', file: 'brush.png', icon: '🖌️', size: '128×224', status: 'draft', src: '../../godot/art/items/brush.png' },
+      { c: 'items', shop: '필방', label: '먹', file: 'ink.png', icon: '🖋️', size: '128×224', status: 'draft', src: '../../godot/art/items/ink.png' },
+      { c: 'items', shop: '필방', label: '벼루', file: 'inkstone.png', icon: '🪨', size: '128×224', status: 'draft', src: '../../godot/art/items/inkstone.png' },
+      { c: 'items', shop: '필방', label: '연적', file: 'waterp.png', icon: '💧', size: '128×224', status: 'draft', src: '../../godot/art/items/waterp.png' },
+      { c: 'items', shop: '필방', label: '필통', file: 'brushpot.png', icon: '🗃️', size: '128×224', status: 'draft', src: '../../godot/art/items/brushpot.png' },
+      { c: 'items', shop: '필방', label: '서산', file: 'bookmk.png', icon: '🔖', size: '128×224', status: 'draft', src: '../../godot/art/items/bookmk.png' },
+      { c: 'items', shop: '필방', label: '붓걸이', file: 'brushrk.png', icon: '🪝', size: '128×224', status: 'draft', src: '../../godot/art/items/brushrk.png' },
+      { c: 'items', shop: '필방', label: '화첩', file: 'album.png', icon: '📖', size: '128×224', status: 'draft', src: '../../godot/art/items/album.png' },
+
+      { c: 'items', shop: '지물포', label: '한지', file: 'hanji.png', icon: '📜', size: '128×224', status: 'draft', src: '../../godot/art/items/hanji.png' },
+      { c: 'items', shop: '지물포', label: '부채', file: 'fan.png', icon: '🪭', size: '128×224', status: 'draft', src: '../../godot/art/items/fan.png' },
+      { c: 'items', shop: '지물포', label: '창호지', file: 'window.png', icon: '🪟', size: '128×224', status: 'draft', src: '../../godot/art/items/window.png' },
+      { c: 'items', shop: '지물포', label: '장지', file: 'floorp.png', icon: '🟫', size: '128×224', status: 'draft', src: '../../godot/art/items/floorp.png' },
+      { c: 'items', shop: '지물포', label: '연', file: 'kite.png', icon: '🪁', size: '128×224', status: 'draft', src: '../../godot/art/items/kite.png' },
+      { c: 'items', shop: '지물포', label: '지우산', file: 'umbrel.png', icon: '☂️', size: '128×224', status: 'draft', src: '../../godot/art/items/umbrel.png' },
+      { c: 'items', shop: '지물포', label: '지등', file: 'lantrn.png', icon: '🏮', size: '128×224', status: 'draft', src: '../../godot/art/items/lantrn.png' },
+      { c: 'items', shop: '지물포', label: '병풍', file: 'screen.png', icon: '🖼️', size: '128×224', status: 'draft', src: '../../godot/art/items/screen.png' },
+
+      { c: 'items', shop: '옹기점', label: '옹기', file: 'jar.png', icon: '🏺', size: '128×224', status: 'draft', src: '../../godot/art/items/jar.png' },
+      { c: 'items', shop: '옹기점', label: '사발', file: 'bowl.png', icon: '🥣', size: '128×224', status: 'draft', src: '../../godot/art/items/bowl.png' },
+      { c: 'items', shop: '옹기점', label: '청자', file: 'celad.png', icon: '🫖', size: '128×224', status: 'draft', src: '../../godot/art/items/celad.png' },
+      { c: 'items', shop: '옹기점', label: '시루', file: 'steamr.png', icon: '🫕', size: '128×224', status: 'draft', src: '../../godot/art/items/steamr.png' },
+      { c: 'items', shop: '옹기점', label: '술병', file: 'bottle.png', icon: '🍶', size: '128×224', status: 'draft', src: '../../godot/art/items/bottle.png' },
+      { c: 'items', shop: '옹기점', label: '다기', file: 'teaset.png', icon: '🍵', size: '128×224', status: 'draft', src: '../../godot/art/items/teaset.png' },
+      { c: 'items', shop: '옹기점', label: '향로', file: 'censer.png', icon: '🪔', size: '128×224', status: 'draft', src: '../../godot/art/items/censer.png' },
+      { c: 'items', shop: '옹기점', label: '달항아리', file: 'moonjr.png', icon: '🌕', size: '128×224', status: 'draft', src: '../../godot/art/items/moonjr.png' },
+
+      { c: 'items', shop: '약재상', label: '도라지', file: 'root.png', icon: '🌿', size: '128×224', status: 'draft', src: '../../godot/art/items/root.png' },
+      { c: 'items', shop: '약재상', label: '산삼', file: 'ginseng.png', icon: '🌱', size: '128×224', status: 'draft', src: '../../godot/art/items/ginseng.png' },
+      { c: 'items', shop: '약재상', label: '녹용', file: 'antler.png', icon: '🦌', size: '128×224', status: 'draft', src: '../../godot/art/items/antler.png' },
+      { c: 'items', shop: '약재상', label: '우황', file: 'bezoar.png', icon: '💊', size: '128×224', status: 'draft', src: '../../godot/art/items/bezoar.png' },
+      { c: 'items', shop: '약재상', label: '당귀', file: 'danggui.png', icon: '🍂', size: '128×224', status: 'draft', src: '../../godot/art/items/danggui.png' },
+      { c: 'items', shop: '약재상', label: '영지', file: 'reishi.png', icon: '🍄', size: '128×224', status: 'draft', src: '../../godot/art/items/reishi.png' },
+      { c: 'items', shop: '약재상', label: '침향', file: 'agar.png', icon: '🪵', size: '128×224', status: 'draft', src: '../../godot/art/items/agar.png' },
+      { c: 'items', shop: '약재상', label: '경옥고', file: 'elixir.png', icon: '🍯', size: '128×224', status: 'draft', src: '../../godot/art/items/elixir.png' },
+
+      ...extraItems.map(([shop, id, label, icon, status = 'none']) => ({
+        c: 'items', shop, label, file: `${id}.png`, icon, size: '128×224', status,
+        src: status === 'draft' ? `../../godot/art/items/${id}.png` : undefined
+      })),
+      ...pendingItems.map(([shop, id, label, icon]) => ({
+        c: 'items', shop, label, file: `${id}.png`, icon, size: '128×224', status: 'none'
+      })),
+
+      ...guestCatalog.map(([id, name, icon, grade]) => ({
+        c: 'guests', label: `${name} · ${gradeName[grade - 1]}`, file: `${id}.png`, icon, size: '128×128',
+        actual: id === 'rabbit' ? '현재 파일 64×64 · 구규격' : undefined,
+        status: draftGuestIds.has(id) ? 'draft' : 'none',
+        src: draftGuestIds.has(id) ? `../../godot/art/guests/${id}.png` : undefined,
+        fallback: id === 'rabbit' ? '../../art/guests/rabbit.png' : undefined
+      })),
+      ...guestCatalog.flatMap(([id, name, icon]) => [
+        { c: 'guests', label: `${name} · 정면`, file: `${id}-front.png`, icon, size: '128×128', status: 'none' },
+        { c: 'guests', label: `${name} · 뒷모습`, file: `${id}-back.png`, icon, size: '128×128', status: 'none' }
+      ]),
+
+      ...guestCatalog.map(([id, name, icon, grade]) => ({
+        c: 'cards', shop: `${gradeName[grade - 1]} · 1~5성`, label: `${name} 카드 1단`,
+        file: `${id}-1.png`, icon, size: '512×768',
+        status: draftCardIds.has(id) ? 'draft' : 'none',
+        src: draftCardIds.has(id) ? `../../godot/art/cards/${id}-1.png` : undefined
+      })),
+      ...guestCatalog.flatMap(([id, name, icon]) => [2, 3, 4].map((tier) => ({
+        c: 'cards', shop: `${[6, 11, 16][tier - 2]}~${[10, 15, 20][tier - 2]}성`,
+        label: `${name} 카드 ${tier}단`, file: `${id}-${tier}.png`, icon,
+        size: '512×768', status: draftGrowthCardIds.has(`${id}-${tier}`) ? 'draft' : 'none',
+        src: draftGrowthCardIds.has(`${id}-${tier}`) ? `../../godot/art/cards/${id}-${tier}.png` : undefined,
+        optional: true
+      }))),
+
+      { c: 'pests', label: '도망치는 쥐', file: 'rat.png', icon: '🐀', size: '128×128', status: 'draft', src: '../../godot/art/pests/rat.png' },
+      { c: 'pests', label: '엽전을 문 까마귀', file: 'crow.png', icon: '🐦‍⬛', size: '128×128', status: 'draft', src: '../../godot/art/pests/crow.png' },
+      { c: 'pests', label: '지키는 삽살개', file: 'dog.png', icon: '🐕', size: '128×128', status: 'draft', src: '../../godot/art/pests/dog.png' },
+
+      {
+        c: 'stalls', shop: '대장간', label: '대장간 좌판 · 작은 모루 (확정)',
+        file: 'smith.png', icon: '⚒️', size: '192×176',
+        actual: '192×176 RGBA · 모루 1개와 낮은 통나무 받침 · 넉넉한 투명 여백', status: 'approved',
+        src: '../../godot/art/stalls/smith.png', path: 'godot/art/stalls/smith.png'
+      },
+      { c: 'stalls', shop: '필방', label: '필방 좌판', file: 'brush.png', icon: '🖌️', size: '192×176', status: 'draft', src: '../../godot/art/stalls/brush.png' },
+      { c: 'stalls', shop: '지물포', label: '지물포 좌판', file: 'paper.png', icon: '📜', size: '192×176', status: 'draft', src: '../../godot/art/stalls/paper.png' },
+      { c: 'stalls', shop: '옹기점', label: '옹기점 좌판', file: 'pot.png', icon: '🏺', size: '192×176', status: 'draft', src: '../../godot/art/stalls/pot.png' },
+      { c: 'stalls', shop: '약재상', label: '약재상 좌판', file: 'herb.png', icon: '🌿', size: '192×176', status: 'draft', src: '../../godot/art/stalls/herb.png' },
+      { c: 'stalls', shop: '국밥집', label: '국밥집 좌판', file: 'soup.png', icon: '🍲', size: '192×176', status: 'draft', src: '../../godot/art/stalls/soup.png' },
+      { c: 'stalls', shop: '객주', label: '객주 좌판', file: 'gaekju.png', icon: '🍶', size: '192×176', status: 'draft', src: '../../godot/art/stalls/gaekju.png' },
+      { c: 'stalls', shop: '꼬치집', label: '꼬치집 좌판', file: 'skewer.png', icon: '🍢', size: '192×176', status: 'draft', src: '../../godot/art/stalls/skewer.png' },
+      { c: 'stalls', shop: '떡집', label: '떡집 좌판', file: 'ricecake.png', icon: '🍡', size: '192×176', status: 'draft', src: '../../godot/art/stalls/ricecake.png' },
+      { c: 'stalls', shop: '푸줏간', label: '푸줏간 좌판', file: 'butcher.png', icon: '🥩', size: '192×176', status: 'draft', src: '../../godot/art/stalls/butcher.png' },
+      ...pendingShops.map(([shop, id, icon]) => ({
+        c: 'stalls', shop, label: `${shop} 좌판`, file: `${id}.png`, icon,
+        size: '192×176', status: 'none'
+      })),
+
+      { c: 'ui', label: '카드 뒷면', file: 'back.png', icon: '🂠', size: '512×768', status: 'draft', src: '../../godot/art/ui/back.png' },
+      { c: 'ui', label: '룰렛 원판 · 12칸', file: 'wheel.png', icon: '🎡', size: '512×512', status: 'draft', src: '../../godot/art/ui/wheel.png' },
+      { c: 'ui', label: '룰렛 바늘', file: 'needle.png', icon: '🔻', size: '64×96', status: 'draft', src: '../../godot/art/ui/needle.png' },
+
+      {
+        c: 'clerks', label: '점장 벌거벗은 본체 · A타입 무늬 · 방향 시트 (확정 · 측면 얼굴 수정)',
+        file: 'CLERK-BASE-TYPE-A-TURNAROUND-V0.2-P01.png', icon: '🦝',
+        size: '방향 원화', actual: '1774×887 RGB 검토 시트 · 정면 / 훼이크 측면 15–20° / 뒤 · 꼬리 파츠 분리 전', status: 'approved',
+        src: 'generated/CLERK-BASE-TYPE-A-TURNAROUND-V0.2-P01.png',
+        path: 'docs/art/generated/CLERK-BASE-TYPE-A-TURNAROUND-V0.2-P01.png'
+      },
+      {
+        c: 'clerks', label: '점장 벌거벗은 본체 · B타입 무늬 · 방향 시트 (확정)',
+        file: 'CLERK-BASE-TYPE-B-TURNAROUND-V0.1-P01.png', icon: '🦝',
+        size: '방향 원화', actual: '1774×887 RGB 검토 시트 · 정면 / 훼이크 측면 / 뒤 · 꼬리 파츠 분리 전', status: 'approved',
+        src: 'generated/CLERK-BASE-TYPE-B-TURNAROUND-V0.1-P01.png',
+        path: 'docs/art/generated/CLERK-BASE-TYPE-B-TURNAROUND-V0.1-P01.png'
+      },
+      {
+        c: 'clerks', label: '점장 벌거벗은 본체 · C타입 무늬 · 방향 시트 (확정)',
+        file: 'CLERK-BASE-TYPE-C-TURNAROUND-V0.1-P01.png', icon: '🦝',
+        size: '방향 원화', actual: '1774×887 RGB 검토 시트 · 정면 / 훼이크 측면 / 뒤 · 꼬리 파츠 분리 전', status: 'approved',
+        src: 'generated/CLERK-BASE-TYPE-C-TURNAROUND-V0.1-P01.png',
+        path: 'docs/art/generated/CLERK-BASE-TYPE-C-TURNAROUND-V0.1-P01.png'
+      },
+      {
+        c: 'clerks', label: '점장 벌거벗은 본체 · D타입 무늬 · 방향 시트 (확정)',
+        file: 'CLERK-BASE-TYPE-D-TURNAROUND-V0.1-P01.png', icon: '🦝',
+        size: '방향 원화', actual: '1774×887 RGB 검토 시트 · 정면 / 훼이크 측면 / 뒤 · 꼬리 파츠 분리 전', status: 'approved',
+        src: 'generated/CLERK-BASE-TYPE-D-TURNAROUND-V0.1-P01.png',
+        path: 'docs/art/generated/CLERK-BASE-TYPE-D-TURNAROUND-V0.1-P01.png'
+      },
+      {
+        c: 'clerks', shop: '대장간', label: '이전 대장간 점장 · 1단 무쇠 · 방향 시트',
+        file: 'CLERK-SMITH-RANK1-TURNAROUND-V0.1-P02-SIMPLIFIED.png', icon: '⚒️',
+        size: '방향 원화', actual: '1774×887 · 레이어형 점장 규칙 이전안', status: 'draft',
+        src: 'generated/CLERK-SMITH-RANK1-TURNAROUND-V0.1-P02-SIMPLIFIED.png',
+        path: 'docs/art/generated/CLERK-SMITH-RANK1-TURNAROUND-V0.1-P02-SIMPLIFIED.png'
+      },
+      ...shopCatalog.flatMap(({ id, name, icon }) => [1, 2, 3].flatMap((tier) => [
+        { direction: 'front', label: '정면' },
+        { direction: 'side', label: '오른쪽 옆' },
+        { direction: 'back', label: '뒷모습' }
+      ].map(({ direction, label }) => ({
+        c: 'clerks', shop: name, label: `${name} 점장 · ${tier}단 · ${label}`,
+        file: `${id}-${direction}${tier === 1 ? '' : `-${tier - 1}`}.png`, icon,
+        size: '144×144', status: 'none'
+      })))),
+
+      ...shopCatalog.flatMap(({ id, name, icon }) => [1, 2, 3].map((tier) => ({
+        c: 'shopcards', shop: name, label: `${name} 점장 카드 · ${tier}단`,
+        file: `${id}-${tier}.png`, icon, size: '512×768', status: 'none', optional: tier > 1
+      }))),
+      ...shopCatalog.map(({ id, name, icon }) => ({
+        c: 'counters', shop: name, label: `${name} 계산대`, file: `${id}.png`, icon,
+        size: '168×144', status: 'none', optional: true
+      })),
+      ...shopCatalog.map(({ id, name, icon }) => ({
+        c: 'kilns', shop: name, label: `${name} 가마·풀무`, file: `${id}.png`, icon,
+        size: '168×192', status: 'none'
+      }))
+    ];
+
+    const itemUpgradeAssets = assets
+      .filter((asset) => asset.c === 'items' && !/-[12]\.png$/.test(asset.file))
+      .flatMap((asset) => [2, 3].map((tier) => ({
+        c: 'items', shop: asset.shop, label: `${asset.label} · ${tier}단 승급판`,
+        file: asset.file.replace(/\.png$/, `-${tier - 1}.png`), icon: asset.icon,
+        size: asset.size, status: 'none'
+      })));
+    assets.push(...itemUpgradeAssets);
+
+    const categoryName = {
+      story: '첫 진입 만화', hero: '촌장·공용 인물', staff: '직원', items: '물건', guests: '손님', cards: '손님 카드',
+      shopcards: '점장 카드', pests: '상호작용', stalls: '좌판', counters: '계산대',
+      kilns: '가마·풀무', ui: '뽑기·룰렛', clerks: '가게별 점장'
+    };
+    const categoryDir = {
+      story: 'story', hero: 'hero', staff: 'staff', items: 'items', guests: 'guests', cards: 'cards',
+      shopcards: 'cards', pests: 'pests', stalls: 'stalls', counters: 'counters',
+      kilns: 'kilns', ui: 'ui', clerks: 'clerks'
+    };
+    const categoryOrder = {
+      story: 0, hero: 1, staff: 2, guests: 3, cards: 4, shopcards: 5, clerks: 6,
+      items: 7, stalls: 8, counters: 9, kilns: 10, pests: 11, ui: 12
+    };
+    const stateName = { none: '없음', draft: '초안', approved: '확정' };
+    const requiredAssets = assets.filter((asset) => !asset.optional);
+    const grid = document.querySelector('#assetGrid');
+    const resultLine = document.querySelector('#resultLine');
+    const search = document.querySelector('#assetSearch');
+    const filters = [...document.querySelectorAll('.filter')];
+    const categoryFilter = document.querySelector('#categoryFilter');
+    const shopTabs = document.querySelector('#shopTabs');
+    const viewer = document.querySelector('#assetViewer');
+    const viewerImage = document.querySelector('#viewerImage');
+    const viewerTitle = document.querySelector('#viewerTitle');
+    const viewerEyebrow = document.querySelector('#viewerEyebrow');
+    const viewerFile = document.querySelector('#viewerFile');
+    const viewerPosition = document.querySelector('#viewerPosition');
+    const viewerOriginal = document.querySelector('#viewerOriginal');
+    const viewerDownload = document.querySelector('#viewerDownload');
+    const viewerPrev = document.querySelector('#viewerPrev');
+    const viewerNext = document.querySelector('#viewerNext');
+    const statusCount = (status) => assets.filter((asset) => asset.status === status).length;
+    const draftCount = statusCount('draft');
+    const approvedCount = statusCount('approved');
+    const noneCount = statusCount('none');
+    const optionalCount = assets.length - requiredAssets.length;
+    const shopByName = new Map(shopCatalog.map((shop) => [shop.name, shop]));
+    const shopIdOf = (asset) => shopByName.get(asset.shop)?.id || 'common';
+    const groupOrder = new Map([['common', 0], ...shopCatalog.map((shop, index) => [shop.id, index + 1])]);
+    let activeFilter = 'all';
+    let activeCategory = 'all';
+    let activeShop = 'all';
+    let visibleAssets = [];
+    let viewerAssets = [];
+    let viewerIndex = -1;
+    let touchStartX = 0;
+
+    document.querySelector('#totalCount').textContent = `${assets.length}장`;
+    document.querySelector('#draftCount').textContent = `${draftCount}장`;
+    document.querySelector('#approvedCount').textContent = `${approvedCount}장`;
+    document.querySelector('#noneCount').textContent = `${noneCount}장`;
+    document.querySelector('#catalogTitle').textContent = `이미지 ${assets.length}장`;
+    document.querySelector('#footerCount').textContent = `${draftCount} drafts · ${noneCount} needed · updated 2026-08-25`;
+
+    const filterCounts = {
+      all: assets.length,
+      approved: approvedCount,
+      none: noneCount,
+      draft: draftCount,
+      required: requiredAssets.length,
+      optional: optionalCount
+    };
+    const filterLabels = { all: '전체', approved: '확정', none: '없음', draft: '초안', required: '필수', optional: '선택' };
+    filters.forEach((button) => {
+      const key = button.dataset.filter;
+      if (key in filterCounts) button.textContent = `${filterLabels[key]} ${filterCounts[key]}`;
+    });
+
+    const tabData = [
+      { id: 'all', name: '전체', icon: '🏘️' },
+      { id: 'common', name: '공통 그림', icon: '🦝' },
+      ...shopCatalog
+    ];
+    shopTabs.innerHTML = tabData.map((shop) => {
+      const scoped = shop.id === 'all' ? assets : assets.filter((asset) => shopIdOf(asset) === shop.id);
+      const missing = scoped.filter((asset) => asset.status === 'none').length;
+      return `<button class="shop-tab" type="button" data-shop="${shop.id}" aria-pressed="${shop.id === 'all'}">
+        <span aria-hidden="true">${shop.icon}</span>${shop.name}<small>${missing ? `없음 ${missing}` : '초안 완료'}</small>
+      </button>`;
+    }).join('');
+
+    document.querySelector('#progressSlots').innerHTML = requiredAssets.map((asset) =>
+      `<span class="progress-slot is-${asset.status}" title="${asset.label} · ${stateName[asset.status]}"></span>`
+    ).join('');
+
+    function matches(asset, query) {
+      const statusMatch = activeFilter === 'all'
+        || activeFilter === asset.status
+        || (activeFilter === 'required' && !asset.optional)
+        || (activeFilter === 'optional' && asset.optional);
+      const categoryMatch = activeCategory === 'all' || activeCategory === asset.c;
+      const shopMatch = activeShop === 'all' || activeShop === shopIdOf(asset);
+      const haystack = `${asset.label} ${asset.file} ${asset.shop || ''} ${categoryName[asset.c]}`.toLowerCase();
+      return statusMatch && categoryMatch && shopMatch && haystack.includes(query);
+    }
+
+    function assetPath(asset) {
+      return asset.path || `godot/art/${asset.dir || categoryDir[asset.c]}/${asset.file}`;
+    }
+
+    function assetKey(asset) {
+      return `${asset.c}/${asset.file}`;
+    }
+
+    function card(asset) {
+      const preview = asset.status !== 'none'
+        ? `<button class="asset-preview" type="button" data-open-asset="${assetKey(asset)}" title="큰 이미지로 보기"><img src="${asset.src}" data-fallback="${asset.fallback || ''}" loading="lazy" alt="${asset.label}"></button>`
+        : `<div class="asset-preview is-empty" aria-label="아직 이미지 없음">${asset.icon}</div>`;
+      const isStoreAsset = shopIdOf(asset) !== 'common';
+      const metaLabel = isStoreAsset ? categoryName[asset.c] : (asset.shop || categoryName[asset.c]);
+      return `<article class="asset-card is-${asset.status}">
+        ${preview}
+        <div class="asset-body">
+          <div class="asset-meta"><span>${asset.optional ? '선택 · ' : ''}${metaLabel}</span><span>목표 ${asset.size}</span></div>
+          <h3>${asset.label}</h3>
+          <code class="file">${assetPath(asset)}</code>
+          ${asset.actual ? `<small class="actual-spec">${asset.actual}</small>` : ''}
+        </div>
+      </article>`;
+    }
+
+    function section(groupId, list) {
+      const shop = groupId === 'common'
+        ? { name: '공통 그림', icon: '🦝' }
+        : shopCatalog.find((item) => item.id === groupId);
+      const approved = list.filter((asset) => asset.status === 'approved').length;
+      const drafts = list.filter((asset) => asset.status === 'draft').length;
+      const missing = list.filter((asset) => asset.status === 'none').length;
+      return `<section class="shop-section" data-shop-section="${groupId}">
+        <header class="shop-section-head">
+          <h3 class="shop-section-title"><span aria-hidden="true">${shop.icon}</span>${shop.name}</h3>
+          <div class="shop-section-count">${list.length}장${approved ? ` · 확정 ${approved}` : ''} · 초안 ${drafts}${missing ? ` · <b>없음 ${missing}</b>` : ''}</div>
+        </header>
+        <div class="asset-grid">${list.map(card).join('')}</div>
+      </section>`;
+    }
+
+    function connectFallbacks() {
+      document.querySelectorAll('img[data-fallback]').forEach((img) => {
+        const useFallback = () => {
+          const fallback = img.dataset.fallback;
+          if (fallback && img.src !== new URL(fallback, document.baseURI).href) img.src = fallback;
+        };
+        img.addEventListener('error', useFallback, { once: true });
+        if (img.complete && img.naturalWidth === 0) useFallback();
+      });
+    }
+
+    function render() {
+      const query = search.value.trim().toLowerCase();
+      visibleAssets = assets
+        .filter((asset) => matches(asset, query))
+        .sort((a, b) => (groupOrder.get(shopIdOf(a)) - groupOrder.get(shopIdOf(b)))
+          || (categoryOrder[a.c] - categoryOrder[b.c])
+          || a.label.localeCompare(b.label, 'ko'));
+      resultLine.textContent = `${visibleAssets.length}장 표시 · 확정 ${visibleAssets.filter((asset) => asset.status === 'approved').length} · 초안 ${visibleAssets.filter((asset) => asset.status === 'draft').length} · 없음 ${visibleAssets.filter((asset) => asset.status === 'none').length}`;
+      const groups = [...new Set(visibleAssets.map(shopIdOf))];
+      grid.innerHTML = visibleAssets.length
+        ? groups.map((groupId) => section(groupId, visibleAssets.filter((asset) => shopIdOf(asset) === groupId))).join('')
+        : '<div class="empty-result">맞는 그림이 없다. 다른 이름이나 파일명으로 찾아보세요.</div>';
+      connectFallbacks();
+    }
+
+    function updateViewer() {
+      const asset = viewerAssets[viewerIndex];
+      if (!asset) return;
+      const fallback = asset.fallback || '';
+      viewerImage.onerror = () => {
+        if (fallback && viewerImage.src !== new URL(fallback, document.baseURI).href) viewerImage.src = fallback;
+      };
+      viewerImage.src = asset.src;
+      viewerImage.alt = asset.label;
+      viewerTitle.textContent = asset.label;
+      viewerEyebrow.textContent = `${shopIdOf(asset) === 'common' ? '' : `${asset.shop} · `}${categoryName[asset.c]}${asset.optional ? ' · 선택' : ''}`;
+      viewerFile.textContent = assetPath(asset);
+      viewerPosition.textContent = `${viewerIndex + 1} / ${viewerAssets.length}`;
+      viewerOriginal.href = asset.src;
+      viewerDownload.href = asset.src;
+      viewerDownload.download = asset.file;
+      const single = viewerAssets.length < 2;
+      viewerPrev.disabled = single;
+      viewerNext.disabled = single;
+    }
+
+    function openViewer(key) {
+      viewerAssets = visibleAssets.filter((asset) => asset.status !== 'none');
+      viewerIndex = viewerAssets.findIndex((asset) => assetKey(asset) === key);
+      if (viewerIndex < 0) return;
+      updateViewer();
+      if (typeof viewer.showModal === 'function') viewer.showModal();
+      else viewer.setAttribute('open', '');
+    }
+
+    function closeViewer() {
+      if (typeof viewer.close === 'function') viewer.close();
+      else viewer.removeAttribute('open');
+    }
+
+    function moveViewer(delta) {
+      if (viewerAssets.length < 2) return;
+      viewerIndex = (viewerIndex + delta + viewerAssets.length) % viewerAssets.length;
+      updateViewer();
+    }
+
+    filters.forEach((button) => {
+      button.addEventListener('click', () => {
+        activeFilter = button.dataset.filter;
+        filters.forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
+        render();
+      });
+    });
+
+    shopTabs.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-shop]');
+      if (!button) return;
+      activeShop = button.dataset.shop;
+      shopTabs.querySelectorAll('.shop-tab').forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
+      render();
+    });
+
+    grid.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-open-asset]');
+      if (button) openViewer(button.dataset.openAsset);
+    });
+
+    search.addEventListener('input', render);
+    categoryFilter.addEventListener('change', () => {
+      activeCategory = categoryFilter.value;
+      render();
+    });
+    document.querySelector('#viewerClose').addEventListener('click', closeViewer);
+    viewerPrev.addEventListener('click', () => moveViewer(-1));
+    viewerNext.addEventListener('click', () => moveViewer(1));
+    viewer.addEventListener('click', (event) => { if (event.target === viewer) closeViewer(); });
+    viewer.addEventListener('close', () => viewerImage.removeAttribute('src'));
+    viewer.addEventListener('touchstart', (event) => { touchStartX = event.changedTouches[0].screenX; }, { passive: true });
+    viewer.addEventListener('touchend', (event) => {
+      const distance = event.changedTouches[0].screenX - touchStartX;
+      if (Math.abs(distance) > 55) moveViewer(distance > 0 ? -1 : 1);
+    }, { passive: true });
+    document.addEventListener('keydown', (event) => {
+      if (!viewer.open) return;
+      if (event.key === 'ArrowLeft') moveViewer(-1);
+      if (event.key === 'ArrowRight') moveViewer(1);
+    });
+    connectFallbacks();
+    render();
+  </script>
+</body>
+</html>
