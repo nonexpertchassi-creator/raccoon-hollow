@@ -95,7 +95,7 @@ func _notification(what: int) -> void:
 			_save()
 
 func _ready() -> void:
-	RenderingServer.set_default_clear_color(Color("6f8159"))
+	RenderingServer.set_default_clear_color(Color("94ad6a"))
 	sim = Sim.new()
 	rng = Rng.new(int(Time.get_unix_time_from_system()))
 	_standalone = get_parent() == get_tree().root

@@ -9,11 +9,15 @@ class_name Village
 var sim: Sim
 
 const C := {
-	"grass": Color("8b9e74"), "grass2": Color("849668"), "road": Color("d9cba9"),
+	# ★ 2026-08-25 '볕 좋은 장날' 톤. 화면의 8할이 바닥이라 게임의 인상은
+	#   바닥색이 정한다 — 잿빛 올리브(8b9e74)였을 때 그림이 좋아도 우중충했다.
+	#   기준 그림은 까치 카드다: 카드 속 세상과 마을이 같은 세상으로 보여야 한다.
+	#   사계절이 들어오면 이 덩어리가 '봄' 색표가 되고 계절마다 갈아 끼운다.
+	"grass": Color("b3cc88"), "grass2": Color("a9c17e"), "road": Color("efe0b4"),
 	"paper": Color("ece2cb"), "paper2": Color("dccfb2"), "wood": Color("8a6a45"),
 	"wood2": Color("6d5236"), "ink": Color("2b241b"), "ink2": Color("5a4e3d"),
 	"gold": Color("a8763e"), "jade": Color("4a7c59"), "red": Color("c7563f"),
-	"ruin": Color("5f6b4e"), "dirt": Color("c2ad83"), "yardfloor": Color("d3c5a4"),
+	"ruin": Color("5f6b4e"), "dirt": Color("cdb88d"), "yardfloor": Color("decfab"),
 }
 
 var _font: Font
@@ -382,8 +386,8 @@ func _prop(p: Dictionary) -> void:
 	match p.k:
 		"tree":
 			draw_rect(Rect2(at + Vector2(-3, -10), Vector2(6, 12)), C.wood2)
-			draw_circle(at + Vector2(0, -22), 16.0 + p.o * 5.0, Color("6f8a5c"))
-			draw_circle(at + Vector2(-7, -15), 10.0, Color("7fa070"))
+			draw_circle(at + Vector2(0, -22), 16.0 + p.o * 5.0, Color("7da35f"))
+			draw_circle(at + Vector2(-7, -15), 10.0, Color("93b877"))
 		"rock":
 			draw_circle(at + Vector2(0, -4), 8.0 + p.o * 4.0, Color("8f8f7a"))
 		_:
@@ -919,10 +923,13 @@ func _draw() -> void:
 		var q := PackedVector2Array([
 			Iso.w(-Iso.EDGE, r0), Iso.w(Iso.GW + Iso.EDGE, r0),
 			Iso.w(Iso.GW + Iso.EDGE, r1 + 1), Iso.w(-Iso.EDGE, r1 + 1)])
-		draw_colored_polygon(q, Color(0.24, 0.27, 0.22, 0.58 * a2))
+		# 안개는 '그늘'이 아니라 **뿌연 새벽**이다. 어두운 초록으로 덮었더니
+		# 화면 절반이 밤이 됐다 — 잠긴 동네는 불길한 곳이 아니라 아직
+		# 깨어나지 않은 곳이다. 우윳빛이면 지붕이 안개 너머로 곱게 비친다.
+		draw_colored_polygon(q, Color(0.93, 0.91, 0.84, 0.62 * a2))
 		# 구역 경계 울타리 — 어디까지가 닫힌 데인지 금을 긋는다
 		draw_line(Iso.w(-Iso.EDGE, r0), Iso.w(Iso.GW + Iso.EDGE, r0),
-			Color(0.32, 0.27, 0.2, 0.85 * a2), 3.0)
+			Color(0.55, 0.48, 0.36, 0.8 * a2), 3.0)
 		if not locked:
 			continue
 		# 장승 — 구역 이름과 여는 조건. 마을 어디서 보든 눈에 띄는 크기로.
