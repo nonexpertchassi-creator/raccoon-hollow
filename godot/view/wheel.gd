@@ -45,6 +45,12 @@ func spin_to(wedge: int) -> void:
 		_to -= TAU
 	_t = 0.0
 
+## 누르면 즉시 끝 — 백 번째 룰렛에서 2초 연출은 형벌이다(MOTION 원칙).
+## 결과는 이미 정해져 있으니 건너뛰어도 거짓말이 아니다.
+func skip() -> void:
+	if _t >= 0.0:
+		_t = DUR + BOUNCE
+
 func _process(delta: float) -> void:
 	if _t < 0.0:
 		return

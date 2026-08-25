@@ -341,7 +341,9 @@ func _advance(delta: float) -> void:
 			# 자세가 갈리면 깜박이고, 너무 길게 잡으면(줄 전체) 점장이 계산대에
 			# 영영 묶여 만드는 모습이 사라진다(유저 — 셋 다 겪고 잡은 값이다).
 			if wk.state == "buy" and _line_index(wk) == 0:
-				clerks[i].busy = 0.6
+				# 3초: 손님이 뜸해졌다고 확신할 때만 매대로 돌아간다. 0.6초로
+				# 뒀더니 바쁜 가게에서 손님마다 출퇴근하는 탭 댄스가 됐다(유저).
+				clerks[i].busy = 3.0
 				break
 	for i in range(Content.SHOPS.size()):
 		var c: Dictionary = clerks[i]
@@ -443,11 +445,19 @@ func _walk_dog(dg: Dictionary, delta: float) -> void:
 	else:
 		dg.pos += d.normalized() * step
 
+## 이 줄(ty)이 열린 동네인가 — 잠긴 구역(안개)은 촌장도 개도 안 들어간다.
+func _open_row(ty: int) -> bool:
+	for dz in Content.DISTRICTS:
+		if not sim.zones.has(String(dz.id)) and ty >= int(dz.rows[0]) and ty <= int(dz.rows[1]):
+			return false
+	return true
+
 func _road_spot() -> Vector2i:
 	for _try in range(20):
 		var tx: int = int(_grng.next() * Iso.GW) % Iso.GW
 		var ty: int = int(_grng.next() * Iso.GH) % Iso.GH
-		if Iso.is_road(tx, ty):
+		# 안개 속을 태연히 걸으면 잠김이 거짓말이 된다(유저) — 열린 동네만
+		if Iso.is_road(tx, ty) and _open_row(ty):
 			return Vector2i(tx, ty)
 	return Iso.GATES[0]
 
@@ -1330,11 +1340,12 @@ func pest_at(cam_center: Vector2) -> Dictionary:
 	var t: Dictionary = sim.pest
 	var p: float = 1.0 - max(0.0, t.left) / t.life
 	if t.kind == "crow":
-		var dir: float = 1.0 if int(t.get("amount", 0)) % 2 == 1 else -1.0
-		var u: float = p * 2.0 - 1.0
-		var e: float = 0.5 + 0.5 * (u * 0.3 + u * u * u * 0.7)
-		return {"kind": "crow", "face": "🐦‍⬛", "r": 30.0,
-			"pos": cam_center + Vector2(dir * (e - 0.5) * 760.0, -160.0 + sin(p * PI * 2.4) * 70.0)}
+		# 까마귀도 **걸어 다닌다**(2026-08-26, 유저 — 두 발 세계관). 하늘을
+		# 가로지르던 시절엔 화면(카메라) 기준으로 날아서 빠르고 못 잡았다.
+		# 이제 안골 큰길을 위에서 아래로 좌우 종종걸음 치며 내려온다.
+		var u: float = sin(p * PI * 3.0)
+		return {"kind": "crow", "face": "🐦‍⬛", "r": 32.0, "flip": u < 0.0,
+			"pos": Iso.w(5.5, 6.5 + p * 8.0) + Vector2(u * 90.0, 0.0)}
 	var idx: int = 0
 	for i in range(Content.SHOPS.size()):
 		for it in Content.SHOPS[i].items:
@@ -1356,7 +1367,7 @@ func _pest(t: Dictionary) -> void:
 	draw_arc(at, t.r, -PI / 2, -PI / 2 + TAU * left, 28, C.red, 4.0)
 	var pic: Texture2D = Art.tex("pests", String(sim.pest.kind))
 	if pic != null:
-		_sprite(pic, at + Vector2(0, 22), "pests")
+		_sprite(pic, at + Vector2(0, 22), "pests", bool(t.get("flip", false)))
 	else:
 		_text(at + Vector2(0, 9), t.face, 26, Color.WHITE)
 

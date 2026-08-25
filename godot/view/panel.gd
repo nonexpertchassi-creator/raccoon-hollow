@@ -137,6 +137,9 @@ func _input(e: InputEvent) -> void:
 		down = (e as InputEventScreenTouch).pressed
 	if down == null:
 		return
+	# 룰렛이 도는 중에 누르면 즉시 끝으로 — 연출은 건너뛸 수 있어야 한다
+	if bool(down) and wheel != null and is_instance_valid(wheel) and wheel.visible:
+		wheel.skip()
 	_pressing = bool(down)
 	# 어디서 뗐든 꾹 누르기는 끝난다. 단추가 다시 그려지며 사라져도 안전하다.
 	if not _pressing:

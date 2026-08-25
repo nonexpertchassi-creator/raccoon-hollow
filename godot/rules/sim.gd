@@ -1240,17 +1240,25 @@ func _buy(g: Dictionary, rng: Rng) -> Variant:
 			have.remove_at(at)
 			have.push_front(want_q)
 
-	# ★ 한 손님은 **한 가게만** 본다(2026-08-25, 유저가 잡은 치명 오류).
-	#   예전엔 바구니가 여러 가게에 걸쳐 담겨서, 화면의 손님은 한 가게 앞에만
-	#   서는데 재고는 딴 가게 것까지 빠졌다 — "필방에 손님이 온 적이 없는데
-	#   재고가 떨어진다". 화면과 장부는 같은 말을 해야 한다: 줄 선 가게가
-	#   곧 장 본 가게다. (섞기 다음에 거르므로 주사위 순서는 그대로다)
-	var pick_shop: String = String(item_by_id(String(have[0])).shop)
+	# ★ 한 손님은 **한 가게만** 본다(2026-08-25, 유저가 잡은 치명 오류 —
+	#   "필방에 손님이 온 적이 없는데 재고가 떨어진다"). 줄 선 가게가 곧
+	#   장 본 가게다.
+	# ★ 가게는 **균등하게** 고른다(2026-08-26, 유저 — "필방도 지물포도 안
+	#   간다"). 처음에 "섞은 바구니의 첫 물건이 정한 가게"로 했더니 방문이
+	#   물건 칸 수에 비례해 쏠렸다 — 물건 여섯인 대장간이 물건 하나인 새
+	#   가게의 여섯 배로 손님을 독차지했다. 의뢰를 건 마을은 의뢰 가게로.
+	var pick_shop: String
+	if want_q != null:
+		pick_shop = String(item_by_id(String(want_q)).shop)
+	else:
+		pick_shop = String(shops[int(floor(rng.next() * shops.size())) % shops.size()])
 	var mine: Array = []
 	for id2 in have:
 		if String(item_by_id(String(id2)).shop) == pick_shop:
 			mine.append(id2)
 	have = mine
+	if have.is_empty():
+		return null
 
 	var sp: float = g.spread if g.get("spread", 0.0) > 0.0 else Content.BASKET_SPREAD
 	var per: float = max(1.0, ceil(qty / sp))
