@@ -744,17 +744,12 @@ func _level_btn(id: String, line: Label) -> Button:
 
 ## 일손과 이 가게만의 강화. 둘 다 "한 번 사면 계속 도는 것"이라 같이 둔다.
 func _tab_work(_shop: Dictionary) -> void:
-	var smax: float = sim.staff_max(shop_id)
-	_box.add_child(_label("일손  점장 1 + 직원 %d/%d" % [int(sim.staff_of(shop_id)), int(smax)], 15))
+	_box.add_child(_label("일손  점장 1 + 직원 %d" % int(sim.staff_of(shop_id)), 15))
 	# 2026-08-25 생산 개편 — 손 하나가 물건 하나를 만든다. 직원마다 만드는
 	# 손이 하나씩 는다. 점장은 만들다가 계산도 한다(계산 중엔 손이 빠진다).
 	_box.add_child(_label("손 하나가 물건 하나를 만든다 — 직원마다 만드는 손이 하나 는다", 11, Color("8a7a63"), true))
-	if sim.staff_of(shop_id) < smax:
-		var sc: float = sim.staff_cost(shop_id)
-		_box.add_child(_btn("직원 들이기 🪙" + Num.fmt(sc), sim.can_hire_staff(shop_id),
-			func(): sim.hire_staff(shop_id); rebuild()))
-	else:
-		_box.add_child(_label("일손이 다 찼다 — 넷이면 매대 넷이 동시에 돈다", 13, Color("4a7c59")))
+	# 직원을 돈으로 사는 단추는 지웠다(유저 — 한 번에 넷을 사는 게 이상했다).
+	_box.add_child(_label("직원은 **가게가 승급할 때** 한 마리씩 온다", 12, Color("4a7c59"), true))
 
 	var ud: Variant = sim.shop_up_def(shop_id)
 	if ud == null:

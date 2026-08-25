@@ -49,10 +49,6 @@ static func act(s: Sim, rng: Rng, use_shop_up: bool) -> void:
 	if s.can_buy_guard():
 		s.buy_guard()
 		return
-	for sh in s.shops:
-		if s.can_hire_staff(sh):
-			s.hire_staff(sh)
-			return
 	# 가게 고유 강화 — 제일 싼 것부터.
 	# BAL_ONLY=smith 처럼 주면 그 가게 것만 산다(하나씩 재려고).
 	if use_shop_up:

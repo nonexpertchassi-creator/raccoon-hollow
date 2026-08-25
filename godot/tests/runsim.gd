@@ -37,10 +37,6 @@ static func act(s: Sim, rng: Rng) -> void:
 	if s.can_buy_guard():
 		s.buy_guard()
 		return
-	for sh in s.shops:
-		if s.can_hire_staff(sh):
-			s.hire_staff(sh)
-			return
 	# 젬 강화 — 제일 싼 것부터. 정렬이 아니라 훑어서 고른다(같으면 먼저 나온 쪽)
 	var best: String = ""
 	var best_cost: float = INF

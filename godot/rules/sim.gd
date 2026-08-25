@@ -179,7 +179,9 @@ func milestone(id: String) -> float:
 
 func _gap(g: Dictionary, rng: Rng) -> float:
 	# 성이 오르면 발걸음도 잦아진다 — content.js의 REGULAR_COME 참고
-	return _wild_gap(g.every / (1.0 + Content.REGULAR_COME * regular_lv(String(g.id))),
+	# 밤엔 발길이 뜸하다(DAY.nightCome) — 짐승도 잘 시간이다
+	return _wild_gap(g.every / (1.0 + Content.REGULAR_COME * regular_lv(String(g.id)))
+		* (Content.DAY.nightCome if is_night() else 1.0),
 		g.get("wild", 0.0), rng)
 
 ## wild가 0이면 시계처럼, 1이면 완전히 운. 평균 간격은 어느 쪽이든 every 그대로다.
@@ -207,7 +209,8 @@ func _pests(dt: float, rng: Rng) -> void:
 	for P in Content.PESTS:
 		if revenue < P.at:
 			continue
-		_pestAcc[P.id] = _pestAcc.get(P.id, 0.0) + dt
+		# 밤엔 쥐가 설친다(DAY.nightPest) — 시계가 빨리 찬다
+		_pestAcc[P.id] = _pestAcc.get(P.id, 0.0) + dt / (Content.DAY.nightPest if is_night() else 1.0)
 		if not _pestGap.has(P.id):
 			_pestGap[P.id] = _wild_gap(P.every, P.wild, rng)
 		if _pestAcc[P.id] < _pestGap[P.id]:
@@ -412,30 +415,12 @@ func shop_todo(shop_id: String) -> int:
 			n += 1
 	if can_promote(shop_id):
 		n += 1
-	if can_hire_staff(shop_id):
-		n += 1
 	return n
 
 # ── 직원 ──
+## 직원은 **승급이 준다**(promote 참고). 돈으로 사는 길은 2026-08-25에 없앴다 —
+## 한 번에 네 마리를 사 버리는 게 이상했다(유저). staff_cost·hire_staff도 지웠다.
 func staff_of(shop_id: String) -> float: return staff.get(shop_id, 0.0)
-func staff_max(shop_id: String) -> float: return Content.STAFF.max if shops.has(shop_id) else 0.0
-func staff_cost(shop_id: String) -> float:
-	var shop: Dictionary = shop_by_id(shop_id)
-	var n: int = int(staff_of(shop_id))
-	var base: float = shop.promote[0] if n == 0 else shop.promote[1]
-	return floor(base * Content.STAFF.costMul[n])
-
-func can_hire_staff(shop_id: String) -> bool:
-	return shops.has(shop_id) and staff_of(shop_id) < staff_max(shop_id) and money >= staff_cost(shop_id)
-
-func hire_staff(shop_id: String) -> bool:
-	if not can_hire_staff(shop_id):
-		return false
-	money -= staff_cost(shop_id)
-	bump("open.staff")
-	staff[shop_id] = staff_of(shop_id) + 1.0
-	_ev("%s에 일손을 들였다 (%s명)" % [shop_by_id(shop_id).name, str(int(staff[shop_id]))], "shop")
-	return true
 
 ## 매대 칸 수 — 마당 크기가 정한다. 무쇠 4 · 참쇠 6 · 강철 8
 func stall_cap(shop_id: String) -> int: return 4 + 2 * min(2, rank_of(shop_id))
@@ -520,11 +505,20 @@ func price(id: String) -> float:
 		* (1.0 + Content.LEVEL.priceStep * (lv(id) - 1.0)) * milestone(id) * haggle()
 		* _price_of(it.shop))
 
+## 하루 어디쯤인가(0~1). 화면의 어둠과 경제의 밤 규칙이 **같은 시계**를 본다.
+func day_phase() -> float:
+	return fposmod(t, float(Content.DAY.cycle)) / float(Content.DAY.cycle)
+
+func is_night() -> bool:
+	var ph: float = day_phase()
+	return ph >= float(Content.DAY.night[0]) and ph < float(Content.DAY.night[1])
+
 func craft_time(id: String) -> float:
 	var it: Dictionary = item_by_id(id)
 	var f: float = max(Content.LEVEL.timeFloor, pow(Content.LEVEL.timeReduce, lv(id) - 1.0))
 	# handSpeed — 손 하나의 손놀림 배수(생산 개편 보정, content.js의 CRAFT 참고)
-	return it.time * f * forge_mul() * _forge_of(it.shop) / Content.CRAFT.handSpeed
+	# 밤엔 손이 느리다(DAY.nightCraft) — 밤 규칙은 화면이 아니라 여기(sim)의 것이다
+	return it.time * f * forge_mul() * _forge_of(it.shop) / Content.CRAFT.handSpeed 		* (Content.DAY.nightCraft if is_night() else 1.0)
 
 func cap_of(id: String) -> float:
 	return Content.STOCK_CAP + Content.STAFF.capAdd * staff_of(item_by_id(id).shop)
@@ -699,7 +693,7 @@ func promote_gain(shop_id: String) -> Variant:
 		"priceMul": Content.RANKS[r + 1].priceMul / Content.RANKS[r].priceMul,
 		"maxLv": [Content.RANKS[r].maxLv, Content.RANKS[r + 1].maxLv],
 		"stalls": [stall_cap(shop_id), 4 + 2 * min(2, r + 1)],
-		"staff": [staff_max(shop_id), Content.STAFF.max],
+		"staff": [staff_of(shop_id), min(staff_of(shop_id) + 1.0, Content.STAFF.max)],
 		"dip": 1.0, "even": 1, "top": 1.0,
 	}
 	if id == "":
@@ -740,6 +734,11 @@ func promote(shop_id: String) -> bool:
 	money -= shop.promote[rank_of(shop_id)]
 	bump("open.promote")
 	rank[shop_id] = rank_of(shop_id) + 1
+	# 승급 선물 — 직원 한 마리(2026-08-25, 유저). 돈으로 사던 것을 없앴다:
+	# 한 번에 네 마리를 사 버리는 게 이상했다. 손의 성장 축이 승급으로 모인다.
+	if staff_of(shop_id) < Content.STAFF.max:
+		staff[shop_id] = staff_of(shop_id) + 1.0
+		bump("open.staff")
 	for it in shop.items:
 		if items.has(it.id):
 			items[it.id].lv = 1.0

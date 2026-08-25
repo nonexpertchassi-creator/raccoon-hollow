@@ -66,7 +66,18 @@ const CARD_GRADES := [
 ]
 
 const CRAFT := {
-	"handSpeed": 2.0
+	"handSpeed": 3.0
+}
+
+const DAY := {
+	"cycle": 2400.0,
+	"night": [
+		0.62,
+		0.92
+	],
+	"nightCome": 2.0,
+	"nightCraft": 1.35,
+	"nightPest": 0.55
 }
 
 const DISTRICTS := [

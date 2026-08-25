@@ -253,8 +253,12 @@ func _advance(delta: float) -> void:
 		dogs.append({"pos": Iso.w(Iso.DOG_T.x + 0.5, Iso.DOG_T.y + 0.5),
 			"at": Iso.nearest_road(Iso.DOG_T), "path": [], "step": 1,
 			"rest": 0.5 + _grng.next() * 2.0, "flip": false})
-	for dg in dogs:
-		_walk_dog(dg, delta)
+	# 밤엔 절반만 순찰한다(유저) — 나머지는 그 자리에서 쉰다.
+	# (쥐는 밤에 더 설친다 — sim의 밤 규칙. 개까지 다 재우면 벌만 받는 밤이 된다)
+	var awake: int = dogs.size() if not _night() else int(ceil(dogs.size() / 2.0))
+	for di in range(dogs.size()):
+		if di < awake:
+			_walk_dog(dogs[di], delta)
 	var keep: Array = []
 	for wk in walkers:
 		match wk.state:
@@ -618,7 +622,7 @@ func _yard_signs(i: int) -> void:
 	if sim.shop_todo(shop.id) > 0:
 		var bob: float = sin(_t * 4.0) * 3.0
 		var promo: bool = sim.can_promote(shop.id)
-		var txt: String = "승급!" if promo else ("일손!" if sim.can_hire_staff(shop.id) else "새 칸!")
+		var txt: String = "승급!" if promo else "새 칸!"     # '일손!'은 고용 폐지와 함께 갔다
 		_chip(N + Vector2(0, -100 + bob), 26.0 + txt.length() * 14.0, 25, C.red if promo else C.jade)
 		_text(N + Vector2(0, -82 + bob), txt, 15, Color("fff3dd"))
 
@@ -783,9 +787,14 @@ func _dog() -> void:
 ## 해질녘·밤·새벽이다. 진짜 시계(폰 시각)를 안 쓰는 이유: 방치형은 한 번에
 ## 2~5분 논다 — 점심에만 켜는 사람은 밤을 영영 못 본다. 게임 시계면 한 판
 ## 안에서 낮과 밤을 다 만난다. 색은 화면 전체에 얇게 한 겹만 얹는다.
-const DAY_CYCLE := 2400.0    # 40분 하루 — 20분은 빨라 보였다(유저)
+## 하루 시계는 sim의 것이다(밤엔 손님·손놀림·쥐 규칙이 실제로 달라진다).
+## clock_override는 찍는 도구용 — 화면만 그 시각인 척한다.
 func day_phase() -> float:
-	return clock_override if clock_override >= 0.0 else fmod(sim.t, DAY_CYCLE) / DAY_CYCLE
+	return clock_override if clock_override >= 0.0 else sim.day_phase()
+
+func _night() -> bool:
+	var ph: float = day_phase()
+	return ph >= float(Content.DAY.night[0]) and ph < float(Content.DAY.night[1])
 
 ## 하루 어디쯤인가 — 머리띠 오른쪽 끝의 그림 한 개.
 ## ★ 십이지시(사시·자시) → 몇 시 → **그림만**, 두 번 깎였다(유저).
@@ -1060,6 +1069,10 @@ func _staff(i: int, k: int) -> void:
 		return
 	var p: Vector2 = _staff_cur(i, k)
 	var idle: bool = _idle(i)
+	# 밤엔 수시로 졸았다 깼다 한다(유저) — 직원마다 다른 박자로. sim의 밤
+	# 규칙(손놀림이 느려진다)과 결이 맞는 그림이다.
+	if _night() and sin(_t * 0.35 + float(i * 3 + k) * 1.9) > 0.1:
+		idle = true
 	# 망치질 — 할 일이 있을 때만, **자리에 닿았을 때만** 들썩인다.
 	# 걷는 중에 망치질하면 걸으며 못질하는 목수가 된다.
 	var moving: bool = p.distance_to(_staff_goal(i, k)) > 2.0
@@ -1326,6 +1339,14 @@ func _draw() -> void:
 			var o3: Vector2i = Iso.org(sim, gi)
 			var y3: Dictionary = Iso.yard(Iso.YARD_KIND[gi], Iso.plot_dim(sim, gi))
 			var cp: Vector2 = Iso.w(o3.x + y3.counter.x + 0.5, o3.y + y3.counter.y + 0.5) + Vector2(0, -18)
+			# 호롱불(유저) — 빛무리만 있으면 "어디서 나는 빛이지"가 된다.
+			# 계산대 곁에 장대 하나, 그 끝에 호롱. 불꽃은 살짝 일렁인다.
+			var lp: Vector2 = cp + Vector2(24, 16)
+			draw_line(lp, lp + Vector2(0, -42), Color(0.32, 0.24, 0.16), 3.0)
+			draw_line(lp + Vector2(0, -42), lp + Vector2(-9, -48), Color(0.32, 0.24, 0.16), 2.5)
+			var flick: float = 0.85 + 0.15 * sin(_t * 9.0 + o3.x * 1.3)
+			draw_circle(lp + Vector2(-9, -53), 4.5, Color(1.0, 0.82, 0.45, 0.95 * glow))
+			draw_circle(lp + Vector2(-9, -53), 7.5, Color(1.0, 0.7, 0.3, 0.3 * glow * flick))
 			for gr in [[54.0, 0.05], [36.0, 0.08], [20.0, 0.13]]:
 				draw_circle(cp, gr[0], Color(1.0, 0.78, 0.4, gr[1] * glow))
 
