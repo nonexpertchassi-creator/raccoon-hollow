@@ -86,6 +86,8 @@ var _trashAcc: float = 0.0
 
 ## 가게별 점장 — 평소엔 작업대, 팔릴 땐 계산대 뒤로 간다
 var clerks: Array = []
+## 직원의 현재 자리("가게:번호" → 좌표). 만드는 매대가 바뀌면 걸어서 옮긴다.
+var _staffAt: Dictionary = {}
 const CLERK_SPEED := 130.0
 
 func _ready() -> void:
@@ -224,6 +226,15 @@ func _advance(delta: float) -> void:
 		_trashAcc = 0.0
 		var tsp: Vector2i = _road_spot()
 		trash.append({"t": tsp, "pos": Iso.w(tsp.x + 0.5, tsp.y + 0.5)})
+	# 직원 — 만드는 매대 곁으로 걸어간다. 순간이동하면 "일하러 갔다"가 안 보인다.
+	for i in range(Content.SHOPS.size()):
+		if not sim.shops.has(String(Content.SHOPS[i].id)):
+			continue
+		for k in range(int(sim.staff_of(String(Content.SHOPS[i].id)))):
+			var skey: String = "%d:%d" % [i, k]
+			var goal: Vector2 = _staff_goal(i, k)
+			var cur: Vector2 = _staffAt.get(skey, _staff_pos(i, k))
+			_staffAt[skey] = cur.move_toward(goal, 52.0 * delta)
 	_walk_mayor(delta)
 	# 산 만큼 개를 풀어놓는다
 	while dogs.size() < int(sim.guards):
@@ -649,6 +660,23 @@ func _stall(i: int, k: int, spot: Vector2i) -> void:
 		var ry2: Vector2 = p + Vector2(16, -40)
 		draw_circle(ry2, 8.5, Color(0.13, 0.22, 0.14, 0.75))
 		draw_arc(ry2, 6.0, -PI / 2, -PI / 2 + TAU * pr2, 20, Color("6fce7e"), 4.0)
+		# "만들고 있다"는 짐승의 동작이 아니라 **매대 위 효과**가 말한다(2026-08-25,
+		# 유저). 제작 동작을 그림으로 하면 등급×자세만큼 장수가 는다 — 전부 코드다.
+		if String(shop.id) == "smith":
+			# 대장간만 특별하다 — 주황 불티가 튄다
+			for s2 in range(3):
+				var ph: float = fmod(_t * 1.6 + s2 * 0.37 + spot.x * 0.21, 1.0)
+				var px: Vector2 = p + Vector2(sin((s2 * 2.1 + spot.y) * 2.4) * 10.0 * ph,
+					-26.0 - ph * 18.0)
+				draw_circle(px, 1.8 * (1.0 - ph) + 0.6,
+					Color(1.0, 0.55 + 0.25 * (1.0 - ph), 0.15, 1.0 - ph))
+		else:
+			# 공통 — 뽀얀 먼지구름이 떠오르다 옅어진다
+			for s2 in range(2):
+				var ph: float = fmod(_t * 0.7 + s2 * 0.5 + spot.x * 0.17 + spot.y * 0.29, 1.0)
+				var px: Vector2 = p + Vector2(float(s2 * 2 - 1) * (6.0 + ph * 5.0),
+					-30.0 - ph * 12.0)
+				draw_circle(px, 3.5 + ph * 2.5, Color(0.87, 0.83, 0.73, 0.4 * (1.0 - ph)))
 
 	# ★ 재고 숫자·진행 고리는 지웠다(2026-08-25, 유저 지적). 그림이 오기 전엔
 	#   그 숫자가 화면의 전부였는데, 이제는 물건 그림을 동그라미로 가리는
@@ -834,6 +862,32 @@ func _clerk(i: int) -> void:
 ##   칸 한가운데에 세웠더니 매대 뒤에 가려서 **머리만 보였다.** 480K를 주고
 ##   머리 하나를 사는 셈이다. 안쪽으로 26px 당기면 매대 앞으로 나온다.
 ##   앞뒤 순서도 이 자리로 정해야 한다 — 안 그러면 그림과 순서가 따로 논다.
+## 직원이 지금 있어야 할 자리 — **만드는 매대 곁**이다(2026-08-25, 유저).
+## 제작을 짐승의 동작으로 보여주면 등급×자세만큼 그림이 는다. 대신 직원이
+## 그 매대로 걸어가 서고, "만들고 있다"는 매대 위 효과(먼지구름·불티)가 말한다.
+## 점장이 계산 중이면 첫 매대부터 직원 몫이고, 아니면 점장이 첫 매대를 맡는다.
+func _staff_goal(i: int, k: int) -> Vector2:
+	var sid: String = String(Content.SHOPS[i].id)
+	var n: int = Iso.plot_dim(sim, i)
+	var y: Dictionary = Iso.yard(Iso.YARD_KIND[i], n)
+	var o: Vector2i = Iso.org(sim, i)
+	var cells: Array = []
+	for k2 in range(min(Content.SHOPS[i].items.size(), y.stalls.size())):
+		if sim._crafting.has(String(Content.SHOPS[i].items[k2].id)):
+			cells.append(y.stalls[k2])
+	var idx: int = k if sim._hold.get(sid, 0.0) > 0.0 else k + 1
+	if idx >= cells.size():
+		return _staff_pos(i, k)          # 맡을 매대가 없으면 제자리(작업대 곁)
+	var sp: Vector2i = cells[idx]
+	var inn := Vector2i(clampi(sp.x, 1, n - 2), clampi(sp.y, 1, n - 2))
+	var pin: Vector2 = Iso.w(o.x + inn.x + 0.5, o.y + inn.y + 0.5)
+	var pst: Vector2 = Iso.w(o.x + sp.x + 0.5, o.y + sp.y + 0.5)
+	return pin.lerp(pst, 0.45)           # 안쪽 칸에서 매대 쪽으로 살짝 붙는다
+
+## 직원의 현재 자리(걸어가는 중일 수 있다). 그리기와 앞뒤 순서가 같이 쓴다.
+func _staff_cur(i: int, k: int) -> Vector2:
+	return _staffAt.get("%d:%d" % [i, k], _staff_pos(i, k))
+
 func _staff_pos(i: int, k: int) -> Vector2:
 	var n: int = Iso.plot_dim(sim, i)
 	var y: Dictionary = Iso.yard(Iso.YARD_KIND[i], n)
@@ -850,11 +904,13 @@ func _staff(i: int, k: int) -> void:
 	var spots: Array = Iso.staff_spots(Iso.yard(Iso.YARD_KIND[i], Iso.plot_dim(sim, i)), Iso.plot_dim(sim, i))
 	if k >= spots.size():
 		return
-	var p: Vector2 = _staff_pos(i, k)
+	var p: Vector2 = _staff_cur(i, k)
 	var idle: bool = _idle(i)
-	# 망치질 — 할 일이 있을 때만 들썩인다. 다 찼으면 가만히 있는다.
+	# 망치질 — 할 일이 있을 때만, **자리에 닿았을 때만** 들썩인다.
+	# 걷는 중에 망치질하면 걸으며 못질하는 목수가 된다.
+	var moving: bool = p.distance_to(_staff_goal(i, k)) > 2.0
 	var swing: float = maxf(0.0, sin(fmod(_t / 2.4 + i * 0.37 + (k + 1) * 0.29, 1.0) * TAU))
-	var bob: float = 0.0 if idle else swing * 3.0
+	var bob: float = (absf(sin(_t * 6.0)) * 2.0) if moving else (0.0 if idle else swing * 3.0)
 	var rank: String = String(Content.STAFF_RANKS[0].id)     # 아직 등급 규칙이 없다 — 전부 알바
 	var t: Texture2D = Art.tex("staff", "%s-%s" % [rank, "sleep" if idle else "work"])
 	if t == null:
@@ -911,24 +967,29 @@ func _order(wk: Dictionary) -> void:
 	# **맨 앞사람만** — 줄을 세운 이유의 절반이 이것이다(자바스크립트판에서 얻은 답).
 	if _line_index(wk) != 0:
 		return
-	# 레퍼런스(고양이 스낵바) 말: **흰 말풍선 + 꼬리 + 물건 하나 크게 + 개수.**
-	# 여러 종류면 첫 것을 크게, 나머지는 +N — 말풍선이 손님보다 크면 길을 덮는다.
-	var first: Dictionary = sold[0]
-	var more: int = sold.size() - 1
-	var wd: float = 66.0 + (24.0 if more > 0 else 0.0)
+	# 레퍼런스(고양이 스낵바) 말: **흰 말풍선 + 꼬리 + 물건 그림 + 개수.**
+	# ★ 처음엔 첫 물건만 크게 + 나머지 "+N"이었는데 유저가 바로 물었다 —
+	#   "물건×n+n이 머야?" 읽는 사람이 셈을 해야 하는 표는 표가 아니다.
+	#   종류마다 그림×개수를 나란히 놓고, 말풍선이 그만큼 넓어진다(셋까지).
+	var kinds: int = mini(sold.size(), 3)
+	var more: int = sold.size() - kinds
+	var wd: float = 12.0 + 52.0 * kinds + (20.0 if more > 0 else 0.0)
 	var y: Vector2 = wk.pos + Vector2(4, -92 + sin(_t * 3.4) * 1.6)
 	_chip(y, wd, 34, Color(1.0, 0.99, 0.96, 0.97))
 	draw_colored_polygon(PackedVector2Array([
 		y + Vector2(-7, 33), y + Vector2(7, 33), y + Vector2(-2, 44)]), Color(1.0, 0.99, 0.96, 0.97))
 	var x0: float = y.x - wd * 0.5 + 6.0
-	var pic4: Texture2D = Art.ranked("items", String(first.id), sim.rank_of(String(Content.SHOPS[wk.shop].id)))
-	if pic4 != null:
-		draw_texture_rect(pic4, Rect2(Vector2(x0, y.y + 3), Vector2(24, 28)), false)
-	else:
-		_text(Vector2(x0 + 12, y.y + 24), String(first.icon), 19, Color.WHITE)
-	_text(Vector2(x0 + 41, y.y + 25), "×%d" % int(first.n), 16, C.ink)
+	for q in range(kinds):
+		var ln: Dictionary = sold[q]
+		var pic4: Texture2D = Art.ranked("items", String(ln.id), sim.rank_of(String(Content.SHOPS[wk.shop].id)))
+		if pic4 != null:
+			draw_texture_rect(pic4, Rect2(Vector2(x0, y.y + 3), Vector2(24, 28)), false)
+		else:
+			_text(Vector2(x0 + 12, y.y + 24), String(ln.icon), 19, Color.WHITE)
+		_text(Vector2(x0 + 38, y.y + 25), "×%d" % int(ln.n), 14, C.ink)
+		x0 += 52.0
 	if more > 0:
-		_text(Vector2(y.x + wd * 0.5 - 13, y.y + 24), "+%d" % more, 12, C.ink2)
+		_text(Vector2(x0 + 4, y.y + 24), "+%d" % more, 12, C.ink2)
 
 ## 물어보는 말풍선 — 현판 바로 위. 깊이 정렬 밖에 그린다(지붕에 가리면 못 읽는다).
 func _bubble() -> void:
@@ -1048,7 +1109,7 @@ func _draw() -> void:
 		seq += 1
 		var spots: Array = Iso.staff_spots(Iso.yard(Iso.YARD_KIND[i], Iso.plot_dim(sim, i)), Iso.plot_dim(sim, i))
 		for k in range(min(int(sim.staff_of(String(Content.SHOPS[i].id))), spots.size())):
-			layer.append({"z": _staff_pos(i, k).y, "i": seq, "f": _staff.bind(i, k)})
+			layer.append({"z": _staff_cur(i, k).y, "i": seq, "f": _staff.bind(i, k)})
 			seq += 1
 	for wk in walkers:
 		layer.append({"z": wk.pos.y, "i": seq, "f": _walker.bind(wk)})
