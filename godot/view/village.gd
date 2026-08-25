@@ -750,6 +750,14 @@ func _dog() -> void:
 		_text(p + Vector2(0, -Iso.TH - 19), "🐕+ 🪙" + Num.fmt(sim.guard_cost()), 11,
 			Color.WHITE if can2 else Color("e6e0cf"))
 
+## 발밑 그림자 — 납작한 원 하나. **그림에 굽지 않고 코드가 그린다** —
+## 그림에 넣으면 동물×방향마다 딸려가고, 몸이 들썩일 때 그림자까지 떠 버린다.
+## 그림자는 늘 땅(발끝 자리)에 붙어 있어야 발이 땅을 딛는 느낌이 난다.
+func _shadow(foot: Vector2, r: float) -> void:
+	draw_set_transform(foot, 0.0, Vector2(1.0, 0.42))
+	draw_circle(Vector2.ZERO, r, Color(0, 0, 0, 0.13))
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+
 ## 그림 한 장을 **발끝 기준**으로 놓는다. 그림 주문서에도 "발끝이 아래 변에
 ## 닿게"라고 적어 둔 이유가 이것이다 — 발끝이 곧 그 물건이 서 있는 자리이고,
 ## 앞뒤 가리기(깊이)도 발끝 높이로 정한다.
@@ -768,7 +776,7 @@ func _sprite(t: Texture2D, foot: Vector2, kind: String, flip: bool = false) -> v
 func _raccoon(p: Vector2, size: float, tint: Color) -> void:
 	var bob: float = sin(_t * 6.0 + p.x * 0.05) * 1.5
 	var at: Vector2 = p + Vector2(0, bob)
-	draw_circle(at + Vector2(0, -2), size * 0.42, Color(0, 0, 0, 0.16))     # 발밑 그림자
+	_shadow(p, size * 0.42)                                                  # 발밑 그림자
 	draw_circle(at + Vector2(0, -size * 0.42), size * 0.34, tint)            # 몸통
 	draw_circle(at + Vector2(0, -size * 0.86), size * 0.30, _shade(tint, 0.06))  # 머리
 	draw_circle(at + Vector2(-size * 0.22, -size * 1.06), size * 0.11, tint)     # 귀
@@ -808,6 +816,7 @@ func _dog_walker(dg: Dictionary) -> void:
 	var bob: float = absf(sin(_t * 9.0 + dg.pos.x * 0.03)) * 2.5
 	var pic: Texture2D = Art.tex("pests", "dog")
 	if pic != null:
+		_shadow(dg.pos, 13.0)
 		_sprite(pic, dg.pos + Vector2(0, -bob), "pests", bool(dg.flip))
 	else:
 		_text(dg.pos + Vector2(0, -bob), "🐕", 24, Color.WHITE)
@@ -819,6 +828,7 @@ func _mayor() -> void:
 		return
 	var t: Texture2D = Art.tex("hero", "mayor")
 	if t != null:
+		_shadow(mayor.pos, 14.0)
 		_sprite(t, mayor.pos, "hero", bool(mayor.get("flip", false)))
 	else:
 		_raccoon(mayor.pos, SHAPE, Color("cbb79a"))
@@ -851,6 +861,7 @@ func _clerk(i: int) -> void:
 	if t == null:                       # 그 자세가 아직 없으면 만드는 자세로
 		t = _hero_tex(id, "make")
 	if t != null:
+		_shadow(c.pos, 14.0)
 		_sprite(t, c.pos, "clerks" if Art.tex("clerks", "%s-%s" % [id, pose]) != null else "hero",
 			bool(c.get("flip", false)))
 		return
@@ -924,6 +935,7 @@ func _staff(i: int, k: int) -> void:
 	if t == null:
 		t = Art.tex("staff", "%s-work" % rank)
 	if t != null:
+		_shadow(p, 14.0)
 		_sprite(t, p + Vector2(0, -bob), "staff")
 		return
 	# 그림이 오기 전 임시 도형. 점장과 **같은 크기**로, 털빛만 조금 다르게.
@@ -942,6 +954,7 @@ func _walker(wk: Dictionary) -> void:
 	if t == null:
 		t = Art.tex("guests", gid2)
 	if t != null:
+		_shadow(wk.pos, 13.0)
 		_sprite(t, wk.pos, "guests", bool(wk.get("flip", false)))
 	else:
 		_raccoon(wk.pos, SHAPE * 0.9, Color("9c8f7a"))
