@@ -841,7 +841,7 @@ const LEVEL := {
 	"costGrowth": 1.09,
 	"priceStep": 0.12,
 	"timeReduce": 0.985,
-	"timeFloor": 0.4
+	"timeFloor": 0.8
 }
 
 const MAX_BULK := 1000.0

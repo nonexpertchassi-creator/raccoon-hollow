@@ -759,14 +759,18 @@ func _stall(i: int, k: int, spot: Vector2i) -> void:
 	var making: bool = sim._crafting.has(String(it.id)) \
 		and _worker_of(i, k).distance_to(_stall_front(i, k)) < 8.0
 	draw_circle(bc, 17.0, Color(1.0, 0.99, 0.96, 0.95))
-	if making:
-		var pr2: float = clampf(st2.prog / sim.craft_time(String(it.id)), 0.0, 1.0)
+	# 하다 만 진행도도 **흐리게 남긴다** — 일꾼이 자리를 비우면 채움이 뚝
+	# 사라져서 "초기화됐나"로 보였다(유저). sim은 기억하고 있었다 — 화면만
+	# 말을 안 했던 것. 일꾼이 돌아오면 그 자리부터 다시 초록으로 찬다.
+	var pr2: float = clampf(st2.prog / sim.craft_time(String(it.id)), 0.0, 1.0)
+	if pr2 > 0.01:
 		var fan := PackedVector2Array([bc])
 		var steps2: int = 22
 		for k2 in range(steps2 + 1):
 			var a2: float = -PI * 0.5 + TAU * pr2 * float(k2) / float(steps2)
 			fan.append(bc + Vector2(cos(a2), sin(a2)) * 16.0)
-		draw_colored_polygon(fan, Color(0.44, 0.78, 0.5, 0.55))
+		draw_colored_polygon(fan, Color(0.44, 0.78, 0.5, 0.55) if making
+			else Color(0.5, 0.6, 0.52, 0.3))
 	draw_arc(bc, 17.0, 0, TAU, 32, Color(0.55, 0.44, 0.32, 0.8), 2.0)
 	var pic: Texture2D = Art.ranked("items", String(it.id), rk)
 	if pic != null:
