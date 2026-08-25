@@ -731,17 +731,15 @@ func _level_btn(id: String, line: Label) -> Button:
 func _tab_work(_shop: Dictionary) -> void:
 	var smax: float = sim.staff_max(shop_id)
 	_box.add_child(_label("일손  점장 1 + 직원 %d/%d" % [int(sim.staff_of(shop_id)), int(smax)], 15))
-	_box.add_child(_label("직원이 있으면 계산 중에도 생산이 안 멈춘다", 11, Color("8a7a63")))
+	# 2026-08-25 생산 개편 — 손 하나가 물건 하나를 만든다. 직원마다 만드는
+	# 손이 하나씩 는다. 점장은 만들다가 계산도 한다(계산 중엔 손이 빠진다).
+	_box.add_child(_label("손 하나가 물건 하나를 만든다 — 직원마다 만드는 손이 하나 는다", 11, Color("8a7a63"), true))
 	if sim.staff_of(shop_id) < smax:
 		var sc: float = sim.staff_cost(shop_id)
 		_box.add_child(_btn("직원 들이기 🪙" + Num.fmt(sc), sim.can_hire_staff(shop_id),
 			func(): sim.hire_staff(shop_id); rebuild()))
 	else:
-		# 왜 더 못 뽑는지를 적어 준다. 안 적으면 "승급하면 늘겠지" 하고
-		# 기다리게 되는데, 그런 날은 오지 않는다.
-		_box.add_child(_label("일손은 여기까지다 — 승급해도 안 늘어난다", 13, Color("4a7c59")))
-		_box.add_child(_label("둘째 직원부터는 아무것도 안 바뀐다. 재 봤다 — 계산하느라 생산이 멈추는 일은 한 명이면 이미 사라지고, 그다음 병목은 만드는 손이 아니라 손님 수다.",
-			11, Color("8a7a63"), true))
+		_box.add_child(_label("일손이 다 찼다 — 넷이면 매대 넷이 동시에 돈다", 13, Color("4a7c59")))
 
 	var ud: Variant = sim.shop_up_def(shop_id)
 	if ud == null:

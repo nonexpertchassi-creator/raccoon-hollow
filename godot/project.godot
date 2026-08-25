@@ -27,7 +27,15 @@ application/boot_splash/bg_color=Color(0.435, 0.506, 0.349, 1)
 application/boot_splash/fullsize=false
 application/boot_splash/use_filter=true
 config/features=PackedStringArray("4.7", "GL Compatibility")
-"프로젝트가 손상됐다ê³ ë§íë¤(ì¬ì¤ì'ìë¤'ëë»).config/icon"="res://art/icon.png"
+# 앱 아이콘. 없으면 아이폰 내보내기가 도중에 멈춘다.
+config/icon="res://art/icon.png"
+
+[input_devices]
+
+; 손가락을 마우스처럼(폰), 마우스를 손가락처럼(컴퓨터) — 양쪽 다 켠다.
+; 뒤엣것이 없으면 컴퓨터에서 마우스 끌기로 창(스크롤)이 안 밀린다(유저 지적).
+pointing/emulate_mouse_from_touch=true
+pointing/emulate_touch_from_mouse=true
 
 [display]
 

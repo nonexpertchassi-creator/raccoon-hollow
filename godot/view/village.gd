@@ -641,6 +641,14 @@ func _stall(i: int, k: int, spot: Vector2i) -> void:
 		_sprite(pic, p + Vector2(0, -6), "items")
 	else:
 		_text(p + Vector2(0, -6), String(it.icon), 22, Color.WHITE)
+	# 만드는 중인 물건에만 작은 로딩 파이 — 손 하나가 물건 하나를 만드니
+	# 이제 "지금 어느 것이 만들어지나"가 정보다(레퍼런스의 초록 원형 시계).
+	var st2: Dictionary = sim.items[it.id]
+	if sim._crafting.has(String(it.id)):
+		var pr2: float = clampf(st2.prog / sim.craft_time(String(it.id)), 0.0, 1.0)
+		var ry2: Vector2 = p + Vector2(16, -40)
+		draw_circle(ry2, 8.5, Color(0.13, 0.22, 0.14, 0.75))
+		draw_arc(ry2, 6.0, -PI / 2, -PI / 2 + TAU * pr2, 20, Color("6fce7e"), 4.0)
 
 	# ★ 재고 숫자·진행 고리는 지웠다(2026-08-25, 유저 지적). 그림이 오기 전엔
 	#   그 숫자가 화면의 전부였는데, 이제는 물건 그림을 동그라미로 가리는
@@ -903,23 +911,24 @@ func _order(wk: Dictionary) -> void:
 	# **맨 앞사람만** — 줄을 세운 이유의 절반이 이것이다(자바스크립트판에서 얻은 답).
 	if _line_index(wk) != 0:
 		return
-	var show: int = min(3, sold.size())
-	var more: int = sold.size() - show
-	var wd: float = 18.0 + show * 40.0 + (26.0 if more > 0 else 0.0)
-	var y: Vector2 = wk.pos + Vector2(0, -78 + sin(_t * 3.4) * 1.6)
-	_chip(y, wd, 24, Color(0.99, 0.96, 0.91, 0.95))
-	var x: float = y.x - wd * 0.5 + 12.0
-	for i in range(show):
-		var sg: Dictionary = sold[i]
-		var pic: Texture2D = Art.ranked("items", String(sg.id), sim.rank_of(String(Content.SHOPS[wk.shop].id)))
-		if pic != null:
-			draw_texture_rect(pic, Rect2(Vector2(x - 2, y.y + 2), Vector2(16, 18)), false)
-		else:
-			_text(Vector2(x + 6, y.y + 18), String(sg.icon), 14, Color.WHITE)
-		_text(Vector2(x + 26, y.y + 18), str(int(sg.n)), 13, C.ink)
-		x += 40.0
+	# 레퍼런스(고양이 스낵바) 말: **흰 말풍선 + 꼬리 + 물건 하나 크게 + 개수.**
+	# 여러 종류면 첫 것을 크게, 나머지는 +N — 말풍선이 손님보다 크면 길을 덮는다.
+	var first: Dictionary = sold[0]
+	var more: int = sold.size() - 1
+	var wd: float = 66.0 + (24.0 if more > 0 else 0.0)
+	var y: Vector2 = wk.pos + Vector2(4, -92 + sin(_t * 3.4) * 1.6)
+	_chip(y, wd, 34, Color(1.0, 0.99, 0.96, 0.97))
+	draw_colored_polygon(PackedVector2Array([
+		y + Vector2(-7, 33), y + Vector2(7, 33), y + Vector2(-2, 44)]), Color(1.0, 0.99, 0.96, 0.97))
+	var x0: float = y.x - wd * 0.5 + 6.0
+	var pic4: Texture2D = Art.ranked("items", String(first.id), sim.rank_of(String(Content.SHOPS[wk.shop].id)))
+	if pic4 != null:
+		draw_texture_rect(pic4, Rect2(Vector2(x0, y.y + 3), Vector2(24, 28)), false)
+	else:
+		_text(Vector2(x0 + 12, y.y + 24), String(first.icon), 19, Color.WHITE)
+	_text(Vector2(x0 + 41, y.y + 25), "×%d" % int(first.n), 16, C.ink)
 	if more > 0:
-		_text(Vector2(x + 10, y.y + 18), "+%d" % more, 12, C.ink2)
+		_text(Vector2(y.x + wd * 0.5 - 13, y.y + 24), "+%d" % more, 12, C.ink2)
 
 ## 물어보는 말풍선 — 현판 바로 위. 깊이 정렬 밖에 그린다(지붕에 가리면 못 읽는다).
 func _bubble() -> void:

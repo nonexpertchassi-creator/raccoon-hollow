@@ -133,6 +133,9 @@ var _questDone: Array = []
 var orders: Array = []
 var _oid: int = 0
 var _hold: Dictionary = {}
+## 이번 틱에 실제로 만들어지고 있는 물건들 — 화면이 로딩 파이를 그리는 데 쓴다.
+## 저장 안 한다(매 틱 다시 채워진다).
+var _crafting: Dictionary = {}
 var _pestEvents: Array = []
 var _guestAcc: Dictionary = {}
 var _guestGap: Dictionary = {}
@@ -485,15 +488,27 @@ func price(id: String) -> float:
 func craft_time(id: String) -> float:
 	var it: Dictionary = item_by_id(id)
 	var f: float = max(Content.LEVEL.timeFloor, pow(Content.LEVEL.timeReduce, lv(id) - 1.0))
-	return it.time * f * forge_mul() * _forge_of(it.shop)
+	# handSpeed — 손 하나의 손놀림 배수(생산 개편 보정, content.js의 CRAFT 참고)
+	return it.time * f * forge_mul() * _forge_of(it.shop) / Content.CRAFT.handSpeed
 
 func cap_of(id: String) -> float:
 	return Content.STOCK_CAP + Content.STAFF.capAdd * staff_of(item_by_id(id).shop)
 
+## 초당 수입 어림. 손이 물건보다 적으면 그만큼 깎아 센다 —
+## 생산이 손 수에 묶였으니(위 개편) 어림도 같이 묶여야 승급 문턱이 거짓말을 안 한다.
 func income_per_sec() -> float:
 	var s: float = 0.0
-	for id in items.keys():
-		s += price(id) / craft_time(id)
+	for sh in shops:
+		var hands: int = 1 + int(staff_of(String(sh)))
+		var ids: Array = []
+		for it in shop_by_id(String(sh)).items:
+			if items.has(String(it.id)):
+				ids.append(String(it.id))
+		if ids.is_empty():
+			continue
+		var mul: float = minf(1.0, float(hands) / float(ids.size()))
+		for id in ids:
+			s += price(id) / craft_time(id) * mul
 	return s
 
 func _step_cost(id: String, at_lv: float) -> float:
@@ -999,19 +1014,36 @@ func tick(dt: float, rng: Rng) -> Dictionary:
 	if rush > 0.0:
 		rush = max(0.0, rush - dt)
 	var speed: float = Content.GEM.rush.mult if rush > 0.0 else 1.0
-	for id in items.keys():
-		var st: Dictionary = items[id]
-		var shop: String = item_by_id(id).shop
-		if staff_of(shop) == 0.0 and _hold.get(shop, 0.0) > 0.0:
+	# ★ 2026-08-25 생산 개편 — **손 하나가 물건 하나를 만든다.**
+	#   예전에는 열린 물건 전부가 동시에 만들어졌다(일꾼 수 무관). 이제
+	#   가게의 손 수 = 점장 1 + 직원 수. 점장이 계산 중이면(_hold) 손이
+	#   하나 빠진다 — 직원은 만들기만 하고 점장은 만들다 계산도 한다.
+	#   매대 순서대로 앞에서부터 손을 배정한다. 다 찬 물건은 손을 안 쓴다.
+	_crafting = {}
+	for sh in shops:
+		var hands: int = 1 + int(staff_of(String(sh)))
+		if _hold.get(sh, 0.0) > 0.0:
+			hands -= 1
+		if hands <= 0:
 			continue
-		if st.stock >= cap_of(id) and _order_rem(id) == 0.0:
-			continue
-		st.prog += dt * speed
-		var need: float = craft_time(id)
-		while st.prog >= need and (_order_rem(id) > 0.0 or st.stock < cap_of(id)):
-			st.prog -= need
-			if not _give_to_order(id):
-				st.stock += 1.0
+		var used: int = 0
+		for it in shop_by_id(String(sh)).items:
+			if used >= hands:
+				break
+			var id: String = String(it.id)
+			if not items.has(id):
+				continue
+			var st: Dictionary = items[id]
+			if st.stock >= cap_of(id) and _order_rem(id) == 0.0:
+				continue
+			st.prog += dt * speed
+			_crafting[id] = true
+			used += 1
+			var need: float = craft_time(id)
+			while st.prog >= need and (_order_rem(id) > 0.0 or st.stock < cap_of(id)):
+				st.prog -= need
+				if not _give_to_order(id):
+					st.stock += 1.0
 
 	# 1.2) 주문 시계
 	var done: Array = []

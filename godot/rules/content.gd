@@ -65,6 +65,10 @@ const CARD_GRADES := [
 	}
 ]
 
+const CRAFT := {
+	"handSpeed": 2.0
+}
+
 const DISTRICTS := [
 	{
 		"id": "angol",
@@ -2434,32 +2438,35 @@ const SMALL_SHOPS := [
 
 const STAFF := {
 	"capAdd": 10.0,
-	"max": 1.0,
+	"max": 4.0,
 	"costMul": [
-		0.06
+		0.06,
+		0.001,
+		0.003,
+		0.008
 	]
 }
 
 const STAFF_RANKS := [
 	{
 		"id": "band",
-		"name": "머리띠 알바",
+		"name": "머리띠",
 		"hat": "수건 머리띠"
 	},
 	{
-		"id": "chorip",
-		"name": "초립 일꾼",
-		"hat": "초립(누런 풀 갓)"
+		"id": "whitehood",
+		"name": "흰 두건",
+		"hat": "흰 무명 두건"
 	},
 	{
-		"id": "paeraengi",
-		"name": "패랭이 선임",
-		"hat": "패랭이(챙 넓은 대나무 갓)"
+		"id": "grayhood",
+		"name": "회색 두건",
+		"hat": "잿빛 두건"
 	},
 	{
-		"id": "baengnip",
-		"name": "백립 매니저",
-		"hat": "백립(흰 갓)"
+		"id": "blackhood",
+		"name": "검정 두건",
+		"hat": "검정 두건 — 제일 높다"
 	}
 ]
 
