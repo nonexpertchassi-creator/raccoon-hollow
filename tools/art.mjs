@@ -71,6 +71,11 @@ const GROUPS = [
   { dir: 'cards', size: '512×768', title: '점장 카드 승급판 (2·3등급)', optional: true,
     rows: SHOPS.flatMap((sh) => [2, 3].map((k) => ({ id: `${sh.id}-${k}`,
       why: `${sh.name} — ${sh.ranks[k - 1]} 등급` }))) },
+  { dir: 'counters', size: '168×144', title: '계산대', optional: true,
+    note: '점장이 서서 파는 곳. **정면치기 한 장이면 된다** — 마당 문 방향에 따라\n' +
+          '코드가 좌우로 뒤집는다. 좌우 비대칭 소품(주판·엽전함)을 올려도 뒤집혀\n' +
+          '어색하지 않게, 되도록 가운데 배치로. 없으면 나무 상자를 그린다.',
+    rows: SHOPS.map((sh) => ({ id: sh.id, why: `${sh.name} 계산대` })) },
   { dir: 'kilns', size: '168×192', title: '가마·풀무',
     note: '마당 뒤쪽의 만드는 기계 — 대장간은 풀무·화덕, 옹기점은 가마, 국밥집은 가마솥.\n' +
           '승급 그림(`smith-1.png`·`smith-2.png`)을 넣으면 등급 따라 갈아입는다(선택).\n' +

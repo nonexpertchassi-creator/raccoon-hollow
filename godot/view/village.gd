@@ -525,13 +525,18 @@ func _stall(i: int, k: int, spot: Vector2i) -> void:
 	var it: Dictionary = shop.items[k]
 
 	if not sim.is_open(it.id):
-		# 안 연 칸은 **회색 네모에 +** 하나다(유저 결정 — "? ? ?"와 값 글자를
-		# 걷어냈다). 살 수 있으면 +가 초록으로 바뀐다. 값은 눌러서 창에서 본다.
+		# 안 연 칸은 **바닥과 같은 1×1 마름모**에 + 하나다(유저 결정).
+		# 처음엔 화면에 똑바로 선 네모로 그렸는데, 세상 속 빈 자리가 아니라
+		# 공중에 뜬 딱지처럼 보였다 — 빈 매대 자리는 땅바닥이지 창(UI)이 아니다.
+		# 살 수 있으면 초록으로 바뀐다. 값은 눌러서 창에서 본다.
 		var can: bool = sim.can_open_item(it.id)
-		var box := Rect2(p + Vector2(-16, -30), Vector2(32, 32))
-		draw_rect(box, Color(0.98, 0.96, 0.9, 0.55) if can else Color(0.55, 0.52, 0.45, 0.25))
-		draw_rect(box, C.jade if can else Color(0.4, 0.37, 0.3, 0.5), false, 2.0)
-		_text(p + Vector2(0, 0), "+", 26, C.jade if can else Color(0.4, 0.37, 0.3, 0.6))
+		var tN: Vector2 = Iso.w(o.x + spot.x, o.y + spot.y)
+		var tE: Vector2 = Iso.w(o.x + spot.x + 1, o.y + spot.y)
+		var tS: Vector2 = Iso.w(o.x + spot.x + 1, o.y + spot.y + 1)
+		var tW: Vector2 = Iso.w(o.x + spot.x, o.y + spot.y + 1)
+		_quad(tN, tE, tS, tW, Color(0.62, 0.78, 0.55, 0.4) if can else Color(0.45, 0.42, 0.36, 0.18))
+		_outline(tN, tE, tS, tW, C.jade if can else Color(0.4, 0.37, 0.3, 0.45), 2.0)
+		_text(p + Vector2(0, 8), "+", 24, C.jade if can else Color(0.4, 0.37, 0.3, 0.55))
 		return
 
 
@@ -573,10 +578,18 @@ func _stall(i: int, k: int, spot: Vector2i) -> void:
 
 func _counter(i: int) -> void:
 	var o: Vector2i = Iso.org(sim, i)
-	var ct: Vector2i = Iso.yard(Iso.YARD_KIND[i], Iso.plot_dim(sim, i)).counter
-	_box(o.x + ct.x + 0.16, o.y + ct.y + 0.3, 0.68, 0.4, 18, C.paper2, C.wood2)
+	var yd: Dictionary = Iso.yard(Iso.YARD_KIND[i], Iso.plot_dim(sim, i))
+	var ct: Vector2i = yd.counter
 	var p: Vector2 = Iso.w(o.x + ct.x + 0.5, o.y + ct.y + 0.5)
-	draw_circle(p + Vector2(8, -24), 4.5, Color("c9a227"))
+	# 계산대도 매대와 같은 규칙이다 — **정면치기 한 장 + 코드 뒤집기.**
+	# 마당의 문이 어느 쪽이냐(gate x·y)에 따라 손님이 서는 쪽이 갈리는데,
+	# 그림을 두 장 받는 대신 한 장을 좌우로 뒤집는다.
+	var pic3: Texture2D = Art.ranked("counters", String(Content.SHOPS[i].id), sim.rank_of(String(Content.SHOPS[i].id)))
+	if pic3 != null:
+		_sprite(pic3, p + Vector2(0, 14), "counters", String(yd.gate) == "y")
+	else:
+		_box(o.x + ct.x + 0.16, o.y + ct.y + 0.3, 0.68, 0.4, 18, C.paper2, C.wood2)
+		draw_circle(p + Vector2(8, -24), 4.5, Color("c9a227"))
 
 func _small(i: int) -> void:
 	var t: Vector2i = Iso.SMALL_T[i]
