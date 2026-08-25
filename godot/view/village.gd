@@ -90,6 +90,9 @@ var clerks: Array = []
 var _staffAt: Dictionary = {}
 ## 줄 도착 순번표 — 늘어나기만 하는 번호. 도착한 차례가 곧 줄 차례다.
 var _lineSeq: int = 0
+## 마당 칸 번호(1~n²)를 바닥에 깐다 — "6번 매대" 같은 말이 통하게 하는
+## **대화용 자**다(유저). G 키로 껐다 켠다. 내보내기 전에 기본값을 끈다.
+var show_grid: bool = true
 ## 낮과 밤 — 도구가 시각을 못 박을 때 쓴다(0~1, 음수면 게임 시계를 따른다).
 var clock_override: float = -1.0
 const CLERK_SPEED := 130.0
@@ -1377,6 +1380,17 @@ func _draw() -> void:
 	for i2 in range(Content.SHOPS.size()):
 		if sim.shops.has(String(Content.SHOPS[i2].id)):
 			_yard_signs(i2)
+	# 칸 번호 자 — 맨 위에 그린다. 가구에 가리면 자 노릇을 못 한다.
+	if show_grid:
+		for gi2 in range(Content.SHOPS.size()):
+			if not sim.shops.has(String(Content.SHOPS[gi2].id)):
+				continue
+			var go: Vector2i = Iso.org(sim, gi2)
+			var gn: int = Iso.plot_dim(sim, gi2)
+			for gy in range(gn):
+				for gx in range(gn):
+					var gp: Vector2 = Iso.w(go.x + gx + 0.5, go.y + gy + 0.5)
+					_text(gp + Vector2(0, 5), str(gy * gn + gx + 1), 11, Color(0.15, 0.1, 0.05, 0.55))
 	for f in floats:
 		var a: float = clampf(f.t, 0.0, 1.0)
 		_chip(f.pos, 22.0 + String(f.text).length() * 11.0, 21, Color(0.17, 0.14, 0.11, 0.82 * a))

@@ -378,6 +378,11 @@ func _paint() -> void:
 ## 화면을 끌어서 마을을 둘러보고, 눌러서 논다.
 ## 마을 밖으로는 못 나간다 — 끝없는 초록 벌판이 나오면 길을 잃는다.
 func _unhandled_input(e: InputEvent) -> void:
+	# G — 마당 칸 번호 자(대화용) 껐다 켜기
+	if e is InputEventKey and (e as InputEventKey).pressed and (e as InputEventKey).keycode == KEY_G:
+		village.show_grid = not village.show_grid
+		village.queue_redraw()
+		return
 	# 두 손가락 — 폰에서 크게·작게. 손가락 하나는 밀기라 여기서 안 본다.
 	if e is InputEventScreenTouch:
 		var st := e as InputEventScreenTouch
