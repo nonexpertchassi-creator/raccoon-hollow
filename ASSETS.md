@@ -183,7 +183,7 @@ Godot이 그림을 제 방식으로 한 번 읽어 두는 과정이다(에디터
 > 이 칸은 `node tools/art.mjs --write`가 다시 쓴다.
 > **그림을 폴더에 넣으면 목록에서 저절로 빠진다** — 손으로 지울 필요 없다.
 
-**170 / 245장** 들어왔다.
+**170 / 547장** 들어왔다.
 
 ### 점장 너구리 — `godot/art/hero/` · 144×144 · **0장 남음**
 
@@ -241,6 +241,253 @@ Godot이 그림을 제 방식으로 한 번 읽어 두는 과정이다(에디터
 - [ ] `byeongpung.png` — 나전방 · 자개병풍 (지금 🖼️)
 - [ ] `najeonnong.png` — 나전방 · 나전롱 (지금 👘)
 
+### 물건 승급판 (2·3등급) — `godot/art/items/` · 128×224 · **240장 남음**
+
+**등급 테두리(은·금 고리)를 지웠다** — 승급은 물건 그림 자체가 바뀌는 것으로 보여준다.
+같은 물건이 격이 오른 모습으로: 무쇠도끼 → 참쇠도끼(날이 서고) → 강철도끼(광이 난다).
+파일명은 `<물건id>-1.png`(2등급) · `<물건id>-2.png`(3등급).
+
+- [ ] `pick-1.png` — 참쇠곡괭이 (대장간)
+- [ ] `pick-2.png` — 강철곡괭이 (대장간)
+- [ ] `sickle-1.png` — 참쇠낫 (대장간)
+- [ ] `sickle-2.png` — 강철낫 (대장간)
+- [ ] `hoe-1.png` — 참쇠호미 (대장간)
+- [ ] `hoe-2.png` — 강철호미 (대장간)
+- [ ] `axe-1.png` — 참쇠도끼 (대장간)
+- [ ] `axe-2.png` — 강철도끼 (대장간)
+- [ ] `shears-1.png` — 참쇠가위 (대장간)
+- [ ] `shears-2.png` — 강철가위 (대장간)
+- [ ] `knife-1.png` — 참쇠부엌칼 (대장간)
+- [ ] `knife-2.png` — 강철부엌칼 (대장간)
+- [ ] `lock-1.png` — 참쇠자물쇠 (대장간)
+- [ ] `lock-2.png` — 강철자물쇠 (대장간)
+- [ ] `cauldr-1.png` — 참쇠가마솥 (대장간)
+- [ ] `cauldr-2.png` — 강철가마솥 (대장간)
+- [ ] `brush-1.png` — 고운붓 (필방)
+- [ ] `brush-2.png` — 명품붓 (필방)
+- [ ] `ink-1.png` — 고운먹 (필방)
+- [ ] `ink-2.png` — 명품먹 (필방)
+- [ ] `inkstone-1.png` — 고운벼루 (필방)
+- [ ] `inkstone-2.png` — 명품벼루 (필방)
+- [ ] `waterp-1.png` — 고운연적 (필방)
+- [ ] `waterp-2.png` — 명품연적 (필방)
+- [ ] `brushpot-1.png` — 고운필통 (필방)
+- [ ] `brushpot-2.png` — 명품필통 (필방)
+- [ ] `bookmk-1.png` — 고운서산 (필방)
+- [ ] `bookmk-2.png` — 명품서산 (필방)
+- [ ] `brushrk-1.png` — 고운붓걸이 (필방)
+- [ ] `brushrk-2.png` — 명품붓걸이 (필방)
+- [ ] `album-1.png` — 고운화첩 (필방)
+- [ ] `album-2.png` — 명품화첩 (필방)
+- [ ] `hanji-1.png` — 고운한지 (지물포)
+- [ ] `hanji-2.png` — 진상한지 (지물포)
+- [ ] `fan-1.png` — 고운부채 (지물포)
+- [ ] `fan-2.png` — 진상부채 (지물포)
+- [ ] `window-1.png` — 고운창호지 (지물포)
+- [ ] `window-2.png` — 진상창호지 (지물포)
+- [ ] `floorp-1.png` — 고운장지 (지물포)
+- [ ] `floorp-2.png` — 진상장지 (지물포)
+- [ ] `kite-1.png` — 고운연 (지물포)
+- [ ] `kite-2.png` — 진상연 (지물포)
+- [ ] `umbrel-1.png` — 고운지우산 (지물포)
+- [ ] `umbrel-2.png` — 진상지우산 (지물포)
+- [ ] `lantrn-1.png` — 고운지등 (지물포)
+- [ ] `lantrn-2.png` — 진상지등 (지물포)
+- [ ] `screen-1.png` — 고운병풍 (지물포)
+- [ ] `screen-2.png` — 진상병풍 (지물포)
+- [ ] `jar-1.png` — 오지옹기 (옹기점)
+- [ ] `jar-2.png` — 왕실옹기 (옹기점)
+- [ ] `bowl-1.png` — 오지사발 (옹기점)
+- [ ] `bowl-2.png` — 왕실사발 (옹기점)
+- [ ] `celad-1.png` — 오지청자 (옹기점)
+- [ ] `celad-2.png` — 왕실청자 (옹기점)
+- [ ] `steamr-1.png` — 오지시루 (옹기점)
+- [ ] `steamr-2.png` — 왕실시루 (옹기점)
+- [ ] `bottle-1.png` — 오지술병 (옹기점)
+- [ ] `bottle-2.png` — 왕실술병 (옹기점)
+- [ ] `teaset-1.png` — 오지다기 (옹기점)
+- [ ] `teaset-2.png` — 왕실다기 (옹기점)
+- [ ] `censer-1.png` — 오지향로 (옹기점)
+- [ ] `censer-2.png` — 왕실향로 (옹기점)
+- [ ] `moonjr-1.png` — 오지달항아리 (옹기점)
+- [ ] `moonjr-2.png` — 왕실달항아리 (옹기점)
+- [ ] `root-1.png` — 묵은도라지 (약재상)
+- [ ] `root-2.png` — 천년도라지 (약재상)
+- [ ] `ginseng-1.png` — 묵은산삼 (약재상)
+- [ ] `ginseng-2.png` — 천년산삼 (약재상)
+- [ ] `antler-1.png` — 묵은녹용 (약재상)
+- [ ] `antler-2.png` — 천년녹용 (약재상)
+- [ ] `bezoar-1.png` — 묵은우황 (약재상)
+- [ ] `bezoar-2.png` — 천년우황 (약재상)
+- [ ] `danggui-1.png` — 묵은당귀 (약재상)
+- [ ] `danggui-2.png` — 천년당귀 (약재상)
+- [ ] `reishi-1.png` — 묵은영지 (약재상)
+- [ ] `reishi-2.png` — 천년영지 (약재상)
+- [ ] `agar-1.png` — 묵은침향 (약재상)
+- [ ] `agar-2.png` — 천년침향 (약재상)
+- [ ] `elixir-1.png` — 묵은경옥고 (약재상)
+- [ ] `elixir-2.png` — 천년경옥고 (약재상)
+- [ ] `bap-1.png` — 곰국국밥 (국밥집)
+- [ ] `bap-2.png` — 용봉탕국밥 (국밥집)
+- [ ] `kuk-1.png` — 곰국장국 (국밥집)
+- [ ] `kuk-2.png` — 용봉탕장국 (국밥집)
+- [ ] `sujebi-1.png` — 곰국수제비 (국밥집)
+- [ ] `sujebi-2.png` — 용봉탕수제비 (국밥집)
+- [ ] `naeng-1.png` — 곰국냉국 (국밥집)
+- [ ] `naeng-2.png` — 용봉탕냉국 (국밥집)
+- [ ] `gomtang-1.png` — 곰국곰탕 (국밥집)
+- [ ] `gomtang-2.png` — 용봉탕곰탕 (국밥집)
+- [ ] `samgye-1.png` — 곰국삼계탕 (국밥집)
+- [ ] `samgye-2.png` — 용봉탕삼계탕 (국밥집)
+- [ ] `chueo-1.png` — 곰국추어탕 (국밥집)
+- [ ] `chueo-2.png` — 용봉탕추어탕 (국밥집)
+- [ ] `yongbong-1.png` — 곰국용봉탕 (국밥집)
+- [ ] `yongbong-2.png` — 용봉탕용봉탕 (국밥집)
+- [ ] `makgeol-1.png` — 청막걸리 (객주)
+- [ ] `makgeol-2.png` — 법막걸리 (객주)
+- [ ] `jeon-1.png` — 청파전 (객주)
+- [ ] `jeon-2.png` — 법파전 (객주)
+- [ ] `dongdong-1.png` — 청동동주 (객주)
+- [ ] `dongdong-2.png` — 법동동주 (객주)
+- [ ] `muk-1.png` — 청묵무침 (객주)
+- [ ] `muk-2.png` — 법묵무침 (객주)
+- [ ] `cheongju-1.png` — 청청주 (객주)
+- [ ] `cheongju-2.png` — 법청주 (객주)
+- [ ] `bossam-1.png` — 청보쌈 (객주)
+- [ ] `bossam-2.png` — 법보쌈 (객주)
+- [ ] `beopju-1.png` — 청법주 (객주)
+- [ ] `beopju-2.png` — 법법주 (객주)
+- [ ] `gujeol-1.png` — 청구절판 (객주)
+- [ ] `gujeol-2.png` — 법구절판 (객주)
+- [ ] `tteokggo-1.png` — 참숯떡꼬치 (꼬치집)
+- [ ] `tteokggo-2.png` — 백탄떡꼬치 (꼬치집)
+- [ ] `dakggo-1.png` — 참숯닭꼬치 (꼬치집)
+- [ ] `dakggo-2.png` — 백탄닭꼬치 (꼬치집)
+- [ ] `beoseot-1.png` — 참숯버섯꼬치 (꼬치집)
+- [ ] `beoseot-2.png` — 백탄버섯꼬치 (꼬치집)
+- [ ] `saengseon-1.png` — 참숯생선꼬치 (꼬치집)
+- [ ] `saengseon-2.png` — 백탄생선꼬치 (꼬치집)
+- [ ] `sanjeok-1.png` — 참숯산적 (꼬치집)
+- [ ] `sanjeok-2.png` — 백탄산적 (꼬치집)
+- [ ] `jangeo-1.png` — 참숯장어구이 (꼬치집)
+- [ ] `jangeo-2.png` — 백탄장어구이 (꼬치집)
+- [ ] `neobiani-1.png` — 참숯너비아니 (꼬치집)
+- [ ] `neobiani-2.png` — 백탄너비아니 (꼬치집)
+- [ ] `yukhoe-1.png` — 참숯육회 (꼬치집)
+- [ ] `yukhoe-2.png` — 백탄육회 (꼬치집)
+- [ ] `garae-1.png` — 찹쌀가래떡 (떡집)
+- [ ] `garae-2.png` — 진상가래떡 (떡집)
+- [ ] `injeol-1.png` — 찹쌀인절미 (떡집)
+- [ ] `injeol-2.png` — 진상인절미 (떡집)
+- [ ] `songpyeon-1.png` — 찹쌀송편 (떡집)
+- [ ] `songpyeon-2.png` — 진상송편 (떡집)
+- [ ] `baekseol-1.png` — 찹쌀백설기 (떡집)
+- [ ] `baekseol-2.png` — 진상백설기 (떡집)
+- [ ] `yaksik-1.png` — 찹쌀약식 (떡집)
+- [ ] `yaksik-2.png` — 진상약식 (떡집)
+- [ ] `hwajeon-1.png` — 찹쌀화전 (떡집)
+- [ ] `hwajeon-2.png` — 진상화전 (떡집)
+- [ ] `dasik-1.png` — 찹쌀다식 (떡집)
+- [ ] `dasik-2.png` — 진상다식 (떡집)
+- [ ] `yugwa-1.png` — 찹쌀유과 (떡집)
+- [ ] `yugwa-2.png` — 진상유과 (떡집)
+- [ ] `dwaeji-1.png` — 상돼지고기 (푸줏간)
+- [ ] `dwaeji-2.png` — 진상돼지고기 (푸줏간)
+- [ ] `dak-1.png` — 상닭고기 (푸줏간)
+- [ ] `dak-2.png` — 진상닭고기 (푸줏간)
+- [ ] `sogogi-1.png` — 상쇠고기 (푸줏간)
+- [ ] `sogogi-2.png` — 진상쇠고기 (푸줏간)
+- [ ] `galbi-1.png` — 상갈비 (푸줏간)
+- [ ] `galbi-2.png` — 진상갈비 (푸줏간)
+- [ ] `ugeoji-1.png` — 상우거지 (푸줏간)
+- [ ] `ugeoji-2.png` — 진상우거지 (푸줏간)
+- [ ] `gopchang-1.png` — 상곱창 (푸줏간)
+- [ ] `gopchang-2.png` — 진상곱창 (푸줏간)
+- [ ] `ansim-1.png` — 상안심 (푸줏간)
+- [ ] `ansim-2.png` — 진상안심 (푸줏간)
+- [ ] `hanwoo-1.png` — 상한우 등심 (푸줏간)
+- [ ] `hanwoo-2.png` — 진상한우 등심 (푸줏간)
+- [ ] `gulbi-1.png` — 말린굴비 (어물전)
+- [ ] `gulbi-2.png` — 진상굴비 (어물전)
+- [ ] `miyeok-1.png` — 말린미역 (어물전)
+- [ ] `miyeok-2.png` — 진상미역 (어물전)
+- [ ] `jeotgal-1.png` — 말린젓갈 (어물전)
+- [ ] `jeotgal-2.png` — 진상젓갈 (어물전)
+- [ ] `bugeo-1.png` — 말린북어 (어물전)
+- [ ] `bugeo-2.png` — 진상북어 (어물전)
+- [ ] `gim-1.png` — 말린김 (어물전)
+- [ ] `gim-2.png` — 진상김 (어물전)
+- [ ] `jaban-1.png` — 말린자반 (어물전)
+- [ ] `jaban-2.png` — 진상자반 (어물전)
+- [ ] `muneo-1.png` — 말린문어 (어물전)
+- [ ] `muneo-2.png` — 진상문어 (어물전)
+- [ ] `jeonbok-1.png` — 말린전복 (어물전)
+- [ ] `jeonbok-2.png` — 진상전복 (어물전)
+- [ ] `mumyeong-1.png` — 명주무명 (포목전)
+- [ ] `mumyeong-2.png` — 비단무명 (포목전)
+- [ ] `sambe-1.png` — 명주삼베 (포목전)
+- [ ] `sambe-2.png` — 비단삼베 (포목전)
+- [ ] `mosi-1.png` — 명주모시 (포목전)
+- [ ] `mosi-2.png` — 비단모시 (포목전)
+- [ ] `myeongju-1.png` — 명주명주 (포목전)
+- [ ] `myeongju-2.png` — 비단명주 (포목전)
+- [ ] `yeomnang-1.png` — 명주염낭 (포목전)
+- [ ] `yeomnang-2.png` — 비단염낭 (포목전)
+- [ ] `bidan-1.png` — 명주비단 (포목전)
+- [ ] `bidan-2.png` — 비단비단 (포목전)
+- [ ] `gwanbok-1.png` — 명주관복감 (포목전)
+- [ ] `gwanbok-2.png` — 비단관복감 (포목전)
+- [ ] `hollye-1.png` — 명주혼례비단 (포목전)
+- [ ] `hollye-2.png` — 비단혼례비단 (포목전)
+- [ ] `satgat-1.png` — 중삿갓 (갓방)
+- [ ] `satgat-2.png` — 진상삿갓 (갓방)
+- [ ] `manggeon-1.png` — 중망건 (갓방)
+- [ ] `manggeon-2.png` — 진상망건 (갓방)
+- [ ] `tanggeon-1.png` — 중탕건 (갓방)
+- [ ] `tanggeon-2.png` — 진상탕건 (갓방)
+- [ ] `gatkkeun-1.png` — 중갓끈 (갓방)
+- [ ] `gatkkeun-2.png` — 진상갓끈 (갓방)
+- [ ] `heungnip-1.png` — 중흑립 (갓방)
+- [ ] `heungnip-2.png` — 진상흑립 (갓방)
+- [ ] `jurip-1.png` — 중주립 (갓방)
+- [ ] `jurip-2.png` — 진상주립 (갓방)
+- [ ] `jeongjagwan-1.png` — 중정자관 (갓방)
+- [ ] `jeongjagwan-2.png` — 진상정자관 (갓방)
+- [ ] `oknorip-1.png` — 중옥로립 (갓방)
+- [ ] `oknorip-2.png` — 진상옥로립 (갓방)
+- [ ] `notsujeo-1.png` — 상놋수저 (유기전)
+- [ ] `notsujeo-2.png` — 왕실놋수저 (유기전)
+- [ ] `notjubal-1.png` — 상놋주발 (유기전)
+- [ ] `notjubal-2.png` — 왕실놋주발 (유기전)
+- [ ] `notjaengban-1.png` — 상놋쟁반 (유기전)
+- [ ] `notjaengban-2.png` — 왕실놋쟁반 (유기전)
+- [ ] `notchotdae-1.png` — 상놋촛대 (유기전)
+- [ ] `notchotdae-2.png` — 왕실놋촛대 (유기전)
+- [ ] `nothwaro-1.png` — 상놋화로 (유기전)
+- [ ] `nothwaro-2.png` — 왕실놋화로 (유기전)
+- [ ] `notdaeya-1.png` — 상놋대야 (유기전)
+- [ ] `notdaeya-2.png` — 왕실놋대야 (유기전)
+- [ ] `jegi-1.png` — 상제기 (유기전)
+- [ ] `jegi-2.png` — 왕실제기 (유기전)
+- [ ] `bansangki-1.png` — 상반상기 (유기전)
+- [ ] `bansangki-2.png` — 왕실반상기 (유기전)
+- [ ] `najeonbit-1.png` — 진주나전빗 (나전방)
+- [ ] `najeonbit-2.png` — 왕실나전빗 (나전방)
+- [ ] `gyeongdae-1.png` — 진주경대 (나전방)
+- [ ] `gyeongdae-2.png` — 왕실경대 (나전방)
+- [ ] `ham-1.png` — 진주함 (나전방)
+- [ ] `ham-2.png` — 왕실함 (나전방)
+- [ ] `mungap-1.png` — 진주문갑 (나전방)
+- [ ] `mungap-2.png` — 왕실문갑 (나전방)
+- [ ] `jwagyeong-1.png` — 진주좌경 (나전방)
+- [ ] `jwagyeong-2.png` — 왕실좌경 (나전방)
+- [ ] `samcheungjang-1.png` — 진주삼층장 (나전방)
+- [ ] `samcheungjang-2.png` — 왕실삼층장 (나전방)
+- [ ] `byeongpung-1.png` — 진주자개병풍 (나전방)
+- [ ] `byeongpung-2.png` — 왕실자개병풍 (나전방)
+- [ ] `najeonnong-1.png` — 진주나전롱 (나전방)
+- [ ] `najeonnong-2.png` — 왕실나전롱 (나전방)
+
 ### 직원 너구리 — `godot/art/staff/` · 144×144 · **0장 남음**
 
 **점장과 같은 몸, 같은 크기다.** 크기로 가르면 덜 자란 너구리처럼 보인다 —
@@ -258,6 +505,74 @@ Godot이 그림을 제 방식으로 한 번 읽어 두는 과정이다(에디터
 괄호 안이 카드 등급이다 — 귀한 짐승일수록 귀티가 나야 한다.
 
 전부 들어왔다. ✅
+
+### 손님 정면·뒷모습 — `godot/art/guests/` · 128×128 · **60장 남음**
+
+**옆모습 한 장으로 때우려던 것을 되돌렸다**(만드는 사람 결정).
+`-front`(정면) — 줄에 서서 계산할 때 카메라를 본다.
+`-back`(뒷모습) — 화면 위로 걸어 올라갈 때. 좌우는 여전히 코드가 뒤집는다.
+없는 방향은 옆모습으로 때우니, 흔한 손님부터 한 장씩 넣으면 된다.
+
+- [ ] `rabbit-front.png` — 토끼 정면 — 줄 설 때
+- [ ] `rabbit-back.png` — 토끼 뒷모습 — 올라갈 때
+- [ ] `magpie-front.png` — 까치 정면 — 줄 설 때
+- [ ] `magpie-back.png` — 까치 뒷모습 — 올라갈 때
+- [ ] `squirrel-front.png` — 다람쥐 정면 — 줄 설 때
+- [ ] `squirrel-back.png` — 다람쥐 뒷모습 — 올라갈 때
+- [ ] `badger-front.png` — 오소리 정면 — 줄 설 때
+- [ ] `badger-back.png` — 오소리 뒷모습 — 올라갈 때
+- [ ] `fox-front.png` — 여우 정면 — 줄 설 때
+- [ ] `fox-back.png` — 여우 뒷모습 — 올라갈 때
+- [ ] `deer-front.png` — 사슴 정면 — 줄 설 때
+- [ ] `deer-back.png` — 사슴 뒷모습 — 올라갈 때
+- [ ] `boar-front.png` — 멧돼지 정면 — 줄 설 때
+- [ ] `boar-back.png` — 멧돼지 뒷모습 — 올라갈 때
+- [ ] `bear-front.png` — 곰 정면 — 줄 설 때
+- [ ] `bear-back.png` — 곰 뒷모습 — 올라갈 때
+- [ ] `turtle-front.png` — 거북 정면 — 줄 설 때
+- [ ] `turtle-back.png` — 거북 뒷모습 — 올라갈 때
+- [ ] `crane-front.png` — 두루미 정면 — 줄 설 때
+- [ ] `crane-back.png` — 두루미 뒷모습 — 올라갈 때
+- [ ] `ox-front.png` — 소 정면 — 줄 설 때
+- [ ] `ox-back.png` — 소 뒷모습 — 올라갈 때
+- [ ] `tiger-front.png` — 호랑이 정면 — 줄 설 때
+- [ ] `tiger-back.png` — 호랑이 뒷모습 — 올라갈 때
+- [ ] `sparrow-front.png` — 참새 정면 — 줄 설 때
+- [ ] `sparrow-back.png` — 참새 뒷모습 — 올라갈 때
+- [ ] `frog-front.png` — 개구리 정면 — 줄 설 때
+- [ ] `frog-back.png` — 개구리 뒷모습 — 올라갈 때
+- [ ] `mole-front.png` — 두더지 정면 — 줄 설 때
+- [ ] `mole-back.png` — 두더지 뒷모습 — 올라갈 때
+- [ ] `hedgehog-front.png` — 고슴도치 정면 — 줄 설 때
+- [ ] `hedgehog-back.png` — 고슴도치 뒷모습 — 올라갈 때
+- [ ] `duck-front.png` — 오리 정면 — 줄 설 때
+- [ ] `duck-back.png` — 오리 뒷모습 — 올라갈 때
+- [ ] `otter-front.png` — 수달 정면 — 줄 설 때
+- [ ] `otter-back.png` — 수달 뒷모습 — 올라갈 때
+- [ ] `roe-front.png` — 노루 정면 — 줄 설 때
+- [ ] `roe-back.png` — 노루 뒷모습 — 올라갈 때
+- [ ] `weasel-front.png` — 족제비 정면 — 줄 설 때
+- [ ] `weasel-back.png` — 족제비 뒷모습 — 올라갈 때
+- [ ] `wildcat-front.png` — 살쾡이 정면 — 줄 설 때
+- [ ] `wildcat-back.png` — 살쾡이 뒷모습 — 올라갈 때
+- [ ] `goral-front.png` — 산양 정면 — 줄 설 때
+- [ ] `goral-back.png` — 산양 뒷모습 — 올라갈 때
+- [ ] `marten-front.png` — 담비 정면 — 줄 설 때
+- [ ] `marten-back.png` — 담비 뒷모습 — 올라갈 때
+- [ ] `mandarin-front.png` — 원앙 정면 — 줄 설 때
+- [ ] `mandarin-back.png` — 원앙 뒷모습 — 올라갈 때
+- [ ] `wolf-front.png` — 늑대 정면 — 줄 설 때
+- [ ] `wolf-back.png` — 늑대 뒷모습 — 올라갈 때
+- [ ] `egret-front.png` — 백로 정면 — 줄 설 때
+- [ ] `egret-back.png` — 백로 뒷모습 — 올라갈 때
+- [ ] `leopard-front.png` — 표범 정면 — 줄 설 때
+- [ ] `leopard-back.png` — 표범 뒷모습 — 올라갈 때
+- [ ] `muskdeer-front.png` — 사향노루 정면 — 줄 설 때
+- [ ] `muskdeer-back.png` — 사향노루 뒷모습 — 올라갈 때
+- [ ] `moonbear-front.png` — 반달곰 정면 — 줄 설 때
+- [ ] `moonbear-back.png` — 반달곰 뒷모습 — 올라갈 때
+- [ ] `haetae-front.png` — 해태 정면 — 줄 설 때
+- [ ] `haetae-back.png` — 해태 뒷모습 — 올라갈 때
 
 ### 손님 카드 1단 (1~5성) — `godot/art/cards/` · 512×768 · **0장 남음**
 
@@ -397,14 +712,15 @@ Godot이 그림을 제 방식으로 한 번 읽어 두는 과정이다(에디터
 - [ ] `brass.png` — 유기전 — 놋쇠를 두드려 그릇을 만든다
 - [ ] `lacquer.png` — 나전방 — 자개를 박아 세간을 꾸민다
 
-### 뽑기와 룰렛 판 — `godot/art/ui/` · 아래 참고 · **0장 남음**
+### 뽑기와 룰렛 판 — `godot/art/ui/` · 아래 참고 · **2장 남음**
 
 움직임은 `MOTION.md`에 적어 뒀다.
 · `back.png` 512×768 — 카드 뒷면. 뒤집기 연출에 쓴다. 등급 빛은 코드가 얹는다
 · `wheel.png` 512×512 — 룰렛 원판. **열두 칸**이 그려진 바퀴. 칸 안 글자는 코드가 얹는다
 · `needle.png` 64×96 — 룰렛 바늘. 위에서 아래를 가리킨다
 
-전부 들어왔다. ✅
+- [ ] `coin.png` — 엽전 64×64 — 계산대 위·팔린 표에 쓴다 (상평통보처럼 가운데 네모 구멍)
+- [ ] `gem.png` — 젬 64×64 — 💎 이모지 자리를 물려받는다
 
 ### 가게별 점장 (선택) — `godot/art/clerks/` · 144×144 · **10장 남음**
 

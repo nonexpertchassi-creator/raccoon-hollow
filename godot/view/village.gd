@@ -43,9 +43,7 @@ const BUY_TIME := 2.3       # 가게 앞에 서 있는 시간
 ##   도형만 두 배로 커져 가게를 덮어 버린다. 실제로 찍어 보고 40으로 잡았다.
 ##   짐작으로 맞춘 숫자는 이렇게 한 번에 틀린다.
 const SHAPE := 40.0
-## 등급 테 — 물건이 몇 급인지 매대에서 바로 보이게. 0급(기본)은 안 두른다.
-## 값을 색으로 말하는 것이라 물건이 쇠든 종이든 상관없이 통한다.
-const RANK_RING := [Color(0, 0, 0, 0), Color("cfd6dd"), Color("e8b93f")]
+
 var _grng: Rng = Rng.new(20260821)
 ## 구역이 열리는 순간의 안개 걷힘. 구역 id → 남은 안개(1→0으로 줄어든다).
 ## 툭 사라지면 "열렸다"는 순간이 없다 — 1.4초에 걸쳐 걷힌다.
@@ -184,13 +182,13 @@ func _walk(wk: Dictionary, delta: float) -> bool:
 	else:
 		return true
 	var d: Vector2 = target - wk.pos
-	# ★ 걷는 방향으로 몸을 돌린다(왼쪽이면 그림을 뒤집는다). 이걸 안 해서
-	#   왼쪽으로 가는 손님이 전부 문워크를 했다 — 그림은 규칙대로 오른쪽
-	#   보는 것으로 왔는데 코드가 뒤집기를 빼먹은 것이다.
-	#   마름모 격자에서는 어느 길로 가든 화면상 좌우 성분이 있으므로,
-	#   옆모습 한 장 + 뒤집기로 네 방향이 전부 가려진다. 앞면·뒷면은 필요 없다.
+	# 걷는 방향으로 몸을 돌린다. 왼쪽이면 뒤집고, **화면 위로 올라가면 뒷모습**을
+	# 쓴다(-back 그림이 있으면). 옆모습만으로 때우려던 것을 유저가 되돌렸다 —
+	# 등을 보이고 올라가는 짐승이 옆을 보면 어색한 게 맞다.
 	if absf(d.x) > 0.5:
 		wk.flip = d.x < 0.0
+	if absf(d.y) > 0.2:
+		wk.up = d.y < 0.0
 	# 손님마다 걸음이 다르다 — 토끼는 빠르고 거북은 느리다.
 	# 이 숫자는 content.js에 처음부터 있었는데 화면이 안 쓰고 있었다.
 	var step: float = WALK * float(wk.speed) * delta
@@ -634,9 +632,10 @@ func _stall(i: int, k: int, spot: Vector2i) -> void:
 		_box(o.x + spot.x + 0.14, o.y + spot.y + 0.14, 0.72, 0.72, 14, C.paper, C.wood)
 	# 등급이 오르면 그림도 바뀐다 — 그 등급 그림이 있으면 그것,
 	# 없으면 기본 그림에 **등급 테**를 둘러 표시한다(무쇠→참쇠→강철).
+	# ★ 등급 테두리(은·금 고리)는 지웠다(2026-08-25, 유저 — "판타지 RPG도
+	#   아니고"). 승급은 **물건 그림 자체가 바뀌는 것**으로 보여준다.
+	#   items/<id>-1.png(2등급)·-2.png(3등급)가 주문서 필수 목록에 들어갔다.
 	var rk: int = sim.rank_of(String(shop.id))
-	if rk > 0:
-		draw_arc(p + Vector2(0, -8), 21.0, 0, TAU, 26, RANK_RING[min(rk, RANK_RING.size() - 1)], 3.0)
 	var pic: Texture2D = Art.ranked("items", String(it.id), rk)
 	if pic != null:
 		_sprite(pic, p + Vector2(0, -6), "items")
@@ -673,7 +672,11 @@ func _counter(i: int) -> void:
 		_sprite(pic3, p + Vector2(0, 14), "counters", String(yd.gate) == "y")
 	else:
 		_box(o.x + ct.x + 0.16, o.y + ct.y + 0.3, 0.68, 0.4, 18, C.paper2, C.wood2)
-		draw_circle(p + Vector2(8, -24), 4.5, Color("c9a227"))
+		var coin: Texture2D = Art.tex("ui", "coin")
+		if coin != null:
+			draw_texture_rect(coin, Rect2(p + Vector2(2, -30), Vector2(13, 13)), false)
+		else:
+			draw_circle(p + Vector2(8, -24), 4.5, Color("c9a227"))
 
 ## 작은 건물(점포·주막·포장마차)은 화면에서 뺐다(2026-08-25, 유저 — "의미
 ## 없어 보임"). 장 여는 단추 노릇이었는데, 그 일은 촌장이 물려받았다.
@@ -855,7 +858,17 @@ func _staff(i: int, k: int) -> void:
 	_raccoon(p + Vector2(0, -bob), SHAPE, Color("bfa987"))
 
 func _walker(wk: Dictionary) -> void:
-	var t: Texture2D = Art.tex("guests", String(wk.get("id", "")))
+	# 방향에 맞는 그림을 고른다: 줄에 서면 정면(-front), 위로 걸으면
+	# 뒷모습(-back), 나머지는 옆모습. 없는 방향은 옆모습으로 때운다 —
+	# 그림이 한 장씩 들어올 때마다 그 방향만 살아난다.
+	var gid2: String = String(wk.get("id", ""))
+	var t: Texture2D = null
+	if wk.state == "buy":
+		t = Art.tex("guests", gid2 + "-front")
+	elif bool(wk.get("up", false)):
+		t = Art.tex("guests", gid2 + "-back")
+	if t == null:
+		t = Art.tex("guests", gid2)
 	if t != null:
 		_sprite(t, wk.pos, "guests", bool(wk.get("flip", false)))
 	else:
