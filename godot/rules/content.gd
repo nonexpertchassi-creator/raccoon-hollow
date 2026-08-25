@@ -66,7 +66,9 @@ const CARD_GRADES := [
 ]
 
 const CRAFT := {
-	"handSpeed": 3.0
+	"handSpeed": 3.5,
+	"walk": 1.4,
+	"regrip": 2.5
 }
 
 const DAY := {

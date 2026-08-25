@@ -790,7 +790,8 @@ func _stall(i: int, k: int, spot: Vector2i) -> void:
 	# 사이에도 손은 일하니까(그게 경제 규칙이다), 채움을 숨기면 "그냥
 	# 생산되네"와 "초기화됐네"가 번갈아 나온다(유저가 둘 다 겪었다).
 	# 일꾼 있음/없음은 먼지·불티(기척)만 가른다.
-	var making: bool = sim._crafting.has(String(it.id))
+	var making: bool = sim._crafting.has(String(it.id)) \
+		and float(sim._switch.get(String(it.id), 0.0)) <= 0.0   # 걸어가는 중엔 안 찬다
 	var here: bool = making and _worker_of(i, k).distance_to(_stall_front(i, k)) < 8.0
 	draw_circle(bc, 17.0, Color(1.0, 0.99, 0.96, 0.95))
 	# 하다 만 진행도도 **흐리게 남긴다** — 일꾼이 자리를 비우면 채움이 뚝
@@ -1153,7 +1154,7 @@ func _tail_wag(r: Rect2, fur: String, dir3: String, flip: bool) -> void:
 	# 핀에 딱 맞추면 통통한 몸이 꼬리를 다 삼킨다(그림 속 꼬리 자리가 몸
 	# 실루엣 안쪽이다). 바깥으로 13%만 밀어 몸 뒤로 삐져나오게 — 처음(너무
 	# 빠짐)과 핀(사라짐)의 중간이다(유저).
-	var out: Vector2 = Vector2(-sz.x * 0.13, sz.y * 0.02) if dir3 == "side" else Vector2(0, sz.y * 0.04)
+	var out: Vector2 = Vector2(-sz.x * 0.13, sz.y * 0.09) if dir3 == "side" else Vector2(0, sz.y * 0.04)
 	draw_set_transform(pw, -ang if flip else ang, Vector2(-1, 1) if flip else Vector2.ONE)
 	draw_texture_rect(tail, Rect2(-pl + out, sz), false)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)

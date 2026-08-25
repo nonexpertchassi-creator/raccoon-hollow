@@ -143,6 +143,10 @@ var _hold: Dictionary = {}
 ## 이번 틱에 실제로 만들어지고 있는 물건들 — 화면이 로딩 파이를 그리는 데 쓴다.
 ## 저장 안 한다(매 틱 다시 채워진다).
 var _crafting: Dictionary = {}
+## 손이 매대로 걸어가는 중인 물건(id → 남은 초). CRAFT.walk 참고.
+var _switch: Dictionary = {}
+## 마지막으로 손을 댄 지 얼마나 됐나(id → 초). regrip 유예 판정용.
+var _recent: Dictionary = {}
 var _pestEvents: Array = []
 var _guestAcc: Dictionary = {}
 var _guestGap: Dictionary = {}
@@ -1092,6 +1096,10 @@ func tick(dt: float, rng: Rng) -> Dictionary:
 	#   가게의 손 수 = 점장 1 + 직원 수. 점장이 계산 중이면(_hold) 손이
 	#   하나 빠진다 — 직원은 만들기만 하고 점장은 만들다 계산도 한다.
 	#   매대 순서대로 앞에서부터 손을 배정한다. 다 찬 물건은 손을 안 쓴다.
+	# 손이 매대를 옮겨 잡으면 **걸어가는 시간**(CRAFT.walk)이 든다 — 일꾼이
+	# 도착하기 전에 물건이 자라는 걸 규칙으로 막는다(2026-08-26, 유저).
+	# sim은 화면을 모르지만, "이동"이라는 사실은 안다.
+	var _prevCraft: Dictionary = _crafting
 	_crafting = {}
 	for sh in shops:
 		var hands: int = 1 + int(staff_of(String(sh)))
@@ -1112,19 +1120,44 @@ func tick(dt: float, rng: Rng) -> Dictionary:
 				first.append(cid)
 			elif items[cid].stock < cap_of(cid):
 				rest.append(cid)
+		# ★ 손도 끈끈하다 — 잡은 물건을 다 채울 때까지 안 놓는다. 매 틱
+		#   우선순위대로 다시 잡게 했더니 손이 매대 사이를 쉴 새 없이 갈아타며
+		#   걷는 값(walk)만 내다 4시간 매출이 반토막 났다(319M — 재서 잡았다).
+		var pool: Array = first + rest
+		var line2: Array = []
+		for id0 in _prevCraft:
+			if pool.has(id0) and line2.size() < hands and items.has(String(id0)) \
+					and String(item_by_id(String(id0)).shop) == String(sh):
+				line2.append(String(id0))
+		for id0 in pool:
+			if line2.size() >= hands:
+				break
+			if not line2.has(String(id0)):
+				line2.append(String(id0))
 		var used: int = 0
-		for id in first + rest:
+		for id in line2:
 			if used >= hands:
 				break
 			var st: Dictionary = items[id]
-			st.prog += dt * speed
 			_crafting[id] = true
 			used += 1
+			if not _prevCraft.has(id) and float(_recent.get(id, 1e9)) > float(Content.CRAFT.regrip):
+				_switch[id] = float(Content.CRAFT.walk)   # 진짜 이동일 때만
+			if float(_switch.get(id, 0.0)) > 0.0:
+				_switch[id] = float(_switch[id]) - dt
+				continue                     # 아직 걸어가는 중 — 손은 찼지만 진행은 없다
+			st.prog += dt * speed
 			var need: float = craft_time(id)
 			while st.prog >= need and (_order_rem(id) > 0.0 or st.stock < cap_of(id)):
 				st.prog -= need
 				if not _give_to_order(id):
 					st.stock += 1.0
+
+	# 손을 댄 지 얼마나 됐나 — regrip 유예의 시계
+	for rid in _recent.keys():
+		_recent[rid] = float(_recent[rid]) + dt
+	for cid2 in _crafting:
+		_recent[cid2] = 0.0
 
 	# 1.2) 주문 시계
 	var done: Array = []
@@ -1567,7 +1600,7 @@ const SAVE_KEYS: Array[String] = [
 	"ledger", "shopUp",
 	"cards", "stars", "pulls", "guards", "roulFree", "roulAd", "roulDay",
 	"stats", "zones",
-	"profile", "furs",
+	"profile", "furs", "_crafting", "_switch", "_recent",
 ]
 ## 글자로 저장했다 되돌리면 정수가 소수가 된다(-1 → -1.0). 자리를 세는 데
 ## 쓰는 것들은 도로 정수로 되돌린다 — 아니면 배열 자리를 못 찾는다.
@@ -1597,7 +1630,9 @@ const INT_KEYS: Array[String] = ["busy", "_qid", "_evIdx", "_oid"]
 ## 6판: 점장 무늬(furs). 옛 저장본은 **연 순서대로 주머니를 돌려** 배정한다 —
 ## 약속은 "한 번 정하면 안 바뀐다"이지 "무작위"가 아니라서, 옛 판은
 ## 규칙적이어도 된다. 이후 새로 여는 가게부터 주머니 뽑기를 탄다.
-const SAVE_VER: int = 6
+## 7판: 손의 이동(_crafting·_switch). 옛 저장본은 칸이 없어 빈 값으로
+## 시작한다 — 첫 틱에 모든 손이 이동 시간을 한 번 내는 것뿐, 옮길 것 없다.
+const SAVE_VER: int = 7
 
 func save() -> Dictionary:
 	var d: Dictionary = {}
