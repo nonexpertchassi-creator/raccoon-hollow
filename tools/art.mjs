@@ -135,7 +135,13 @@ const GROUPS = [
           '**승급 그림도 된다** — `smith-make-1.png`(참쇠) · `smith-make-2.png`(강철).\n' +
           '없으면 그 가게의 기본 점장이 계속 선다.',
     rows: SHOPS.flatMap((sh) => [['make', '만드는 중'], ['sell', '파는 중']]
-      .map(([pose, why]) => ({ id: `${sh.id}-${pose}`, why: `${sh.name} — ${why}` }))) },
+      .flatMap(([pose, why]) => [
+        { id: `${sh.id}-${pose}`, why: `${sh.name} — ${why}` },
+        /* 승급판 — 가게가 2·3등급이 되면 점장도 갈아입는다(코드는 이미 안다).
+         * 기본 장이 먼저다: -1·-2만 있고 기본이 없으면 1등급 가게가 공통 점장으로 돈다. */
+        { id: `${sh.id}-${pose}-1`, why: `${sh.name} — ${why} · 2등급 승급판` },
+        { id: `${sh.id}-${pose}-2`, why: `${sh.name} — ${why} · 3등급 승급판` },
+      ])) },
 ];
 
 let done = 0, total = 0;
