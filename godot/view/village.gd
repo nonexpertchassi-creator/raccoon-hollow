@@ -255,7 +255,7 @@ func _advance(delta: float) -> void:
 			continue
 		var ci5: Array = _craft_idx(i)
 		var claimed: Dictionary = {}
-		if clerks[i].busy > 0.0 or not line[i].is_empty() or ci5.is_empty():
+		if clerks[i].busy > 0.0 or ci5.is_empty():
 			_heroJob[i] = -1                 # 계산대 차례 — 일감을 놓는다
 		else:
 			var hj: int = int(_heroJob.get(i, -1))
@@ -336,11 +336,12 @@ func _advance(delta: float) -> void:
 	#   폰에서 유저가 바로 알아챈 것이 이것이다.
 	for i in range(Content.SHOPS.size()):
 		for wk in line[i]:
-			# 줄에 손님이 하나라도 있으면 파는 자세 유지 — 맨 앞이 잠깐 비는
-			# 사이(앞사람 떠나고 뒷사람 걸어오는 사이)마다 팔기↔만들기 그림이
-			# 홱홱 바뀌어 깜박거렸다(유저). 자세는 줄이 다 빠져야 바뀐다.
-			if wk.state == "buy":
-				clerks[i].busy = 0.25       # 서 있는 동안 계속 새로 채워진다
+			# 앞자리에 손님이 **실제로 서 있는 동안**만 계산 상태다. 0.6초의
+			# 여유는 앞사람이 떠나고 뒷사람이 한 칸 걸어오는 다리 — 이 사이에
+			# 자세가 갈리면 깜박이고, 너무 길게 잡으면(줄 전체) 점장이 계산대에
+			# 영영 묶여 만드는 모습이 사라진다(유저 — 셋 다 겪고 잡은 값이다).
+			if wk.state == "buy" and _line_index(wk) == 0:
+				clerks[i].busy = 0.6
 				break
 	for i in range(Content.SHOPS.size()):
 		var c: Dictionary = clerks[i]
@@ -352,7 +353,7 @@ func _advance(delta: float) -> void:
 		# 갔다 오며 몸이 좌우로 홱홱 뒤집혔다(유저: "자세를 한가지로").
 		var goal: Vector2 = f.serve
 		var hjob: int = int(_heroJob.get(i, -1))
-		if c.busy <= 0.0 and line[i].is_empty():
+		if c.busy <= 0.0:
 			goal = _stall_front(i, hjob) if hjob >= 0 else f.work
 		# ★ 곧장 가면 매대·계산대 칸을 밟고 지나간다(유저: "6번 매대 들렀다
 		#   계산대 가면 망가지는 기분"). 마당 안쪽 빈 칸들은 네모라 그 안에서는
