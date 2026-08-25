@@ -357,20 +357,9 @@ func _advance(delta: float) -> void:
 		var hjob: int = int(_heroJob.get(i, -1))
 		if c.busy <= 0.0:
 			goal = _stall_front(i, hjob) if hjob >= 0 else f.work
-		# ★ 곧장 가면 매대·계산대 칸을 밟고 지나간다(유저: "6번 매대 들렀다
-		#   계산대 가면 망가지는 기분"). 마당 안쪽 빈 칸들은 네모라 그 안에서는
-		#   어떤 직선도 가구를 안 지난다 — 계산대를 오갈 때만 **계산대 안쪽
-		#   팔꿈치 칸**을 거쳐 ㄱ자로 꺾어 간다.
-		var n2: int = Iso.plot_dim(sim, i)
-		var y2: Dictionary = Iso.yard(Iso.YARD_KIND[i], n2)
-		var o2: Vector2i = Iso.org(sim, i)
-		var elbow: Vector2 = Iso.w(o2.x + clampi(y2.counter.x, 1, n2 - 2) + 0.5,
-			o2.y + clampi(y2.counter.y, 1, n2 - 2) + 0.5)
+		# 계산 자리가 마당 안 칸(계산대의 안쪽 이웃)이 되면서 팔꿈치 경유는
+		# 필요 없어졌다 — 빈 칸 사이 직선은 가구를 안 밟는다.
 		var tgt: Vector2 = goal
-		if goal == f.serve and c.pos.distance_to(elbow) > 8.0:
-			tgt = elbow                              # 나갈 때 — 팔꿈치부터
-		elif goal != f.serve and c.pos.distance_to(f.serve) < 24.0:
-			tgt = elbow                              # 돌아올 때 — 팔꿈치로 들어온다
 		var d: Vector2 = tgt - c.pos
 		var step: float = CLERK_SPEED * delta
 		c.walking = d.length() > step        # 걷는 중이면 걷는 그림을 쓴다
@@ -753,7 +742,7 @@ func _stall(i: int, k: int, spot: Vector2i) -> void:
 			if tr4 != null:
 				table = tr4
 				flip4 = false
-		_sprite(table, p + Vector2(0, 14), "stalls", flip4)
+		_sprite(table, p + Vector2(0, 19), "stalls", flip4)
 	else:
 		_box(o.x + spot.x + 0.14, o.y + spot.y + 0.14, 0.72, 0.72, 14, C.paper, C.wood)
 	# 등급이 오르면 그림도 바뀐다 — 그 등급 그림이 있으면 그것,
@@ -762,38 +751,43 @@ func _stall(i: int, k: int, spot: Vector2i) -> void:
 	#   아니고"). 승급은 **물건 그림 자체가 바뀌는 것**으로 보여준다.
 	#   items/<id>-1.png(2등급)·-2.png(3등급)가 주문서 필수 목록에 들어갔다.
 	var rk: int = sim.rank_of(String(shop.id))
+	# ★ 상품 배지(2026-08-26, 유저 설계): 물건을 **흰 동그라미**로 감싸고,
+	#   만드는 동안 그 동그라미가 **초록으로 차오른다.** 물건도 보이고 생산도
+	#   보인다 — 따로 띄우던 로딩 파이는 이 채움에 흡수됐다.
+	var bc: Vector2 = p + Vector2(0, -40)
+	var st2: Dictionary = sim.items[it.id]
+	var making: bool = sim._crafting.has(String(it.id)) \
+		and _worker_of(i, k).distance_to(_stall_front(i, k)) < 8.0
+	draw_circle(bc, 17.0, Color(1.0, 0.99, 0.96, 0.95))
+	if making:
+		var pr2: float = clampf(st2.prog / sim.craft_time(String(it.id)), 0.0, 1.0)
+		var fan := PackedVector2Array([bc])
+		var steps2: int = 22
+		for k2 in range(steps2 + 1):
+			var a2: float = -PI * 0.5 + TAU * pr2 * float(k2) / float(steps2)
+			fan.append(bc + Vector2(cos(a2), sin(a2)) * 16.0)
+		draw_colored_polygon(fan, Color(0.44, 0.78, 0.5, 0.55))
+	draw_arc(bc, 17.0, 0, TAU, 32, Color(0.55, 0.44, 0.32, 0.8), 2.0)
 	var pic: Texture2D = Art.ranked("items", String(it.id), rk)
 	if pic != null:
-		_sprite(pic, p + Vector2(0, -6), "items")
+		draw_texture_rect(pic, Rect2(bc - Vector2(9, 15), Vector2(18, 30)), false)
 	else:
-		_text(p + Vector2(0, -6), String(it.icon), 22, Color.WHITE)
-	# 만드는 중인 물건에만 작은 로딩 파이 — 손 하나가 물건 하나를 만드니
-	# 이제 "지금 어느 것이 만들어지나"가 정보다(레퍼런스의 초록 원형 시계).
-	var st2: Dictionary = sim.items[it.id]
-	# 일꾼이 매대 앞에 닿기 전엔 파이도 먼지도 안 띄운다 — 아무도 없는데
-	# 만들어지는 그림은 오류로 보인다. sim은 계속 만들지만 화면은 기다린다.
-	if sim._crafting.has(String(it.id)) and _worker_of(i, k).distance_to(_stall_front(i, k)) < 8.0:
-		var pr2: float = clampf(st2.prog / sim.craft_time(String(it.id)), 0.0, 1.0)
-		var ry2: Vector2 = p + Vector2(16, -40)
-		draw_circle(ry2, 8.5, Color(0.13, 0.22, 0.14, 0.75))
-		draw_arc(ry2, 6.0, -PI / 2, -PI / 2 + TAU * pr2, 20, Color("6fce7e"), 4.0)
-		# "만들고 있다"는 짐승의 동작이 아니라 **매대 위 효과**가 말한다(2026-08-25,
-		# 유저). 제작 동작을 그림으로 하면 등급×자세만큼 장수가 는다 — 전부 코드다.
+		_text(bc + Vector2(0, 7), String(it.icon), 18, Color.WHITE)
+	if making:
+		# 만드는 기척 — 대장간은 불티, 나머지는 먼지구름(매대 위 효과 원칙)
 		if String(shop.id) == "smith":
-			# 대장간만 특별하다 — 주황 불티가 튄다
 			for s2 in range(3):
 				var ph: float = fmod(_t * 1.6 + s2 * 0.37 + spot.x * 0.21, 1.0)
 				var px: Vector2 = p + Vector2(sin((s2 * 2.1 + spot.y) * 2.4) * 10.0 * ph,
-					-26.0 - ph * 18.0)
+					-22.0 - ph * 16.0)
 				draw_circle(px, 1.8 * (1.0 - ph) + 0.6,
 					Color(1.0, 0.55 + 0.25 * (1.0 - ph), 0.15, 1.0 - ph))
 		else:
-			# 공통 — 뽀얀 먼지구름이 떠오르다 옅어진다
 			for s2 in range(2):
 				var ph: float = fmod(_t * 0.7 + s2 * 0.5 + spot.x * 0.17 + spot.y * 0.29, 1.0)
 				var px: Vector2 = p + Vector2(float(s2 * 2 - 1) * (6.0 + ph * 5.0),
-					-30.0 - ph * 12.0)
-				draw_circle(px, 3.5 + ph * 2.5, Color(0.87, 0.83, 0.73, 0.4 * (1.0 - ph)))
+					-26.0 - ph * 10.0)
+				draw_circle(px, 3.0 + ph * 2.0, Color(0.87, 0.83, 0.73, 0.35 * (1.0 - ph)))
 
 	# ★ 재고 숫자·진행 고리는 지웠다(2026-08-25, 유저 지적). 그림이 오기 전엔
 	#   그 숫자가 화면의 전부였는데, 이제는 물건 그림을 동그라미로 가리는
@@ -810,7 +804,7 @@ func _stall(i: int, k: int, spot: Vector2i) -> void:
 		var can_up: bool = sim.money >= sim.level_cost(it.id)
 		if can_max or can_up:
 			var bob3: float = sin(_t * 4.0) * 2.0
-			_text(p + Vector2(20, -34 + bob3), "▲", 15, Color("c7563f") if can_max else C.jade)
+			_text(p + Vector2(24, -40 + bob3), "▲", 15, Color("c7563f") if can_max else C.jade)
 
 func _counter(i: int) -> void:
 	var o: Vector2i = Iso.org(sim, i)

@@ -78,7 +78,6 @@ const DOG_T := Vector2i(14, 4)
 
 ## 손님이 서는 쪽(길)과 그 반대쪽(점장이 서는 마당 안). 한 칸 어치다.
 const GATE_OFF := {"x": Vector2(44, 22), "y": Vector2(-44, 22)}
-const SERVE_OFF := {"x": Vector2(-32, -16), "y": Vector2(32, -16)}
 ## 줄이 뻗는 방향 — **가게 앞면을 따라** 선다(2026-08-25, 유저가 잡았다).
 ## 예전엔 길을 따라 가게 반대쪽으로 뻗어서, 둘째 사람부터 가게를 등지고
 ## 골목 너머까지 밀려났다. 계산대가 어디 있든 줄은 매대 진열이 보이는
@@ -170,11 +169,23 @@ static func foot(sim: Sim, i: int) -> Dictionary:
 	var y: Dictionary = yard(YARD_KIND[i], n)
 	var cc: Vector2 = w(o.x + y.counter.x + 0.5, o.y + y.counter.y + 0.5)
 	var wk: Vector2i = work_spot(y, n)
+	# 계산 자리 — 계산대의 **안쪽 이웃 칸**(9번 계산대면 8번 자리 — 유저).
+	# 예전엔 계산대에서 비스듬히 띄운 허공이었다. 자리는 칸으로 말한다.
+	var ct: Vector2i = y.counter
+	var sv: Vector2i
+	if ct.x == n - 1:
+		sv = Vector2i(n - 2, ct.y)
+	elif ct.x == 0:
+		sv = Vector2i(1, ct.y)
+	elif ct.y == n - 1:
+		sv = Vector2i(ct.x, n - 2)
+	else:
+		sv = Vector2i(ct.x, 1)
 	return {
 		"n": n, "S": w(o.x + n, o.y + n), "yard": y,
 		"stand": cc + GATE_OFF[y.gate],
 		"work": w(o.x + wk.x + 0.5, o.y + wk.y + 0.5),
-		"serve": cc + SERVE_OFF[y.gate],
+		"serve": w(o.x + sv.x + 0.5, o.y + sv.y + 0.5),
 	}
 
 ## 줄 k번째가 설 자리. 0번이 계산대 앞, 뒤로 갈수록 길을 따라 물러선다.
