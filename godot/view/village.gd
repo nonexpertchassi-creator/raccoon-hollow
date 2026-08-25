@@ -1093,9 +1093,10 @@ func _clerk(i: int) -> void:
 	if t == null:                       # 그 자세가 아직 없으면 만드는 자세로
 		t = _hero_tex(id, "make")
 	if t != null:
+		var breath2: float = 0.0 if c.walking else (0.5 + 0.5 * sin(_t * 2.4 + c.pos.x * 0.03)) * 0.03
 		_shadow(c.pos, 14.0)
 		_sprite(t, c.pos, "clerks" if Art.tex("clerks", "%s-%s" % [id, pose]) != null else "hero",
-			bool(c.get("flip", false)))
+			bool(c.get("flip", false)), breath2)
 		return
 	_raccoon(c.pos, SHAPE, Color("a8815a"))
 
@@ -1127,6 +1128,15 @@ func _clerk_layers(foot: Vector2, shop_id: String, dir3: String, flip: bool, wal
 		r.position.y += r.size.y * sq
 		r.size.x *= 1.0 + sq * 0.7
 		r.size.y *= 1.0 - sq
+	else:
+		# 말캉말캉 — 서 있어도 숨을 쉰다(유저). 만들거나 팔 때(side)는
+		# 일하는 박자로 조금 빠르고 깊게. 발끝은 그대로, 몸만 눌렸다 편다.
+		var hz: float = 3.4 if dir3 == "side" else 2.1
+		var sq2: float = (0.5 + 0.5 * sin(_t * hz + foot.x * 0.03)) * (0.045 if dir3 == "side" else 0.03)
+		r.position.x -= r.size.x * sq2 * 0.35
+		r.position.y += r.size.y * sq2
+		r.size.x *= 1.0 + sq2 * 0.7
+		r.size.y *= 1.0 - sq2
 	var gkey: String = "%s-%d" % [shop_id, sim.rank_of(shop_id) + 1]
 	var gear: Texture2D = Art.tex("gear", "%s-%s" % [gkey, dir3])
 	if gear == null:
@@ -1150,11 +1160,11 @@ func _tail_wag(r: Rect2, fur: String, dir3: String, flip: bool) -> void:
 	# 뿌리 축(그림 판 안 좌표): side는 엉덩이 뒤쪽, back은 엉덩이 한가운데
 	var pl: Vector2 = Vector2(sz.x * 0.32, sz.y * 0.74) if dir3 == "side" else Vector2(sz.x * 0.5, sz.y * 0.74)
 	var pw: Vector2 = r.position + (Vector2(sz.x - pl.x, pl.y) if flip else pl)
-	var ang: float = sin(_t * 1.7 + r.position.x * 0.05) * 0.09
+	var ang: float = sin(_t * 2.3 + r.position.x * 0.05) * 0.26   # 0.09론 안 보였다(유저)
 	# 핀에 딱 맞추면 통통한 몸이 꼬리를 다 삼킨다(그림 속 꼬리 자리가 몸
 	# 실루엣 안쪽이다). 바깥으로 13%만 밀어 몸 뒤로 삐져나오게 — 처음(너무
 	# 빠짐)과 핀(사라짐)의 중간이다(유저).
-	var out: Vector2 = Vector2(-sz.x * 0.13, sz.y * 0.09) if dir3 == "side" else Vector2(0, sz.y * 0.04)
+	var out: Vector2 = Vector2(-sz.x * 0.13, sz.y * 0.13) if dir3 == "side" else Vector2(0, sz.y * 0.04)
 	draw_set_transform(pw, -ang if flip else ang, Vector2(-1, 1) if flip else Vector2.ONE)
 	draw_texture_rect(tail, Rect2(-pl + out, sz), false)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
@@ -1301,8 +1311,9 @@ func _staff(i: int, k: int) -> void:
 	if t != null:
 		var job5: int = int(_staffJob.get("%d:%d" % [i, k], -1))
 		var sflip: bool = job5 >= 0 and _stall_at(i, job5).x < p.x   # 맡은 매대를 본다
+		var breath: float = (0.5 + 0.5 * sin(_t * 2.2 + p.x * 0.04)) * 0.03 if idle else 0.0
 		_shadow(p, 14.0)
-		_sprite(t, p + Vector2(0, -bob), "staff", sflip)
+		_sprite(t, p + Vector2(0, -bob), "staff", sflip, breath)
 		return
 	# 그림이 오기 전 임시 도형. 점장과 **같은 크기**로, 털빛만 조금 다르게.
 	_raccoon(p + Vector2(0, -bob), SHAPE, Color("bfa987"))
@@ -1325,8 +1336,9 @@ func _walker(wk: Dictionary) -> void:
 		var ph6: float = absf(sin(_t * 7.0 + wk.pos.x * 0.06))
 		var stepbob: float = 0.0 if wk.state == "buy" else ph6 * 2.6
 		_shadow(wk.pos, 13.0)
-		# 땅에 닿는 순간 살짝 눌린다(스쿼시) — 로봇 걸음의 반대말(유저)
-		var sq6: float = 0.0 if wk.state == "buy" else (1.0 - ph6) * 0.05
+		# 걸을 땐 착지 눌림, 줄에 서면 숨 쉬는 말캉임 — 다 같은 스쿼시다(유저)
+		var sq6: float = (0.5 + 0.5 * sin(_t * 2.5 + wk.pos.x * 0.05)) * 0.025 \
+			if wk.state == "buy" else (1.0 - ph6) * 0.05
 		_sprite(t, wk.pos + Vector2(0, -stepbob), "guests", bool(wk.get("flip", false)), sq6)
 	else:
 		_raccoon(wk.pos, SHAPE * 0.9, Color("9c8f7a"))
