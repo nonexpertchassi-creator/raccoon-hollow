@@ -449,6 +449,12 @@ func _plot_base(i: int, n: int) -> void:
 	var sw: float = 30.0 + s_txt.length() * 13.0
 	draw_rect(Rect2(N + Vector2(-3, -44), Vector2(6, 44)), C.wood2)
 	_chip(N + Vector2(0, -66), sw, 26, col)
+	# '가득' — 열린 물건이 전부 진열대까지 찼을 때 현판 위에 하나만.
+	# 생산이 멈췄으니 팔 곳(승급·직원·강화)을 늘리라는 신호다.
+	if _idle(i):
+		var bob2: float = sin(_t * 3.0) * 2.5
+		_chip(N + Vector2(sw * 0.5 + 26, -70 + bob2), 46, 20, Color("c7563f"))
+		_text(N + Vector2(sw * 0.5 + 26, -56 + bob2), "가득!", 11, Color("fff3dd"))
 	_text(N + Vector2(0, -48), s_txt, 15, Color("fff8ec"))
 
 	var cap: int = sim.stall_cap(shop.id)
@@ -496,10 +502,7 @@ func _stall(i: int, k: int, spot: Vector2i) -> void:
 			_text(p + Vector2(0, -8), "? ? ?", 13, Color(0.24, 0.2, 0.14, 0.5))
 		return
 
-	var st: Dictionary = sim.items[it.id]
-	var cap: float = sim.cap_of(it.id)
-	var shown: float = min(cap, st.stock)
-	var capped: bool = shown >= cap
+
 
 	# 매대(좌판) — 가게마다 다르게 생겼다. 대장간은 모루 받침, 필방은 낮은 서안…
 	# 그림이 없으면 여태처럼 나무 상자를 그린다.
@@ -519,15 +522,12 @@ func _stall(i: int, k: int, spot: Vector2i) -> void:
 	else:
 		_text(p + Vector2(0, -6), String(it.icon), 22, Color.WHITE)
 
-	# 재고·진행 계기
-	var ry: Vector2 = p + Vector2(12, -46)
-	var pr: float = 1.0 if capped else clampf(st.prog / sim.craft_time(it.id), 0.0, 1.0)
-	draw_circle(ry, 12.0, Color(0.99, 0.96, 0.91, 0.95))
-	draw_arc(ry, 15.0, 0, TAU, 24, Color(0.17, 0.14, 0.11, 0.30), 3.5)
-	if pr > 0.01:
-		draw_arc(ry, 15.0, -PI / 2, -PI / 2 + TAU * pr, 24,
-			Color("ff8a63") if capped else Color("e8b93f"), 3.5)
-	_text(ry + Vector2(0, 6), str(int(shown)), 16, C.ink)
+	# ★ 재고 숫자·진행 고리는 지웠다(2026-08-25, 유저 지적). 그림이 오기 전엔
+	#   그 숫자가 화면의 전부였는데, 이제는 물건 그림을 동그라미로 가리는
+	#   소음이었다. '가득' 신호는 매대가 아니라 **현판에 하나만** 띄운다 —
+	#   처음엔 매대마다 붙였더니 넷이 한꺼번에 깜빡여서 소음을 소음으로 바꾼
+	#   꼴이 됐다. 자세한 숫자는 가게 창에 있다.
+
 
 	var nm: String = String(it.name)
 	_chip(p + Vector2(0, 8), 14.0 + nm.length() * 12.0, 18, Color(0.17, 0.14, 0.11, 0.78))
