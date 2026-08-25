@@ -88,6 +88,8 @@ var _trashAcc: float = 0.0
 var clerks: Array = []
 ## 직원의 현재 자리("가게:번호" → 좌표). 만드는 매대가 바뀌면 걸어서 옮긴다.
 var _staffAt: Dictionary = {}
+## 낮과 밤 — 도구가 시각을 못 박을 때 쓴다(0~1, 음수면 게임 시계를 따른다).
+var clock_override: float = -1.0
 const CLERK_SPEED := 130.0
 
 func _ready() -> void:
@@ -750,6 +752,26 @@ func _dog() -> void:
 		_text(p + Vector2(0, -Iso.TH - 19), "🐕+ 🪙" + Num.fmt(sim.guard_cost()), 11,
 			Color.WHITE if can2 else Color("e6e0cf"))
 
+## 낮과 밤 — 게임 시계(sim.t)로 20분에 하루가 돈다. 낮이 반, 나머지가
+## 해질녘·밤·새벽이다. 진짜 시계(폰 시각)를 안 쓰는 이유: 방치형은 한 번에
+## 2~5분 논다 — 점심에만 켜는 사람은 밤을 영영 못 본다. 게임 시계면 한 판
+## 안에서 낮과 밤을 다 만난다. 색은 화면 전체에 얇게 한 겹만 얹는다.
+const DAY_CYCLE := 1200.0
+func _sky() -> Color:
+	var ph: float = clock_override if clock_override >= 0.0 else fmod(sim.t, DAY_CYCLE) / DAY_CYCLE
+	var day := Color(0, 0, 0, 0)
+	var dusk := Color(0.82, 0.42, 0.18, 0.15)      # 해질녘 — 주황이 얇게
+	var night := Color(0.06, 0.09, 0.24, 0.34)     # 밤 — 짙은 남색
+	if ph < 0.50:
+		return day
+	if ph < 0.58:
+		return day.lerp(dusk, (ph - 0.50) / 0.08)
+	if ph < 0.66:
+		return dusk.lerp(night, (ph - 0.58) / 0.08)
+	if ph < 0.90:
+		return night
+	return night.lerp(day, (ph - 0.90) / 0.10)
+
 ## 발밑 그림자 — 납작한 원 하나. **그림에 굽지 않고 코드가 그린다** —
 ## 그림에 넣으면 동물×방향마다 딸려가고, 몸이 들썩일 때 그림자까지 떠 버린다.
 ## 그림자는 늘 땅(발끝 자리)에 붙어 있어야 발이 땅을 딛는 느낌이 난다.
@@ -763,7 +785,10 @@ func _shadow(foot: Vector2, r: float) -> void:
 ## 앞뒤 가리기(깊이)도 발끝 높이로 정한다.
 func _sprite(t: Texture2D, foot: Vector2, kind: String, flip: bool = false) -> void:
 	var sz: Vector2 = Art.SIZE[kind]
-	var r := Rect2(foot - Vector2(sz.x * 0.5, sz.y), sz)
+	# 짐승은 그림 밑 여백만큼 내려 앉힌다 — 발이 진짜로 땅(그림자)에 닿게.
+	# 가구(매대·가마·계산대)는 손으로 맞춘 자리가 있으니 안 건드린다.
+	var pad: float = Art.foot_pad(t) if kind in ["hero", "clerks", "staff", "guests", "pests"] else 0.0
+	var r := Rect2(foot - Vector2(sz.x * 0.5, sz.y * (1.0 - pad)), sz)
 	if flip:
 		# 그림은 오른쪽 보는 것 한 장만 받는다. 왼쪽은 여기서 뒤집는다 —
 		# 두 장씩 그리게 하면 장수가 두 배가 되고, 둘이 미묘하게 달라진다.
@@ -1175,6 +1200,24 @@ func _draw() -> void:
 		if can:
 			var bob: float = absf(sin(_t * 3.2)) * 5.0
 			_text(mid + Vector2(0, 44 + bob), "누르면 열린다!", 13, Color("ffe9a8"))
+
+	# ── 낮과 밤 ── 알림 표·말풍선보다는 아래, 마을 전부보다는 위.
+	var sky: Color = _sky()
+	if sky.a > 0.003:
+		draw_set_transform_matrix(get_canvas_transform().affine_inverse())
+		draw_rect(Rect2(Vector2.ZERO, get_viewport_rect().size), sky)
+		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+		# 등불 — 열린 가게 계산대마다 따뜻한 불. 밤이 깊을수록 또렷해진다.
+		# 장사는 밤에도 돈다(방치형이다) — 캄캄하기만 하면 죽은 마을로 보인다.
+		var glow: float = sky.a / 0.34
+		for gi in range(Content.SHOPS.size()):
+			if not sim.shops.has(String(Content.SHOPS[gi].id)):
+				continue
+			var o3: Vector2i = Iso.org(sim, gi)
+			var y3: Dictionary = Iso.yard(Iso.YARD_KIND[gi], Iso.plot_dim(sim, gi))
+			var cp: Vector2 = Iso.w(o3.x + y3.counter.x + 0.5, o3.y + y3.counter.y + 0.5) + Vector2(0, -18)
+			for gr in [[54.0, 0.05], [36.0, 0.08], [20.0, 0.13]]:
+				draw_circle(cp, gr[0], Color(1.0, 0.78, 0.4, gr[1] * glow))
 
 	for i2 in range(Content.SHOPS.size()):
 		if sim.shops.has(String(Content.SHOPS[i2].id)):

@@ -32,6 +32,10 @@ func _ready() -> void:
 		var z: float = float(OS.get_environment("SHOT_ZOOM"))
 		main.cam.zoom = Vector2(z, z)
 		main._clamp_cam()
+	# SHOT_CLOCK=0~1 — 하루 중 시각을 못 박는다(0.75면 한밤). 낮과 밤은
+	# 게임 시계를 따라 돌아서, 못 박는 손잡이가 없으면 도구가 밤을 영영 못 본다.
+	if OS.has_environment("SHOT_CLOCK"):
+		main.village.clock_override = float(OS.get_environment("SHOT_CLOCK"))
 	# SHOT_SHOP=<가게id> — 그 가게를 가운데 놓고 찍는다. 계산대 자리 같은
 	# 마당 문제는 마을 전경으론 안 보인다 — 도구가 못 비추면 못 잡는다.
 	if OS.has_environment("SHOT_SHOP"):
