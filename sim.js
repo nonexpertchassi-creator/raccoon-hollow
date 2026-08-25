@@ -61,7 +61,7 @@ export class Sim {
     /* 마을 의뢰와 젬. 의뢰는 마을 단위로 걸린다(손님 한 마리가 아니라).
      * { id, gid, itemId, need, got, gems, t } */
     this.quests = [];
-    this.gems = 0;
+    this.gems = 3;           // 시작 젬 — Godot판과 맞춘다(뽑기 첫 경험용)
     this.gemUp = {};                     // 젬으로 산 영구 강화 (id → 레벨)
     this.maxGem = {};                    // 만렙 젬을 이미 준 품목 ('id@등급')
     this._qid = 0;

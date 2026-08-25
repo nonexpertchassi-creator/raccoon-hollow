@@ -111,7 +111,10 @@ var _purse: float = 0.0
 var events: Array = []
 
 var quests: Array = []
-var gems: float = 0.0
+## 시작 젬 3개 — 1회 뽑기가 💎1이라, 켜자마자 **뽑기 → 새 손님이 걸어
+## 들어오는 순간**을 3분 안에 겪게 한다. 0으로 시작했더니 처음 3분 동안
+## 젬을 얻을 길이 없어서 이 게임의 심장(뽑기)을 못 만났다(실측).
+var gems: float = 3.0
 var gemUp: Dictionary = {}
 var maxGem: Dictionary = {}
 var _qid: int = 0

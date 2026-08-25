@@ -481,14 +481,19 @@ func _plot_base(i: int, n: int) -> void:
 					draw_line(q2 + Vector2(0, -18), q2 + Vector2(0, -24), Color("4a4139"), 1.5)
 
 	# ★ 현판(가게 이름)과 "승급하면 매대 +2" 문구는 지웠다(2026-08-25, 유저).
-	#   매대 그림이 들어온 뒤로는 무엇을 파는 가게인지 눈으로 보인다 —
-	#   글자는 그림이 없던 시절의 목발이었다. '가득' 신호만 그 자리에 남긴다.
+	#   '가득!'·'새 칸!' 같은 알림 표는 여기(바닥 층)가 아니라 **맨 위 층**에서
+	#   그린다(_yard_signs) — 알림이 가구에 반쯤 가려지면 알림이 아니다.
+
+## 마당 알림 표 — 깊이 정렬 **밖**, 맨 위에 그린다.
+## 규칙: 바닥 표시(+ 마름모)는 바닥에 깔리고, 알림 표는 무엇에도 안 가린다.
+## 섞어 두면 어떤 것은 가구에 반쯤 먹히고 어떤 것은 바닥을 덮는다(유저가 잡았다).
+func _yard_signs(i: int) -> void:
+	var shop: Dictionary = Content.SHOPS[i]
+	var N: Vector2 = Iso.w(Iso.org(sim, i).x, Iso.org(sim, i).y)
 	if _idle(i):
 		var bob2: float = sin(_t * 3.0) * 2.5
 		_chip(N + Vector2(0, -50 + bob2), 46, 20, Color("c7563f"))
 		_text(N + Vector2(0, -36 + bob2), "가득!", 11, Color("fff3dd"))
-
-	# 들어가서 좋은 일이 있을 때만 표 — 숙제가 아니라 초대장
 	if sim.shop_todo(shop.id) > 0:
 		var bob: float = sin(_t * 4.0) * 3.0
 		var promo: bool = sim.can_promote(shop.id)
@@ -925,7 +930,12 @@ func _draw() -> void:
 		var cap: int = min(sim.stall_cap(String(Content.SHOPS[i].id)), Content.SHOPS[i].items.size())
 		for k in range(cap):
 			var sp: Vector2i = y.stalls[k]
-			layer.append({"z": Iso.w(o.x + sp.x + 1, o.y + sp.y + 1).y, "i": seq, "f": _stall.bind(i, k, sp)})
+			# ★ 안 연 칸(+ 마름모)은 **바닥 표시**라 마당 바닥 바로 위에 깔린다.
+			#   발끝 z로 세웠더니 앞 칸의 마름모가 뒤 칸의 매대 그림을 덮었다.
+			var zz: float = Iso.w(o.x + sp.x + 1, o.y + sp.y + 1).y
+			if not sim.is_open(String(Content.SHOPS[i].items[k].id)):
+				zz = Iso.w(o.x, o.y).y + 2.5
+			layer.append({"z": zz, "i": seq, "f": _stall.bind(i, k, sp)})
 			seq += 1
 		layer.append({"z": Iso.w(o.x + y.counter.x + 0.84, o.y + y.counter.y + 0.7).y, "i": seq,
 			"f": _counter.bind(i)})
@@ -992,6 +1002,9 @@ func _draw() -> void:
 			var bob: float = absf(sin(_t * 3.2)) * 5.0
 			_text(mid + Vector2(0, 44 + bob), "누르면 열린다!", 13, Color("ffe9a8"))
 
+	for i2 in range(Content.SHOPS.size()):
+		if sim.shops.has(String(Content.SHOPS[i2].id)):
+			_yard_signs(i2)
 	for f in floats:
 		var a: float = clampf(f.t, 0.0, 1.0)
 		_chip(f.pos, 22.0 + String(f.text).length() * 11.0, 21, Color(0.17, 0.14, 0.11, 0.82 * a))
