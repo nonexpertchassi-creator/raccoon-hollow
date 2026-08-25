@@ -882,7 +882,9 @@ func _staff_goal(i: int, k: int) -> Vector2:
 	var inn := Vector2i(clampi(sp.x, 1, n - 2), clampi(sp.y, 1, n - 2))
 	var pin: Vector2 = Iso.w(o.x + inn.x + 0.5, o.y + inn.y + 0.5)
 	var pst: Vector2 = Iso.w(o.x + sp.x + 0.5, o.y + sp.y + 0.5)
-	return pin.lerp(pst, 0.45)           # 안쪽 칸에서 매대 쪽으로 살짝 붙는다
+	# 매대 칸으로 파고들면 안 된다(유저: "매대 안으로 들어가는 느낌") —
+	# 매대는 한 칸을 차지한 가구다. **앞 칸에 서서** 몸만 살짝 기울인다.
+	return pin.lerp(pst, 0.15)
 
 ## 직원의 현재 자리(걸어가는 중일 수 있다). 그리기와 앞뒤 순서가 같이 쓴다.
 func _staff_cur(i: int, k: int) -> Vector2:
