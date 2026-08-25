@@ -144,16 +144,22 @@ func on_sale(sale: Dictionary) -> void:
 		"face": String(sale.guest.face), "id": String(sale.guest.id), "shop": idx, "state": "in",
 		"pos": Iso.w(enter.x + 0.5, enter.y + 0.5), "out_gate": _gate(),
 		"path": path, "step": 1, "wait": 0.0, "qwait": 0.0, "empty": empty,
-		"n": int(sale.n), "gain": float(sale.gain), "sold": _order_of(sale),
+		"n": int(sale.n), "gain": float(sale.gain), "sold": _order_of(sale, shop_id),
 		"speed": float(sale.guest.get("speed", 1.0)), "off": (_grng.next() - 0.5) * 30.0,
 	})
 	line[idx].append(walkers[walkers.size() - 1])
 
 ## 이 손님이 무엇을 몇 개 사러 왔나. 머리 위에 띄울 주문표다.
 ## 셋까지만 담는다 — 넷을 넘기면 말풍선이 손님보다 커져서 길을 덮는다.
-func _order_of(sale: Dictionary) -> Array:
+##
+## ★ **이 가게 물건만** 담는다(2026-08-25, 유저가 잡았다). 바구니에는 여러
+##   가게 것이 섞여 있는데(계산은 sim이 한 번에 한다), 화면의 줄은 첫 물건의
+##   가게 앞 하나뿐이다 — 필방 앞에서 낫과 국밥이 뜨면 오류로 보이는 게 맞다.
+func _order_of(sale: Dictionary, shop_id: String) -> Array:
 	var out: Array = []
 	for l in sale.lines:
+		if String(l.item.shop) != shop_id:
+			continue
 		out.append({"id": String(l.item.id), "icon": String(l.item.icon), "n": int(l.n)})
 	return out
 
