@@ -307,12 +307,26 @@ func _advance(delta: float) -> void:
 		if c.busy <= 0.0:
 			var ci: Array = _craft_idx(i)
 			goal = _stall_front(i, ci[0]) if not ci.is_empty() else f.work
-		var d: Vector2 = goal - c.pos
+		# ★ 곧장 가면 매대·계산대 칸을 밟고 지나간다(유저: "6번 매대 들렀다
+		#   계산대 가면 망가지는 기분"). 마당 안쪽 빈 칸들은 네모라 그 안에서는
+		#   어떤 직선도 가구를 안 지난다 — 계산대를 오갈 때만 **계산대 안쪽
+		#   팔꿈치 칸**을 거쳐 ㄱ자로 꺾어 간다.
+		var n2: int = Iso.plot_dim(sim, i)
+		var y2: Dictionary = Iso.yard(Iso.YARD_KIND[i], n2)
+		var o2: Vector2i = Iso.org(sim, i)
+		var elbow: Vector2 = Iso.w(o2.x + clampi(y2.counter.x, 1, n2 - 2) + 0.5,
+			o2.y + clampi(y2.counter.y, 1, n2 - 2) + 0.5)
+		var tgt: Vector2 = goal
+		if goal == f.serve and c.pos.distance_to(elbow) > 8.0:
+			tgt = elbow                              # 나갈 때 — 팔꿈치부터
+		elif goal != f.serve and c.pos.distance_to(f.serve) < 24.0:
+			tgt = elbow                              # 돌아올 때 — 팔꿈치로 들어온다
+		var d: Vector2 = tgt - c.pos
 		var step: float = CLERK_SPEED * delta
 		c.walking = d.length() > step        # 걷는 중이면 걷는 그림을 쓴다
 		if c.walking and absf(d.x) > 0.5:
 			c.flip = d.x < 0.0
-		c.pos = goal if d.length() <= step else c.pos + d.normalized() * step
+		c.pos = tgt if d.length() <= step else c.pos + d.normalized() * step
 
 ## 촌장 걸음 — 길 위의 아무 데나 한 곳을 골라 걸어가고, 닿으면 잠깐 쉬었다 또 간다.
 ## 목적지를 마을 문(GATES)에서 고르면 늘 가장자리만 돌게 되므로 길 전체에서 고른다.
