@@ -79,7 +79,12 @@ const DOG_T := Vector2i(14, 4)
 ## 손님이 서는 쪽(길)과 그 반대쪽(점장이 서는 마당 안). 한 칸 어치다.
 const GATE_OFF := {"x": Vector2(44, 22), "y": Vector2(-44, 22)}
 const SERVE_OFF := {"x": Vector2(-32, -16), "y": Vector2(32, -16)}
-const LINE_OFF := {"x": Vector2(-42, 21), "y": Vector2(42, 21)}
+## 줄이 뻗는 방향 — **가게 앞면을 따라** 선다(2026-08-25, 유저가 잡았다).
+## 예전엔 길을 따라 가게 반대쪽으로 뻗어서, 둘째 사람부터 가게를 등지고
+## 골목 너머까지 밀려났다. 계산대가 어디 있든 줄은 매대 진열이 보이는
+## 쪽으로 서는 게 장터의 상식이다 — 세로 길(gate x)은 위로, 가로 골목
+## (gate y)은 왼쪽으로, 마당 변을 끼고 뻗는다.
+const LINE_OFF := {"x": Vector2(42, -21), "y": Vector2(-42, -21)}
 
 static func plot_dim(sim: Sim, i: int) -> int:
 	return 3 + min(2, sim.rank_of(Content.SHOPS[i].id))
