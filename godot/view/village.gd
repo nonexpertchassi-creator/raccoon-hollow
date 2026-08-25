@@ -1062,7 +1062,9 @@ func _clerk_layers(foot: Vector2, shop_id: String, pose: String, flip: bool) -> 
 	var gear: Texture2D = Art.tex("gear", "%s-%d" % [shop_id, sim.rank_of(shop_id) + 1])
 	if gear != null:
 		_flat_tex(gear, r, flip)
-	if pose in ["walk1", "walk2", "sell"]:
+	# 유저 구도: 이동·대기 = 정면 몸 그대로, **계산·생산 = 팔을 얹은 훼이크
+	# 측면.** 걷는 건 정면 몸+들썩임이면 충분하다 — 팔은 일하는 표시다.
+	if pose in ["make", "sell"]:
 		var arm: Texture2D = Art.tex("hero-arm", "arm")
 		if arm != null:
 			_flat_tex(arm, r, flip)
@@ -1110,6 +1112,22 @@ func _stall_front(i: int, k: int) -> Vector2:
 		taken[t5] = true
 	taken[y.counter] = true
 	taken[y.kiln] = true
+	# 1순위: **수직 안쪽 이웃**(7번 매대면 8번 자리 — 유저 설계). 그 칸에
+	# 가구가 있을 때만 2순위로 넘어간다. 처음부터 "중심에 가까운 빈 칸"으로
+	# 골랐더니 8번이 비어 있는데도 5번으로 갔다(유저가 잡았다).
+	var perp: Array = []
+	if sp.x == 0:
+		perp.append(Vector2i(1, sp.y))
+	if sp.x == n - 1:
+		perp.append(Vector2i(n - 2, sp.y))
+	if sp.y == 0:
+		perp.append(Vector2i(sp.x, 1))
+	if sp.y == n - 1:
+		perp.append(Vector2i(sp.x, n - 2))
+	for cnd in perp:
+		if cnd.x >= 0 and cnd.y >= 0 and cnd.x < n and cnd.y < n and not taken.has(cnd):
+			return Iso.w(o.x + cnd.x + 0.5, o.y + cnd.y + 0.5)
+	# 2순위: 이웃 여덟 칸의 빈 곳 중 마당 중심에 가까운 곳(모서리 매대용)
 	var best: Vector2i = Vector2i(clampi(sp.x, 1, n - 2), clampi(sp.y, 1, n - 2))
 	var best_d: float = INF
 	var mid: Vector2 = Vector2(float(n) * 0.5, float(n) * 0.5)
@@ -1117,13 +1135,13 @@ func _stall_front(i: int, k: int) -> Vector2:
 		for dx in [-1, 0, 1]:
 			if dx == 0 and dy == 0:
 				continue
-			var cnd := Vector2i(sp.x + dx, sp.y + dy)
-			if cnd.x < 0 or cnd.y < 0 or cnd.x >= n or cnd.y >= n or taken.has(cnd):
+			var cnd2 := Vector2i(sp.x + dx, sp.y + dy)
+			if cnd2.x < 0 or cnd2.y < 0 or cnd2.x >= n or cnd2.y >= n or taken.has(cnd2):
 				continue
-			var d5: float = Vector2(float(cnd.x) + 0.5, float(cnd.y) + 0.5).distance_to(mid)
+			var d5: float = Vector2(float(cnd2.x) + 0.5, float(cnd2.y) + 0.5).distance_to(mid)
 			if d5 < best_d:
 				best_d = d5
-				best = cnd
+				best = cnd2
 	return Iso.w(o.x + best.x + 0.5, o.y + best.y + 0.5)
 
 ## 이 매대를 맡은 일꾼이 **지금 어디 있나**. 매대 앞에 닿기 전엔 만드는
