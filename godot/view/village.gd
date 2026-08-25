@@ -341,9 +341,9 @@ func _advance(delta: float) -> void:
 			# 자세가 갈리면 깜박이고, 너무 길게 잡으면(줄 전체) 점장이 계산대에
 			# 영영 묶여 만드는 모습이 사라진다(유저 — 셋 다 겪고 잡은 값이다).
 			if wk.state == "buy" and _line_index(wk) == 0:
-				# 3초: 손님이 뜸해졌다고 확신할 때만 매대로 돌아간다. 0.6초로
-				# 뒀더니 바쁜 가게에서 손님마다 출퇴근하는 탭 댄스가 됐다(유저).
-				clerks[i].busy = 3.0
+				# 1.2초: 0.6초는 손님마다 출퇴근(탭 댄스), 3초는 안 오는 손님을
+				# 기다리며 계산대에서 노는 그림이 됐다(유저가 둘 다 잡았다).
+				clerks[i].busy = 1.2
 				break
 	for i in range(Content.SHOPS.size()):
 		var c: Dictionary = clerks[i]
@@ -370,7 +370,10 @@ func _advance(delta: float) -> void:
 		var near_ct: bool = c.pos.distance_to(f.serve) < 30.0
 		if c.walking and absf(d.x) > 0.5 and not near_ct:
 			c.flip = d.x < 0.0
-		if near_ct:
+		# ★ 길 쪽 보기 잠금은 **계산하러 왔을 때만**. 계산 자리(8번)는 매대
+		#   7번의 작업 자리이기도 한데, 잠금이 만들 때도 길을 보게 해서
+		#   "만드는 방향이 반대"가 됐다(유저).
+		if near_ct and goal == f.serve:
 			c.flip = String(f.yard.gate) == "y"    # 계산대에선 길 쪽을 본다
 		elif not c.walking and hjob >= 0:
 			c.flip = _stall_at(i, hjob).x < c.pos.x   # 매대 앞에선 매대를 본다
@@ -781,10 +784,14 @@ func _stall(i: int, k: int, spot: Vector2i) -> void:
 	# ★ 상품 배지(2026-08-26, 유저 설계): 물건을 **흰 동그라미**로 감싸고,
 	#   만드는 동안 그 동그라미가 **초록으로 차오른다.** 물건도 보이고 생산도
 	#   보인다 — 따로 띄우던 로딩 파이는 이 채움에 흡수됐다.
-	var bc: Vector2 = p + Vector2(0, -40)
+	var bc: Vector2 = p + Vector2(0, -52)     # 좌판이 보이게 위로(유저)
 	var st2: Dictionary = sim.items[it.id]
-	var making: bool = sim._crafting.has(String(it.id)) \
-		and _worker_of(i, k).distance_to(_stall_front(i, k)) < 8.0
+	# 채움은 **sim의 진실 그대로** — 손이 굴러가면 찬다. 일꾼이 계산하러 간
+	# 사이에도 손은 일하니까(그게 경제 규칙이다), 채움을 숨기면 "그냥
+	# 생산되네"와 "초기화됐네"가 번갈아 나온다(유저가 둘 다 겪었다).
+	# 일꾼 있음/없음은 먼지·불티(기척)만 가른다.
+	var making: bool = sim._crafting.has(String(it.id))
+	var here: bool = making and _worker_of(i, k).distance_to(_stall_front(i, k)) < 8.0
 	draw_circle(bc, 17.0, Color(1.0, 0.99, 0.96, 0.95))
 	# 하다 만 진행도도 **흐리게 남긴다** — 일꾼이 자리를 비우면 채움이 뚝
 	# 사라져서 "초기화됐나"로 보였다(유저). sim은 기억하고 있었다 — 화면만
@@ -804,7 +811,7 @@ func _stall(i: int, k: int, spot: Vector2i) -> void:
 		draw_texture_rect(pic, Rect2(bc - Vector2(9, 15), Vector2(18, 30)), false)
 	else:
 		_text(bc + Vector2(0, 7), String(it.icon), 18, Color.WHITE)
-	if making:
+	if here:
 		# 만드는 기척 — 대장간은 불티, 나머지는 먼지구름(매대 위 효과 원칙)
 		if String(shop.id) == "smith":
 			for s2 in range(3):
@@ -835,7 +842,7 @@ func _stall(i: int, k: int, spot: Vector2i) -> void:
 		var can_up: bool = sim.money >= sim.level_cost(it.id)
 		if can_max or can_up:
 			var bob3: float = sin(_t * 4.0) * 2.0
-			_text(p + Vector2(24, -40 + bob3), "▲", 15, Color("c7563f") if can_max else C.jade)
+			_text(p + Vector2(24, -52 + bob3), "▲", 15, Color("c7563f") if can_max else C.jade)
 
 func _counter(i: int) -> void:
 	var o: Vector2i = Iso.org(sim, i)
@@ -944,7 +951,7 @@ func _shadow(foot: Vector2, r: float) -> void:
 ## 그림 한 장을 **발끝 기준**으로 놓는다. 그림 주문서에도 "발끝이 아래 변에
 ## 닿게"라고 적어 둔 이유가 이것이다 — 발끝이 곧 그 물건이 서 있는 자리이고,
 ## 앞뒤 가리기(깊이)도 발끝 높이로 정한다.
-func _sprite(t: Texture2D, foot: Vector2, kind: String, flip: bool = false) -> void:
+func _sprite(t: Texture2D, foot: Vector2, kind: String, flip: bool = false, squash: float = 0.0) -> void:
 	var sz: Vector2 = Art.SIZE[kind]
 	# 짐승은 그림을 재서 앉힌다 — 밑 여백만큼 내리고(발이 그림자에 닿게),
 	# 몸이 액자에서 옆으로 치우쳐 있으면 그만큼 당긴다(그림자와 몸이 어긋나던
@@ -955,6 +962,12 @@ func _sprite(t: Texture2D, foot: Vector2, kind: String, flip: bool = false) -> v
 		r.position.y += float(ft.pad) * sz.y
 		var dx: float = (0.5 - float(ft.cx)) * sz.x
 		r.position.x += -dx if flip else dx
+	if squash > 0.0:
+		# 발끝은 그대로, 몸만 낮고 넓게 눌린다
+		r.position.x -= r.size.x * squash * 0.35
+		r.position.y += r.size.y * squash
+		r.size.x *= 1.0 + squash * 0.7
+		r.size.y *= 1.0 - squash
 	if flip:
 		# 그림은 오른쪽 보는 것 한 장만 받는다. 왼쪽은 여기서 뒤집는다 —
 		# 두 장씩 그리게 하면 장수가 두 배가 되고, 둘이 미묘하게 달라진다.
@@ -1073,7 +1086,7 @@ func _clerk(i: int) -> void:
 		elif c.walking and bool(c.get("up", false)):
 			dir3 = "back"
 		_shadow(c.pos, 14.0)
-		_clerk_layers(c.pos, id, dir3, bool(c.get("flip", false)))
+		_clerk_layers(c.pos, id, dir3, bool(c.get("flip", false)), c.walking)
 		return
 	var t: Texture2D = _hero_tex(id, pose)
 	if t == null:                       # 그 자세가 아직 없으면 만드는 자세로
@@ -1091,36 +1104,54 @@ func _clerk(i: int) -> void:
 ## 겹 순서 — front: 몸→장비(꼬리 없음) · side: 꼬리→몸→장비 · back: 몸→장비→꼬리.
 ## 장비는 투명 스티커다(몸·손·얼굴·무늬·꼬리·그림자 픽셀 금지) — 본체 위에 핀만 맞춘다.
 ## 꼬리는 방향별 뿌리 축으로 코드가 천천히 흔든다 — 프레임 그림은 없다.
-func _clerk_layers(foot: Vector2, shop_id: String, dir3: String, flip: bool) -> void:
+func _clerk_layers(foot: Vector2, shop_id: String, dir3: String, flip: bool, walking: bool) -> void:
 	var fur: String = sim.fur_of(shop_id)
 	var sz: Vector2 = Art.SIZE["hero"]
-	var r := Rect2(foot - Vector2(sz.x * 0.5, sz.y), sz)
 	var body: Texture2D = Art.tex("hero-body", "%s-%s" % [fur, dir3])
 	if body == null:
-		body = Art.tex("hero-body", "%s-front" % fur)   # 방향이 아직 없으면 정면으로 때운다
+		body = Art.tex("hero-body", "%s-front" % fur)
+	# 그림 밑 여백을 재서 발을 그림자에 앉힌다 — 겹그림이 이걸 안 타서
+	# 날아다니는 느낌이 났다(유저). 규칙은 "발끝을 PNG 아래 변에"지만,
+	# 어긋난 그림이 와도 코드가 받아준다.
+	var ft: Dictionary = Art.fit(body)
+	var r := Rect2(foot - Vector2(sz.x * 0.5, sz.y * (1.0 - float(ft.pad))), sz)
+	var dx: float = (0.5 - float(ft.cx)) * sz.x
+	r.position.x += -dx if flip else dx
+	# 걷기 통통 — 뜀 반원 + 땅에 닿을 때 살짝 눌림(스쿼시). 로봇 걸음의 반대말.
+	if walking:
+		var ph: float = absf(sin(_t * 7.0 + foot.x * 0.05))
+		r.position.y -= ph * 3.5
+		var sq: float = (1.0 - ph) * 0.06
+		r.position.x -= r.size.x * sq * 0.35
+		r.position.y += r.size.y * sq
+		r.size.x *= 1.0 + sq * 0.7
+		r.size.y *= 1.0 - sq
 	var gkey: String = "%s-%d" % [shop_id, sim.rank_of(shop_id) + 1]
 	var gear: Texture2D = Art.tex("gear", "%s-%s" % [gkey, dir3])
 	if gear == null:
 		gear = Art.tex("gear", "%s-front" % gkey)
 	if dir3 == "side":
-		_tail_wag(foot, fur, "side", flip, false)       # 측면: 꼬리가 몸 뒤에 먼저
+		_tail_wag(r, fur, "side", flip)                 # 측면: 꼬리가 몸 뒤에 먼저
 	_flat_tex(body, r, flip)
 	if gear != null:
 		_flat_tex(gear, r, flip)
 	if dir3 == "back":
-		_tail_wag(foot, fur, "back", flip, true)        # 뒷모습: 꼬리가 맨 위, 엉덩이 가운데
+		_tail_wag(r, fur, "back", flip)                 # 뒷모습: 꼬리가 맨 위
 
-## 꼬리 — 방향별 뿌리 축(측면: 엉덩이 뒤쪽 · 뒷모습: 엉덩이 한가운데)으로 흔든다.
-func _tail_wag(foot: Vector2, fur: String, dir3: String, flip: bool, center: bool) -> void:
+## 꼬리 — 본체와 **같은 판에 핀을 맞춰** 그리고, 뿌리 축으로만 살짝 흔든다.
+## 처음엔 임의 크기로 엉덩이에 따로 붙였더니 꼬리가 길게 빠져 보였다(유저).
+## 그림이 이미 제자리에 그려져 온다 — 코드는 얹고 흔들기만 한다.
+func _tail_wag(r: Rect2, fur: String, dir3: String, flip: bool) -> void:
 	var tail: Texture2D = Art.tex("hero-tail", "%s-%s" % [fur, dir3])
 	if tail == null:
 		return
-	var sz: Vector2 = Art.SIZE["hero"]
-	var hip: Vector2 = foot + (Vector2(0, -sz.y * 0.30) if center
-		else Vector2(sz.x * (0.22 if flip else -0.22), -sz.y * 0.28))
-	draw_set_transform(hip, sin(_t * 1.7 + foot.x * 0.05) * 0.12,
-		Vector2(-1, 1) if flip else Vector2.ONE)
-	draw_texture_rect(tail, Rect2(Vector2(-sz.x * 0.5, -sz.y * 0.45), sz * 0.9), false)
+	var sz: Vector2 = r.size
+	# 뿌리 축(그림 판 안 좌표): side는 엉덩이 뒤쪽, back은 엉덩이 한가운데
+	var pl: Vector2 = Vector2(sz.x * 0.32, sz.y * 0.74) if dir3 == "side" else Vector2(sz.x * 0.5, sz.y * 0.74)
+	var pw: Vector2 = r.position + (Vector2(sz.x - pl.x, pl.y) if flip else pl)
+	var ang: float = sin(_t * 1.7 + r.position.x * 0.05) * 0.09
+	draw_set_transform(pw, -ang if flip else ang, Vector2(-1, 1) if flip else Vector2.ONE)
+	draw_texture_rect(tail, Rect2(-pl, sz), false)
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 func _flat_tex(t: Texture2D, r: Rect2, flip: bool) -> void:
@@ -1286,11 +1317,12 @@ func _walker(wk: Dictionary) -> void:
 	if t != null:
 		# 걷는 동안 들썩인다 — 이게 없으면 미끄러지듯 떠다니는 유령이 된다
 		# (유저: "공중에 날라다니는 느낌"). 그림자는 땅에 남는다.
-		var stepbob: float = 0.0
-		if wk.state != "buy":
-			stepbob = absf(sin(_t * 7.0 + wk.pos.x * 0.06)) * 2.6
+		var ph6: float = absf(sin(_t * 7.0 + wk.pos.x * 0.06))
+		var stepbob: float = 0.0 if wk.state == "buy" else ph6 * 2.6
 		_shadow(wk.pos, 13.0)
-		_sprite(t, wk.pos + Vector2(0, -stepbob), "guests", bool(wk.get("flip", false)))
+		# 땅에 닿는 순간 살짝 눌린다(스쿼시) — 로봇 걸음의 반대말(유저)
+		var sq6: float = 0.0 if wk.state == "buy" else (1.0 - ph6) * 0.05
+		_sprite(t, wk.pos + Vector2(0, -stepbob), "guests", bool(wk.get("flip", false)), sq6)
 	else:
 		_raccoon(wk.pos, SHAPE * 0.9, Color("9c8f7a"))
 		_text(wk.pos + Vector2(0, -58), wk.face, 20, Color.WHITE)
