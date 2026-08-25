@@ -330,11 +330,13 @@ func _advance(delta: float) -> void:
 		var d: Vector2 = tgt - c.pos
 		var step: float = CLERK_SPEED * delta
 		c.walking = d.length() > step        # 걷는 중이면 걷는 그림을 쓴다
-		if c.walking and absf(d.x) > 0.5:
+		# 계산대 근처(30px)에서는 방향을 **절대 안 바꾼다** — 팔꿈치를 오가는
+		# 짧은 걸음마다 좌우가 뒤집혀 파닥거렸다(유저가 두 번 잡았다).
+		var near_ct: bool = c.pos.distance_to(f.serve) < 30.0
+		if c.walking and absf(d.x) > 0.5 and not near_ct:
 			c.flip = d.x < 0.0
-		if not c.walking and goal == f.serve:
-			# 계산대에 선 동안은 방향 고정 — 길 쪽을 본다(문 방향이 곧 길이다)
-			c.flip = String(f.yard.gate) == "y"
+		if near_ct:
+			c.flip = String(f.yard.gate) == "y"    # 계산대에선 길 쪽을 본다
 		c.pos = tgt if d.length() <= step else c.pos + d.normalized() * step
 
 ## 촌장 걸음 — 길 위의 아무 데나 한 곳을 골라 걸어가고, 닿으면 잠깐 쉬었다 또 간다.
@@ -756,7 +758,19 @@ func _counter(i: int) -> void:
 	if pic3 != null:
 		_sprite(pic3, p + Vector2(0, 14), "counters", String(yd.gate) == "y")
 	else:
+		# 임시 상자도 **방향은 있어야 한다**(유저 — "저게 계산대 맞나").
+		# 손님이 서는 문(door) 쪽 면을 짙게 칠해 "이쪽이 앞"을 만든다.
 		_box(o.x + ct.x + 0.16, o.y + ct.y + 0.3, 0.68, 0.4, 18, C.paper2, C.wood2)
+		var face_r: bool = String(yd.gate) == "x"      # 세로 길 가게는 ↘가 앞
+		var fN: Vector2 = Iso.w(o.x + ct.x + (0.84 if face_r else 0.16), o.y + ct.y + 0.3)
+		var fS: Vector2 = Iso.w(o.x + ct.x + (0.84 if face_r else 0.16), o.y + ct.y + 0.98)
+		if not face_r:
+			fN = Iso.w(o.x + ct.x + 0.16, o.y + ct.y + 0.98)
+			fS = Iso.w(o.x + ct.x + 0.84, o.y + ct.y + 0.98)
+		draw_colored_polygon(PackedVector2Array([
+			fN, fS, fS + Vector2(0, -18), fN + Vector2(0, -18)]), _shade(C.wood2, -0.06))
+		# 상판 위 엽전함(짙은 통) + 엽전 — 계산하는 자리라는 표
+		draw_rect(Rect2(p + Vector2(-12, -30), Vector2(11, 7)), Color("4a3a2a"))
 		var coin: Texture2D = Art.tex("ui", "coin")
 		if coin != null:
 			draw_texture_rect(coin, Rect2(p + Vector2(2, -30), Vector2(13, 13)), false)
