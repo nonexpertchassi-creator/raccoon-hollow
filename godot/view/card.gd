@@ -282,8 +282,11 @@ func _show_one(r: Dictionary, total: int) -> void:
 		"head": "새 손님!" if r.get("isNew", false) else "카드를 뽑았다",
 		"grade": int(r.grade),
 	}
-	_art.visible = false
-	_sign.visible = true
+	# 뒷면 그림이 있으면 그것을, 없으면 🎴 이모지를
+	var back: Texture2D = Art.tex("ui", "back")
+	_art.texture = back
+	_art.visible = back != null
+	_sign.visible = back == null
 	_sign.text = "🎴"
 	_title.text = "…"
 	_title.add_theme_color_override("font_color", Color("8a7a63"))
@@ -454,7 +457,7 @@ func _process(delta: float) -> void:
 			_pt += delta
 			var q: float = clampf(_pt / 0.25, 0.0, 1.0)
 			_cardbox.scale = Vector2(absf(cos(q * PI)), 1.0)
-			if q >= 0.5 and _sign.text == "🎴":
+			if q >= 0.5 and _title.text == "…":
 				_finish_flip_face()
 			if q >= 1.0:
 				_finish_flip()
