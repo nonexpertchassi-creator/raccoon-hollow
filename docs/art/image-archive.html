@@ -757,6 +757,119 @@
       font-size: 13px;
     }
 
+    .story-section {
+      padding: 34px clamp(20px, 4vw, 54px) 42px;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfc;
+    }
+
+    .story-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 20px;
+    }
+
+    .story-head h2 {
+      margin: 0;
+      font-family: var(--rounded);
+      font-size: clamp(22px, 3vw, 30px);
+      letter-spacing: -.03em;
+    }
+
+    .story-head p {
+      max-width: 560px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .synopsis-card {
+      display: grid;
+      grid-template-columns: minmax(120px, .28fr) minmax(0, 1fr);
+      gap: 22px;
+      margin-bottom: 18px;
+      padding: 18px 20px;
+      border: 1px solid #d8e4dc;
+      border-radius: 14px;
+      background: var(--green-soft);
+    }
+
+    .synopsis-card strong {
+      color: var(--green);
+      font: 800 13px/1.4 var(--rounded);
+    }
+
+    .synopsis-card p {
+      margin: 0;
+      color: #39443e;
+      font-size: 13px;
+      word-break: keep-all;
+    }
+
+    .storyboard {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .story-frame {
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+    }
+
+    .story-frame-visual {
+      position: relative;
+      display: grid;
+      place-items: center;
+      aspect-ratio: 9 / 16;
+      min-height: 0;
+      border-bottom: 1px solid var(--line);
+      color: #9da5ad;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.35), rgba(230,234,237,.68)),
+        repeating-linear-gradient(-45deg, #f7f8f9 0 12px, #f1f3f5 12px 24px);
+    }
+
+    .story-frame-number {
+      font: 800 clamp(46px, 6vw, 76px)/1 var(--rounded);
+      letter-spacing: -.08em;
+    }
+
+    .story-state {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 4px 8px;
+      border: 1px solid #efc4c4;
+      border-radius: 999px;
+      color: #a44444;
+      background: rgba(255,247,247,.94);
+      font-size: 9px;
+      font-weight: 800;
+    }
+
+    .story-frame-copy { padding: 14px; }
+    .story-frame-copy h3 { margin: 0; font: 800 14px/1.3 var(--body); }
+    .story-scene { min-height: 4.5em; margin: 8px 0 0; color: var(--muted); font-size: 11px; }
+
+    .story-line {
+      min-height: 4.9em;
+      margin: 12px 0 0;
+      padding-top: 11px;
+      border-top: 1px solid var(--line);
+      color: #303840;
+      font-size: 12px;
+      font-weight: 700;
+      word-break: keep-all;
+    }
+
+    .story-frame .file { margin-top: 11px; }
+
     .rule-list,
     .spec-list {
       display: grid;
@@ -1194,14 +1307,16 @@
       .status-strip { grid-template-columns: repeat(2, 1fr); }
       .status-item:nth-child(2) { border-right: 0; }
       .status-item:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+      .storyboard { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .catalog-tools { grid-template-columns: 1fr; }
       .asset-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     }
 
     @media (max-width: 680px) {
-      .library-head, .guide-head, .catalog-head { display: block; }
+      .library-head, .guide-head, .story-head, .catalog-head { display: block; }
       .head-actions { justify-content: flex-start; margin-top: 16px; }
-      .guide-head p, .catalog-head p { margin-top: 8px; }
+      .guide-head p, .story-head p, .catalog-head p { margin-top: 8px; }
+      .synopsis-card { grid-template-columns: 1fr; gap: 8px; }
       .guide-grid { grid-template-columns: 1fr; }
       .guide-card:first-child { grid-column: auto; }
       .filter-tools { align-items: stretch; flex-direction: column; }
@@ -1220,6 +1335,10 @@
       .brand-mark { width: 42px; height: 42px; border-radius: 13px; font-size: 22px; }
       .head-action { flex: 1 1 auto; justify-content: center; }
       .asset-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .storyboard { grid-template-columns: 1fr 1fr; gap: 9px; }
+      .story-frame-copy { padding: 11px; }
+      .story-scene { min-height: 6em; }
+      .story-line { min-height: 7em; font-size: 11px; }
       .asset-preview { height: 132px; }
       .asset-viewer { width: calc(100vw - 12px); max-height: calc(100vh - 12px); border-radius: 13px; }
       .viewer-shell { grid-template-columns: 38px minmax(0, 1fr) 38px; min-height: calc(100vh - 14px); }
@@ -1253,16 +1372,17 @@
         </div>
       </div>
       <nav class="head-actions" aria-label="그림 다운로드">
+        <a class="head-action" href="#story">첫 진입 만화</a>
         <a class="head-action primary" href="https://github.com/nonexpertchassi-creator/raccoon-hollow/tree/codex/art-production-20260822/godot/art">게임용 PNG</a>
         <a class="head-action" href="https://github.com/nonexpertchassi-creator/raccoon-hollow/archive/refs/heads/codex/art-production-20260822.zip">전체 ZIP</a>
       </nav>
     </header>
 
     <section class="status-strip" aria-label="그림 상태 요약">
-      <div class="status-item"><span>전체</span><strong id="totalCount">410장</strong></div>
-      <div class="status-item draft"><span>초안</span><strong id="draftCount">280장</strong></div>
-      <div class="status-item approved"><span>확정</span><strong id="approvedCount">0장</strong></div>
-      <div class="status-item"><span>없음</span><strong id="noneCount">130장</strong></div>
+      <div class="status-item"><span>전체</span><strong id="totalCount">816장</strong></div>
+      <div class="status-item draft"><span>초안</span><strong id="draftCount">250장</strong></div>
+      <div class="status-item approved"><span>확정</span><strong id="approvedCount">1장</strong></div>
+      <div class="status-item"><span>없음</span><strong id="noneCount">565장</strong></div>
     </section>
     <div id="progressSlots" hidden></div>
 
@@ -1276,8 +1396,16 @@
           <h3>그림 규칙</h3>
           <ul class="rule-list">
             <li>한국 너구리: 작은 둥근 귀, 통통한 몸, 고리무늬 없는 꼬리</li>
+            <li>모든 동물은 아기 체형으로 단순화하고 두 발로 걷는다. 손님 30종에는 너구리가 없다</li>
+            <li>필드 너구리는 정면·오른팔을 뻗은 훼이크 측면·뒷모습 3장, 왼쪽은 코드로 뒤집는다</li>
+            <li>점장 본체는 벌거벗은 무늬 A·B·C·D 중 가게마다 하나를 저장해 쓰고, 승급해도 본체 무늬는 유지한다</li>
+            <li>점장 장비·도구만 가게와 1·2·3단에 맞춰 겹치며, 꼬리는 별도 조각으로 코드가 흔든다</li>
+            <li>점장 필드판은 중립 자세가 기본. 제작 효과와 먼지는 코드가 그린다</li>
+            <li>캐릭터 그림에 발밑 그림자를 넣지 않는다. 그림자는 코드가 땅에 붙여 그린다</li>
+            <li>마당 담은 그리지 않는다. 초가·돌담·기와 승급은 코드가 처리한다</li>
             <li>볕 좋은 장날: 밝은 바닥이 중심이고 갈색 건물·소품은 화면의 30% 이하</li>
-            <li>굵은 먹갈색 외곽선, 평면 색, 최소한의 명암과 한지 질감</li>
+            <li>굵은 적갈색 크레용 외곽선은 일부 자연스럽게 끊고, 색연필 질감은 작은 화면에서 뭉개지지 않을 만큼만 쓴다</li>
+            <li>귀 상처·얼굴 얼룩처럼 축소하면 사라지는 디테일은 넣지 않는다</li>
             <li>작은 모바일 화면에서 얼굴보다 실루엣과 행동이 먼저 읽혀야 함</li>
           </ul>
         </article>
@@ -1294,10 +1422,11 @@
         <article class="guide-card">
           <h3>파일 규격</h3>
           <ul class="spec-list">
-            <li><span>점장·직원</span><code>144×144</code></li>
+            <li><span>점장·직원 (방향별)</span><code>144×144</code></li>
             <li><span>손님</span><code>128×128</code></li>
             <li><span>물건</span><code>128×224</code></li>
             <li><span>손님·점장 카드</span><code>512×768</code></li>
+            <li><span>첫 진입 만화</span><code>576×1024</code></li>
             <li><span>좌판</span><code>192×176</code></li>
             <li><span>계산대</span><code>168×144</code></li>
             <li><span>가마·풀무</span><code>168×192</code></li>
@@ -1306,9 +1435,58 @@
       </div>
     </section>
 
+    <section class="story-section" id="story">
+      <div class="story-head">
+        <h2>첫 진입 만화</h2>
+        <p>처음 켰을 때 한 번만 보여주는 9:16 세로 4컷. 누르면 다음 장으로 넘어가고 언제든 건너뛸 수 있다.</p>
+      </div>
+      <article class="synopsis-card">
+        <strong>전체 시놉시스</strong>
+        <p>한때 팔도의 물산이 모이던 산골 저잣거리 너구리 골은 큰 장마 뒤 폐허가 되었다. 촌장 너구리는 돌아온 주인공에게 곳간의 마지막 젬 세 알을 건네고, 주인공은 무너진 대장간에 다시 불을 넣는 일부터 마을의 장날을 되찾기 시작한다.</p>
+      </article>
+      <div class="storyboard" aria-label="첫 진입 만화 4컷 시나리오">
+        <article class="story-frame">
+          <div class="story-frame-visual"><span class="story-state">없음</span><span class="story-frame-number">1</span></div>
+          <div class="story-frame-copy">
+            <h3>붐비던 옛 장터</h3>
+            <p class="story-scene">등불과 좌판, 물건, 아기 동물 손님들로 가득한 가장 활기찬 시절.</p>
+            <p class="story-line">“한때 너구리 골 장날은 팔도에서 제일 붐볐다.”</p>
+            <code class="file">godot/art/story/1.png</code>
+          </div>
+        </article>
+        <article class="story-frame">
+          <div class="story-frame-visual"><span class="story-state">없음</span><span class="story-frame-number">2</span></div>
+          <div class="story-frame-copy">
+            <h3>장마 뒤의 빈 마을</h3>
+            <p class="story-scene">무너진 가게, 빗물 고인 빈 길, 걷힌 뒤에도 낮게 남은 안개.</p>
+            <p class="story-line">“큰 장마가 모든 것을 쓸어 갔다.”</p>
+            <code class="file">godot/art/story/2.png</code>
+          </div>
+        </article>
+        <article class="story-frame">
+          <div class="story-frame-visual"><span class="story-state">없음</span><span class="story-frame-number">3</span></div>
+          <div class="story-frame-copy">
+            <h3>촌장의 마지막 젬</h3>
+            <p class="story-scene">아기 체형의 주인공에게 촌장이 곳간의 젬 세 알을 두 손으로 건넨다.</p>
+            <p class="story-line">“곳간에 남은 건 이 세 알뿐일세. 불씨는 하나면 되네.”</p>
+            <code class="file">godot/art/story/3.png</code>
+          </div>
+        </article>
+        <article class="story-frame">
+          <div class="story-frame-visual"><span class="story-state">없음</span><span class="story-frame-number">4</span></div>
+          <div class="story-frame-copy">
+            <h3>첫 불씨 앞에 서다</h3>
+            <p class="story-scene">무너진 대장간 앞에 두 발로 선 아기 너구리의 뒷모습. 게임 화면과 같은 구도로 이어진다.</p>
+            <p class="story-line">글 없음 · 대장간을 비추며 “여기부터 되살리세!”로 연결</p>
+            <code class="file">godot/art/story/4.png</code>
+          </div>
+        </article>
+      </div>
+    </section>
+
     <section class="catalog-section" id="catalog">
       <div class="catalog-head">
-        <h2 id="catalogTitle">이미지 410장</h2>
+        <h2 id="catalogTitle">이미지 815장</h2>
         <p>매장을 고르거나 그림을 눌러 크게 본다. 큰 화면에서는 좌우 버튼과 방향키로 다음 그림을 넘길 수 있다.</p>
       </div>
       <div class="catalog-tools">
@@ -1318,23 +1496,25 @@
         </label>
         <div class="filter-tools">
           <div class="filters" role="group" aria-label="제작 상태 필터">
-          <button class="filter" type="button" data-filter="all" aria-pressed="true">전체 410</button>
-          <button class="filter" type="button" data-filter="none" aria-pressed="false">없음 130</button>
-          <button class="filter" type="button" data-filter="draft" aria-pressed="false">초안 280</button>
-          <button class="filter" type="button" data-filter="required" aria-pressed="false">필수 245</button>
-          <button class="filter" type="button" data-filter="optional" aria-pressed="false">선택 165</button>
+          <button class="filter" type="button" data-filter="all" aria-pressed="true">전체 816</button>
+          <button class="filter" type="button" data-filter="approved" aria-pressed="false">확정 1</button>
+          <button class="filter" type="button" data-filter="none" aria-pressed="false">없음 565</button>
+          <button class="filter" type="button" data-filter="draft" aria-pressed="false">초안 250</button>
+          <button class="filter" type="button" data-filter="required" aria-pressed="false">필수 681</button>
+          <button class="filter" type="button" data-filter="optional" aria-pressed="false">선택 135</button>
           </div>
           <label class="category-picker">
             <span>종류</span>
             <select id="categoryFilter" aria-label="그림 종류">
               <option value="all">모든 종류</option>
+              <option value="story">첫 진입 만화</option>
               <option value="shopcards">점장 카드</option>
               <option value="clerks">가게별 점장</option>
               <option value="items">물건</option>
               <option value="stalls">좌판</option>
               <option value="counters">계산대</option>
               <option value="kilns">가마·풀무</option>
-              <option value="hero">공통 점장</option>
+              <option value="hero">촌장·공용 인물</option>
               <option value="staff">직원</option>
               <option value="guests">손님</option>
               <option value="cards">손님 카드</option>
@@ -1351,7 +1531,7 @@
 
     <footer class="foot">
       <span>너구리 만물상 · 그림 라이브러리</span>
-      <code id="footerCount">280 drafts · 130 needed · updated 2026-08-25</code>
+      <code id="footerCount">249 drafts · 565 needed · updated 2026-08-25</code>
     </footer>
   </main>
 
@@ -1439,21 +1619,21 @@
     const draftGrowthCardIds = new Set(['rabbit-2', 'magpie-2', 'squirrel-2', 'badger-2', 'fox-2', 'deer-2', 'boar-2', 'bear-2', 'turtle-2', 'crane-2', 'ox-2', 'tiger-2', 'sparrow-2', 'frog-2', 'mole-2', 'hedgehog-2', 'duck-2', 'otter-2', 'roe-2', 'weasel-2', 'wildcat-2', 'goral-2', 'marten-2', 'mandarin-2', 'wolf-2', 'egret-2', 'leopard-2', 'muskdeer-2', 'moonbear-2', 'haetae-2', 'rabbit-3', 'magpie-3', 'squirrel-3', 'badger-3', 'fox-3', 'deer-3', 'boar-3', 'bear-3', 'turtle-3', 'crane-3', 'ox-3', 'tiger-3', 'sparrow-3', 'frog-3', 'mole-3', 'hedgehog-3', 'duck-3', 'otter-3', 'roe-3', 'weasel-3', 'wildcat-3', 'goral-3', 'marten-3', 'mandarin-3', 'wolf-3', 'egret-3', 'leopard-3', 'muskdeer-3', 'moonbear-3', 'haetae-3', 'rabbit-4', 'magpie-4', 'squirrel-4', 'badger-4', 'fox-4', 'deer-4', 'boar-4', 'bear-4', 'turtle-4', 'crane-4', 'ox-4', 'tiger-4', 'sparrow-4', 'frog-4', 'mole-4', 'hedgehog-4', 'duck-4', 'otter-4', 'roe-4', 'weasel-4', 'wildcat-4', 'goral-4', 'marten-4', 'mandarin-4', 'wolf-4', 'egret-4', 'leopard-4', 'muskdeer-4', 'moonbear-4', 'haetae-4']);
 
     const assets = [
-      { c: 'hero', label: '점장 · 제작', file: 'raccoon-make.png', icon: '🦝', size: '144×144', actual: '현재 파일 72×72 · 구규격', status: 'draft', src: '../../godot/art/hero/raccoon-make.png', fallback: '../../art/hero/raccoon-make.png' },
-      { c: 'hero', label: '점장 · 판매', file: 'raccoon-sell.png', icon: '🦝', size: '144×144', actual: '현재 파일 72×72 · 구규격', status: 'draft', src: '../../godot/art/hero/raccoon-sell.png', fallback: '../../art/hero/raccoon-sell.png' },
-      { c: 'hero', label: '점장 · 걷기 1', file: 'raccoon-walk1.png', icon: '🐾', size: '144×144', status: 'draft', src: '../../godot/art/hero/raccoon-walk1.png' },
-      { c: 'hero', label: '점장 · 걷기 2', file: 'raccoon-walk2.png', icon: '🐾', size: '144×144', status: 'draft', src: '../../godot/art/hero/raccoon-walk2.png' },
-      { c: 'hero', label: '점장 · 조는 중', file: 'raccoon-sleep.png', icon: '💤', size: '144×144', status: 'draft', src: '../../godot/art/hero/raccoon-sleep.png' },
+      { c: 'story', label: '첫 진입 만화 1 · 붐비던 옛 장터', file: '1.png', icon: '壹', size: '576×1024', status: 'none' },
+      { c: 'story', label: '첫 진입 만화 2 · 장마 뒤의 빈 마을', file: '2.png', icon: '貳', size: '576×1024', status: 'none' },
+      { c: 'story', label: '첫 진입 만화 3 · 촌장의 마지막 젬', file: '3.png', icon: '參', size: '576×1024', status: 'none' },
+      { c: 'story', label: '첫 진입 만화 4 · 첫 불씨 앞에 서다', file: '4.png', icon: '肆', size: '576×1024', status: 'none' },
+
       { c: 'hero', label: '촌장 · 흰 수염과 지팡이', file: 'mayor.png', icon: '🦝', size: '144×144', status: 'draft', src: '../../godot/art/hero/mayor.png' },
 
       { c: 'staff', label: '머리띠 알바 · 차렷 작업', file: 'band-work.png', icon: '🦝', size: '144×144', status: 'draft', src: '../../godot/art/staff/band-work.png' },
       { c: 'staff', label: '머리띠 알바 · 몽글 수면', file: 'band-sleep.png', icon: '💤', size: '144×144', status: 'draft', src: '../../godot/art/staff/band-sleep.png' },
-      { c: 'staff', label: '초립 일꾼 · 작업', file: 'chorip-work.png', icon: '🦝', size: '144×144', status: 'draft', src: '../../godot/art/staff/chorip-work.png' },
-      { c: 'staff', label: '초립 일꾼 · 수면', file: 'chorip-sleep.png', icon: '💤', size: '144×144', status: 'draft', src: '../../godot/art/staff/chorip-sleep.png' },
-      { c: 'staff', label: '패랭이 선임 · 작업', file: 'paeraengi-work.png', icon: '🦝', size: '144×144', status: 'draft', src: '../../godot/art/staff/paeraengi-work.png' },
-      { c: 'staff', label: '패랭이 선임 · 수면', file: 'paeraengi-sleep.png', icon: '💤', size: '144×144', status: 'draft', src: '../../godot/art/staff/paeraengi-sleep.png' },
-      { c: 'staff', label: '백립 매니저 · 작업', file: 'baengnip-work.png', icon: '🦝', size: '144×144', status: 'draft', src: '../../godot/art/staff/baengnip-work.png' },
-      { c: 'staff', label: '백립 매니저 · 수면', file: 'baengnip-sleep.png', icon: '💤', size: '144×144', status: 'draft', src: '../../godot/art/staff/baengnip-sleep.png' },
+      { c: 'staff', label: '흰 두건 일꾼 · 작업', file: 'whitehood-work.png', icon: '🦝', size: '144×144', status: 'none' },
+      { c: 'staff', label: '흰 두건 일꾼 · 수면', file: 'whitehood-sleep.png', icon: '💤', size: '144×144', status: 'none' },
+      { c: 'staff', label: '회색 두건 선임 · 작업', file: 'grayhood-work.png', icon: '🦝', size: '144×144', status: 'none' },
+      { c: 'staff', label: '회색 두건 선임 · 수면', file: 'grayhood-sleep.png', icon: '💤', size: '144×144', status: 'none' },
+      { c: 'staff', label: '검정 두건 숙련공 · 작업', file: 'blackhood-work.png', icon: '🦝', size: '144×144', status: 'none' },
+      { c: 'staff', label: '검정 두건 숙련공 · 수면', file: 'blackhood-sleep.png', icon: '💤', size: '144×144', status: 'none' },
 
       { c: 'items', shop: '대장간', label: '곡괭이', file: 'pick.png', icon: '⛏️', size: '128×224', status: 'draft', src: '../../godot/art/items/pick.png' },
       { c: 'items', shop: '대장간', label: '낫', file: 'sickle.png', icon: '🌾', size: '128×224', status: 'draft', src: '../../godot/art/items/sickle.png' },
@@ -1515,6 +1695,10 @@
         src: draftGuestIds.has(id) ? `../../godot/art/guests/${id}.png` : undefined,
         fallback: id === 'rabbit' ? '../../art/guests/rabbit.png' : undefined
       })),
+      ...guestCatalog.flatMap(([id, name, icon]) => [
+        { c: 'guests', label: `${name} · 정면`, file: `${id}-front.png`, icon, size: '128×128', status: 'none' },
+        { c: 'guests', label: `${name} · 뒷모습`, file: `${id}-back.png`, icon, size: '128×128', status: 'none' }
+      ]),
 
       ...guestCatalog.map(([id, name, icon, grade]) => ({
         c: 'cards', shop: `${gradeName[grade - 1]} · 1~5성`, label: `${name} 카드 1단`,
@@ -1534,7 +1718,12 @@
       { c: 'pests', label: '엽전을 문 까마귀', file: 'crow.png', icon: '🐦‍⬛', size: '128×128', status: 'draft', src: '../../godot/art/pests/crow.png' },
       { c: 'pests', label: '지키는 삽살개', file: 'dog.png', icon: '🐕', size: '128×128', status: 'draft', src: '../../godot/art/pests/dog.png' },
 
-      { c: 'stalls', shop: '대장간', label: '대장간 좌판', file: 'smith.png', icon: '⚒️', size: '192×176', status: 'draft', src: '../../godot/art/stalls/smith.png' },
+      {
+        c: 'stalls', shop: '대장간', label: '대장간 좌판 · 작은 모루 (확정)',
+        file: 'smith.png', icon: '⚒️', size: '192×176',
+        actual: '192×176 RGBA · 모루 1개와 낮은 통나무 받침 · 넉넉한 투명 여백', status: 'approved',
+        src: '../../godot/art/stalls/smith.png', path: 'godot/art/stalls/smith.png'
+      },
       { c: 'stalls', shop: '필방', label: '필방 좌판', file: 'brush.png', icon: '🖌️', size: '192×176', status: 'draft', src: '../../godot/art/stalls/brush.png' },
       { c: 'stalls', shop: '지물포', label: '지물포 좌판', file: 'paper.png', icon: '📜', size: '192×176', status: 'draft', src: '../../godot/art/stalls/paper.png' },
       { c: 'stalls', shop: '옹기점', label: '옹기점 좌판', file: 'pot.png', icon: '🏺', size: '192×176', status: 'draft', src: '../../godot/art/stalls/pot.png' },
@@ -1553,30 +1742,50 @@
       { c: 'ui', label: '룰렛 원판 · 12칸', file: 'wheel.png', icon: '🎡', size: '512×512', status: 'draft', src: '../../godot/art/ui/wheel.png' },
       { c: 'ui', label: '룰렛 바늘', file: 'needle.png', icon: '🔻', size: '64×96', status: 'draft', src: '../../godot/art/ui/needle.png' },
 
-      { c: 'clerks', shop: '대장간', label: '대장간 점장 · 제작', file: 'smith-make.png', icon: '🔨', size: '144×144', status: 'draft', src: '../../godot/art/clerks/smith-make.png', optional: true },
-      { c: 'clerks', shop: '대장간', label: '대장간 점장 · 판매', file: 'smith-sell.png', icon: '🔨', size: '144×144', status: 'draft', src: '../../godot/art/clerks/smith-sell.png', optional: true },
-      { c: 'clerks', shop: '필방', label: '필방 점장 · 제작', file: 'brush-make.png', icon: '🖌️', size: '144×144', status: 'draft', src: '../../godot/art/clerks/brush-make.png', optional: true },
-      { c: 'clerks', shop: '필방', label: '필방 점장 · 판매', file: 'brush-sell.png', icon: '🖌️', size: '144×144', status: 'draft', src: '../../godot/art/clerks/brush-sell.png', optional: true },
-      { c: 'clerks', shop: '지물포', label: '지물포 점장 · 제작', file: 'paper-make.png', icon: '📜', size: '144×144', status: 'draft', src: '../../godot/art/clerks/paper-make.png', optional: true },
-      { c: 'clerks', shop: '지물포', label: '지물포 점장 · 판매', file: 'paper-sell.png', icon: '📜', size: '144×144', status: 'draft', src: '../../godot/art/clerks/paper-sell.png', optional: true },
-      { c: 'clerks', shop: '옹기점', label: '옹기점 점장 · 제작', file: 'pot-make.png', icon: '🏺', size: '144×144', status: 'draft', src: '../../godot/art/clerks/pot-make.png', optional: true },
-      { c: 'clerks', shop: '옹기점', label: '옹기점 점장 · 판매', file: 'pot-sell.png', icon: '🏺', size: '144×144', status: 'draft', src: '../../godot/art/clerks/pot-sell.png', optional: true },
-      { c: 'clerks', shop: '약재상', label: '약재상 점장 · 제작', file: 'herb-make.png', icon: '🌿', size: '144×144', status: 'draft', src: '../../godot/art/clerks/herb-make.png', optional: true },
-      { c: 'clerks', shop: '약재상', label: '약재상 점장 · 판매', file: 'herb-sell.png', icon: '🌿', size: '144×144', status: 'draft', src: '../../godot/art/clerks/herb-sell.png', optional: true },
-      { c: 'clerks', shop: '국밥집', label: '국밥집 점장 · 제작', file: 'soup-make.png', icon: '🍲', size: '144×144', status: 'draft', src: '../../godot/art/clerks/soup-make.png', optional: true },
-      { c: 'clerks', shop: '국밥집', label: '국밥집 점장 · 판매', file: 'soup-sell.png', icon: '🍲', size: '144×144', status: 'draft', src: '../../godot/art/clerks/soup-sell.png', optional: true },
-      { c: 'clerks', shop: '객주', label: '객주 점장 · 제작', file: 'gaekju-make.png', icon: '🍶', size: '144×144', status: 'draft', src: '../../godot/art/clerks/gaekju-make.png', optional: true },
-      { c: 'clerks', shop: '객주', label: '객주 점장 · 판매', file: 'gaekju-sell.png', icon: '🍶', size: '144×144', status: 'draft', src: '../../godot/art/clerks/gaekju-sell.png', optional: true },
-      { c: 'clerks', shop: '꼬치집', label: '꼬치집 점장 · 제작', file: 'skewer-make.png', icon: '🍢', size: '144×144', status: 'draft', src: '../../godot/art/clerks/skewer-make.png', optional: true },
-      { c: 'clerks', shop: '꼬치집', label: '꼬치집 점장 · 판매', file: 'skewer-sell.png', icon: '🍢', size: '144×144', status: 'draft', src: '../../godot/art/clerks/skewer-sell.png', optional: true },
-      { c: 'clerks', shop: '떡집', label: '떡집 점장 · 제작', file: 'ricecake-make.png', icon: '🍡', size: '144×144', status: 'draft', src: '../../godot/art/clerks/ricecake-make.png', optional: true },
-      { c: 'clerks', shop: '떡집', label: '떡집 점장 · 판매', file: 'ricecake-sell.png', icon: '🍡', size: '144×144', status: 'draft', src: '../../godot/art/clerks/ricecake-sell.png', optional: true },
-      { c: 'clerks', shop: '푸줏간', label: '푸줏간 점장 · 제작', file: 'butcher-make.png', icon: '🥩', size: '144×144', status: 'draft', src: '../../godot/art/clerks/butcher-make.png', optional: true },
-      { c: 'clerks', shop: '푸줏간', label: '푸줏간 점장 · 판매', file: 'butcher-sell.png', icon: '🥩', size: '144×144', status: 'draft', src: '../../godot/art/clerks/butcher-sell.png', optional: true },
-      ...pendingShops.flatMap(([shop, id, icon]) => ['make', 'sell'].map((pose) => ({
-        c: 'clerks', shop, label: `${shop} 점장 · ${pose === 'make' ? '제작' : '판매'}`,
-        file: `${id}-${pose}.png`, icon, size: '144×144', status: 'none', optional: true
-      }))),
+      {
+        c: 'clerks', label: '점장 벌거벗은 본체 · A타입 무늬 · 방향 시트 (확정 · 측면 얼굴 수정)',
+        file: 'CLERK-BASE-TYPE-A-TURNAROUND-V0.2-P01.png', icon: '🦝',
+        size: '방향 원화', actual: '1774×887 RGB 검토 시트 · 정면 / 훼이크 측면 15–20° / 뒤 · 꼬리 파츠 분리 전', status: 'approved',
+        src: 'generated/CLERK-BASE-TYPE-A-TURNAROUND-V0.2-P01.png',
+        path: 'docs/art/generated/CLERK-BASE-TYPE-A-TURNAROUND-V0.2-P01.png'
+      },
+      {
+        c: 'clerks', label: '점장 벌거벗은 본체 · B타입 무늬 · 방향 시트 (확정)',
+        file: 'CLERK-BASE-TYPE-B-TURNAROUND-V0.1-P01.png', icon: '🦝',
+        size: '방향 원화', actual: '1774×887 RGB 검토 시트 · 정면 / 훼이크 측면 / 뒤 · 꼬리 파츠 분리 전', status: 'approved',
+        src: 'generated/CLERK-BASE-TYPE-B-TURNAROUND-V0.1-P01.png',
+        path: 'docs/art/generated/CLERK-BASE-TYPE-B-TURNAROUND-V0.1-P01.png'
+      },
+      {
+        c: 'clerks', label: '점장 벌거벗은 본체 · C타입 무늬 · 방향 시트 (확정)',
+        file: 'CLERK-BASE-TYPE-C-TURNAROUND-V0.1-P01.png', icon: '🦝',
+        size: '방향 원화', actual: '1774×887 RGB 검토 시트 · 정면 / 훼이크 측면 / 뒤 · 꼬리 파츠 분리 전', status: 'approved',
+        src: 'generated/CLERK-BASE-TYPE-C-TURNAROUND-V0.1-P01.png',
+        path: 'docs/art/generated/CLERK-BASE-TYPE-C-TURNAROUND-V0.1-P01.png'
+      },
+      {
+        c: 'clerks', label: '점장 벌거벗은 본체 · D타입 무늬 · 방향 시트 (확정)',
+        file: 'CLERK-BASE-TYPE-D-TURNAROUND-V0.1-P01.png', icon: '🦝',
+        size: '방향 원화', actual: '1774×887 RGB 검토 시트 · 정면 / 훼이크 측면 / 뒤 · 꼬리 파츠 분리 전', status: 'approved',
+        src: 'generated/CLERK-BASE-TYPE-D-TURNAROUND-V0.1-P01.png',
+        path: 'docs/art/generated/CLERK-BASE-TYPE-D-TURNAROUND-V0.1-P01.png'
+      },
+      {
+        c: 'clerks', shop: '대장간', label: '이전 대장간 점장 · 1단 무쇠 · 방향 시트',
+        file: 'CLERK-SMITH-RANK1-TURNAROUND-V0.1-P02-SIMPLIFIED.png', icon: '⚒️',
+        size: '방향 원화', actual: '1774×887 · 레이어형 점장 규칙 이전안', status: 'draft',
+        src: 'generated/CLERK-SMITH-RANK1-TURNAROUND-V0.1-P02-SIMPLIFIED.png',
+        path: 'docs/art/generated/CLERK-SMITH-RANK1-TURNAROUND-V0.1-P02-SIMPLIFIED.png'
+      },
+      ...shopCatalog.flatMap(({ id, name, icon }) => [1, 2, 3].flatMap((tier) => [
+        { direction: 'front', label: '정면' },
+        { direction: 'side', label: '오른쪽 옆' },
+        { direction: 'back', label: '뒷모습' }
+      ].map(({ direction, label }) => ({
+        c: 'clerks', shop: name, label: `${name} 점장 · ${tier}단 · ${label}`,
+        file: `${id}-${direction}${tier === 1 ? '' : `-${tier - 1}`}.png`, icon,
+        size: '144×144', status: 'none'
+      })))),
 
       ...shopCatalog.flatMap(({ id, name, icon }) => [1, 2, 3].map((tier) => ({
         c: 'shopcards', shop: name, label: `${name} 점장 카드 · ${tier}단`,
@@ -1592,19 +1801,28 @@
       }))
     ];
 
+    const itemUpgradeAssets = assets
+      .filter((asset) => asset.c === 'items' && !/-[12]\.png$/.test(asset.file))
+      .flatMap((asset) => [2, 3].map((tier) => ({
+        c: 'items', shop: asset.shop, label: `${asset.label} · ${tier}단 승급판`,
+        file: asset.file.replace(/\.png$/, `-${tier - 1}.png`), icon: asset.icon,
+        size: asset.size, status: 'none'
+      })));
+    assets.push(...itemUpgradeAssets);
+
     const categoryName = {
-      hero: '공통 점장', staff: '직원', items: '물건', guests: '손님', cards: '손님 카드',
+      story: '첫 진입 만화', hero: '촌장·공용 인물', staff: '직원', items: '물건', guests: '손님', cards: '손님 카드',
       shopcards: '점장 카드', pests: '상호작용', stalls: '좌판', counters: '계산대',
       kilns: '가마·풀무', ui: '뽑기·룰렛', clerks: '가게별 점장'
     };
     const categoryDir = {
-      hero: 'hero', staff: 'staff', items: 'items', guests: 'guests', cards: 'cards',
+      story: 'story', hero: 'hero', staff: 'staff', items: 'items', guests: 'guests', cards: 'cards',
       shopcards: 'cards', pests: 'pests', stalls: 'stalls', counters: 'counters',
       kilns: 'kilns', ui: 'ui', clerks: 'clerks'
     };
     const categoryOrder = {
-      hero: 0, staff: 1, guests: 2, cards: 3, shopcards: 4, clerks: 5,
-      items: 6, stalls: 7, counters: 8, kilns: 9, pests: 10, ui: 11
+      story: 0, hero: 1, staff: 2, guests: 3, cards: 4, shopcards: 5, clerks: 6,
+      items: 7, stalls: 8, counters: 9, kilns: 10, pests: 11, ui: 12
     };
     const stateName = { none: '없음', draft: '초안', approved: '확정' };
     const requiredAssets = assets.filter((asset) => !asset.optional);
@@ -1649,12 +1867,13 @@
 
     const filterCounts = {
       all: assets.length,
+      approved: approvedCount,
       none: noneCount,
       draft: draftCount,
       required: requiredAssets.length,
       optional: optionalCount
     };
-    const filterLabels = { all: '전체', none: '없음', draft: '초안', required: '필수', optional: '선택' };
+    const filterLabels = { all: '전체', approved: '확정', none: '없음', draft: '초안', required: '필수', optional: '선택' };
     filters.forEach((button) => {
       const key = button.dataset.filter;
       if (key in filterCounts) button.textContent = `${filterLabels[key]} ${filterCounts[key]}`;
@@ -1689,7 +1908,7 @@
     }
 
     function assetPath(asset) {
-      return `godot/art/${asset.dir || categoryDir[asset.c]}/${asset.file}`;
+      return asset.path || `godot/art/${asset.dir || categoryDir[asset.c]}/${asset.file}`;
     }
 
     function assetKey(asset) {
@@ -1717,12 +1936,13 @@
       const shop = groupId === 'common'
         ? { name: '공통 그림', icon: '🦝' }
         : shopCatalog.find((item) => item.id === groupId);
+      const approved = list.filter((asset) => asset.status === 'approved').length;
       const drafts = list.filter((asset) => asset.status === 'draft').length;
       const missing = list.filter((asset) => asset.status === 'none').length;
       return `<section class="shop-section" data-shop-section="${groupId}">
         <header class="shop-section-head">
           <h3 class="shop-section-title"><span aria-hidden="true">${shop.icon}</span>${shop.name}</h3>
-          <div class="shop-section-count">${list.length}장 · 초안 ${drafts}${missing ? ` · <b>없음 ${missing}</b>` : ''}</div>
+          <div class="shop-section-count">${list.length}장${approved ? ` · 확정 ${approved}` : ''} · 초안 ${drafts}${missing ? ` · <b>없음 ${missing}</b>` : ''}</div>
         </header>
         <div class="asset-grid">${list.map(card).join('')}</div>
       </section>`;
