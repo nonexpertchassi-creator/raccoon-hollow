@@ -728,7 +728,7 @@
   </tr>
   <tr>
     <td align="center"><img src="./generated/CLERK-SMITH-TYPE-C-GROWTH-DIAGONALS-V0.1-P03.png" width="360" alt="대장간 점장 C타입 1~3단 대각선 차렷자세 수정본"></td>
-    <td align="center"><img src="./generated/CLERK-SMITH-TYPE-D-GROWTH-DIAGONALS-V0.1-P07.png" width="360" alt="대장간 점장 D타입 1~3단 실제 사용 방향 ↘ ↗ 재설계본"></td>
+    <td align="center"><img src="./generated/CLERK-SMITH-TYPE-D-GROWTH-DIAGONALS-V0.1-P08.png" width="360" alt="대장간 점장 D타입 1~3단 실제 사용 방향 ↘ ↗ 재설계본"></td>
   </tr>
   <tr>
     <td><strong>C타입 · 초안</strong><br>손에 든 물건 없이 앞치마 재료만 성장.</td>

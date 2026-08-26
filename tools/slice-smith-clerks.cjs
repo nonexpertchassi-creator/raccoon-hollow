@@ -9,7 +9,7 @@ const sourceDir = path.join(root, 'docs/art/generated');
 const outputDir = path.join(root, 'godot/art/clerks');
 const previewPath = path.join(sourceDir, 'SMITH-CLERK-RUNTIME-24-PREVIEW-V0.3.png');
 const types = ['a', 'b', 'c', 'd'];
-const sourceRevision = { a: 'P03', b: 'P04', c: 'P03', d: 'P07' };
+const sourceRevision = { a: 'P03', b: 'P04', c: 'P03', d: 'P08' };
 // The source sheet keeps all four diagonals for art review. Runtime only needs
 // the two right-facing masters; Godot mirrors them for left-facing movement.
 const directions = [
