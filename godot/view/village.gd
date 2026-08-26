@@ -128,7 +128,7 @@ func setup(s: Sim) -> void:
 	line = []
 	for i in range(Content.SHOPS.size()):
 		clerks.append({"pos": Iso.foot(sim, i).work, "at": "work", "busy": 0.0, "walking": false,
-			"carry": 0.0, "carry_oid": 0, "carryQ": []})
+			"carry": 0.0, "carry_oid": 0})
 		line.append([])
 	var start: Vector2i = Iso.GATES[0]
 	mayor = {"pos": Iso.w(start.x + 0.5, start.y + 0.5), "at": start,

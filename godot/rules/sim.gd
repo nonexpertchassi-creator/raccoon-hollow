@@ -1167,25 +1167,6 @@ func _quest_put(item_id: String) -> bool:
 		return true
 	return false
 
-func _quest_gain(gid: String, item_id: String, n: float) -> void:
-	var q: Variant = null
-	for x in quests:
-		if x.gid == gid and x.itemId == item_id:
-			q = x
-			break
-	if q == null:
-		return
-	if bool(q.get("done", false)):
-		return                            # 이미 찼다 — 받아 가기를 기다리는 중
-	q.got += n
-	if q.got < q.need:
-		return
-	# ★ 저절로 끝내지 않는다(2026-08-25, 유저 — "의뢰는 자동완성하지 말자").
-	#   다 차면 '받아 가시오' 상태로 멈추고, 보상은 눌러야 나온다.
-	#   자리도 계속 차지한다 — 안 받으면 새 의뢰가 안 들어오는 게 독촉이다.
-	q["done"] = true
-	_ev("%s마을 의뢰가 다 찼다 — 눌러서 보상을 받으시오" % _guest_by_id[gid].name, "quest")
-
 ## 다 찬 의뢰의 삯을 받는다 — 여기서야 돈·나뭇잎이 들어온다.
 func claim_quest(qid: float) -> bool:
 	var q: Variant = null
