@@ -713,14 +713,13 @@ func _plot_base(i: int, n: int) -> void:
 func _yard_signs(i: int) -> void:
 	var shop: Dictionary = Content.SHOPS[i]
 	var N: Vector2 = Iso.w(Iso.org(sim, i).x, Iso.org(sim, i).y)
-	if _idle(i):
-		var bob2: float = sin(_t * 3.0) * 2.5
-		_chip(N + Vector2(0, -50 + bob2), 46, 20, Color("c7563f"))
-		_text(N + Vector2(0, -36 + bob2), "가득!", 11, Color("fff3dd"))
+	# '가득!' 표지는 주문 생산 전환(2026-08-26)으로 은퇴했다 — 재고가 없으니
+	# 가득도 없다. QA 눈검사에서 유령으로 남아 있던 것을 걷어냈다.
 	if sim.shop_todo(shop.id) > 0:
 		var bob: float = sin(_t * 4.0) * 3.0
 		var promo: bool = sim.can_promote(shop.id)
-		var txt: String = "승급!" if promo else "새 칸!"     # '일손!'은 고용 폐지와 함께 갔다
+		var txt: String = "승급!" if promo \
+			else ("채용!" if sim.can_hire_staff(shop.id) else "새 칸!")
 		_chip(N + Vector2(0, -100 + bob), 26.0 + txt.length() * 14.0, 25, C.red if promo else C.jade)
 		_text(N + Vector2(0, -82 + bob), txt, 15, Color("fff3dd"))
 
