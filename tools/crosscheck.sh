@@ -56,7 +56,7 @@ esac
 # 확률은 눈으로 못 보므로 십만 번씩 굴려 표와 견준다.
 OUT=$(godot --headless --path godot --script tests/gacha.gd 2>&1 || true)
 case "$OUT" in
-  *"GACHA OK"*) pass gacha "뽑기·룰렛 확률이 표대로다" ;;
+  *"GACHA OK"*) pass gacha "뽑기·룰렛·주사위 확률이 표대로다" ;;
   *) fail gacha "" ; echo "$OUT" | grep "GACHA FAIL" | head -4 | sed 's/^/     /' ;;
 esac
 

@@ -956,6 +956,37 @@ const OFFLINE := {
 	"efficiency": 0.5
 }
 
+const OFFLINE_DICE := {
+	"free": 1.0,
+	"ad": 3.0,
+	"faces": [
+		{
+			"mult": 1.0,
+			"weight": 30.0
+		},
+		{
+			"mult": 2.0,
+			"weight": 25.0
+		},
+		{
+			"mult": 3.0,
+			"weight": 20.0
+		},
+		{
+			"mult": 4.0,
+			"weight": 12.0
+		},
+		{
+			"mult": 5.0,
+			"weight": 8.0
+		},
+		{
+			"mult": 6.0,
+			"weight": 5.0
+		}
+	]
+}
+
 const PESTS := [
 	{
 		"id": "rat",

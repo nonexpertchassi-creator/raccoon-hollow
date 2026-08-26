@@ -1799,12 +1799,34 @@ func offline(seconds: float) -> Variant:
 	# 나뭇잎도 얹는다(2026-08-27, 유저) — 쳐주는 두 시간마다 한 장.
 	var leaf: float = floor(floor(real / 7200.0) * offline_leaf_mul())
 	bump("run.offline")
-	money += earned
-	revenue += earned
+	# ★ 여기서 주지 않는다(2026-08-27). 받는 방법이 둘이 됐다 — 그냥 받기와
+	#   주사위 수령. 배수가 정해진 뒤에 claim_offline이 준다.
+	return {"earned": earned, "leaf": leaf, "seconds": real, "capped": seconds > cap}
+
+## 자리 비운 벌이를 **배수를 정해 받는다.** 배수는 화면이 주사위로 정한다.
+func claim_offline(r: Dictionary, mult: float) -> Dictionary:
+	var coin: float = floor(float(r.earned) * mult)
+	var leaf: float = floor(float(r.get("leaf", 0.0)) * mult)
+	money += coin
+	revenue += coin
 	gems += leaf
 	if auto:
-		_purse += earned * Content.AUTO_SHARE
-	return {"earned": earned, "leaf": leaf, "seconds": real, "capped": seconds > cap}
+		_purse += coin * Content.AUTO_SHARE
+	bump("offline.claim")
+	bump("offline.mult", mult)
+	return {"earned": coin, "leaf": leaf}
+
+## 주사위 한 번 — ×1~×6. 확률은 content.js에 적힌 무게 그대로다.
+func roll_offline_dice(rng: Rng) -> int:
+	var total: float = 0.0
+	for f in Content.OFFLINE_DICE.faces:
+		total += float(f.weight)
+	var x: float = rng.next() * total
+	for f in Content.OFFLINE_DICE.faces:
+		x -= float(f.weight)
+		if x < 0.0:
+			return int(f.mult)
+	return int(Content.OFFLINE_DICE.faces[0].mult)
 
 ## ── 저장 ──
 ##

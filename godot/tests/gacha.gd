@@ -15,6 +15,7 @@ func _init() -> void:
 	fails.append_array(_wheel())
 	fails.append_array(_stars())
 	fails.append_array(_dogs())
+	fails.append_array(_dice())
 	if fails.is_empty():
 		print("GACHA OK")
 	else:
@@ -112,4 +113,32 @@ func _dogs() -> Array[String]:
 		out.append("무는 확률이 상한(%.0f%%)을 넘었다: %.1f%%"
 			% [float(Content.GUARD.rateCap) * 100.0, s.guard_rate() * 100.0])
 	print("  삽살개 %d마리 · 무는 확률 %.1f%%" % [int(s.guards), s.guard_rate() * 100.0])
+	return out
+
+## 자리 비운 벌이의 주사위(2026-08-27) — 고지한 확률대로 나오나.
+## 확률은 눈으로 못 본다. 십만 번 굴려 표와 견준다(룰렛과 같은 방법).
+func _dice() -> Array[String]:
+	var out: Array[String] = []
+	var s := Sim.new()
+	var rng := Rng.new(5150)
+	var n: int = 100000
+	var got: Dictionary = {}
+	var sum: float = 0.0
+	for i in range(n):
+		var m: int = s.roll_offline_dice(rng)
+		got[m] = float(got.get(m, 0.0)) + 1.0
+		sum += float(m)
+	var total_w: float = 0.0
+	for f in Content.OFFLINE_DICE.faces:
+		total_w += float(f.weight)
+	for f in Content.OFFLINE_DICE.faces:
+		var want: float = float(f.weight) / total_w
+		var have: float = float(got.get(int(f.mult), 0.0)) / float(n)
+		if absf(have - want) > 0.01:
+			out.append("주사위 ×%d이 %.1f%% 나와야 하는데 %.1f%%" % [int(f.mult), want * 100.0, have * 100.0])
+	# 눈은 반드시 1~6 안에 있어야 한다 — 배수는 벌이에 그대로 곱해진다
+	for k in got.keys():
+		if int(k) < 1 or int(k) > 6:
+			out.append("주사위에 ×%d이 나왔다" % int(k))
+	print("  주사위 기대값 ×%.2f (표대로면 ×2.58)" % (sum / float(n)))
 	return out

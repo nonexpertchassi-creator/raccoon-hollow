@@ -224,11 +224,14 @@ func _ready() -> void:
 	_paint()
 
 ## "다녀오신 동안" — 방치형에서 다시 켤 이유는 이 창 하나에 걸려 있다.
+## 자리 비운 벌이 — **그냥 받기**와 **주사위 수령** 둘 중에 고른다(2026-08-27).
+## 주사위는 첫 굴림 무료, 광고 한 번에 한 굴림씩 더(최대 3). 다시 굴려 더
+## 높으면 갱신되고 **내려가지 않는다** — 광고를 봤는데 나빠지면 사기다.
 func _show_away(r: Dictionary) -> void:
 	var box := PanelContainer.new()
 	box.set_anchors_preset(Control.PRESET_CENTER)
-	box.offset_left = -160; box.offset_right = 160
-	box.offset_top = -90; box.offset_bottom = 90
+	box.offset_left = -180; box.offset_right = 180
+	box.offset_top = -150; box.offset_bottom = 150
 	var bg := StyleBoxFlat.new()
 	bg.bg_color = Color("f3e9d2")
 	bg.border_color = Color("a8763e")
@@ -239,12 +242,15 @@ func _show_away(r: Dictionary) -> void:
 	var v := VBoxContainer.new()
 	v.add_theme_constant_override("separation", 8)
 	box.add_child(v)
+	var mult: Array = [1]              # 지금까지 나온 제일 좋은 눈
+	var rolls: Array = [0]             # 몇 번 굴렸나
+	var amount := Label.new()
+	var note := Label.new()
 	var h: int = int(r.seconds / 3600.0)
 	var m: int = int(fmod(r.seconds, 3600.0) / 60.0)
 	for line in [
 		["다녀오신 동안", 19, Color("2b241b")],
 		["%s%d분 동안 너구리들이 계속 만들었습니다." % ["%d시간 " % h if h > 0 else "", m], 13, Color("5a4e3d")],
-		["🪙 " + Num.fmt(r.earned), 30, Color("a8763e")],
 	]:
 		var l := Label.new()
 		l.text = String(line[0])
@@ -252,16 +258,48 @@ func _show_away(r: Dictionary) -> void:
 		l.add_theme_color_override("font_color", line[2])
 		l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		v.add_child(l)
-	if r.capped:
-		var c := Label.new()
-		c.text = "(최대 %d시간까지만 쌓입니다)" % int(Content.OFFLINE.capHours)
-		c.add_theme_font_size_override("font_size", 11)
-		c.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		v.add_child(c)
-	var ok := Button.new()
-	ok.text = "받기"
-	ok.pressed.connect(func(): box.queue_free())
-	v.add_child(ok)
+	amount.add_theme_font_size_override("font_size", 28)
+	amount.add_theme_color_override("font_color", Color("a8763e"))
+	amount.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	v.add_child(amount)
+	note.add_theme_font_size_override("font_size", 11)
+	note.add_theme_color_override("font_color", Color("8a7a63"))
+	note.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	note.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	v.add_child(note)
+	var refresh := func() -> void:
+		var mv: int = int(mult[0])
+		amount.text = "🪙 %s%s" % [Num.fmt(float(r.earned) * float(mv)),
+			("  🍃%d" % int(float(r.get("leaf", 0.0)) * float(mv))) if float(r.get("leaf", 0.0)) > 0.0 else ""]
+		var left: int = int(Content.OFFLINE_DICE.free) + int(Content.OFFLINE_DICE.ad) - int(rolls[0])
+		note.text = "주사위 ×%d — 남은 굴림 %d번 (×1 30%% · ×2 25%% · ×3 20%% · ×4 12%% · ×5 8%% · ×6 5%%)\n다시 굴려 더 높으면 갱신됩니다. 내려가지 않습니다." % [mv, max(0, left)]
+		if r.capped:
+			note.text += "\n(자리 비운 벌이는 %s까지 쌓입니다 — 패시브 스킬로 늘릴 수 있습니다)" % Num.dur(sim.offline_cap())
+	refresh.call()
+	var dice := Button.new()
+	var take := Button.new()
+	dice.pressed.connect(func():
+		var cap_rolls: int = int(Content.OFFLINE_DICE.free) + int(Content.OFFLINE_DICE.ad)
+		if int(rolls[0]) >= cap_rolls:
+			return
+		rolls[0] = int(rolls[0]) + 1
+		mult[0] = maxi(int(mult[0]), sim.roll_offline_dice(rng))
+		refresh.call()
+		if int(rolls[0]) >= cap_rolls:
+			dice.disabled = true
+		else:
+			dice.text = "주사위 굴리기 — 광고 보고 한 번 더"
+	)
+	dice.text = "주사위 굴리기 (첫 번은 무료)"
+	v.add_child(dice)
+	take.text = "받기"
+	take.pressed.connect(func():
+		sim.claim_offline(r, float(mult[0]))
+		sfx.play("coin")
+		_paint()
+		box.queue_free()
+	)
+	v.add_child(take)
 	_layer.add_child(box)
 
 ## 게임 한 걸음 — sim을 돌리고, 그 결과를 화면과 소리에 넘긴다.
