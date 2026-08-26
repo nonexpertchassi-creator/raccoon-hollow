@@ -1789,8 +1789,16 @@ func spin(by_ad: bool, rng: Rng) -> Variant:
 
 ## 오프라인 수익. 껐다 켰을 때 쌓여 있어야 다시 켠다.
 func offline(seconds: float) -> Variant:
-	# 수익은 4시간까지만 쌓이지만 **이벤트 마감은 그대로 흐른다**
+	# 수익은 상한까지만 쌓이지만 **이벤트 마감은 그대로 흐른다**
 	wall += seconds
+	# ★ 승급 공사도 자리를 비운 동안 그대로 돈다(2026-08-27에 잡았다).
+	#   안 그러면 네 시간짜리 공사를 게임을 **켜 둔 채로** 기다려야 한다 —
+	#   방치형에서 그건 벌이다. 벌이 상한(cap)과 달리 시간은 통째로 흐른다.
+	for bid in building.keys():
+		building[bid] = float(building[bid]) - seconds
+		if float(building[bid]) <= 0.0:
+			_promote_done(String(bid))
+	_built = []                       # 화면은 아직 없다 — 카드는 켠 뒤 뜨지 않는다
 	var cap: float = offline_cap()
 	var real: float = min(seconds, cap)
 	if real < 60.0:

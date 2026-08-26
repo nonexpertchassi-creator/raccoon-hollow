@@ -383,6 +383,15 @@ func _process(_d: float) -> void:
 			s9.tick(1.0, r9)
 		if not s9.is_building("smith"):
 			fails.append("네 시간짜리 공사가 한 시간 만에 끝났다")
+		# 자리를 비운 동안에도 공사는 돈다(2026-08-27에 잡은 구멍)
+		var sB: Sim = Sim.new()
+		sB.building["smith"] = 4.0 * 3600.0
+		sB.rank["smith"] = 0
+		sB.offline(5.0 * 3600.0)
+		if sB.is_building("smith"):
+			fails.append("다섯 시간 자리를 비웠는데 네 시간짜리 공사가 안 끝났다")
+		if sB.rank_of("smith") != 1:
+			fails.append("자리 비운 동안 공사가 끝났는데 등급이 안 올랐다")
 		# 나뭇잎으로 당기면 그 자리에서 끝난다
 		var cost9: int = s9.rush_build_cost("smith")
 		if cost9 <= 0:
