@@ -117,7 +117,8 @@ func setup(s: Sim) -> void:
 	clerks = []
 	line = []
 	for i in range(Content.SHOPS.size()):
-		clerks.append({"pos": Iso.foot(sim, i).work, "at": "work", "busy": 0.0, "walking": false, "carry": 0.0})
+		clerks.append({"pos": Iso.foot(sim, i).work, "at": "work", "busy": 0.0, "walking": false,
+			"carry": 0.0, "carry_oid": 0, "carryQ": []})
 		line.append([])
 	var start: Vector2i = Iso.GATES[0]
 	mayor = {"pos": Iso.w(start.x + 0.5, start.y + 0.5), "at": start,
@@ -175,13 +176,15 @@ func on_done(d: Dictionary) -> void:
 	var oid: int = int(d.get("orderId", 0))
 	for wk in walkers:
 		if int(wk.get("oid", -1)) == oid:
-			# 아직 걸어오는 중이어도 표를 남긴다 — 도착하면 받고 떠난다.
-			# (state까지 따졌더니 길 위에서 완성된 주문의 손님이 유령으로 남았다)
 			wk.gain = float(d.gain)
-			wk.ready = true
-			wk.leaveT = 0.9                       # 상자가 계산대로 오는 시간
-			clerks[wk.shop].carry = 0.9           # 너구리가 상자를 들고 계산대로
-			clerks[wk.shop].busy = 0.9            # 나르는 동안만 계산 자세다
+			# ★ 손님은 너구리가 상자를 들고 **계산대에 실제로 닿아야** 받는다
+			#   (2026-08-26, 유저: "계산을 대각선에서 한다") — 예전엔 타이머라
+			#   너구리가 마당 한가운데서 허공에 건네는 그림이 됐다.
+			var c9: Dictionary = clerks[wk.shop]
+			if int(c9.get("carry_oid", 0)) == 0:
+				c9.carry_oid = oid
+			else:
+				(c9.carryQ as Array).append(oid)
 			return
 
 ## 이 손님이 무엇을 몇 개 사러 왔나. 머리 위에 띄울 주문표다.
@@ -335,8 +338,8 @@ func _advance(delta: float) -> void:
 						wk.qwait += delta
 					else:
 						wk.qwait = 0.0
-					if bool(wk.get("ready", false)):
-						wk.leaveT = float(wk.get("leaveT", 0.9)) - delta
+					if bool(wk.get("delivered", false)):
+						wk.leaveT = float(wk.get("leaveT", 0.35)) - delta
 						if wk.leaveT <= 0.0:
 							wk.state = "out"
 							if wk.gain > 0.0:
@@ -371,7 +374,9 @@ func _advance(delta: float) -> void:
 		# 갔다 오며 몸이 좌우로 홱홱 뒤집혔다(유저: "자세를 한가지로").
 		var goal: Vector2 = f.serve
 		var hjob: int = int(_heroJob.get(i, -1))
-		if c.busy <= 0.0:
+		if int(c.get("carry_oid", 0)) != 0:
+			goal = f.serve                        # 상자를 들었다 — 계산대로
+		elif c.busy <= 0.0:
 			goal = _stall_front(i, hjob) if hjob >= 0 else f.work
 		# 계산 자리가 마당 안 칸(계산대의 안쪽 이웃)이 되면서 팔꿈치 경유는
 		# 필요 없어졌다 — 빈 칸 사이 직선은 가구를 안 밟는다.
@@ -394,6 +399,15 @@ func _advance(delta: float) -> void:
 		elif not c.walking and hjob >= 0:
 			c.flip = _stall_at(i, hjob).x < c.pos.x   # 매대 앞에선 매대를 본다
 		c.pos = tgt if d.length() <= step else c.pos + d.normalized() * step
+		# 상자가 계산대에 닿았다 — 이제야 손님이 받는다
+		if int(c.get("carry_oid", 0)) != 0 and c.pos.distance_to(f.serve) < 10.0:
+			for wk9 in line[i]:
+				if int(wk9.get("oid", -1)) == int(c.carry_oid):
+					wk9.delivered = true
+					break
+			c.carry_oid = 0 if (c.carryQ as Array).is_empty() else int((c.carryQ as Array).pop_front())
+			c.carry = 0.5                          # 상자 잔상 + 계산 자세 한 박자
+			c.busy = 0.8
 
 ## 촌장 걸음 — 길 위의 아무 데나 한 곳을 골라 걸어가고, 닿으면 잠깐 쉬었다 또 간다.
 ## 목적지를 마을 문(GATES)에서 고르면 늘 가장자리만 돌게 되므로 길 전체에서 고른다.
@@ -1115,7 +1129,7 @@ func _clerk(i: int) -> void:
 		var br3: float = 0.0 if c.walking else (0.5 + 0.5 * sin(_t * 2.4 + c.pos.x * 0.03)) * 0.03
 		_shadow(c.pos, 14.0)
 		_sprite(full, c.pos, "clerks", bool(c.get("flip", false)), br3)
-		if float(c.get("carry", 0.0)) > 0.0:
+		if int(c.get("carry_oid", 0)) != 0 or float(c.get("carry", 0.0)) > 0.0:
 			_crate(c.pos, bool(c.get("flip", false)))
 		if pose == "sleep" and Art.ranked("clerks", "%s-sleep" % id, sim.rank_of(id)) == null:
 			_text(c.pos + Vector2(14, -70 + sin(_t * 2.0) * 3.0), "💤", 14, Color.WHITE)
@@ -1124,7 +1138,7 @@ func _clerk(i: int) -> void:
 	if Art.tex("hero-body", sim.fur_of(id) + "-side") != null:
 		_shadow(c.pos, 14.0)
 		_clerk_layers(c.pos, id, dirn, bool(c.get("flip", false)), c.walking)
-		if float(c.get("carry", 0.0)) > 0.0:
+		if int(c.get("carry_oid", 0)) != 0 or float(c.get("carry", 0.0)) > 0.0:
 			_crate(c.pos, bool(c.get("flip", false)))
 		return
 	var t: Texture2D = _hero_tex(id, pose)
@@ -1135,7 +1149,7 @@ func _clerk(i: int) -> void:
 		_shadow(c.pos, 14.0)
 		_sprite(t, c.pos, "clerks" if Art.tex("clerks", "%s-%s" % [id, pose]) != null else "hero",
 			bool(c.get("flip", false)), breath2)
-		if float(c.get("carry", 0.0)) > 0.0:
+		if int(c.get("carry_oid", 0)) != 0 or float(c.get("carry", 0.0)) > 0.0:
 			_crate(c.pos, bool(c.get("flip", false)))
 		return
 	_raccoon(c.pos, SHAPE, Color("a8815a"))

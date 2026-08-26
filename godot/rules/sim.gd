@@ -520,10 +520,11 @@ func _basket_of(shop_id: String) -> float:
 func counters_of(shop_id: String) -> int:
 	return rank_of(shop_id) + 1
 
-## 동시에 받아 둘 수 있는 주문 수 — 계산대 하나가 주문 하나를 문다.
-## (둘씩 물렸더니 4시간 1.9B로 과열 — 계산대 수 그대로가 곡선에 맞았다)
+## 동시에 받아 둘 수 있는 주문 수 — 계산대 수 + 1(걸어오는 손님 몫).
+## 측정의 역사: ×2는 1.9B 과열 → ×1은 도착 시간(eta) 도입 뒤 373M로
+## 질식(걸어오는 내내 자리를 물고 있어서) → +1이 숨통이다.
 func order_slots(shop_id: String) -> int:
-	return counters_of(shop_id)
+	return counters_of(shop_id) + 1
 
 func orders_of(shop_id: String) -> int:
 	var n: int = 0
@@ -1237,6 +1238,8 @@ func tick(dt: float, rng: Rng) -> Dictionary:
 		var finished: Array = []
 		for o in orders:
 			o.t += dt
+			if float(o.get("eta", 0.0)) > 0.0:
+				o.eta = float(o.eta) - dt
 			var all_done: bool = true
 			for l in o.lines:
 				if l.rem > 0.0:
@@ -1305,6 +1308,8 @@ func tick(dt: float, rng: Rng) -> Dictionary:
 func _order_rem(id: String) -> float:
 	var s: float = 0.0
 	for o in orders:
+		if float(o.get("eta", 0.0)) > 0.0:
+			continue                      # 아직 걸어오는 중 — 도착해야 만든다
 		for l in o.lines:
 			if l.id == id and l.rem > 0.0:
 				s += l.rem
@@ -1312,6 +1317,8 @@ func _order_rem(id: String) -> float:
 
 func _give_to_order(id: String) -> bool:
 	for o in orders:
+		if float(o.get("eta", 0.0)) > 0.0:
+			continue
 		for l in o.lines:
 			if l.id == id and l.rem > 0.0:
 				l.rem -= 1.0
@@ -1389,7 +1396,11 @@ func _buy(g: Dictionary, rng: Rng) -> Variant:
 		return null
 
 	_oid += 1
-	orders.append({"id": _oid, "gid": g.id, "lines": lines, "want": qty, "grumbles": [], "t": 0.0})
+	# eta — 손님이 가게까지 **걸어오는 시간.** 주문은 출발할 때 접수되지만
+	# 제작은 도착해야 시작된다(2026-08-26, 유저: "도착 전에 만든다").
+	# 빠른 짐승은 금방, 거북은 한참 — 화면의 걸음과 대충 맞는다.
+	orders.append({"id": _oid, "gid": g.id, "lines": lines, "want": qty, "grumbles": [],
+		"t": 0.0, "eta": 8.0 / float(g.get("speed", 1.0))})
 	var shown: Array = []
 	for l in lines:
 		shown.append({"item": item_by_id(l.id), "n": l.n, "gain": floor(l.unit * l.n)})
