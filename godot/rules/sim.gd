@@ -1385,9 +1385,13 @@ func _buy(g: Dictionary, rng: Rng) -> Variant:
 	#   물건 하나만 보인다)에 없는 물건이 만들어져 "안 보이는데 생산"이 됐다.
 	#   수량은 예전 여러 줄의 총량 수준으로 한 물건에 몰아 담는다.
 	var one: String = String(have[0])
-	# 총량(qty)을 다 몰았더니 4시간 2.6B 과열 — 예전 "한 줄 몫"(qty÷종류수)
-	# 크기가 곡선에 맞는다. 장바구니가 작아진 만큼 발길 수로 벌충되는 셈.
-	var want_n: float = max(1.0, ceil(per * _basket_of(item_by_id(one).shop)))
+	# ★ 사는 개수는 **1~한도 사이 랜덤**(2026-08-26, 유저): 토끼(한도 3)는
+	#   1~3개, 사슴(한도 9)은 1~9개. 늘 같은 개수보다 장 보는 맛이 난다.
+	#   한도 = 짐승의 qty × 단골 배수. 종류 나눔(spread)은 한 주문 한 종류가
+	#   되면서 은퇴했다.
+	var lim: float = max(1.0, round(qty))
+	var roll: float = 1.0 + floor(rng.next() * lim)
+	var want_n: float = max(1.0, ceil(roll * _basket_of(item_by_id(one).shop)))
 	var lines: Array = [{"id": one, "n": want_n, "rem": want_n, "unit": price(one) * pay}]
 
 	_oid += 1
