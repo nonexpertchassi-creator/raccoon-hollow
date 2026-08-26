@@ -189,19 +189,12 @@ func show_card(shop_id: String, rank: int) -> void:
 	_gridbox.visible = false
 	_cardbox.visible = true
 	var shop: Dictionary = Sim.shop_by_id(shop_id)
-	# 겹그림 점장(무늬 본체+꼬리+장비)이 있으면 **마을과 같은 재료**로 겹친다 —
-	# 카드와 필드가 반드시 같은 무늬·장비여야 한다(유저 규칙). 그림이 없으면
-	# 옛 순서: 카드 초상 → 가게별 점장 → 공통 점장.
+	# 완성형 회귀(2026-08-26): 카드 초상 → 완성형 옆모습 → 옛 make → 공통 점장.
 	_art_tail.texture = null
 	_art_gear.texture = null
-	# 카드는 **정면 본체 + 정면 장비**다(확정 원화 규칙). 정면엔 꼬리가 없다.
-	var body: Texture2D = Art.tex("hero-body", sim.fur_of(shop_id) + "-front")
-	var t: Texture2D = null
-	if body != null:
-		t = body
-		_art_gear.texture = Art.tex("gear", "%s-%d-front" % [shop_id, rank + 1])
+	var t: Texture2D = Art.tex("cards", "%s-%d" % [shop_id, rank + 1])
 	if t == null:
-		t = Art.tex("cards", "%s-%d" % [shop_id, rank + 1])
+		t = Art.ranked("clerks", "%s-side" % shop_id, rank)
 	if t == null:
 		t = Art.ranked("clerks", "%s-make" % shop_id, rank)
 	if t == null:

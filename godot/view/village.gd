@@ -1081,18 +1081,29 @@ func _clerk(i: int) -> void:
 	elif _idle(i):
 		pose = "sleep"
 	var id: String = String(Content.SHOPS[i].id)
-	# 겹그림 점장(무늬 본체+꼬리+장비)이 준비된 무늬면 그쪽으로 —
-	# 본체 그림이 없으면 여태의 완성형 그림으로 돈다.
-	if Art.tex("hero-body", sim.fur_of(id) + "-front") != null:
-		# 방향 셋(확정 원화 규칙): 계산·생산 = 오른쪽 훼이크 측면(왼쪽은 뒤집기),
-		# 위로 걸으면 뒷모습, 나머지(대기·아래로 걷기·졸기) = 정면.
-		var dir3: String = "front"
-		if pose in ["make", "sell"]:
-			dir3 = "side"
-		elif c.walking and bool(c.get("up", false)):
-			dir3 = "back"
+	# 방향은 둘뿐이다(2026-08-26 확정): 위로 걸으면 뒷모습, 나머지 전부
+	# 옆모습(오른쪽 한 장, 왼쪽은 뒤집기). 정면은 없다 — 서 있을 땐 마지막
+	# 방향 그대로 멈추고, 할 일 없으면 존다.
+	var dirn: String = "back" if (c.walking and bool(c.get("up", false))) else "side"
+	# 1순위: 가게별 완성형(clerks/<가게>-side·-back, 승급판은 -1·-2)
+	var full: Texture2D = Art.ranked("clerks", "%s-%s" % [id, dirn], sim.rank_of(id))
+	if full == null and dirn == "back":
+		full = Art.ranked("clerks", "%s-side" % id, sim.rank_of(id))
+	if full != null:
+		if pose == "sleep":
+			var slp: Texture2D = Art.ranked("clerks", "%s-sleep" % id, sim.rank_of(id))
+			if slp != null:
+				full = slp
+		var br3: float = 0.0 if c.walking else (0.5 + 0.5 * sin(_t * 2.4 + c.pos.x * 0.03)) * 0.03
 		_shadow(c.pos, 14.0)
-		_clerk_layers(c.pos, id, dir3, bool(c.get("flip", false)), c.walking)
+		_sprite(full, c.pos, "clerks", bool(c.get("flip", false)), br3)
+		if pose == "sleep" and Art.ranked("clerks", "%s-sleep" % id, sim.rank_of(id)) == null:
+			_text(c.pos + Vector2(14, -70 + sin(_t * 2.0) * 3.0), "💤", 14, Color.WHITE)
+		return
+	# 2순위(임시): 겹그림 A무늬 본체 — 새 완성형이 올 때까지만 돈다
+	if Art.tex("hero-body", sim.fur_of(id) + "-side") != null:
+		_shadow(c.pos, 14.0)
+		_clerk_layers(c.pos, id, dirn, bool(c.get("flip", false)), c.walking)
 		return
 	var t: Texture2D = _hero_tex(id, pose)
 	if t == null:                       # 그 자세가 아직 없으면 만드는 자세로
@@ -1146,33 +1157,11 @@ func _clerk_layers(foot: Vector2, shop_id: String, dir3: String, flip: bool, wal
 	var gear: Texture2D = Art.tex("gear", "%s-%s" % [gkey, dir3])
 	if gear == null:
 		gear = Art.tex("gear", "%s-front" % gkey)
-	if dir3 == "side":
-		_tail_wag(r, fur, "side", flip)                 # 측면: 꼬리가 몸 뒤에 먼저
+	# 꼬리 흔들기는 뺐다(2026-08-26, 유저 — "나중에 애니메이션 스킬이 늘면
+	# 내가 바꿔보겠다"). 완성형에선 꼬리가 몸에 그려져 온다.
 	_flat_tex(body, r, flip)
 	if gear != null:
 		_flat_tex(gear, r, flip)
-	if dir3 == "back":
-		_tail_wag(r, fur, "back", flip)                 # 뒷모습: 꼬리가 맨 위
-
-## 꼬리 — 본체와 **같은 판에 핀을 맞춰** 그리고, 뿌리 축으로만 살짝 흔든다.
-## 처음엔 임의 크기로 엉덩이에 따로 붙였더니 꼬리가 길게 빠져 보였다(유저).
-## 그림이 이미 제자리에 그려져 온다 — 코드는 얹고 흔들기만 한다.
-func _tail_wag(r: Rect2, fur: String, dir3: String, flip: bool) -> void:
-	var tail: Texture2D = Art.tex("hero-tail", "%s-%s" % [fur, dir3])
-	if tail == null:
-		return
-	var sz: Vector2 = r.size
-	# 뿌리 축(그림 판 안 좌표): side는 엉덩이 뒤쪽, back은 엉덩이 한가운데
-	var pl: Vector2 = Vector2(sz.x * 0.32, sz.y * 0.74) if dir3 == "side" else Vector2(sz.x * 0.5, sz.y * 0.74)
-	var pw: Vector2 = r.position + (Vector2(sz.x - pl.x, pl.y) if flip else pl)
-	var ang: float = sin(_t * 2.3 + r.position.x * 0.05) * 0.26   # 0.09론 안 보였다(유저)
-	# 핀에 딱 맞추면 통통한 몸이 꼬리를 다 삼킨다(그림 속 꼬리 자리가 몸
-	# 실루엣 안쪽이다). 바깥으로 13%만 밀어 몸 뒤로 삐져나오게 — 처음(너무
-	# 빠짐)과 핀(사라짐)의 중간이다(유저).
-	var out: Vector2 = Vector2(-sz.x * 0.13, sz.y * 0.13) if dir3 == "side" else Vector2(0, sz.y * 0.04)
-	draw_set_transform(pw, -ang if flip else ang, Vector2(-1, 1) if flip else Vector2.ONE)
-	draw_texture_rect(tail, Rect2(-pl + out, sz), false)
-	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 
 func _flat_tex(t: Texture2D, r: Rect2, flip: bool) -> void:
 	if flip:
