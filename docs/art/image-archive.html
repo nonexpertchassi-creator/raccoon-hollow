@@ -2141,15 +2141,15 @@
         };
       }))),
 
-      ...['A', 'B', 'C', 'D'].map((type) => ({
+      ...[['A', 'P02'], ['B', 'P03'], ['C', 'P02'], ['D', 'P03']].map(([type, revision]) => ({
         c: 'clerks', shop: '대장간', archive: true,
         label: `대장간 일꾼 완성형 원화 · ${type}타입 · 1~3단 × 대각선 4방향`,
-        file: `CLERK-SMITH-TYPE-${type}-GROWTH-DIAGONALS-V0.1-P01.png`, icon: '🦝',
+        file: `CLERK-SMITH-TYPE-${type}-GROWTH-DIAGONALS-V0.1-${revision}.png`, icon: '🦝',
         size: '승급·방향 원화',
-        actual: '1536×1024 RGB 검토 시트 · 1단 황토색 면 앞치마 / 2단 갈색 가죽 앞치마 / 3단 멜빵형 가죽 앞치마 · ↙ ↘ ↖ ↗ · 손 도구 없음',
+        actual: '1536×1024 RGB 수정 시트 · 귀·발·몸 중심 블루프린트 정렬 · 1단 황토색 면 / 2단 갈색 가죽 / 3단 멜빵형 가죽 앞치마 · ↙ ↘ ↖ ↗',
         status: 'draft', priority: 10,
-        src: `generated/CLERK-SMITH-TYPE-${type}-GROWTH-DIAGONALS-V0.1-P01.png`,
-        path: `docs/art/generated/CLERK-SMITH-TYPE-${type}-GROWTH-DIAGONALS-V0.1-P01.png`
+        src: `generated/CLERK-SMITH-TYPE-${type}-GROWTH-DIAGONALS-V0.1-${revision}.png`,
+        path: `docs/art/generated/CLERK-SMITH-TYPE-${type}-GROWTH-DIAGONALS-V0.1-${revision}.png`
       })),
 
       {

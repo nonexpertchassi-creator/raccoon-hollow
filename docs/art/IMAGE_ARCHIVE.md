@@ -719,16 +719,16 @@
 
 <table>
   <tr>
-    <td align="center"><img src="./generated/CLERK-SMITH-TYPE-A-GROWTH-DIAGONALS-V0.1-P01.png" width="360" alt="대장간 점장 A타입 1~3단 대각선 네 방향"></td>
-    <td align="center"><img src="./generated/CLERK-SMITH-TYPE-B-GROWTH-DIAGONALS-V0.1-P01.png" width="360" alt="대장간 점장 B타입 1~3단 대각선 네 방향"></td>
+    <td align="center"><img src="./generated/CLERK-SMITH-TYPE-A-GROWTH-DIAGONALS-V0.1-P02.png" width="360" alt="대장간 점장 A타입 1~3단 대각선 네 방향 수정본"></td>
+    <td align="center"><img src="./generated/CLERK-SMITH-TYPE-B-GROWTH-DIAGONALS-V0.1-P03.png" width="360" alt="대장간 점장 B타입 1~3단 대각선 네 방향 수정본"></td>
   </tr>
   <tr>
     <td><strong>A타입 · 초안</strong><br>황토색 면 → 갈색 가죽 → 멜빵형 가죽 앞치마.</td>
     <td><strong>B타입 · 초안</strong><br>같은 승급 규칙, B타입 비대칭 털 무늬.</td>
   </tr>
   <tr>
-    <td align="center"><img src="./generated/CLERK-SMITH-TYPE-C-GROWTH-DIAGONALS-V0.1-P01.png" width="360" alt="대장간 점장 C타입 1~3단 대각선 네 방향"></td>
-    <td align="center"><img src="./generated/CLERK-SMITH-TYPE-D-GROWTH-DIAGONALS-V0.1-P01.png" width="360" alt="대장간 점장 D타입 1~3단 대각선 네 방향"></td>
+    <td align="center"><img src="./generated/CLERK-SMITH-TYPE-C-GROWTH-DIAGONALS-V0.1-P02.png" width="360" alt="대장간 점장 C타입 1~3단 대각선 네 방향 수정본"></td>
+    <td align="center"><img src="./generated/CLERK-SMITH-TYPE-D-GROWTH-DIAGONALS-V0.1-P03.png" width="360" alt="대장간 점장 D타입 1~3단 대각선 네 방향 수정본"></td>
   </tr>
   <tr>
     <td><strong>C타입 · 초안</strong><br>손에 든 물건 없이 앞치마 재료만 성장.</td>
@@ -741,6 +741,6 @@
 ### 런타임 24장 분리
 
 <table>
-  <tr><td align="center"><img src="./generated/SMITH-CLERK-RUNTIME-24-PREVIEW-V0.1.png" width="900" alt="대장간 일꾼 A D 무늬 1 3단 옆 뒤 런타임 24장"></td></tr>
-  <tr><td><strong>Generated · LOG-SMITH-COMPLETE-002</strong><br>A~D 각 행에서 1단 옆·뒤 → 2단 옆·뒤 → 3단 옆·뒤 순서다. ↘ 원화는 side, ↗ 원화는 back이며 반대쪽은 코드가 뒤집는다. 각 파일은 144×144 RGBA이며 발끝 아래 변·가로 정중앙 규칙을 통과했다.</td></tr>
+  <tr><td align="center"><img src="./generated/SMITH-CLERK-RUNTIME-24-PREVIEW-V0.2.png" width="900" alt="방향 귀 발 위치를 수정한 대장간 일꾼 A D 무늬 1 3단 옆 뒤 런타임 24장"></td></tr>
+  <tr><td><strong>Revised · LOG-SMITH-COMPLETE-003</strong><br>가까운 두 열을 ↙·↘로 분리하고 귀·발·몸 중심을 블루프린트에 맞췄다. 수정된 ↘ 원화는 side, ↗ 원화는 back이며 반대쪽은 코드가 뒤집는다. 24장 모두 144×144 RGBA, 발끝 y=143, 중심 오차 1px 이내를 통과했다.</td></tr>
 </table>

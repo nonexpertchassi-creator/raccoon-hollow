@@ -7,8 +7,9 @@ const sharp = require(process.env.CODEX_NODE_PATH ? `${process.env.CODEX_NODE_PA
 const root = path.resolve(__dirname, '..');
 const sourceDir = path.join(root, 'docs/art/generated');
 const outputDir = path.join(root, 'godot/art/clerks');
-const previewPath = path.join(sourceDir, 'SMITH-CLERK-RUNTIME-24-PREVIEW-V0.1.png');
+const previewPath = path.join(sourceDir, 'SMITH-CLERK-RUNTIME-24-PREVIEW-V0.2.png');
 const types = ['a', 'b', 'c', 'd'];
+const sourceRevision = { a: 'P02', b: 'P03', c: 'P02', d: 'P03' };
 // The source sheet keeps all four diagonals for art review. Runtime only needs
 // the two right-facing masters; Godot mirrors them for left-facing movement.
 const directions = [
@@ -116,7 +117,7 @@ async function main() {
   const cells = [];
 
   for (const type of types) {
-    const input = path.join(sourceDir, `CLERK-SMITH-TYPE-${type.toUpperCase()}-GROWTH-DIAGONALS-V0.1-P01.png`);
+    const input = path.join(sourceDir, `CLERK-SMITH-TYPE-${type.toUpperCase()}-GROWTH-DIAGONALS-V0.1-${sourceRevision[type]}.png`);
     const image = sharp(input).removeAlpha();
     const meta = await image.metadata();
     if (meta.width !== 1536 || meta.height !== 1024) throw new Error(`Unexpected sheet size: ${input}`);
