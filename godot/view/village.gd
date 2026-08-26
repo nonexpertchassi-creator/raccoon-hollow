@@ -1163,9 +1163,12 @@ func _clerk(i: int) -> void:
 func _clerk_layers(foot: Vector2, shop_id: String, dir3: String, flip: bool, walking: bool, slot: int = 0) -> void:
 	var fur: String = sim.fur_of(shop_id, slot)
 	var sz: Vector2 = Art.SIZE["hero"]
-	var body: Texture2D = Art.tex("hero-body", "%s-%s" % [fur, dir3])
+	# 앞치마가 등급 표시다(2026-08-26 확정 — GPT 시트 채택): 1단 밝은 앞치마,
+	# 2단 갈색(-1), 3단 진한 가죽(-2). 무늬 그림이 없으면 A로 때운다.
+	var rk9: int = sim.rank_of(shop_id)
+	var body: Texture2D = Art.ranked("hero-body", "%s-%s" % [fur, dir3], rk9)
 	if body == null:
-		body = Art.tex("hero-body", "a-%s" % dir3)   # 그 무늬가 아직 없으면 A로
+		body = Art.ranked("hero-body", "a-%s" % dir3, rk9)
 	if body == null:
 		body = Art.tex("hero-body", "%s-front" % fur)
 	# 그림 밑 여백을 재서 발을 그림자에 앉힌다 — 겹그림이 이걸 안 타서
