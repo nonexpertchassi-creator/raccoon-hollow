@@ -130,7 +130,7 @@ func _ready() -> void:
 	box.set_anchors_preset(Control.PRESET_TOP_WIDE)
 	box.offset_left = 16; box.offset_top = 12; box.offset_right = -16
 	_layer.add_child(box)
-	# 머리띠 — 왼쪽에 프로필(얼굴·별명·칭호 띠), 오른쪽에 엽전·젬·시각 그림.
+	# 머리띠 — 왼쪽에 프로필(얼굴·별명·칭호 띠), 오른쪽에 엽전·나뭇잎·시각 그림.
 	# 소식 세 줄은 뺐다(유저) — 늘 펴 놓을 글이 아니다. 아래 '소식' 단추에 있다.
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 10)
@@ -327,7 +327,7 @@ func _pill(into: Node) -> Label:
 	pn.add_theme_stylebox_override("panel", sb)
 	into.add_child(pn)
 	var l := Label.new()
-	l.add_theme_font_size_override("font_size", 16)      # 엽전과 젬은 같은 크기(유저)
+	l.add_theme_font_size_override("font_size", 16)      # 엽전과 나뭇잎은 같은 크기(유저)
 	l.add_theme_color_override("font_color", Color(1, 0.97, 0.9))
 	l.custom_minimum_size = Vector2(96, 0)
 	pn.add_child(l)
@@ -348,9 +348,9 @@ func _dress_btn(b: Button) -> void:
 	b.add_theme_color_override("font_hover_color", Color(0.2, 0.15, 0.1))
 
 func _paint() -> void:
-	# 폰 폭에 맞춘다. 한 줄에 다 넣으면 오른쪽이 잘려서 젬이 안 보인다.
+	# 폰 폭에 맞춘다. 한 줄에 다 넣으면 오른쪽이 잘려서 나뭇잎이 안 보인다.
 	_hud.text = "🪙 " + Num.fmt(sim.money)
-	_gemlbl.text = "💎 %d" % int(sim.gems)
+	_gemlbl.text = "🍃 %d" % int(sim.gems)
 	_clock.text = String(sim.weather_def().face) + village.day_icon()   # 날씨 + 시각
 	_sub.text = "🪙%s/s" % Num.fmt(sim.income_per_sec())
 	_namelbl.text = String(sim.profile.name)

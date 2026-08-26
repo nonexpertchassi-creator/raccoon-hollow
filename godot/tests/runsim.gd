@@ -46,7 +46,7 @@ static func act(s: Sim, rng: Rng) -> void:
 	if s.can_buy_guard():
 		s.buy_guard()
 		return
-	# 젬 강화 — 제일 싼 것부터. 정렬이 아니라 훑어서 고른다(같으면 먼저 나온 쪽)
+	# 나뭇잎 강화 — 제일 싼 것부터. 정렬이 아니라 훑어서 고른다(같으면 먼저 나온 쪽)
 	var best: String = ""
 	var best_cost: float = INF
 	var any_left: bool = false

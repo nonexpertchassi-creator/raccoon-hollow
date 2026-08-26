@@ -1061,7 +1061,7 @@ const ROULETTE := {
 			"kind": "gem",
 			"amount": 3.0,
 			"weight": 14.0,
-			"label": "💎 3"
+			"label": "🍃 3"
 		},
 		{
 			"kind": "coin",
@@ -1085,7 +1085,7 @@ const ROULETTE := {
 			"kind": "gem",
 			"amount": 5.0,
 			"weight": 9.0,
-			"label": "💎 5"
+			"label": "🍃 5"
 		},
 		{
 			"kind": "coin",
@@ -1103,7 +1103,7 @@ const ROULETTE := {
 			"kind": "gem",
 			"amount": 10.0,
 			"weight": 5.0,
-			"label": "💎 10"
+			"label": "🍃 10"
 		},
 		{
 			"kind": "coin",
@@ -1121,7 +1121,7 @@ const ROULETTE := {
 			"kind": "gem",
 			"amount": 30.0,
 			"weight": 2.0,
-			"label": "💎 30"
+			"label": "🍃 30"
 		}
 	]
 }

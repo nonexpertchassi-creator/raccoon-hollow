@@ -115,7 +115,7 @@ func _wedge(c: Vector2, a0: float, a1: float, r: float, col: Color) -> void:
 
 func _short(w: Dictionary) -> String:
 	match String(w.kind):
-		"gem": return "💎%d" % int(w.amount)
+		"gem": return "🍃%d" % int(w.amount)
 		"card": return "카드%d" % int(w.amount)
 		_:
 			var a: float = float(w.amount)

@@ -269,7 +269,7 @@ func rebuild() -> void:
 		"ledger": _ledger_body()
 		"gacha": _fair_body()
 
-## ── 마을 의뢰와 젬 ──
+## ── 마을 의뢰와 나뭇잎 ──
 func _quests_body() -> void:
 	_head("마을 의뢰")
 
@@ -284,7 +284,7 @@ func _quests_body() -> void:
 		_box.add_child(_label("%s %s — %s 남음" % [e.face, e.name, _hhmm(sim.event_left())], 17, Color("a8763e")))
 		_box.add_child(_label("%s — %d / %d" % [e.desc, int(got), int(e.need)], 13))
 		_bar(got / e.need, Color("a8763e"))
-		_box.add_child(_label("깨면 💎%d · %s · 못 깨도 잃는 것은 없다" % [int(e.gems), e.skinName], 11, Color("8a7a63")))
+		_box.add_child(_label("깨면 🍃%d · %s · 못 깨도 잃는 것은 없다" % [int(e.gems), e.skinName], 11, Color("8a7a63")))
 	if not sim.skins.is_empty():
 		var names: Array[String] = []
 		for k in sim.skins:
@@ -293,18 +293,18 @@ func _quests_body() -> void:
 					names.append(String(ev.skinName))
 		_box.add_child(_label("받은 것: %s  (그림은 나중에 붙는다)" % ", ".join(names), 11, Color("4a7c59")))
 
-	_box.add_child(_label("가진 젬 💎%d · 의뢰를 마치거나, 품목을 만렙까지 올리거나, 나쁜 놈을 잡으면 모인다"
+	_box.add_child(_label("가진 나뭇잎 🍃%d · 의뢰를 마치거나, 품목을 만렙까지 올리거나, 나쁜 놈을 잡으면 모인다"
 		% int(sim.gems), 13, Color("5a4e3d"), true))
 
 	for q in sim.quests:
 		var g: Dictionary = Sim.guest_by_id(q.gid)
-		_box.add_child(_label("%s %s마을 — %s %d개  💎%d" % [
+		_box.add_child(_label("%s %s마을 — %s %d개  🍃%d" % [
 			g.face, g.name, sim.item_name(q.itemId), int(q.need), int(q.gems)], 14))
 		_bar(minf(q.got / q.need, 1.0), Color("4a7c59"))
 		if bool(q.get("done", false)):
-			# 저절로 안 끝난다(유저) — 삯은 눌러야 들어온다
+			# 저절로 안 끝난다(유저) — 보상은 눌러야 들어온다
 			var qid: float = float(q.id)
-			_box.add_child(_btn("삯 받기 — 🪙%s · 💎%d" % [
+			_box.add_child(_btn("보상 받기 — 🪙%s · 🍃%d" % [
 				Num.fmt(floor(sim.price(q.itemId) * q.need * Content.QUEST.payMul)), int(q.gems)],
 				true, func(): sim.claim_quest(qid); rebuild()))
 		else:
@@ -314,11 +314,11 @@ func _quests_body() -> void:
 	if sim.quests.size() < sim.quest_slots():
 		_box.add_child(_label("다음 의뢰가 오는 중… (%d초)" % int(ceil(max(0.0, sim._qCool))), 12, Color("8a7a63")))
 
-	_box.add_child(_label("젬 쓰는 곳", 15, Color("5a4e3d")))
-	_box.add_child(_label("👷 삯꾼 부르기 — %s" % ("삯꾼이 일하는 중… %d초" % int(ceil(sim.rush))
+	_box.add_child(_label("나뭇잎 쓰는 곳", 15, Color("5a4e3d")))
+	_box.add_child(_label("👷 부스터 — %s" % ("빨라지는 중… %d초" % int(ceil(sim.rush))
 		if sim.rush > 0.0 else "%d초 동안 만드는 속도가 %d배"
 		% [int(Content.GEM.rush.secs), int(Content.GEM.rush.mult)]), 13))
-	_box.add_child(_btn("💎%d" % int(Content.GEM.rush.cost), sim.can_rush(),
+	_box.add_child(_btn("🍃%d" % int(Content.GEM.rush.cost), sim.can_rush(),
 		func(): sim.call_rush(); rebuild()))
 	for u in Content.GEM_UPGRADES:
 		var lv: int = int(sim.up_lv(u.id))
@@ -327,7 +327,7 @@ func _quests_body() -> void:
 		if cost == null:
 			_box.add_child(_label("끝까지 올렸다", 11, Color("4a7c59")))
 		else:
-			_box.add_child(_btn("💎%d" % int(cost), sim.can_buy_gem_up(u.id),
+			_box.add_child(_btn("🍃%d" % int(cost), sim.can_buy_gem_up(u.id),
 				func(): sim.buy_gem_up(u.id); rebuild()))
 	_box.add_child(_label("뽑기 · 룰렛 · 스킨 상점은 다음 판에 붙는다", 11, Color("8a7a63")))
 
@@ -491,12 +491,12 @@ func _gacha_body() -> void:
 		_bar(1.0 - float(nxt) / span, Color("a8763e"))
 		_box.add_child(_label("%s번 더 뽑으면 %d단계 — 좋은 카드가 더 자주 나온다"
 			% [Num.fmt(float(nxt)), lv + 1], 12, Color("8a7a63")))
-	_box.add_child(_label("가진 젬 💎%d" % int(sim.gems), 14, Color("5a4e3d")))
+	_box.add_child(_label("가진 나뭇잎 🍃%d" % int(sim.gems), 14, Color("5a4e3d")))
 
 	var row := HBoxContainer.new()
 	for c in Content.GACHA.cost:
 		var n: int = int(c.n)
-		row.add_child(_btn("%d회\n💎%d" % [n, int(c.gems)], sim.can_pull(n),
+		row.add_child(_btn("%d회\n🍃%d" % [n, int(c.gems)], sim.can_pull(n),
 			func(): _do_pull(n)))
 	_box.add_child(row)
 	if int(Content.GACHA.tenPity) <= lv:

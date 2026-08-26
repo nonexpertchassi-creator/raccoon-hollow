@@ -118,9 +118,9 @@ var _purse: float = 0.0
 var events: Array = []
 
 var quests: Array = []
-## 시작 젬 3개 — 1회 뽑기가 💎1이라, 켜자마자 **뽑기 → 새 손님이 걸어
+## 시작 나뭇잎 3개 — 1회 뽑기가 🍃1이라, 켜자마자 **뽑기 → 새 손님이 걸어
 ## 들어오는 순간**을 3분 안에 겪게 한다. 0으로 시작했더니 처음 3분 동안
-## 젬을 얻을 길이 없어서 이 게임의 심장(뽑기)을 못 만났다(실측).
+## 나뭇잎을 얻을 길이 없어서 이 게임의 심장(뽑기)을 못 만났다(실측).
 var gems: float = 3.0
 var gemUp: Dictionary = {}
 var maxGem: Dictionary = {}
@@ -334,7 +334,7 @@ func catch_pest(rng: Rng) -> Variant:
 	if rng.next() < Content.GEM.catchRate:
 		gem = 1
 		gems += 1.0
-	_ev("%s 잡았다 — 벌금 엽전 %s닢%s" % [Num.josa(P.name, "을", "를"), Num.fmt(gain), (" · 💎1" if gem > 0 else "")], "catch")
+	_ev("%s 잡았다 — 벌금 엽전 %s닢%s" % [Num.josa(P.name, "을", "를"), Num.fmt(gain), (" · 🍃1" if gem > 0 else "")], "catch")
 	_event_gain("catch", 1.0)
 	return {"kind": tt.kind, "gain": gain, "gem": gem}
 
@@ -935,7 +935,7 @@ func tap_small(idx: int) -> bool:
 	_event_gain("fair", 1.0)
 	return true
 
-# ── 젬 강화 ──
+# ── 나뭇잎 강화(패시브 스킬로 흡수 예정) ──
 func up_lv(id: String) -> float: return gemUp.get(id, 0.0)
 func gem_cost(id: String) -> Variant:
 	if not _gu.has(id):
@@ -966,7 +966,7 @@ func call_rush() -> bool:
 		return false
 	gems -= Content.GEM.rush.cost
 	rush = Content.GEM.rush.secs
-	_ev("삯꾼을 불렀다 — %s초 동안 생산 %s배" % [str(int(Content.GEM.rush.secs)), str(int(Content.GEM.rush.mult))], "gem")
+	_ev("부스터를 켰다 — %s초 동안 생산 %s배" % [str(int(Content.GEM.rush.secs)), str(int(Content.GEM.rush.mult))], "gem")
 	return true
 
 # ── 기간제 이벤트 ──
@@ -1013,7 +1013,7 @@ func _event_gain(kind: String, n: float = 1.0) -> void:
 		skins.append(e.skin)
 	bump("event.clear")
 	cleared[e.id] = cleared.get(e.id, 0.0) + 1.0
-	_ev("%s %s을(를) 깼다 — 💎%s · %s" % [e.face, e.name, str(int(e.gems)), e.skinName], "event")
+	_ev("%s %s을(를) 깼다 — 🍃%s · %s" % [e.face, e.name, str(int(e.gems)), e.skinName], "event")
 	_evDone = (e as Dictionary).duplicate()
 	event = null
 	_evAt = wall + Content.EVENT.gapHours * 3600.0
@@ -1101,9 +1101,9 @@ func _quest_gain(gid: String, item_id: String, n: float) -> void:
 	#   다 차면 '받아 가시오' 상태로 멈추고, 보상은 눌러야 나온다.
 	#   자리도 계속 차지한다 — 안 받으면 새 의뢰가 안 들어오는 게 독촉이다.
 	q["done"] = true
-	_ev("%s마을 의뢰가 다 찼다 — 눌러서 삯을 받아 가시오" % _guest_by_id[gid].name, "quest")
+	_ev("%s마을 의뢰가 다 찼다 — 눌러서 보상을 받으시오" % _guest_by_id[gid].name, "quest")
 
-## 다 찬 의뢰의 삯을 받는다 — 여기서야 돈·젬이 들어온다.
+## 다 찬 의뢰의 삯을 받는다 — 여기서야 돈·나뭇잎이 들어온다.
 func claim_quest(qid: float) -> bool:
 	var q: Variant = null
 	for x in quests:
@@ -1124,7 +1124,7 @@ func claim_quest(qid: float) -> bool:
 	if auto:
 		_purse += coin * Content.AUTO_SHARE
 	gems += q.gems
-	_ev("%s마을 의뢰를 마쳤다 — 🪙%s · 💎%s" % [_guest_by_id[String(q.gid)].name, Num.fmt(coin), str(int(q.gems))], "quest")
+	_ev("%s마을 의뢰를 마쳤다 — 🪙%s · 🍃%s" % [_guest_by_id[String(q.gid)].name, Num.fmt(coin), str(int(q.gems))], "quest")
 	_event_gain("quest", 1.0)
 	var d: Dictionary = (q as Dictionary).duplicate()
 	d["coin"] = coin
@@ -1132,7 +1132,7 @@ func claim_quest(qid: float) -> bool:
 	_questDone.append(d)
 	return true
 
-## 지금 등급의 만렙에 닿았으면 젬 한 알. 등급이 오르면 다시 한 번 받는다.
+## 지금 등급의 만렙에 닿았으면 나뭇잎 한 알. 등급이 오르면 다시 한 번 받는다.
 func _check_max(id: String) -> void:
 	if not at_max(id):
 		return
@@ -1141,7 +1141,7 @@ func _check_max(id: String) -> void:
 		return
 	maxGem[key] = 1.0
 	gems += Content.GEM.onMax
-	_ev("%s 만렙 — 💎%s" % [Num.josa(item_name(id), "이", "가"), str(int(Content.GEM.onMax))], "gem")
+	_ev("%s 만렙 — 🍃%s" % [Num.josa(item_name(id), "이", "가"), str(int(Content.GEM.onMax))], "gem")
 
 # ── 한 틱 ──
 func tick(dt: float, rng: Rng) -> Dictionary:

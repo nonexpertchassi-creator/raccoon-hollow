@@ -186,7 +186,7 @@ func _init() -> void:
 		_mm(guest_at.values().max()) if guest_at.size() >= Content.GUESTS.size() else "아직 다 안 옴"))
 	print("   마지막으로 새것이 열린 시각: %s  (그 뒤는 레벨업뿐)" % _mm(last_new))
 	# ★ 뽑기가 들어온 뒤로 **여기가 병목인지 아닌지**를 매번 봐야 한다.
-	#   손님이 안 늘면 경제가 안 자라는데, 손님은 젬이 있어야 는다.
+	#   손님이 안 늘면 경제가 안 자라는데, 손님은 나뭇잎이 있어야 는다.
 	var stars_sum: int = 0
 	for gid in s.guests:
 		stars_sum += s.regular_lv(String(gid))
@@ -210,7 +210,7 @@ func _init() -> void:
 		print("   자국을 godot/stats.json 에 남겼다 — node tools/dash.mjs")
 	for zid in unlocked_at:
 		print("   구역 %s 열림: %s" % [zid, _mm(unlocked_at[zid])])
-	print("   뽑기 %d회(%d단계) · 손님 %d/%d · 성 합계 %d · 남은 젬 %d · 가게 %d/%d" % [
+	print("   뽑기 %d회(%d단계) · 손님 %d/%d · 성 합계 %d · 남은 나뭇잎 %d · 가게 %d/%d" % [
 		int(s.pulls), s.gacha_lv(), s.guests.size(), Content.GUESTS.size(),
 		stars_sum, int(s.gems), s.shops.size(), Content.SHOPS.size()])
 	if use_up:

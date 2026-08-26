@@ -58,15 +58,15 @@ export class Sim {
     this._purse = 0;                     // 자동 강화가 쓸 수 있는 몫
     this.events = [];                    // 화면에 띄울 최근 사건
 
-    /* 마을 의뢰와 젬. 의뢰는 마을 단위로 걸린다(손님 한 마리가 아니라).
+    /* 마을 의뢰와 나뭇잎. 의뢰는 마을 단위로 걸린다(손님 한 마리가 아니라).
      * { id, gid, itemId, need, got, gems, t } */
     this.quests = [];
-    this.gems = 3;           // 시작 젬 — Godot판과 맞춘다(뽑기 첫 경험용)
-    this.gemUp = {};                     // 젬으로 산 영구 강화 (id → 레벨)
-    this.maxGem = {};                    // 만렙 젬을 이미 준 품목 ('id@등급')
+    this.gems = 3;           // 시작 나뭇잎 — Godot판과 맞춘다(뽑기 첫 경험용)
+    this.gemUp = {};                     // 나뭇잎으로 산 영구 강화 (id → 레벨)
+    this.maxGem = {};                    // 만렙 나뭇잎을 이미 준 품목 ('id@등급')
     this._qid = 0;
     this._qCool = QUEST.first;           // 다음 의뢰가 붙기까지 남은 시간
-    this.rush = 0;                       // 삯꾼이 남아 있는 시간(초)
+    this.rush = 0;                       // 부스터이 남아 있는 시간(초)
 
     /* 기간제 이벤트. 마감이 **실제 시간**이라 흐르는 초를 따로 센다 —
      * this.t는 게임을 켜 둔 시간이고, this.wall은 껐던 시간까지 포함한다. */
@@ -103,7 +103,7 @@ export class Sim {
     if (!this._hold || typeof this._hold !== 'object') this._hold = {};
     if (typeof this._oid !== 'number') this._oid = 0;
 
-    /* 의뢰·젬도 나중에 생겼다. 옛 저장본엔 칸이 없어서 그냥 두면
+    /* 의뢰·나뭇잎도 나중에 생겼다. 옛 저장본엔 칸이 없어서 그냥 두면
      * quests.length가 터지고 gems가 NaN이 된다. */
     if (!Array.isArray(this.quests)) this.quests = [];
     if (typeof this.gems !== 'number') this.gems = 0;
@@ -264,8 +264,8 @@ export class Sim {
     const gain = Math.floor(worth * P.fine);
     this.money += gain;
     this.revenue += gain;
-    /* 잡을 때 가끔 젬 한 알. 도둑질 자체는 게임 안의 자잘한 몸짓이라
-     * 그것만으로는 목표가 못 된다 — 젬이 붙어야 잡을 이유가 생긴다. */
+    /* 잡을 때 가끔 나뭇잎 한 알. 도둑질 자체는 게임 안의 자잘한 몸짓이라
+     * 그것만으로는 목표가 못 된다 — 나뭇잎이 붙어야 잡을 이유가 생긴다. */
     let gem = 0;
     if (rng() < GEM.catchRate) { gem = 1; this.gems += 1; }
     this._ev(`${josa(P.name, '을', '를')} 잡았다 — 벌금 엽전 ${fmt(gain)}닢${gem ? ' · 💎1' : ''}`, 'catch');
@@ -641,11 +641,11 @@ export class Sim {
   }
 
 
-  /* ── 젬 강화 ──
+  /* ── 나뭇잎 강화 ──
    * 지금은 화면을 새로 안 만들어도 되는 것만 판다. 뽑기·룰렛·스킨은
    * 새 화면이 필요해서 엔진을 옮긴 뒤로 미뤘다(PLAN.md 참고). */
   upLv(id) { return this.gemUp[id] || 0; }
-  /** 다음 한 단계의 젬 값. 다 올렸으면 null */
+  /** 다음 한 단계의 나뭇잎 값. 다 올렸으면 null */
   gemCost(id) {
     const u = GU[id]; const lv = this.upLv(id);
     return !u || lv >= u.max ? null : u.cost[lv];
@@ -671,7 +671,7 @@ export class Sim {
    *  때문이다(content.js의 ★ 참고). 이 게임의 진짜 병목이 여기다. */
   servePause() { return Math.max(0.2, SERVICE.servePause - GU.hands.step * this.upLv('hands')); }
 
-  /** 삯꾼을 부른다 — 잠깐 생산이 두 배가 된다.
+  /** 부스터을 부른다 — 잠깐 생산이 두 배가 된다.
    *  이미 부려 놓았으면 못 부른다. 겹쳐 쓰면 시간만 덮어써서 손해인데
    *  유저는 그걸 모른 채 잃는다. */
   canRush() { return this.rush <= 0 && this.gems >= GEM.rush.cost; }
@@ -679,7 +679,7 @@ export class Sim {
     if (!this.canRush()) return false;
     this.gems -= GEM.rush.cost;
     this.rush = GEM.rush.secs;
-    this._ev(`삯꾼을 불렀다 — ${GEM.rush.secs}초 동안 생산 ${GEM.rush.mult}배`, 'gem');
+    this._ev(`부스터을 불렀다 — ${GEM.rush.secs}초 동안 생산 ${GEM.rush.mult}배`, 'gem');
     return true;
   }
 
@@ -786,7 +786,7 @@ export class Sim {
     if (rate <= 0) return null;
 
     const need = Math.max(QUEST.min, this._roundNeed(Math.round(QUEST.seconds * rate)));
-    /* 젬은 **단골 등급**을 따른다. 걸리는 시간은 위에서 이미 마을마다
+    /* 나뭇잎은 **단골 등급**을 따른다. 걸리는 시간은 위에서 이미 마을마다
      * 같게 맞춰 놨으므로 시간으로 정하면 전부 똑같은 한 알이 된다.
      * 오래 사귄 마을이 더 크게 갚는 편이 '관계'라는 축과도 맞는다. */
     const gems = Math.max(1, Math.min(QUEST.gemCap,
@@ -822,7 +822,7 @@ export class Sim {
   /** 몇 개 남았나 (화면용) */
   questLeft(q) { return Math.max(0, q.need - q.got); }
 
-  /** 지금 등급의 만렙에 닿았으면 젬 한 알. 등급이 오르면 상한도 올라가므로
+  /** 지금 등급의 만렙에 닿았으면 나뭇잎 한 알. 등급이 오르면 상한도 올라가므로
    *  '품목@등급'으로 따로 센다 — 승급할 때마다 다시 한 번 받는다. */
   _checkMax(id) {
     if (!this.atMax(id)) return;

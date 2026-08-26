@@ -1,6 +1,6 @@
 extends Control
 class_name CardPopup
-## 점장 카드 한 장이 열리는 순간. 화면을 덮고 한가운데에 뜬다.
+## 너구리 카드 한 장이 열리는 순간. 화면을 덮고 한가운데에 뜬다.
 ##
 ## ★ 카드를 **따로 저장하지 않는다.** 어떤 카드를 가졌는지는 이미 sim이 안다 —
 ##   가게가 열렸으면 그 가게 0등급 카드가 있는 것이고, 참쇠로 승급했으면
@@ -85,7 +85,7 @@ func _ready() -> void:
 	_cardbox.add_child(box)
 	_head_label = Label.new()
 	var top: Label = _head_label
-	top.text = "새 점장 카드!"
+	top.text = "새 너구리 카드!"
 	top.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	top.add_theme_font_size_override("font_size", 15)
 	top.add_theme_color_override("font_color", Color("c7563f"))
@@ -428,7 +428,7 @@ func show_spin(got: Dictionary) -> void:
 	_title.add_theme_color_override("font_color", Color("2b241b"))
 	match String(got.kind):
 		"coin": _sub.text = "🪙 %s" % Num.fmt(float(got.amount))
-		"gem": _sub.text = "💎 %d" % int(got.amount)
+		"gem": _sub.text = "🍃 %d" % int(got.amount)
 		_:
 			var names: Array[String] = []
 			for c in got.cards:

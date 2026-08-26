@@ -193,7 +193,7 @@ func _process(_d: float) -> void:
 		var g0: float = s.gems
 		pull10.emit_signal("pressed")
 		if s.gems >= g0:
-			fails.append("10회 뽑기를 눌렀는데 젬이 안 줄었다")
+			fails.append("10회 뽑기를 눌렀는데 나뭇잎이 안 줄었다")
 		# 열 장은 **판으로 깔린다** — 뒷면 열 장이 놓이고 차례로 뒤집힌다
 		if main.card._mode != "grid":
 			fails.append("열 장을 뽑았는데 판이 안 깔렸다")
