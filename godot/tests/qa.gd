@@ -25,7 +25,11 @@ func _ready() -> void:
 			max_line = max(max_line, main.village.line[i].size())
 		if step % 40 == 0:
 			for sh in s.shops:
-				if s.orders_of(String(sh)) > s.order_slots(String(sh)):
+				# 자리 규칙(2026-08-27): 도착한 줄과 걸어오는 무리를 따로 센다 —
+				# 각각 자리 수까지. 합계로 재던 옛 검사는 새 규칙에서 거짓 경보였다.
+				var _arr: int = s.arrived_orders_of(String(sh))
+				var _wlk: int = s.orders_of(String(sh)) - _arr
+				if _arr > s.order_slots(String(sh)) or _wlk > s.order_slots(String(sh)):
 					over_orders += 1
 			for id in s.items:
 				if s.items[id].stock > 0.0:
