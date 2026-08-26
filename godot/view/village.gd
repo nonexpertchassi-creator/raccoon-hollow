@@ -377,7 +377,10 @@ func _advance(delta: float) -> void:
 		if int(c.get("carry_oid", 0)) != 0:
 			goal = f.serve                        # 상자를 들었다 — 계산대로
 		elif c.busy <= 0.0:
-			goal = _stall_front(i, hjob) if hjob >= 0 else f.work
+			# 할 일이 없으면 **그 자리에서** 쉰다(유저: "마지막 지점에서
+			# 머무는 게 자연스럽다"). 작업대로 돌아가 서 있으면 그것도
+			# 손님을 기다리는 예지력처럼 보인다.
+			goal = _stall_front(i, hjob) if hjob >= 0 else (c.pos if _idle(i) else f.work)
 		# 계산 자리가 마당 안 칸(계산대의 안쪽 이웃)이 되면서 팔꿈치 경유는
 		# 필요 없어졌다 — 빈 칸 사이 직선은 가구를 안 밟는다.
 		var tgt: Vector2 = goal
@@ -1054,10 +1057,18 @@ func _raccoon(p: Vector2, size: float, tint: Color) -> void:
 	draw_circle(at + Vector2(-size * 0.11, -size * 0.90), size * 0.09, Color(0.17, 0.14, 0.11, 0.85))
 	draw_circle(at + Vector2(size * 0.11, -size * 0.90), size * 0.09, Color(0.17, 0.14, 0.11, 0.85))
 
-## 이 가게가 **할 일이 없나** — 주문 생산(2026-08-26)에선 "받은 주문이
-## 없다"가 곧 한가함이다. 한가하면 존다.
+## 이 가게가 **할 일이 없나** — 아직 걸어오는 손님(eta)의 주문은 셈에서
+## 뺀다. 장부엔 출발 때 적히지만 너구리가 그걸 알면 예지력이다(유저,
+## 2026-08-26) — 손님이 도착해 말풍선을 띄운 뒤에야 부스스 일어난다.
 func _idle(i: int) -> bool:
-	return sim.orders_of(String(Content.SHOPS[i].id)) == 0
+	var sid: String = String(Content.SHOPS[i].id)
+	for o in sim.orders:
+		if float(o.get("eta", 0.0)) > 0.0:
+			continue
+		if not (o.lines as Array).is_empty() \
+				and String(sim.item_by_id(String(o.lines[0].id)).shop) == sid:
+			return false
+	return true
 
 ## 점장 그림 — **가게 것이 있으면 가게 것**, 없으면 공통 점장.
 ## 대장간 너구리는 망치를 들고, 필방 너구리는 앞치마를 두르는 식이다.
