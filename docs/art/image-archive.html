@@ -2272,11 +2272,12 @@
         file: `${id}-${tier}.png`, icon, size: '512×768', status: 'none', optional: tier > 1
       }))),
       ...shopCatalog.map(({ id, name, icon }) => {
-        const made = id === 'smith' || id === 'brush' || id === 'paper';
+        const made = ['smith', 'brush', 'paper', 'pot'].includes(id);
         const actualById = {
           smith: '168×144 RGBA · 오른쪽 아래를 향한 넓은 판매면 · 중앙 철 보강띠',
           brush: '168×144 RGBA · 오른쪽 아래를 향한 넓은 판매면 · 한지 상판과 얕은 서랍',
-          paper: '168×144 RGBA · 오른쪽 아래를 향한 넓은 판매면 · 한지 미닫이 전면'
+          paper: '168×144 RGBA · 오른쪽 아래를 향한 넓은 판매면 · 한지 미닫이 전면',
+          pot: '168×144 RGBA · 오른쪽 아래를 향한 넓은 판매면 · 황토판과 낮은 벽돌띠'
         };
         return {
           c: 'counters', shop: name, label: `${name} 계산대`, file: `${id}.png`, icon,

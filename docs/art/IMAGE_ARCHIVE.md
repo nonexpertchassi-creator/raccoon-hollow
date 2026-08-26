@@ -720,8 +720,8 @@
 </table>
 
 <table>
-  <tr><td align="center"><img src="./generated/COUNTERS-RUNTIME-PREVIEW-V0.2.png" width="336" alt="실제 게임 크기의 대장간 필방 지물포 계산대 비교"></td></tr>
-  <tr><td><strong>Generated · LOG-COUNTER-SMITH-001 · LOG-COUNTER-BRUSH-001 · LOG-COUNTER-PAPER-001</strong><br>세 장 모두 168×144 RGBA, 실제 표시 84×72. 대장간은 철 보강띠, 필방은 한지 상판과 서랍, 지물포는 한지 미닫이 전면으로 구분하며 판매면은 오른쪽 아래를 향한다.</td></tr>
+  <tr><td align="center"><img src="./generated/COUNTERS-RUNTIME-PREVIEW-V0.3.png" width="416" alt="실제 게임 크기의 대장간 필방 지물포 옹기점 계산대 비교"></td></tr>
+  <tr><td><strong>Generated · LOG-COUNTER-SMITH-001 · LOG-COUNTER-BRUSH-001 · LOG-COUNTER-PAPER-001 · LOG-COUNTER-POT-001</strong><br>네 장 모두 168×144 RGBA, 실제 표시 84×72. 대장간은 철 보강띠, 필방은 한지 상판과 서랍, 지물포는 한지 미닫이, 옹기점은 황토판과 낮은 벽돌띠로 구분하며 판매면은 오른쪽 아래를 향한다.</td></tr>
 </table>
 
 게임 연결 파일은 `godot/art/hero-body/`, `hero-tail/`, `gear/`, `items/`에 있다.

@@ -2306,6 +2306,24 @@
 
 ---
 
+## LOG-COUNTER-POT-001 · 옹기점 계산대
+
+- 날짜: 2026-08-27
+- 게임 파일: `godot/art/counters/pot.png`
+- 비교판: `generated/COUNTERS-RUNTIME-PREVIEW-V0.3.png`
+- 규격: `168×144 RGBA`, 실제 표시 `84×72`
+- 도구: built-in image generation + `tools/fit-transparent-prop.cjs`
+- 결과: `Generated / Draft`
+
+### 판정
+
+- 상품 항아리를 올리지 않고 황토색 넓은 전면 세 칸과 아래의 낮은 흙벽돌 띠로 옹기점 재료를 표현했다.
+- 먼저 만든 세 계산대와 같은 화면 폭·판매면 방향·갈색 외곽선·빈 상판을 유지했다.
+- 실제 84×72 비교에서 지물포의 밝은 한지 면과 구분되며 항아리·가마·도구·글자·UI·바닥 그림자는 없다.
+- 외곽 알파 상자는 164×93이고 아래 여백은 4px다.
+
+---
+
 ## LOG-KILN-SMITH-001 · 대장간 풀무·화덕
 
 - 날짜: 2026-08-27
