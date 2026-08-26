@@ -2324,6 +2324,24 @@
 
 ---
 
+## LOG-COUNTER-HERB-001 · 약재상 계산대
+
+- 날짜: 2026-08-27
+- 게임 파일: `godot/art/counters/herb.png`
+- 비교판: `generated/COUNTERS-RUNTIME-PREVIEW-V0.4.png`
+- 규격: `168×144 RGBA`, 실제 표시 `84×72`
+- 도구: built-in image generation + `tools/fit-transparent-prop.cjs`
+- 결과: `Generated / Draft`
+
+### 판정
+
+- 약재 상품이나 글자표를 올리지 않고 넓은 약장 서랍 여섯 칸과 작은 검은 손잡이만으로 업종을 표현했다.
+- 서랍은 3열×2행으로 제한해 실제 84×72에서도 격자가 뭉개지지 않고 필방의 2서랍과 분명히 구분된다.
+- 앞선 네 계산대와 같은 화면 폭·판매면 방향·갈색 외곽선·빈 상판·아래 4px 접지 여백을 유지했다.
+- 외곽 알파 상자는 164×89이며 약초·산삼·병·절구·글자·UI·바닥 그림자는 없다.
+
+---
+
 ## LOG-KILN-SMITH-001 · 대장간 풀무·화덕
 
 - 날짜: 2026-08-27
