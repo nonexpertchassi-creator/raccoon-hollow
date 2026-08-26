@@ -948,6 +948,19 @@ func _dog() -> void:
 ## 안에서 낮과 밤을 다 만난다. 색은 화면 전체에 얇게 한 겹만 얹는다.
 ## 하루 시계는 sim의 것이다(밤엔 손님·손놀림·쥐 규칙이 실제로 달라진다).
 ## clock_override는 찍는 도구용 — 화면만 그 시각인 척한다.
+## 일꾼 그림 찾기(2026-08-26 확정 계약): ① 그 가게 세트(clerks/<가게>-<무늬>-<방향>,
+## 앞치마 등급은 -1·-2) → ② 공용 무늬 세트(hero-body/<무늬>-<방향>) → ③ A 무늬.
+## 무늬는 채용 자리마다 랜덤(sim.fur_of), 복장은 가게가, 앞치마는 등급이 정한다.
+func _worker_tex(shop_id: String, slot: int, dir3: String) -> Texture2D:
+	var fur: String = sim.fur_of(shop_id, slot)
+	var rk: int = sim.rank_of(shop_id)
+	var t: Texture2D = Art.ranked("clerks", "%s-%s-%s" % [shop_id, fur, dir3], rk)
+	if t == null:
+		t = Art.ranked("hero-body", "%s-%s" % [fur, dir3], rk)
+	if t == null:
+		t = Art.ranked("hero-body", "a-%s" % dir3, rk)
+	return t
+
 ## 완성된 주문 상자 — 물건 모양이 아니라 **그냥 상자**다(2026-08-26, 유저).
 ## 나르는 동안 너구리 손께에 얹는다. 전부 코드 그림.
 func _crate(p2: Vector2, flip: bool) -> void:
@@ -1117,29 +1130,16 @@ func _clerk(i: int) -> void:
 	# 옆모습(오른쪽 한 장, 왼쪽은 뒤집기). 정면은 없다 — 서 있을 땐 마지막
 	# 방향 그대로 멈추고, 할 일 없으면 존다.
 	var dirn: String = "back" if (c.walking and bool(c.get("up", false))) else "side"
-	# 1순위: 가게별 완성형(clerks/<가게>-side·-back, 승급판은 -1·-2)
-	var full: Texture2D = Art.ranked("clerks", "%s-%s" % [id, dirn], sim.rank_of(id))
-	if full == null and dirn == "back":
-		full = Art.ranked("clerks", "%s-side" % id, sim.rank_of(id))
+	var full: Texture2D = _worker_tex(id, 0, dirn)
 	if full != null:
-		if pose == "sleep":
-			var slp: Texture2D = Art.ranked("clerks", "%s-sleep" % id, sim.rank_of(id))
-			if slp != null:
-				full = slp
 		var br3: float = 0.0 if c.walking else (0.5 + 0.5 * sin(_t * 2.4 + c.pos.x * 0.03)) * 0.03
+		var hop: float = absf(sin(_t * 7.0 + c.pos.x * 0.05)) * 3.5 if c.walking else 0.0
 		_shadow(c.pos, 14.0)
-		_sprite(full, c.pos, "clerks", bool(c.get("flip", false)), br3)
+		_sprite(full, c.pos + Vector2(0, -hop), "clerks", bool(c.get("flip", false)), br3)
 		if int(c.get("carry_oid", 0)) != 0 or float(c.get("carry", 0.0)) > 0.0:
 			_crate(c.pos, bool(c.get("flip", false)))
-		if pose == "sleep" and Art.ranked("clerks", "%s-sleep" % id, sim.rank_of(id)) == null:
+		if pose == "sleep":
 			_text(c.pos + Vector2(14, -70 + sin(_t * 2.0) * 3.0), "💤", 14, Color.WHITE)
-		return
-	# 2순위(임시): 겹그림 A무늬 본체 — 새 완성형이 올 때까지만 돈다
-	if Art.tex("hero-body", sim.fur_of(id) + "-side") != null:
-		_shadow(c.pos, 14.0)
-		_clerk_layers(c.pos, id, dirn, bool(c.get("flip", false)), c.walking)
-		if int(c.get("carry_oid", 0)) != 0 or float(c.get("carry", 0.0)) > 0.0:
-			_crate(c.pos, bool(c.get("flip", false)))
 		return
 	var t: Texture2D = _hero_tex(id, pose)
 	if t == null:                       # 그 자세가 아직 없으면 만드는 자세로
@@ -1159,59 +1159,6 @@ func _clerk(i: int) -> void:
 ## 방향: front 정면 · side 오른쪽 훼이크 측면 · back 뒷모습. **왼쪽은 side를 뒤집는다.**
 ## 겹 순서 — front: 몸→장비(꼬리 없음) · side: 꼬리→몸→장비 · back: 몸→장비→꼬리.
 ## 장비는 투명 스티커다(몸·손·얼굴·무늬·꼬리·그림자 픽셀 금지) — 본체 위에 핀만 맞춘다.
-## 꼬리는 방향별 뿌리 축으로 코드가 천천히 흔든다 — 프레임 그림은 없다.
-func _clerk_layers(foot: Vector2, shop_id: String, dir3: String, flip: bool, walking: bool, slot: int = 0) -> void:
-	var fur: String = sim.fur_of(shop_id, slot)
-	var sz: Vector2 = Art.SIZE["hero"]
-	# 앞치마가 등급 표시다(2026-08-26 확정 — GPT 시트 채택): 1단 밝은 앞치마,
-	# 2단 갈색(-1), 3단 진한 가죽(-2). 무늬 그림이 없으면 A로 때운다.
-	var rk9: int = sim.rank_of(shop_id)
-	var body: Texture2D = Art.ranked("hero-body", "%s-%s" % [fur, dir3], rk9)
-	if body == null:
-		body = Art.ranked("hero-body", "a-%s" % dir3, rk9)
-	if body == null:
-		body = Art.tex("hero-body", "%s-front" % fur)
-	# 그림 밑 여백을 재서 발을 그림자에 앉힌다 — 겹그림이 이걸 안 타서
-	# 날아다니는 느낌이 났다(유저). 규칙은 "발끝을 PNG 아래 변에"지만,
-	# 어긋난 그림이 와도 코드가 받아준다.
-	var ft: Dictionary = Art.fit(body)
-	var r := Rect2(foot - Vector2(sz.x * 0.5, sz.y * (1.0 - float(ft.pad))), sz)
-	var dx: float = (0.5 - float(ft.cx)) * sz.x
-	r.position.x += -dx if flip else dx
-	# 걷기 통통 — 뜀 반원 + 땅에 닿을 때 살짝 눌림(스쿼시). 로봇 걸음의 반대말.
-	if walking:
-		var ph: float = absf(sin(_t * 7.0 + foot.x * 0.05))
-		r.position.y -= ph * 3.5
-		var sq: float = (1.0 - ph) * 0.06
-		r.position.x -= r.size.x * sq * 0.35
-		r.position.y += r.size.y * sq
-		r.size.x *= 1.0 + sq * 0.7
-		r.size.y *= 1.0 - sq
-	else:
-		# 말캉말캉 — 서 있어도 숨을 쉰다(유저). 만들거나 팔 때(side)는
-		# 일하는 박자로 조금 빠르고 깊게. 발끝은 그대로, 몸만 눌렸다 편다.
-		var hz: float = 3.4 if dir3 == "side" else 2.1
-		var sq2: float = (0.5 + 0.5 * sin(_t * hz + foot.x * 0.03)) * (0.045 if dir3 == "side" else 0.03)
-		r.position.x -= r.size.x * sq2 * 0.35
-		r.position.y += r.size.y * sq2
-		r.size.x *= 1.0 + sq2 * 0.7
-		r.size.y *= 1.0 - sq2
-	var gkey: String = "%s-%d" % [shop_id, sim.rank_of(shop_id) + 1]
-	var gear: Texture2D = Art.tex("gear", "%s-%s" % [gkey, dir3])
-	if gear == null:
-		gear = Art.tex("gear", "%s-front" % gkey)
-	# 꼬리 흔들기는 뺐다(2026-08-26, 유저 — "나중에 애니메이션 스킬이 늘면
-	# 내가 바꿔보겠다"). 완성형에선 꼬리가 몸에 그려져 온다.
-	_flat_tex(body, r, flip)
-	if gear != null:
-		_flat_tex(gear, r, flip)
-
-func _flat_tex(t: Texture2D, r: Rect2, flip: bool) -> void:
-	if flip:
-		_mirrored(t, r)      # 거울 좌표계 — 뒤집기의 유일한 안전한 길(_sprite 참고)
-	else:
-		draw_texture_rect(t, r, false)
-
 ## 직원 — 작업대 옆에 서서 계속 만든다.
 ##
 ## ★ 자바스크립트판에는 있었는데 옮기면서 빠져 있었다. 직원을 뽑아도
@@ -1348,19 +1295,12 @@ func _staff(i: int, k: int) -> void:
 	var job5: int = int(_staffJob.get("%d:%d" % [i, k], -1))
 	var sflip: bool = job5 >= 0 and _stall_at(i, job5).x < p.x   # 맡은 매대를 본다
 	var breath: float = (0.5 + 0.5 * sin(_t * 2.2 + p.x * 0.04)) * 0.03 if idle else 0.0
-	var t: Texture2D = Art.ranked("clerks", "%s-side" % sid6, sim.rank_of(sid6))
+	var t: Texture2D = _worker_tex(sid6, k + 1, "side")
 	if t != null:
-		if idle:
-			var slp6: Texture2D = Art.ranked("clerks", "%s-sleep" % sid6, sim.rank_of(sid6))
-			if slp6 != null:
-				t = slp6
 		_shadow(p, 14.0)
 		_sprite(t, p + Vector2(0, -bob), "clerks", sflip, breath)
-		return
-	if Art.tex("hero-body", sim.fur_of(sid6, k + 1) + "-side") != null \
-			or Art.tex("hero-body", "a-side") != null:
-		_shadow(p, 14.0)
-		_clerk_layers(p + Vector2(0, -bob), sid6, "side", sflip, false, k + 1)
+		if idle:
+			_text(p + Vector2(14, -70 + sin(_t * 2.0 + float(k)) * 3.0), "💤", 12, Color.WHITE)
 		return
 	var t2: Texture2D = Art.tex("staff", "band-%s" % ("sleep" if idle else "work"))
 	if t2 != null:

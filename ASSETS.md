@@ -129,8 +129,8 @@ tests/artfit.gd`가 어긋난 장을 자동으로 집어준다.
 |---|---|---|---|
 | **1차** | 손님 30종 (걷는 모습) | **30** | 마을이 회색 덩어리를 벗는다. 지금 제일 어색한 자리 |
 | **2차** | 손님 카드 1단 30장 | **30** | 뽑기에서 크게 뜨고 도감에 모인다 — **제일 오래 들여다보는 그림** |
-| **3차** | 일꾼 너구리 A~D × (옆+뒷) | **8** (2장 옴) | 이 여덟 장이면 마을의 모든 일꾼이 살아난다 |
-| **4차** | (비었음) | 0 | 채용된 너구리도 3차의 여덟 장에서 나온다 |
+| **3차** | 대장간 일꾼 세트 24장(시트 도착 — 자르기만) | **24** | 첫 가게 세트로 그림체·규격 확정 |
+| **4차** | 나머지 가게 일꾼 세트 | 336 | 가게 열리는 순서대로(필방→지물포→옹기…) 한 세트씩 |
 | **5차** | 물건 40종 | **40** | 제일 많다. 매대와 가게 창 두 군데에 쓰인다 |
 | **6차** | 매대 5종 · 나쁜 놈 3종 | **8** | 가게마다 좌판이 달라진다 |
 | 선택 | 손님 카드 2~4단 | 90 | 성이 오를 때 갈아입는다. 없으면 1단을 계속 쓴다 |
@@ -138,24 +138,30 @@ tests/artfit.gd`가 어긋난 장을 자동으로 집어준다.
 
 ### 누가 누구인지 — 이게 제일 중요하다
 
-**일꾼은 A~D 랜덤 너구리다**(2026-08-26 확정 — 가게별 완성형 계약 취소).
-가게를 열거나 채용할 때마다 저장본이 무늬(A~D)를 무작위로 배정하고,
-그 너구리는 영영 그 무늬다. 가게 구분은 너구리가 아니라 **매대·가마·
-물건**이 말한다.
+**일꾼은 "가게별 세트 × 랜덤 무늬"다**(2026-08-26 최종 — 유저 확정).
+세 겹의 뜻이 나뉜다:
+
+- **무늬(a주황·b회색·c적갈·d삼색)** = 누가 왔는가. 채용 자리마다 랜덤 배정,
+  영영 유지.
+- **복장** = 어느 가게인가. 대장간 세트 따로, 필방 세트 따로, 옹기점 따로…
+- **앞치마 등급(밝은 천 → 갈색 → 진한 가죽)** = 가게가 얼마나 컸는가.
+  승급하면 그 가게 너구리 전원이 갈아입는다.
 
 ```
-hero-body/a~d-side.png   옆(오른쪽) — 일·계산·서기 전부. 왼쪽은 코드 뒤집기
-hero-body/a~d-back.png   뒷모습 — 위로 걸을 때
+clerks/<가게>-<무늬>-<방향>.png       예: smith-a-side.png (1단)
+clerks/<가게>-<무늬>-<방향>-1.png     2단 앞치마
+clerks/<가게>-<무늬>-<방향>-2.png     3단 앞치마
 ```
 
-- 정면은 없다. 서 있을 땐 마지막 방향 그대로, 할 일 없으면 존다(💤는 코드).
-- 꼬리까지 몸에 그려 넣는다(흔들기 없음). 채용: 오픈 1마리, 등급마다
-  자리 +1(최대 4) — 돈 내고 채용한다.
-- 카드 초상(cards/)·손님 3방향 규칙은 그대로다.
+한 가게 세트 = 무늬 4 × 방향 2(side·back) × 앞치마 3단 = **24장**.
+대장간 시트(2026-08-26 도착)가 첫 세트다 — 잘라서 위 이름으로 넣는다.
+정면 없음(마지막 방향에서 멈추고 졸면 💤는 코드), 왼쪽은 코드 뒤집기,
+발끝 아래 변·정중앙·그림자 금지. 세트가 없는 가게는 공용 무늬 세트
+(hero-body/)로 돈다.
 
 | | 누구 | 어떻게 그리나 |
 |---|---|---|
-| **일꾼 너구리** | 가게의 손들. 채용으로 늘고 무늬는 무작위 | hero-body A~D × 옆/뒷 = 8장 |
+| **일꾼 너구리** | 가게의 손들. 채용으로 늘고 무늬는 무작위 | 가게별 세트 24장(무늬×방향×앞치마) |
 | **손님** | 사러 온 짐승들. **서른 종** | 너구리가 아니다. 토끼·까치·해태… |
 
 ### 손님은 그림이 **두 벌**이다 — 헷갈리기 쉬운 자리
@@ -236,7 +242,7 @@ hero-body/a~d-back.png   뒷모습 — 위로 걸을 때
 > 이 칸은 `node tools/art.mjs --write`가 다시 쓴다.
 > **그림을 폴더에 넣으면 목록에서 저절로 빠진다** — 손으로 지울 필요 없다.
 
-**134 / 533장** 들어왔다.
+**132 / 629장** 들어왔다.
 
 ### 점장 너구리 (폴백) · 촌장 — `godot/art/hero/` · 144×144 · **0장 남음**
 
@@ -804,37 +810,144 @@ hero-body/a~d-back.png   뒷모습 — 위로 걸을 때
 - [ ] `moonbear.png` — 반달곰 — 뽑으면 고를 수 있다
 - [ ] `haetae.png` — 해태 — 뽑으면 고를 수 있다
 
-### 일꾼 너구리 A~D (앞치마 3단 × 옆/뒤) — `godot/art/hero-body/` · 144×144 · **22장 남음**
+### 가게별 일꾼 세트 (무늬4×옆/뒤, 앞치마 등급판은 -1·-2) — `godot/art/clerks/` · 144×144 · **120장 남음**
 
-가게 구분 없는 일꾼 너구리 — GPT 시트(2026-08-26) 그대로 확정.
-무늬 넷: a=주황 · b=회색 · c=적갈 · d=삼색(노랑). 저장본이 너구리마다
-무늬를 무작위 배정한다. **앞치마가 가게 등급 표시다**: 이름에 숫자
-없음=1단(밝은 앞치마) · -1=2단(갈색) · -2=3단(진한 가죽).
-방향 둘: -side(오른쪽 훼이크 측면, 오른팔 뻗음 — 왼쪽은 코드 뒤집기) ·
--back(뒷모습). 정면·꼬리 낱장·그림자 금지. 발끝은 아래 변, 가로 정중앙.
+파일명: `<가게>-<무늬>-<방향>.png`, 앞치마 등급판은 `-1`(2단)·`-2`(3단)를
+뒤에 붙인다 — 예: `smith-a-side.png` · `smith-a-side-2.png`.
+side는 오른쪽 훼이크 측면(오른팔 뻗음, 왼쪽은 코드 뒤집기), back은 뒷모습.
+정면·그림자·꼬리 낱장 금지. 발끝은 아래 변, 몸은 가로 정중앙.
+아래 목록은 1단(기본 앞치마)만 센다 — 등급판은 폴더에 넣으면 자동 인식.
+세트가 아직 없는 가게는 공용 무늬 세트(hero-body/)로 돈다.
 
-- [ ] `a-side-1.png` — 무늬 A side · 2단 갈색 앞치마
-- [ ] `a-side-2.png` — 무늬 A side · 3단 가죽 앞치마
-- [ ] `a-back-1.png` — 무늬 A back · 2단 갈색 앞치마
-- [ ] `a-back-2.png` — 무늬 A back · 3단 가죽 앞치마
-- [ ] `b-side.png` — 무늬 B side · 1단 앞치마
-- [ ] `b-side-1.png` — 무늬 B side · 2단 갈색 앞치마
-- [ ] `b-side-2.png` — 무늬 B side · 3단 가죽 앞치마
-- [ ] `b-back.png` — 무늬 B back · 1단 앞치마
-- [ ] `b-back-1.png` — 무늬 B back · 2단 갈색 앞치마
-- [ ] `b-back-2.png` — 무늬 B back · 3단 가죽 앞치마
-- [ ] `c-side.png` — 무늬 C side · 1단 앞치마
-- [ ] `c-side-1.png` — 무늬 C side · 2단 갈색 앞치마
-- [ ] `c-side-2.png` — 무늬 C side · 3단 가죽 앞치마
-- [ ] `c-back.png` — 무늬 C back · 1단 앞치마
-- [ ] `c-back-1.png` — 무늬 C back · 2단 갈색 앞치마
-- [ ] `c-back-2.png` — 무늬 C back · 3단 가죽 앞치마
-- [ ] `d-side.png` — 무늬 D side · 1단 앞치마
-- [ ] `d-side-1.png` — 무늬 D side · 2단 갈색 앞치마
-- [ ] `d-side-2.png` — 무늬 D side · 3단 가죽 앞치마
-- [ ] `d-back.png` — 무늬 D back · 1단 앞치마
-- [ ] `d-back-1.png` — 무늬 D back · 2단 갈색 앞치마
-- [ ] `d-back-2.png` — 무늬 D back · 3단 가죽 앞치마
+- [ ] `smith-a-side.png` — 대장간 · 무늬 A 옆
+- [ ] `smith-a-back.png` — 대장간 · 무늬 A 뒤
+- [ ] `smith-b-side.png` — 대장간 · 무늬 B 옆
+- [ ] `smith-b-back.png` — 대장간 · 무늬 B 뒤
+- [ ] `smith-c-side.png` — 대장간 · 무늬 C 옆
+- [ ] `smith-c-back.png` — 대장간 · 무늬 C 뒤
+- [ ] `smith-d-side.png` — 대장간 · 무늬 D 옆
+- [ ] `smith-d-back.png` — 대장간 · 무늬 D 뒤
+- [ ] `brush-a-side.png` — 필방 · 무늬 A 옆
+- [ ] `brush-a-back.png` — 필방 · 무늬 A 뒤
+- [ ] `brush-b-side.png` — 필방 · 무늬 B 옆
+- [ ] `brush-b-back.png` — 필방 · 무늬 B 뒤
+- [ ] `brush-c-side.png` — 필방 · 무늬 C 옆
+- [ ] `brush-c-back.png` — 필방 · 무늬 C 뒤
+- [ ] `brush-d-side.png` — 필방 · 무늬 D 옆
+- [ ] `brush-d-back.png` — 필방 · 무늬 D 뒤
+- [ ] `paper-a-side.png` — 지물포 · 무늬 A 옆
+- [ ] `paper-a-back.png` — 지물포 · 무늬 A 뒤
+- [ ] `paper-b-side.png` — 지물포 · 무늬 B 옆
+- [ ] `paper-b-back.png` — 지물포 · 무늬 B 뒤
+- [ ] `paper-c-side.png` — 지물포 · 무늬 C 옆
+- [ ] `paper-c-back.png` — 지물포 · 무늬 C 뒤
+- [ ] `paper-d-side.png` — 지물포 · 무늬 D 옆
+- [ ] `paper-d-back.png` — 지물포 · 무늬 D 뒤
+- [ ] `pot-a-side.png` — 옹기점 · 무늬 A 옆
+- [ ] `pot-a-back.png` — 옹기점 · 무늬 A 뒤
+- [ ] `pot-b-side.png` — 옹기점 · 무늬 B 옆
+- [ ] `pot-b-back.png` — 옹기점 · 무늬 B 뒤
+- [ ] `pot-c-side.png` — 옹기점 · 무늬 C 옆
+- [ ] `pot-c-back.png` — 옹기점 · 무늬 C 뒤
+- [ ] `pot-d-side.png` — 옹기점 · 무늬 D 옆
+- [ ] `pot-d-back.png` — 옹기점 · 무늬 D 뒤
+- [ ] `herb-a-side.png` — 약재상 · 무늬 A 옆
+- [ ] `herb-a-back.png` — 약재상 · 무늬 A 뒤
+- [ ] `herb-b-side.png` — 약재상 · 무늬 B 옆
+- [ ] `herb-b-back.png` — 약재상 · 무늬 B 뒤
+- [ ] `herb-c-side.png` — 약재상 · 무늬 C 옆
+- [ ] `herb-c-back.png` — 약재상 · 무늬 C 뒤
+- [ ] `herb-d-side.png` — 약재상 · 무늬 D 옆
+- [ ] `herb-d-back.png` — 약재상 · 무늬 D 뒤
+- [ ] `soup-a-side.png` — 국밥집 · 무늬 A 옆
+- [ ] `soup-a-back.png` — 국밥집 · 무늬 A 뒤
+- [ ] `soup-b-side.png` — 국밥집 · 무늬 B 옆
+- [ ] `soup-b-back.png` — 국밥집 · 무늬 B 뒤
+- [ ] `soup-c-side.png` — 국밥집 · 무늬 C 옆
+- [ ] `soup-c-back.png` — 국밥집 · 무늬 C 뒤
+- [ ] `soup-d-side.png` — 국밥집 · 무늬 D 옆
+- [ ] `soup-d-back.png` — 국밥집 · 무늬 D 뒤
+- [ ] `gaekju-a-side.png` — 객주 · 무늬 A 옆
+- [ ] `gaekju-a-back.png` — 객주 · 무늬 A 뒤
+- [ ] `gaekju-b-side.png` — 객주 · 무늬 B 옆
+- [ ] `gaekju-b-back.png` — 객주 · 무늬 B 뒤
+- [ ] `gaekju-c-side.png` — 객주 · 무늬 C 옆
+- [ ] `gaekju-c-back.png` — 객주 · 무늬 C 뒤
+- [ ] `gaekju-d-side.png` — 객주 · 무늬 D 옆
+- [ ] `gaekju-d-back.png` — 객주 · 무늬 D 뒤
+- [ ] `skewer-a-side.png` — 꼬치집 · 무늬 A 옆
+- [ ] `skewer-a-back.png` — 꼬치집 · 무늬 A 뒤
+- [ ] `skewer-b-side.png` — 꼬치집 · 무늬 B 옆
+- [ ] `skewer-b-back.png` — 꼬치집 · 무늬 B 뒤
+- [ ] `skewer-c-side.png` — 꼬치집 · 무늬 C 옆
+- [ ] `skewer-c-back.png` — 꼬치집 · 무늬 C 뒤
+- [ ] `skewer-d-side.png` — 꼬치집 · 무늬 D 옆
+- [ ] `skewer-d-back.png` — 꼬치집 · 무늬 D 뒤
+- [ ] `ricecake-a-side.png` — 떡집 · 무늬 A 옆
+- [ ] `ricecake-a-back.png` — 떡집 · 무늬 A 뒤
+- [ ] `ricecake-b-side.png` — 떡집 · 무늬 B 옆
+- [ ] `ricecake-b-back.png` — 떡집 · 무늬 B 뒤
+- [ ] `ricecake-c-side.png` — 떡집 · 무늬 C 옆
+- [ ] `ricecake-c-back.png` — 떡집 · 무늬 C 뒤
+- [ ] `ricecake-d-side.png` — 떡집 · 무늬 D 옆
+- [ ] `ricecake-d-back.png` — 떡집 · 무늬 D 뒤
+- [ ] `butcher-a-side.png` — 푸줏간 · 무늬 A 옆
+- [ ] `butcher-a-back.png` — 푸줏간 · 무늬 A 뒤
+- [ ] `butcher-b-side.png` — 푸줏간 · 무늬 B 옆
+- [ ] `butcher-b-back.png` — 푸줏간 · 무늬 B 뒤
+- [ ] `butcher-c-side.png` — 푸줏간 · 무늬 C 옆
+- [ ] `butcher-c-back.png` — 푸줏간 · 무늬 C 뒤
+- [ ] `butcher-d-side.png` — 푸줏간 · 무늬 D 옆
+- [ ] `butcher-d-back.png` — 푸줏간 · 무늬 D 뒤
+- [ ] `fish-a-side.png` — 어물전 · 무늬 A 옆
+- [ ] `fish-a-back.png` — 어물전 · 무늬 A 뒤
+- [ ] `fish-b-side.png` — 어물전 · 무늬 B 옆
+- [ ] `fish-b-back.png` — 어물전 · 무늬 B 뒤
+- [ ] `fish-c-side.png` — 어물전 · 무늬 C 옆
+- [ ] `fish-c-back.png` — 어물전 · 무늬 C 뒤
+- [ ] `fish-d-side.png` — 어물전 · 무늬 D 옆
+- [ ] `fish-d-back.png` — 어물전 · 무늬 D 뒤
+- [ ] `cloth-a-side.png` — 포목전 · 무늬 A 옆
+- [ ] `cloth-a-back.png` — 포목전 · 무늬 A 뒤
+- [ ] `cloth-b-side.png` — 포목전 · 무늬 B 옆
+- [ ] `cloth-b-back.png` — 포목전 · 무늬 B 뒤
+- [ ] `cloth-c-side.png` — 포목전 · 무늬 C 옆
+- [ ] `cloth-c-back.png` — 포목전 · 무늬 C 뒤
+- [ ] `cloth-d-side.png` — 포목전 · 무늬 D 옆
+- [ ] `cloth-d-back.png` — 포목전 · 무늬 D 뒤
+- [ ] `hat-a-side.png` — 갓방 · 무늬 A 옆
+- [ ] `hat-a-back.png` — 갓방 · 무늬 A 뒤
+- [ ] `hat-b-side.png` — 갓방 · 무늬 B 옆
+- [ ] `hat-b-back.png` — 갓방 · 무늬 B 뒤
+- [ ] `hat-c-side.png` — 갓방 · 무늬 C 옆
+- [ ] `hat-c-back.png` — 갓방 · 무늬 C 뒤
+- [ ] `hat-d-side.png` — 갓방 · 무늬 D 옆
+- [ ] `hat-d-back.png` — 갓방 · 무늬 D 뒤
+- [ ] `brass-a-side.png` — 유기전 · 무늬 A 옆
+- [ ] `brass-a-back.png` — 유기전 · 무늬 A 뒤
+- [ ] `brass-b-side.png` — 유기전 · 무늬 B 옆
+- [ ] `brass-b-back.png` — 유기전 · 무늬 B 뒤
+- [ ] `brass-c-side.png` — 유기전 · 무늬 C 옆
+- [ ] `brass-c-back.png` — 유기전 · 무늬 C 뒤
+- [ ] `brass-d-side.png` — 유기전 · 무늬 D 옆
+- [ ] `brass-d-back.png` — 유기전 · 무늬 D 뒤
+- [ ] `lacquer-a-side.png` — 나전방 · 무늬 A 옆
+- [ ] `lacquer-a-back.png` — 나전방 · 무늬 A 뒤
+- [ ] `lacquer-b-side.png` — 나전방 · 무늬 B 옆
+- [ ] `lacquer-b-back.png` — 나전방 · 무늬 B 뒤
+- [ ] `lacquer-c-side.png` — 나전방 · 무늬 C 옆
+- [ ] `lacquer-c-back.png` — 나전방 · 무늬 C 뒤
+- [ ] `lacquer-d-side.png` — 나전방 · 무늬 D 옆
+- [ ] `lacquer-d-back.png` — 나전방 · 무늬 D 뒤
+
+### 공용 일꾼 너구리 (폴백) (선택) — `godot/art/hero-body/` · 144×144 · **6장 남음**
+
+- [ ] `b-side.png` — 무늬 B 옆 — 가게 세트가 없을 때
+- [ ] `b-back.png` — 무늬 B 뒤
+- [ ] `c-side.png` — 무늬 C 옆 — 가게 세트가 없을 때
+- [ ] `c-back.png` — 무늬 C 뒤
+- [ ] `d-side.png` — 무늬 D 옆 — 가게 세트가 없을 때
+- [ ] `d-back.png` — 무늬 D 뒤
 
 <!-- 목록끝 -->
 
