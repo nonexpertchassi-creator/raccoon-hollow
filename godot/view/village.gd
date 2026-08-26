@@ -96,9 +96,19 @@ var _lineSeq: int = 0
 ##   일꾼이 마당 가운데서 발만 동동 구른다.
 var _heroJob: Dictionary = {}
 var _staffJob: Dictionary = {}
+## 완성됐는데 아직 아무도 안 든 상자들(가게 번호 → 주문 번호 배열).
+## ★ 점장 전담이 아니다(2026-08-27, 유저): 계산대가 셋인데 나르는 놈이 하나면
+##   그림이 스스로 모순이다. 상자는 **그때 놀고 있는 너구리**가 든다.
+var _pending: Dictionary = {}
+## 직원이 든 상자("가게:번호" → 주문 번호)와 계산 자세 시계.
+var _staffCarry: Dictionary = {}
+var _staffBusy: Dictionary = {}
 ## 마당 칸 번호(1~n²)를 바닥에 깐다 — "6번 매대" 같은 말이 통하게 하는
 ## **대화용 자**다(유저). G 키로 껐다 켠다. 내보내기 전에 기본값을 끈다.
-var show_grid: bool = true
+## 바닥 칸 번호(G키) — **기본은 꺼짐**이다. 마당 배치를 번호로 정하던 동안
+## 켜 둔 채로 굳어 있었다(2026-08-27에 잡았다) — 게임을 켜면 손님 발밑에
+## 디버그 숫자가 깔려 있었다. 도구는 SHOT_GRID=1로 켜서 확인한다.
+var show_grid: bool = false
 ## 낮과 밤 — 도구가 시각을 못 박을 때 쓴다(0~1, 음수면 게임 시계를 따른다).
 var clock_override: float = -1.0
 ## 날씨 — 도구가 못 박을 때 쓴다(""면 sim을 따른다).
@@ -195,11 +205,10 @@ func on_done(d: Dictionary) -> void:
 			# ★ 손님은 너구리가 상자를 들고 **계산대에 실제로 닿아야** 받는다
 			#   (2026-08-26, 유저: "계산을 대각선에서 한다") — 예전엔 타이머라
 			#   너구리가 마당 한가운데서 허공에 건네는 그림이 됐다.
-			var c9: Dictionary = clerks[wk.shop]
-			if int(c9.get("carry_oid", 0)) == 0:
-				c9.carry_oid = oid
-			else:
-				(c9.carryQ as Array).append(oid)
+			#   누가 드느냐는 _assign_crates가 정한다 — 논 손부터.
+			if not _pending.has(wk.shop):
+				_pending[wk.shop] = []
+			(_pending[wk.shop] as Array).append(oid)
 			return
 
 ## 이 손님이 무엇을 몇 개 사러 왔나. 머리 위에 띄울 주문표다.
@@ -230,6 +239,71 @@ func _line_index(wk: Dictionary) -> int:
 		if w != wk and w.state == "buy" and int(w.q) < int(wk.q):
 			n += 1
 	return n
+
+## 이 주문의 손님이 선(또는 설) 계산대 번호 — 상자를 어느 자리로 나를지 정한다.
+func _counter_idx(i: int, oid: int) -> int:
+	var nct: int = maxi(1, sim.counters_of(String(Content.SHOPS[i].id)))
+	var waiting: int = 0
+	for w in line[i]:
+		if w.state == "buy":
+			waiting += 1
+	for wk in walkers:
+		if int(wk.get("oid", -1)) != oid:
+			continue
+		if wk.state == "buy":
+			return clampi(_line_index(wk), 0, nct - 1)
+		return clampi(waiting, 0, nct - 1)      # 아직 오는 중 — 설 자리를 미리 본다
+	return 0
+
+func _serve_of(i: int, oid: int) -> Vector2:
+	var f: Dictionary = Iso.foot(sim, i)
+	var svs: Array = f.serves
+	if oid == 0:
+		return svs[0]
+	return svs[clampi(_counter_idx(i, oid), 0, svs.size() - 1)]
+
+## 상자를 건넨다. 1 = 건넸다 · 0 = 손님이 아직 오는 중(들고 선다) ·
+## -1 = 그런 손님이 없다(지나간 손님 등 — 상자를 내려놓는다).
+func _try_deliver(i: int, oid: int) -> int:
+	for wk in walkers:
+		if int(wk.get("oid", -1)) != oid:
+			continue
+		if wk.state != "buy":
+			return 0
+		wk["delivered"] = true
+		wk.leaveT = 0.35              # 받아 들고 한 박자 뒤에 돌아선다
+		return 1
+	return -1
+
+## 완성된 상자를 **논 손부터** 나눠 준다(2026-08-27, 유저). 짝을 미리 정하지
+## 않는다 — 그 순간 노는 놈이 들고, 아무도 안 놀면 만들던 너구리가 든다.
+func _assign_crates(i: int) -> void:
+	var q: Array = _pending.get(i, [])
+	if q.is_empty():
+		return
+	var ns: int = int(sim.staff_of(String(Content.SHOPS[i].id)))
+	while not q.is_empty():
+		var picked: String = ""
+		for k in range(ns):                       # 1순위 — 맡은 매대가 없는 직원
+			var kk: String = "%d:%d" % [i, k]
+			if int(_staffCarry.get(kk, 0)) == 0 and int(_staffJob.get(kk, -1)) < 0:
+				picked = kk
+				break
+		if picked == "" and int(clerks[i].get("carry_oid", 0)) == 0:
+			picked = "hero"                       # 2순위 — 손이 빈 점장
+		if picked == "":
+			for k2 in range(ns):                  # 3순위 — 만들던 직원이라도
+				var kk2: String = "%d:%d" % [i, k2]
+				if int(_staffCarry.get(kk2, 0)) == 0:
+					picked = kk2
+					break
+		if picked == "":
+			return                                # 모두 손이 찼다 — 다음 틱에
+		var oid: int = int(q.pop_front())
+		if picked == "hero":
+			clerks[i].carry_oid = oid
+		else:
+			_staffCarry[picked] = oid
 
 func _walk(wk: Dictionary, delta: float) -> bool:
 	var target: Vector2
@@ -317,14 +391,25 @@ func _advance(delta: float) -> void:
 				claimed[sj] = true
 
 	# 직원 — 만드는 매대 곁으로 걸어간다. 순간이동하면 "일하러 갔다"가 안 보인다.
+	# 상자를 들었으면 그 손님이 선 계산대의 안쪽 자리로 간다(2026-08-27).
 	for i in range(Content.SHOPS.size()):
 		if not sim.shops.has(String(Content.SHOPS[i].id)):
 			continue
+		_assign_crates(i)
 		for k in range(int(sim.staff_of(String(Content.SHOPS[i].id)))):
 			var skey: String = "%d:%d" % [i, k]
-			var goal: Vector2 = _staff_goal(i, k)
+			_staffBusy[skey] = maxf(0.0, float(_staffBusy.get(skey, 0.0)) - delta)
+			var carry: int = int(_staffCarry.get(skey, 0))
+			var goal: Vector2 = _serve_of(i, carry) if carry != 0 else _staff_goal(i, k)
 			var cur: Vector2 = _staffAt.get(skey, _staff_pos(i, k))
-			_staffAt[skey] = cur.move_toward(goal, 52.0 * delta)
+			cur = cur.move_toward(goal, 52.0 * delta)
+			_staffAt[skey] = cur
+			if carry != 0 and cur.distance_to(goal) < 10.0:
+				var r: int = _try_deliver(i, carry)
+				if r != 0:
+					_staffCarry[skey] = 0
+					if r > 0:
+						_staffBusy[skey] = 0.8
 	_walk_mayor(delta)
 	# 산 만큼 개를 풀어놓는다
 	while dogs.size() < int(sim.guards):
@@ -392,10 +477,13 @@ func _advance(delta: float) -> void:
 		# 저쪽 매대가 만들어지면 오류로 보인다(유저). 만들 게 없으면 작업대.
 		# 줄에 손님이 남아 있으면 계산대를 안 떠난다 — 손님 사이마다 매대로
 		# 갔다 오며 몸이 좌우로 홱홱 뒤집혔다(유저: "자세를 한가지로").
-		var goal: Vector2 = f.serve
+		var carry_o: int = int(c.get("carry_oid", 0))
+		# 계산대가 여럿이면 **그 손님이 선 계산대**의 안쪽 자리로 간다(2026-08-27).
+		var sv_p: Vector2 = _serve_of(i, carry_o)
+		var goal: Vector2 = c.pos                 # 계산 중(busy)이면 그 자리에 선다
 		var hjob: int = int(_heroJob.get(i, -1))
-		if int(c.get("carry_oid", 0)) != 0:
-			goal = f.serve                        # 상자를 들었다 — 계산대로
+		if carry_o != 0:
+			goal = sv_p                           # 상자를 들었다 — 계산대로
 		elif c.busy <= 0.0:
 			# 할 일이 없으면 **그 자리에서** 쉰다(유저: "마지막 지점에서
 			# 머무는 게 자연스럽다"). 작업대로 돌아가 서 있으면 그것도
@@ -411,26 +499,25 @@ func _advance(delta: float) -> void:
 			c.up = d.y < 0.0                 # 위로 걸으면 뒷모습을 쓴다(3방향 계약)
 		# 계산대 근처(30px)에서는 방향을 **절대 안 바꾼다** — 팔꿈치를 오가는
 		# 짧은 걸음마다 좌우가 뒤집혀 파닥거렸다(유저가 두 번 잡았다).
-		var near_ct: bool = c.pos.distance_to(f.serve) < 30.0
+		var near_ct: bool = c.pos.distance_to(sv_p) < 30.0
 		if c.walking and absf(d.x) > 0.5 and not near_ct:
 			c.flip = d.x < 0.0
 		# ★ 길 쪽 보기 잠금은 **계산하러 왔을 때만**. 계산 자리(8번)는 매대
 		#   7번의 작업 자리이기도 한데, 잠금이 만들 때도 길을 보게 해서
 		#   "만드는 방향이 반대"가 됐다(유저).
-		if near_ct and goal == f.serve:
+		if near_ct and (carry_o != 0 or c.busy > 0.0):
 			c.flip = String(f.yard.gate) == "y"    # 계산대에선 길 쪽을 본다
 		elif not c.walking and hjob >= 0:
 			c.flip = _stall_at(i, hjob).x < c.pos.x   # 매대 앞에선 매대를 본다
 		c.pos = tgt if d.length() <= step else c.pos + d.normalized() * step
 		# 상자가 계산대에 닿았다 — 이제야 손님이 받는다
-		if int(c.get("carry_oid", 0)) != 0 and c.pos.distance_to(f.serve) < 10.0:
-			for wk9 in line[i]:
-				if int(wk9.get("oid", -1)) == int(c.carry_oid):
-					wk9.delivered = true
-					break
-			c.carry_oid = 0 if (c.carryQ as Array).is_empty() else int((c.carryQ as Array).pop_front())
-			c.carry = 0.5                          # 상자 잔상 + 계산 자세 한 박자
-			c.busy = 0.8
+		if carry_o != 0 and c.pos.distance_to(sv_p) < 10.0:
+			var rr: int = _try_deliver(i, carry_o)
+			if rr != 0:
+				c.carry_oid = 0
+				if rr > 0:
+					c.carry = 0.5                  # 상자 잔상 + 계산 자세 한 박자
+					c.busy = 0.8
 
 ## 촌장 걸음 — 길 위의 아무 데나 한 곳을 골라 걸어가고, 닿으면 잠깐 쉬었다 또 간다.
 ## 목적지를 마을 문(GATES)에서 고르면 늘 가장자리만 돌게 되므로 길 전체에서 고른다.
@@ -897,20 +984,13 @@ func _stall(i: int, k: int, spot: Vector2i) -> void:
 			var bob3: float = sin(_t * 4.0) * 2.0
 			_text(p + Vector2(24, -52 + bob3), "▲", 15, Color("c7563f") if can_max else C.jade)
 
-func _counter(i: int) -> void:
-	# ★ 계산대도 등급 따라 는다(2026-08-26, 유저): 무쇠 1 · 참쇠 2 · 강철 3.
-	#   같은 변을 따라 반 칸씩 벌려 놓는다. 주문 자리(sim.order_slots)와 한 몸.
-	var n_ct: int = sim.counters_of(String(Content.SHOPS[i].id))
-	for c2 in range(n_ct):
-		_counter_one(i, (float(c2) - float(n_ct - 1) * 0.5) * 0.58)
-
-func _counter_one(i: int, toff: float) -> void:
+func _counter_one(i: int, k: int) -> void:
 	var o: Vector2i = Iso.org(sim, i)
 	var yd: Dictionary = Iso.yard(Iso.YARD_KIND[i], Iso.plot_dim(sim, i))
-	var ct: Vector2i = yd.counter
-	# 변을 따라 미끄러뜨린다 — 세로 길 가게(gate x)는 y축, 골목 가게는 x축
-	var bx: float = float(o.x + ct.x) + (toff if String(yd.gate) == "y" else 0.0)
-	var by: float = float(o.y + ct.y) + (toff if String(yd.gate) == "x" else 0.0)
+	var cts: Array = yd.counters
+	var ct: Vector2i = cts[clampi(k, 0, cts.size() - 1)]
+	var bx: float = float(o.x + ct.x)
+	var by: float = float(o.y + ct.y)
 	var p: Vector2 = Iso.w(bx + 0.5, by + 0.5)
 	# 계산대도 매대와 같은 규칙이다 — **정면치기 한 장 + 코드 뒤집기.**
 	var pic3: Texture2D = Art.ranked("counters", String(Content.SHOPS[i].id), sim.rank_of(String(Content.SHOPS[i].id)))
@@ -1225,7 +1305,10 @@ func _stall_front(i: int, k: int) -> Vector2:
 	var taken: Dictionary = {}
 	for t5 in y.stalls:
 		taken[t5] = true
-	taken[y.counter] = true
+	for c8 in y.counters:
+		taken[c8] = true
+	for s8 in y.serves:
+		taken[s8] = true
 	taken[y.kiln] = true
 	# 1순위: **수직 안쪽 이웃**(7번 매대면 8번 자리 — 유저 설계). 그 칸에
 	# 가구가 있을 때만 2순위로 넘어간다. 처음부터 "중심에 가까운 빈 칸"으로
@@ -1323,13 +1406,24 @@ func _staff(i: int, k: int) -> void:
 	#   마리 더 온다". 전원이 그 가게의 완성형 그림을 쓴다(쌍둥이 형제들).
 	#   경제(손 셈)는 그대로고 화면과 말만 통일했다. 두건 직원 그림은 은퇴.
 	var sid6: String = String(Content.SHOPS[i].id)
-	var job5: int = int(_staffJob.get("%d:%d" % [i, k], -1))
+	var skey6: String = "%d:%d" % [i, k]
+	var job5: int = int(_staffJob.get(skey6, -1))
+	var carry6: int = int(_staffCarry.get(skey6, 0))
+	var busy6: bool = float(_staffBusy.get(skey6, 0.0)) > 0.0
+	# 상자를 들었거나 막 건넸으면 졸지 않고, 계산대에선 길 쪽을 본다.
+	if carry6 != 0 or busy6:
+		idle = false
+		bob = 0.0
 	var sflip: bool = job5 >= 0 and _stall_at(i, job5).x < p.x   # 맡은 매대를 본다
+	if carry6 != 0 or busy6:
+		sflip = String(Iso.yard(Iso.YARD_KIND[i], Iso.plot_dim(sim, i)).gate) == "y"
 	var breath: float = (0.5 + 0.5 * sin(_t * 2.2 + p.x * 0.04)) * 0.03 if idle else 0.0
 	var t: Texture2D = _worker_tex(sid6, k + 1, "side")
 	if t != null:
 		_shadow(p, 14.0)
 		_sprite(t, p + Vector2(0, -bob), "clerks", sflip, breath)
+		if carry6 != 0:
+			_crate(p, sflip)
 		if idle:
 			_text(p + Vector2(14, -70 + sin(_t * 2.0 + float(k)) * 3.0), "💤", 12, Color.WHITE)
 		return
@@ -1337,8 +1431,12 @@ func _staff(i: int, k: int) -> void:
 	if t2 != null:
 		_shadow(p, 14.0)
 		_sprite(t2, p + Vector2(0, -bob), "staff", sflip, breath)
+		if carry6 != 0:
+			_crate(p, sflip)
 		return
 	_raccoon(p + Vector2(0, -bob), SHAPE, Color("bfa987"))
+	if carry6 != 0:
+		_crate(p, sflip)
 
 func _walker(wk: Dictionary) -> void:
 	# 방향에 맞는 그림을 고른다: 줄에 서면 정면(-front), 위로 걸으면
@@ -1508,9 +1606,13 @@ func _draw() -> void:
 				zz = Iso.w(o.x, o.y).y + 2.5
 			layer.append({"z": zz, "i": seq, "f": _stall.bind(i, k, sp)})
 			seq += 1
-		layer.append({"z": Iso.w(o.x + y.counter.x + 0.84, o.y + y.counter.y + 0.7).y, "i": seq,
-			"f": _counter.bind(i)})
-		seq += 1
+		# 계산대도 이제 칸마다 따로 선다 — 한 덩어리로 그리면 뒤쪽 계산대가
+		# 앞쪽 계산 자리에 선 너구리를 덮는다(2026-08-27).
+		for kc in range(y.counters.size()):
+			var cp2: Vector2i = y.counters[kc]
+			layer.append({"z": Iso.w(o.x + cp2.x + 0.84, o.y + cp2.y + 0.7).y, "i": seq,
+				"f": _counter_one.bind(i, kc)})
+			seq += 1
 	layer.append({"z": Iso.w(Iso.DOG_T.x + 1, Iso.DOG_T.y + 1).y, "i": seq, "f": _dog})
 	seq += 1
 	if not mayor.is_empty():

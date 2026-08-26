@@ -32,6 +32,12 @@ case "$OUT" in
 esac
 
 # 규칙만 시험하면 "저장은 되는데 파일이 안 써진다"를 놓친다
+OUT=$(godot --headless --path godot --script tests/yard.gd 2>&1 || true)
+case "$OUT" in
+  *"YARD OK"*) pass yard "마당 배치가 장부와 같다" ;;
+  *) fail yard "" ; echo "$OUT" | grep "YARD FAIL" | sed 's/^/     /' ;;
+esac
+
 OUT=$(godot --headless --path godot --script tests/savefile.gd 2>&1 || true)
 case "$OUT" in
   *"같은가: 예"*) pass file "파일에 담았다 꺼내도 같다" ;;

@@ -96,35 +96,80 @@ static func org(sim: Sim, i: int) -> Vector2i:
 ## (n-1,n-1)이 앞 꼭짓점(화면 아래)이다.
 ##   A 마주보기 · B 왼쪽살림 · C 길가진열 · D 옆문
 ## 계산대는 반드시 **길에 닿는 변**에 둔다. 담은 늘 뒤 두 변에만 세운다.
+## ★ 2026-08-27, 유저가 칸 번호로 직접 정한 판이다(장부 "마당 배치판").
+##   예전엔 계산대가 **한 칸에 여러 개 겹쳐** 놓였다 — 등급이 오르면 계산대가
+##   둘·셋이 되는데 자리는 하나였으니, 그림이 스스로 모순이었다. 이제 계산대는
+##   길가 변의 **진짜 칸**을 하나씩 차지하고, 계산 자리(일꾼이 서는 곳)가
+##   그 안쪽 이웃 칸에 짝으로 붙는다.
+##
+##   길 쪽 변은 **오른쪽(↘)과 아래(↙) 둘뿐이다.** 마당은 SHOP_T(길 모서리)에서
+##   길 반대쪽으로 자라므로 위(↗)·왼쪽(↖) 변에는 길이 닿지 않는다 — C를 "길이
+##   오른쪽 위"로 바꾸자는 이야기가 있었으나 격자상 불가능해서 보류했다.
 static func yard(kind: String, n: int) -> Dictionary:
-	var m: int = int(ceil((n - 1) / 2.0))
-	var TR: Array = []
-	var TL: Array = []
-	var BR: Array = []
-	var BL: Array = []
-	for x in range(n):
-		TR.append(Vector2i(x, 0))
-		BL.append(Vector2i(x, n - 1))
-	for y in range(n):
-		TL.append(Vector2i(0, y))
-		BR.append(Vector2i(n - 1, y))
-	var need: int = 2 * (n - 1)
+	var nct: int = n - 2                    # 계산대 수 = 등급 + 1 (마당 크기가 곧 등급)
+	var cts: Array = []
+	var stalls: Array = []
+	var kiln: Vector2i
+	var gate: String
 	if kind == "B":
-		return {"kind": kind, "gate": "x", "kiln": Vector2i(n - 1, 0), "counter": Vector2i(n - 1, m),
-			"stalls": (TL + BL.slice(1)).slice(0, need)}
-	if kind == "C":
-		# ★ 계산대가 (n-1,0) — 뒷담 구석이었다(2026-08-25, 유저가 옹기점에서 잡았다).
-		#   뒤 두 변에는 담이 서는데 계산대가 그 모서리에 붙어 있으니
-		#   "길도 없는 구석에서 어떻게 들어가냐"가 됐다. 길가 변의 가운데로 옮긴다.
-		var cst: Array = (TR + BR.slice(1)).slice(0, need + 1)
-		cst.erase(Vector2i(n - 1, m))
-		return {"kind": kind, "gate": "x", "kiln": Vector2i(0, n - 1), "counter": Vector2i(n - 1, m),
-			"stalls": cst}
-	if kind == "D":
-		return {"kind": kind, "gate": "y", "kiln": Vector2i(0, 0), "counter": Vector2i(m, n - 1),
-			"stalls": (TR.slice(1) + BR.slice(1)).slice(0, need)}
-	return {"kind": "A", "gate": "x", "kiln": Vector2i(0, 0), "counter": Vector2i(n - 1, n - 1),
-		"stalls": (TR.slice(1) + TL.slice(1)).slice(0, need)}
+		# 왼쪽살림 — 살림(가마)이 길가 위쪽에, 매대는 왼담을 따라 늘어선다.
+		kiln = Vector2i(n - 1, 0)
+		gate = "x"
+		for k in range(nct):
+			cts.append(Vector2i(n - 1, 1 + k))
+		for y in range(n):
+			stalls.append(Vector2i(0, y))
+		for x in range(2, n - 1):
+			stalls.append(Vector2i(x, 0))
+		stalls.append(Vector2i(n - 1, n - 1))
+	elif kind == "C":
+		# 길가진열 — 매대가 뒷줄과 길가에 늘어선다. 계산대는 길가 변 가운데부터.
+		kiln = Vector2i(0, n - 1)
+		gate = "x"
+		var m: int = int(ceil((n - 1) / 2.0))
+		for k in range(nct):
+			cts.append(Vector2i(n - 1, mini(m + k, n - 1)))
+		for x in range(n):
+			stalls.append(Vector2i(x, 0))
+		for y in range(1, n):
+			var rc: Vector2i = Vector2i(n - 1, y)
+			if not cts.has(rc):
+				stalls.append(rc)
+		var fill: int = 1
+		while stalls.size() < 2 * (n - 1) and fill < n:
+			stalls.append(Vector2i(0, fill))
+			fill += 1
+	elif kind == "D":
+		# 옆문 — 문(계산대)이 아래 골목으로 났다. 매대는 윗줄과 두 꼭짓점.
+		kiln = Vector2i(0, 0)
+		gate = "y"
+		for k in range(nct):
+			cts.append(Vector2i(1 + k, n - 1))
+		for x in range(1, n):
+			stalls.append(Vector2i(x, 0))
+		for y in range(1, n - 2):
+			stalls.append(Vector2i(0, y))
+		stalls.append(Vector2i(0, n - 1))
+		stalls.append(Vector2i(n - 1, n - 1))
+	else:
+		# A 마주보기 — 가마가 뒤 꼭짓점, 매대가 두 뒷변, 계산대가 길가 세로줄.
+		kiln = Vector2i(0, 0)
+		gate = "x"
+		for k in range(nct):
+			cts.append(Vector2i(n - 1, n - 1 - k))
+		for x in range(1, n):
+			stalls.append(Vector2i(x, 0))
+		for y in range(1, n):
+			stalls.append(Vector2i(0, y))
+	stalls = stalls.slice(0, 2 * (n - 1))
+	# 계산 자리 — 계산대의 **안쪽 이웃 칸**. 길가 변이 세로줄이면 왼쪽 칸,
+	# 아래 골목이면 윗칸이다. 계산대마다 하나씩 짝이 된다.
+	var svs: Array = []
+	for c in cts:
+		svs.append(Vector2i(c.x - 1, c.y) if gate == "x" else Vector2i(c.x, c.y - 1))
+	return {"kind": kind, "gate": gate, "kiln": kiln,
+		"counter": cts[0], "counters": cts, "serve": svs[0], "serves": svs,
+		"stalls": stalls}
 
 ## 작업대 — 가마 바로 안쪽 칸. 점장이 여기서 만든다.
 static func work_spot(y: Dictionary, n: int) -> Vector2i:
@@ -135,18 +180,22 @@ static func work_spot(y: Dictionary, n: int) -> Vector2i:
 ## 무쇠급 가게는 직원을 뽑아도 한 마리도 안 보인다.
 static func staff_spots(y: Dictionary, n: int) -> Array:
 	var wk: Vector2i = work_spot(y, n)
-	var out: Array = []
-	for b in range(1, n - 1):
-		for a in range(1, n - 1):
-			if a == wk.x and b == wk.y:
-				continue
-			out.append(Vector2i(a, b))
+	# 가구가 놓인 칸은 사람이 못 선다. 계산 자리도 뺀다 — 거기 서 있으면
+	# 상자를 건네러 온 일꾼과 겹친다(계산대가 여럿이 되면서 더 자주 겹친다).
 	var taken: Dictionary = {}
 	for t in y.stalls:
 		taken[t] = true
-	taken[y.counter] = true
+	for c in y.counters:
+		taken[c] = true
+	for s in y.serves:
+		taken[s] = true
 	taken[y.kiln] = true
 	taken[wk] = true
+	var out: Array = []
+	for b in range(1, n - 1):
+		for a in range(1, n - 1):
+			if not taken.has(Vector2i(a, b)):
+				out.append(Vector2i(a, b))
 	for b in range(n):
 		for a in range(n):
 			if a > 0 and a < n - 1 and b > 0 and b < n - 1:
@@ -169,31 +218,31 @@ static func foot(sim: Sim, i: int) -> Dictionary:
 	var y: Dictionary = yard(YARD_KIND[i], n)
 	var cc: Vector2 = w(o.x + y.counter.x + 0.5, o.y + y.counter.y + 0.5)
 	var wk: Vector2i = work_spot(y, n)
-	# 계산 자리 — 계산대의 **안쪽 이웃 칸**(9번 계산대면 8번 자리 — 유저).
-	# 예전엔 계산대에서 비스듬히 띄운 허공이었다. 자리는 칸으로 말한다.
-	var ct: Vector2i = y.counter
-	var sv: Vector2i
-	if ct.x == n - 1:
-		sv = Vector2i(n - 2, ct.y)
-	elif ct.x == 0:
-		sv = Vector2i(1, ct.y)
-	elif ct.y == n - 1:
-		sv = Vector2i(ct.x, n - 2)
-	else:
-		sv = Vector2i(ct.x, 1)
+	# 계산대가 여럿이면 **자리도 여럿이다**(2026-08-27). 손님은 계산대마다
+	# 하나씩 서고, 상자를 든 일꾼은 그 손님이 선 계산대의 안쪽 칸으로 간다.
+	var stands: Array = []
+	var serves: Array = []
+	for k in range(y.counters.size()):
+		var ck: Vector2i = y.counters[k]
+		var sk: Vector2i = y.serves[k]
+		stands.append(w(o.x + ck.x + 0.5, o.y + ck.y + 0.5) + GATE_OFF[y.gate])
+		serves.append(w(o.x + sk.x + 0.5, o.y + sk.y + 0.5))
 	return {
 		"n": n, "S": w(o.x + n, o.y + n), "yard": y,
-		"stand": cc + GATE_OFF[y.gate],
+		"stand": cc + GATE_OFF[y.gate], "stands": stands,
 		"work": w(o.x + wk.x + 0.5, o.y + wk.y + 0.5),
-		"serve": w(o.x + sv.x + 0.5, o.y + sv.y + 0.5),
+		"serve": serves[0], "serves": serves,
 	}
 
 ## 줄 k번째가 설 자리. 0번이 계산대 앞, 뒤로 갈수록 길을 따라 물러선다.
+## 계산대가 여럿이면 앞의 몇 사람은 **각 계산대 앞에 나란히** 선다(2026-08-27).
+## 그보다 뒤는 마지막 계산대 뒤로 길을 따라 물러선다.
 static func line_spot(sim: Sim, i: int, k: int) -> Vector2:
 	var f: Dictionary = foot(sim, i)
-	if k == 0:
-		return f.stand
-	return f.stand + LINE_OFF[f.yard.gate] * k
+	var nct: int = (f.stands as Array).size()
+	if k < nct:
+		return f.stands[k]
+	return f.stands[nct - 1] + LINE_OFF[f.yard.gate] * (k - nct + 1)
 
 # ── 길찾기 ──
 # 길칸은 60칸 남짓이라 너비우선탐색이면 충분하다. 길 모양은 절대 안 변하므로

@@ -40,6 +40,35 @@ func _ready() -> void:
 	if OS.has_environment("SHOT_WX"):
 		main.village.wx_override = OS.get_environment("SHOT_WX")
 		main.sim.weather = OS.get_environment("SHOT_WX")
+	# SHOT_OPEN=1 — 가게를 전부 열고 찍는다(2026-08-27). 안 연 가게를 비추면
+	# 빈 풀밭만 찍힌다 — 마당 넷을 눈으로 대보려면 열려 있어야 한다.
+	if OS.has_environment("SHOT_OPEN"):
+		main.sim.money = 1e30
+		for sh1 in Content.SHOPS:
+			if not main.sim.shops.has(String(sh1.id)):
+				main.sim.shops.append(String(sh1.id))
+				main.sim._deal_fur(String(sh1.id))
+				main.sim.items[String(sh1.items[0].id)] = {"lv": 1.0, "stock": 0.0, "prog": 0.0}
+	# SHOT_RANK=0~2 — 모든 가게를 그 등급으로 못 박고 찍는다(2026-08-27).
+	# 2단·3단 마당은 실제로 승급할 때까지 몇 시간이 걸려서, 도구가 영영
+	# 못 보던 화면이었다 — 계산대가 둘·셋 선 마당이 딱 그것이다.
+	if OS.has_environment("SHOT_RANK"):
+		var rk0: int = int(OS.get_environment("SHOT_RANK"))
+		for sh0 in main.sim.shops:
+			main.sim.rank[String(sh0)] = rk0
+			# 그 등급에서 열리는 매대 칸은 전부 열어 둔다 — 빈 칸만 보이면
+			# 마당이 커진 게 화면에서 안 보인다.
+			var cap0: int = main.sim.stall_cap(String(sh0))
+			var seen0: int = 0
+			for it0 in Sim.shop_by_id(String(sh0)).items:
+				seen0 += 1
+				if seen0 > cap0:
+					break
+				if not main.sim.is_open(String(it0.id)):
+					main.sim.items[String(it0.id)] = {"lv": 1.0, "stock": 0.0, "prog": 0.0}
+	# SHOT_GRID=1 — 바닥 칸 번호를 켜고 찍는다(마당 배치 확인용).
+	if OS.has_environment("SHOT_GRID"):
+		main.village.show_grid = OS.get_environment("SHOT_GRID") != "0"
 	# SHOT_SHOP=<가게id> — 그 가게를 가운데 놓고 찍는다. 계산대 자리 같은
 	# 마당 문제는 마을 전경으론 안 보인다 — 도구가 못 비추면 못 잡는다.
 	if OS.has_environment("SHOT_SHOP"):
