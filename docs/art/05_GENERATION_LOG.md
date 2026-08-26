@@ -2208,3 +2208,25 @@
 - 단계·방향별 A~D 몸 중심은 폭 최대 1px, 높이 0px, 중심 최대 0.5px, 접지선 0px 차이다.
 - 필수 방향은 `↘ side`와 `↗ back`뿐이며 반대 방향은 코드 반전을 사용한다.
 - 상태: 실제 144px 비교판 사용자 확인 전까지 `User review`.
+
+---
+
+## LOG-ITEM-CAULDR-RANKS-001 · 가마솥 참쇠·강철 승급판
+
+- 날짜: 2026-08-27
+- 기준: `godot/art/items/cauldr.png`
+- 결과: `godot/art/items/cauldr-1.png`, `godot/art/items/cauldr-2.png`
+- 비교판: `generated/SMITH-ITEMS-RUNTIME-PREVIEW-V0.2.png`
+- 도구: built-in image generation/edit + `tools/fit-item-variant.cjs` + `tools/qa-item-ranks.cjs`
+
+### 수정
+
+- 기본 가마솥의 뚜껑·고리 손잡이·세 발·3/4 실루엣은 그대로 유지했다.
+- 참쇠는 밝고 정돈된 철면, 강철은 짙은 숯빛 강철과 억제된 가장자리 반사로 구분했다.
+- 등급 테두리·마법광·문양은 쓰지 않고 물건 자체의 재료와 마감만 바꿨다.
+- 생성기의 체크 배경은 기준 가마솥의 알파 마스크로 교체해 1~3단의 위치와 실루엣을 정확히 맞췄다.
+
+### 검사
+
+- 대장간 물건 8종 × 3단 24장 모두 `128×224 RGBA`.
+- 같은 품목의 단계별 알파 상자 차이는 최대 6px 이내이며 가마솥은 0px다.

@@ -2281,7 +2281,7 @@
       }))
     ];
 
-    const smithUpgradeIds = new Set(['pick', 'sickle', 'hoe', 'axe', 'shears', 'knife', 'lock']);
+    const smithUpgradeIds = new Set(['pick', 'sickle', 'hoe', 'axe', 'shears', 'knife', 'lock', 'cauldr']);
     const itemUpgradeAssets = assets
       .filter((asset) => asset.c === 'items' && !/-[12]\.png$/.test(asset.file))
       .flatMap((asset) => [2, 3].map((tier) => {

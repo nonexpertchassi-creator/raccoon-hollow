@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 'use strict';
 
-const sharp = require('sharp');
+const sharp = require(process.env.CODEX_NODE_PATH ? `${process.env.CODEX_NODE_PATH}/sharp` : 'sharp');
 const path = require('path');
 
 const output = process.argv[2] || 'docs/art/generated/SMITH-ITEMS-RUNTIME-PREVIEW.png';
-const items = ['pick', 'sickle', 'hoe', 'axe', 'shears', 'knife', 'lock'];
+const items = ['pick', 'sickle', 'hoe', 'axe', 'shears', 'knife', 'lock', 'cauldr'];
 const tileW = 150, tileH = 250;
 
 (async () => {

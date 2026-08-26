@@ -704,8 +704,8 @@
 </table>
 
 <table>
-  <tr><td align="center"><img src="./generated/SMITH-ITEMS-RUNTIME-PREVIEW-V0.1.png" width="760" alt="대장간 물건 7종의 무쇠 참쇠 강철 3단"></td></tr>
-  <tr><td><strong>Generated · LOG-MODULAR-001</strong><br>곡괭이·낫·호미·도끼·가위·부엌칼·자물쇠의 3단 21장. 현실적인 가는 도구를 작은 화면용 도톰한 크레용 실루엣으로 바꿨다.</td></tr>
+  <tr><td align="center"><img src="./generated/SMITH-ITEMS-RUNTIME-PREVIEW-V0.2.png" width="760" alt="대장간 물건 8종의 무쇠 참쇠 강철 3단"></td></tr>
+  <tr><td><strong>Generated · LOG-ITEM-CAULDR-RANKS-001</strong><br>곡괭이·낫·호미·도끼·가위·부엌칼·자물쇠·가마솥의 3단 24장. 가마솥도 다른 판매품과 같이 무쇠 → 참쇠 → 강철의 재료·마감 변화로 통일했다.</td></tr>
 </table>
 
 게임 연결 파일은 `godot/art/hero-body/`, `hero-tail/`, `gear/`, `items/`에 있다.
