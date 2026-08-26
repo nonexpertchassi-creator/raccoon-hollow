@@ -5,6 +5,23 @@
 > 브라우저에서 실제 이미지와 필수 170장 + 선택 110장 카드를 함께 보려면
 > [image-archive.html](./image-archive.html)을 연다. 이 문서는 판단 근거와 텍스트 기록을 보존한다.
 
+## 캐릭터 블루프린트 · 2026-08-26
+
+<table>
+  <tr>
+    <td align="center"><img src="./blueprints/RACCOON-TYPE-A-BLUEPRINT-V0.1-P01.png" width="380" alt="A타입 너구리 사선 네 방향과 신체 외형 블루프린트"></td>
+    <td align="center"><img src="./blueprints/RACCOON-TYPE-A-CLOTHING-GUIDE-V0.1-P01.png" width="380" alt="A타입 너구리 신체 보호선과 의상 배치 블루프린트"></td>
+  </tr>
+  <tr>
+    <td><strong>A타입 신체·외형 기준 · 초안</strong><br>사선 4방향, 실루엣 비율, 얼굴·눌린 발·꼬리 확대와 색상표.</td>
+    <td><strong>A타입 의상 배치 기준 · 초안</strong><br>귀·얼굴·발·꼬리 보호선, 허리선, 앞치마 안전영역과 멜빵 경로.</td>
+  </tr>
+</table>
+
+수치와 다른 종 확장 규칙은 [동물 캐릭터 신체·의상 배치 규격 V0.1](./blueprints/CHARACTER-BODY-SCALE-SPEC-V0.1.md)에 기록한다. 현재 값은 A타입 런타임 PNG를 측정해 시작한 `Hypothesis`이며, 토끼와 까치를 같은 기준선에서 검수한 뒤 확정한다.
+
+---
+
 ## 상태 언어
 
 | 상태 | 뜻 |
@@ -693,3 +710,37 @@
 
 게임 연결 파일은 `godot/art/hero-body/`, `hero-tail/`, `gear/`, `items/`에 있다.
 사용자 화면 승인 전까지 새 런타임 파생본과 대장간 장비·물건은 `초안`이다.
+
+---
+
+## 대장간 일꾼 완성형 A~D · 1~3단 × 대각선 4방향 · 2026-08-26
+
+장비를 붙이는 구조는 중단했다. 대장간 일꾼은 A~D 무늬 타입별 완성형이며, 최초 배치와 추가 채용을 같은 그림 체계로 쓴다. 손 도구 없이 앞치마만 승급한다. 열 순서는 `↙ ↘ ↖ ↗`, 행 순서는 1~3단이다.
+
+<table>
+  <tr>
+    <td align="center"><img src="./generated/CLERK-SMITH-TYPE-A-GROWTH-DIAGONALS-V0.1-P01.png" width="360" alt="대장간 점장 A타입 1~3단 대각선 네 방향"></td>
+    <td align="center"><img src="./generated/CLERK-SMITH-TYPE-B-GROWTH-DIAGONALS-V0.1-P01.png" width="360" alt="대장간 점장 B타입 1~3단 대각선 네 방향"></td>
+  </tr>
+  <tr>
+    <td><strong>A타입 · 초안</strong><br>황토색 면 → 갈색 가죽 → 멜빵형 가죽 앞치마.</td>
+    <td><strong>B타입 · 초안</strong><br>같은 승급 규칙, B타입 비대칭 털 무늬.</td>
+  </tr>
+  <tr>
+    <td align="center"><img src="./generated/CLERK-SMITH-TYPE-C-GROWTH-DIAGONALS-V0.1-P01.png" width="360" alt="대장간 점장 C타입 1~3단 대각선 네 방향"></td>
+    <td align="center"><img src="./generated/CLERK-SMITH-TYPE-D-GROWTH-DIAGONALS-V0.1-P01.png" width="360" alt="대장간 점장 D타입 1~3단 대각선 네 방향"></td>
+  </tr>
+  <tr>
+    <td><strong>C타입 · 초안</strong><br>손에 든 물건 없이 앞치마 재료만 성장.</td>
+    <td><strong>D타입 · 초안</strong><br>런타임 분리 전 전체 실루엣 검토 시트.</td>
+  </tr>
+</table>
+
+<strong>Generated · LOG-SMITH-COMPLETE-001</strong><br>가까운 `↙`·`↘` 두 방향의 좌우 판독을 한 차례 더 강화한 뒤 144×144 RGBA 게임용 파일로 파생한다. 기존 본체·꼬리·장비 스티커 자료는 비교용 이전안으로만 보존한다.
+
+### 런타임 24장 분리
+
+<table>
+  <tr><td align="center"><img src="./generated/SMITH-CLERK-RUNTIME-24-PREVIEW-V0.1.png" width="900" alt="대장간 일꾼 A D 무늬 1 3단 옆 뒤 런타임 24장"></td></tr>
+  <tr><td><strong>Generated · LOG-SMITH-COMPLETE-002</strong><br>A~D 각 행에서 1단 옆·뒤 → 2단 옆·뒤 → 3단 옆·뒤 순서다. ↘ 원화는 side, ↗ 원화는 back이며 반대쪽은 코드가 뒤집는다. 각 파일은 144×144 RGBA이며 발끝 아래 변·가로 정중앙 규칙을 통과했다.</td></tr>
+</table>
