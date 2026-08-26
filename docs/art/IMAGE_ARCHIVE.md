@@ -720,8 +720,8 @@
 </table>
 
 <table>
-  <tr><td align="center"><img src="../../godot/art/counters/smith.png" width="168" alt="대장간 나무 계산대"></td></tr>
-  <tr><td><strong>Generated · LOG-COUNTER-SMITH-001</strong><br>168×144 RGBA. 오른쪽 아래를 향한 넓은 판매면과 중앙 철 보강띠만 남기고 상판은 판매품·효과를 위해 비웠다.</td></tr>
+  <tr><td align="center"><img src="./generated/COUNTERS-RUNTIME-PREVIEW-V0.1.png" width="240" alt="실제 게임 크기의 대장간과 필방 계산대 비교"></td></tr>
+  <tr><td><strong>Generated · LOG-COUNTER-SMITH-001 · LOG-COUNTER-BRUSH-001</strong><br>두 장 모두 168×144 RGBA, 실제 표시 84×72. 대장간은 중앙 철 보강띠, 필방은 한지 상판과 얕은 서랍만으로 가게를 구분하며 판매면은 오른쪽 아래를 향한다.</td></tr>
 </table>
 
 게임 연결 파일은 `godot/art/hero-body/`, `hero-tail/`, `gear/`, `items/`에 있다.

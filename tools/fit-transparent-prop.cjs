@@ -47,7 +47,7 @@ async function normalizedInput() {
   if (maxX < 0) throw new Error('no visible pixels');
   const fitted = await sharp(normalized)
     .extract({ left: minX, top: minY, width: maxX - minX + 1, height: maxY - minY + 1 })
-    .resize(maxW, maxH, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .resize({ width: maxW, height: maxH, fit: 'inside' })
     .png()
     .toBuffer();
   const meta = await sharp(fitted).metadata();
@@ -56,7 +56,7 @@ async function normalizedInput() {
   await sharp({
     create: { width: canvasW, height: canvasH, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
   }).composite([{ input: fitted, left, top }]).png().toFile(output);
-  console.log(`${output}: ${canvasW}x${canvasH}, fitted within ${maxW}x${maxH}`);
+  console.log(`${output}: ${canvasW}x${canvasH}, visible ${meta.width}x${meta.height}, bottom ${bottomMargin}px`);
 })().catch((error) => {
   console.error(error.message || error);
   process.exit(1);

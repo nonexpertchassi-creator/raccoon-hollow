@@ -2272,11 +2272,15 @@
         file: `${id}-${tier}.png`, icon, size: '512×768', status: 'none', optional: tier > 1
       }))),
       ...shopCatalog.map(({ id, name, icon }) => {
-        const made = id === 'smith';
+        const made = id === 'smith' || id === 'brush';
+        const actualById = {
+          smith: '168×144 RGBA · 오른쪽 아래를 향한 넓은 판매면 · 중앙 철 보강띠',
+          brush: '168×144 RGBA · 오른쪽 아래를 향한 넓은 판매면 · 한지 상판과 얕은 서랍'
+        };
         return {
           c: 'counters', shop: name, label: `${name} 계산대`, file: `${id}.png`, icon,
           size: '168×144', status: made ? 'draft' : 'none', optional: true,
-          actual: made ? '168×144 RGBA · 오른쪽 아래를 향한 넓은 판매면 · 중앙 철 보강띠' : undefined,
+          actual: made ? actualById[id] : undefined,
           src: made ? `../../godot/art/counters/${id}.png` : undefined,
           path: made ? `godot/art/counters/${id}.png` : undefined
         };

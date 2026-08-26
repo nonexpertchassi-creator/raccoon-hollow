@@ -2270,6 +2270,24 @@
 
 ---
 
+## LOG-COUNTER-BRUSH-001 · 필방 계산대
+
+- 날짜: 2026-08-27
+- 게임 파일: `godot/art/counters/brush.png`
+- 비교판: `generated/COUNTERS-RUNTIME-PREVIEW-V0.1.png`
+- 규격: `168×144 RGBA`, 실제 표시 `84×72`
+- 도구: built-in image generation + `tools/fit-transparent-prop.cjs`
+- 결과: `Generated / Draft`
+
+### 판정
+
+- 대장간 계산대와 같은 화면 크기·시점·외곽선 굵기를 유지하면서 한지 상판과 얕은 서랍 두 칸으로 필방을 구분했다.
+- 넓은 판매면은 화면 오른쪽 아래를 향하고 좌우 반전 때 문제가 될 비대칭 소품은 넣지 않았다.
+- 실제 84×72 비교에서 한지 상판이 먼저 읽히며 붓·먹·벼루·동전·주판·글자·UI와 바닥 그림자는 없다.
+- 외곽 알파 상자는 164×87이고 아래 여백은 4px다.
+
+---
+
 ## LOG-KILN-SMITH-001 · 대장간 풀무·화덕
 
 - 날짜: 2026-08-27
