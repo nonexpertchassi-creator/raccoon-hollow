@@ -2132,30 +2132,37 @@
         const file = `smith-${type.toLowerCase()}-${direction}${suffix}.png`;
         return {
           c: 'clerks', shop: '대장간',
-          label: `대장간 일꾼 · ${tier}단 · ${type}무늬 · ${directionLabel}`,
+          label: `대장간 점장 · ${tier}단 · ${type}무늬 · ${directionLabel}`,
           file, icon: '🦝', size: '144×144', priority: 0,
-          actual: `${tier}단 앞치마 · ${direction === 'side' ? '↘ 원화, 반대쪽은 코드 반전' : '↗ 원화, 위쪽 이동'} · ${type === 'A' ? 'QA 보류: 크기 복원' : type === 'B' ? 'QA 보류: 크기·하이앵글 시점' : type === 'C' ? 'QA 보류: 크기·3단 side 꼬리 누락' : 'QA 보류: 크기·눈·톤 통일'}`,
+          actual: `${tier}단 앞치마 · ${direction === 'side' ? '↘ 원화, 반대쪽은 코드 반전' : '↗ 원화, 위쪽 이동'} · A 기준 몸 중심 정규화 · 24장 자동 QA 통과${type === 'D' ? ' · 저채도 한지 베이지' : ''}`,
           status: 'draft',
           src: `../../godot/art/clerks/${file}`,
           path: `godot/art/clerks/${file}`
         };
       }))),
 
-      ...[['A', 'P03'], ['B', 'P04'], ['C', 'P03'], ['D', 'P08']].map(([type, revision]) => {
-        const runtimeOnly = type === 'D';
+      ...[['A', 'P01'], ['B', 'P01'], ['C', 'P02'], ['D', 'P02']].map(([type, revision]) => {
         return {
           c: 'clerks', shop: '대장간', archive: true,
-          label: `대장간 일꾼 완성형 원화 · ${type}타입 · 1~3단 × ${runtimeOnly ? '실사용 2방향' : '대각선 검토 원화'}`,
-          file: `CLERK-SMITH-TYPE-${type}-GROWTH-DIAGONALS-V0.1-${revision}.png`, icon: '🦝',
+          label: `대장간 점장 완성형 원화 · ${type}타입 · 1~3단 × 실사용 2방향`,
+          file: `CLERK-SMITH-TYPE-${type}-GROWTH-RUNTIME-DIRECTIONS-V0.1-${revision}.png`, icon: '🦝',
           size: '승급·방향 원화',
-          actual: runtimeOnly
-            ? '1536×1024 RGBA · 귀 무늬·점박이 제거 · 1단 황토색 면 / 2단 갈색 가죽 / 3단 멜빵형 가죽 앞치마 · ↘ ↗'
-            : '1536×1024 RGBA 검토 시트 · 귀·발·몸 중심 블루프린트 정렬 · 런타임은 ↘ ↗ 두 방향만 사용',
+          actual: `1단 황토색 면 / 2단 갈색 가죽 / 3단 멜빵형 가죽 앞치마 · ↘ side / ↗ back · A 기준 몸 중심${type === 'D' ? ' · 저채도 한지 베이지' : ''}`,
           status: 'draft', priority: 10,
-          src: `generated/CLERK-SMITH-TYPE-${type}-GROWTH-DIAGONALS-V0.1-${revision}.png`,
-          path: `docs/art/generated/CLERK-SMITH-TYPE-${type}-GROWTH-DIAGONALS-V0.1-${revision}.png`
+          src: `generated/CLERK-SMITH-TYPE-${type}-GROWTH-RUNTIME-DIRECTIONS-V0.1-${revision}.png`,
+          path: `docs/art/generated/CLERK-SMITH-TYPE-${type}-GROWTH-RUNTIME-DIRECTIONS-V0.1-${revision}.png`
         };
       }),
+
+      {
+        c: 'clerks', shop: '대장간', archive: true,
+        label: '대장간 점장 A~D · 1~3단 · 실사용 24장 비교판',
+        file: 'SMITH-CLERK-RUNTIME-24-PREVIEW-V0.4.png', icon: '🦝', size: '144px 비교판',
+        actual: 'A~D 몸 중심 폭 차이 최대 1px · 높이 0px · 중심 최대 0.5px · 접지선 0px · 사용자 확인 대기',
+        status: 'draft', priority: 9,
+        src: 'generated/SMITH-CLERK-RUNTIME-24-PREVIEW-V0.4.png',
+        path: 'docs/art/generated/SMITH-CLERK-RUNTIME-24-PREVIEW-V0.4.png'
+      },
 
       {
         c: 'clerks', legacy: true, label: '이전 레이어형 점장 본체 · A타입 무늬 · 방향 시트',
@@ -2293,7 +2300,7 @@
     const categoryName = {
       story: '첫 진입 만화', hero: '촌장·공용 인물', staff: '직원', items: '물건', guests: '손님', cards: '손님 카드',
       shopcards: '점장 카드', pests: '상호작용', stalls: '좌판', counters: '계산대',
-      kilns: '가마·풀무', ui: '뽑기·룰렛', clerks: '가게별 일꾼'
+      kilns: '가마·풀무', ui: '뽑기·룰렛', clerks: '가게별 점장'
     };
     const categoryDir = {
       story: 'story', hero: 'hero', staff: 'staff', items: 'items', guests: 'guests', cards: 'cards',

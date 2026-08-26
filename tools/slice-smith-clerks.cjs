@@ -7,14 +7,18 @@ const sharp = require(process.env.CODEX_NODE_PATH ? `${process.env.CODEX_NODE_PA
 const root = path.resolve(__dirname, '..');
 const sourceDir = path.join(root, 'docs/art/generated');
 const outputDir = path.join(root, 'godot/art/clerks');
-const previewPath = path.join(sourceDir, 'SMITH-CLERK-RUNTIME-24-PREVIEW-V0.3.png');
+const previewPath = path.join(sourceDir, 'SMITH-CLERK-RUNTIME-24-PREVIEW-V0.4.png');
 const types = ['a', 'b', 'c', 'd'];
-const sourceRevision = { a: 'P03', b: 'P04', c: 'P03', d: 'P08' };
-// The source sheet keeps all four diagonals for art review. Runtime only needs
-// the two right-facing masters; Godot mirrors them for left-facing movement.
+const sourceFiles = {
+  a: 'CLERK-SMITH-TYPE-A-GROWTH-RUNTIME-DIRECTIONS-V0.1-P01.png',
+  b: 'CLERK-SMITH-TYPE-B-GROWTH-RUNTIME-DIRECTIONS-V0.1-P01.png',
+  c: 'CLERK-SMITH-TYPE-C-GROWTH-RUNTIME-DIRECTIONS-V0.1-P02.png',
+  d: 'CLERK-SMITH-TYPE-D-GROWTH-RUNTIME-DIRECTIONS-V0.1-P02.png',
+};
+// Only the two right-facing masters are produced. Godot mirrors them for left-facing movement.
 const directions = [
-  { column: 1, name: 'side' }, // down-right
-  { column: 3, name: 'back' }, // up-right
+  { column: 0, name: 'side', targetWidth: 110, targetHeight: 134 }, // down-right
+  { column: 1, name: 'back', targetWidth: 97, targetHeight: 130 }, // up-right
 ];
 const canvas = 144;
 
@@ -56,14 +60,19 @@ function clearConnectedBackground(rgb, width, height) {
     if (y + 1 < height) enqueue(index + width);
   }
 
-  // The generated checker sometimes leaves tiny enclosed neutral islands.
-  // Keep only the largest connected foreground component: the complete character.
+  // The generated checker sometimes leaves enclosed neutral islands. Keep every
+  // component containing real colored ink so a detached tail or hand cannot vanish.
   const visited = new Uint8Array(count);
   const keep = new Uint8Array(count);
-  let largest = [];
+  const keptComponents = [];
   for (let start = 0; start < count; start += 1) {
     if (seen[start] || visited[start]) continue;
     const component = [];
+    let ink = 0;
+    let componentMinX = width;
+    let componentMinY = height;
+    let componentMaxX = -1;
+    let componentMaxY = -1;
     head = 0;
     tail = 0;
     visited[start] = 1;
@@ -71,8 +80,16 @@ function clearConnectedBackground(rgb, width, height) {
     while (head < tail) {
       const index = queue[head++];
       component.push(index);
+      const pixel = index * 3;
       const x = index % width;
       const y = Math.floor(index / width);
+      if (!isBackground(rgb[pixel], rgb[pixel + 1], rgb[pixel + 2])) {
+        ink += 1;
+        componentMinX = Math.min(componentMinX, x);
+        componentMinY = Math.min(componentMinY, y);
+        componentMaxX = Math.max(componentMaxX, x);
+        componentMaxY = Math.max(componentMaxY, y);
+      }
       const visit = (next) => {
         if (seen[next] || visited[next]) return;
         visited[next] = 1;
@@ -83,9 +100,17 @@ function clearConnectedBackground(rgb, width, height) {
       if (y > 0) visit(index - width);
       if (y + 1 < height) visit(index + width);
     }
-    if (component.length > largest.length) largest = component;
+    if (ink >= 12) {
+      for (const index of component) keep[index] = 1;
+      keptComponents.push({
+        ink,
+        left: componentMinX,
+        top: componentMinY,
+        width: componentMaxX - componentMinX + 1,
+        height: componentMaxY - componentMinY + 1,
+      });
+    }
   }
-  for (const index of largest) keep[index] = 1;
 
   const rgba = Buffer.alloc(count * 4);
   let minX = width;
@@ -109,7 +134,12 @@ function clearConnectedBackground(rgb, width, height) {
     }
   }
   if (maxX < 0 || maxY < 0) throw new Error('No foreground found in cell');
-  return { rgba, box: { left: minX, top: minY, width: maxX - minX + 1, height: maxY - minY + 1 } };
+  const bodyBox = keptComponents.sort((a, b) => b.ink - a.ink)[0];
+  return {
+    rgba,
+    bodyBox,
+    box: { left: minX, top: minY, width: maxX - minX + 1, height: maxY - minY + 1 },
+  };
 }
 
 async function main() {
@@ -117,21 +147,19 @@ async function main() {
   const cells = [];
 
   for (const type of types) {
-    const input = path.join(sourceDir, `CLERK-SMITH-TYPE-${type.toUpperCase()}-GROWTH-DIAGONALS-V0.1-${sourceRevision[type]}.png`);
+    const input = path.join(sourceDir, sourceFiles[type]);
     const image = sharp(input).removeAlpha();
     const meta = await image.metadata();
-    if (meta.width !== 1536 || meta.height !== 1024) throw new Error(`Unexpected sheet size: ${input}`);
+    if (!meta.width || !meta.height) throw new Error(`Unexpected sheet size: ${input}`);
+    const cellWidth = Math.floor(meta.width / 2);
 
-    const sourceColumns = type === 'd' ? 2 : 4;
-    const sourceDirections = type === 'd'
-      ? [{ column: 0, name: 'side' }, { column: 1, name: 'back' }]
-      : directions;
     for (let rank = 0; rank < 3; rank += 1) {
       const top = Math.round(rank * meta.height / 3);
       const bottom = Math.round((rank + 1) * meta.height / 3);
-      for (const direction of sourceDirections) {
-        const cellWidth = meta.width / sourceColumns;
-        const left = direction.column * cellWidth;
+      for (const direction of directions) {
+        // Generated sheets may contain a one-pixel center seam. Discard it
+        // instead of shifting the right-facing cell off its visual center.
+        const left = direction.column === 0 ? 0 : meta.width - cellWidth;
         const { data, info } = await sharp(input)
           .removeAlpha()
           .extract({ left, top, width: cellWidth, height: bottom - top })
@@ -143,22 +171,57 @@ async function main() {
     }
   }
 
-  const maxWidth = Math.max(...cells.map((cell) => cell.box.width));
-  const maxHeight = Math.max(...cells.map((cell) => cell.box.height));
-  const scale = Math.min(134 / maxWidth, 140 / maxHeight);
   const preview = [];
+  const bodyTargets = new Map();
+
+  for (const cell of cells.filter((entry) => entry.type === 'a')) {
+    const direction = directions.find((entry) => entry.name === cell.direction);
+    bodyTargets.set(`${cell.rank}:${cell.direction}`, {
+      width: cell.bodyBox.width * direction.targetWidth / cell.box.width,
+      height: cell.bodyBox.height * direction.targetHeight / cell.box.height,
+    });
+  }
 
   for (const cell of cells) {
-    const width = Math.max(1, Math.round(cell.box.width * scale));
-    const height = Math.max(1, Math.round(cell.box.height * scale));
+    const target = bodyTargets.get(`${cell.rank}:${cell.direction}`);
+    const scaleX = target.width / cell.bodyBox.width;
+    const scaleY = target.height / cell.bodyBox.height;
+    const width = Math.round(cell.box.width * scaleX);
+    const height = Math.round(cell.box.height * scaleY);
+    const bodyLeft = Math.round((cell.bodyBox.left - cell.box.left) * scaleX);
+    const bodyTop = Math.round((cell.bodyBox.top - cell.box.top) * scaleY);
+    const bodyWidth = Math.round(cell.bodyBox.width * scaleX);
+    const bodyHeight = Math.round(cell.bodyBox.height * scaleY);
     const cropped = await sharp(cell.rgba, { raw: { width: cell.width, height: cell.height, channels: 4 } })
       .extract(cell.box)
       .resize(width, height, { fit: 'fill', kernel: sharp.kernel.lanczos3 })
       .png()
       .toBuffer();
-    const sprite = await sharp({
-      create: { width: canvas, height: canvas, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
-    }).composite([{ input: cropped, left: Math.floor((canvas - width) / 2), top: canvas - height }]).png().toBuffer();
+    const left = Math.round(canvas / 2 - bodyLeft - bodyWidth / 2);
+    const top = canvas - bodyTop - bodyHeight;
+    const margin = canvas;
+    if (
+      width > canvas * 3 || height > canvas * 3 ||
+      left + margin < 0 || top + margin < 0 ||
+      left + margin + width > canvas * 3 || top + margin + height > canvas * 3
+    ) {
+      throw new Error(`Invalid crop ${cell.type}${cell.rank}-${cell.direction}: ${width}x${height} at ${left},${top}; body ${cell.bodyBox.width}x${cell.bodyBox.height}`);
+    }
+    const staged = await sharp({
+      create: {
+        width: canvas + margin * 2,
+        height: canvas + margin * 2,
+        channels: 4,
+        background: { r: 0, g: 0, b: 0, alpha: 0 },
+      },
+    })
+      .composite([{ input: cropped, left: left + margin, top: top + margin }])
+      .png()
+      .toBuffer();
+    const sprite = await sharp(staged)
+      .extract({ left: margin, top: margin, width: canvas, height: canvas })
+      .png()
+      .toBuffer();
     const suffix = cell.rank === 0 ? '' : `-${cell.rank}`;
     const filename = `smith-${cell.type}-${cell.direction}${suffix}.png`;
     fs.writeFileSync(path.join(outputDir, filename), sprite);
@@ -174,7 +237,7 @@ async function main() {
   }).composite(preview).png().toFile(previewPath);
 
   console.log(`Wrote ${cells.length} sprites to ${path.relative(root, outputDir)}`);
-  console.log(`Shared scale ${scale.toFixed(4)} from max foreground ${maxWidth}x${maxHeight}`);
+  console.log('Normalized A-D by A core-body geometry; detached tails do not shrink the body');
   console.log(`Preview ${path.relative(root, previewPath)}`);
 }
 

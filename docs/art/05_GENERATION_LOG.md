@@ -2184,3 +2184,27 @@
 - A~C는 컨셉 통과를 유지하지만 현재 런타임 크기는 통과가 아니다.
 - D는 연황색·단순 얼굴 마스크·큰 등판 면·단색 꼬리 끝 컨셉만 유지하고 A 신체 비율로 다시 맞춘다.
 - 다음 원화 수정 전까지 현재 24장은 비교용 초안으로만 사용한다.
+
+---
+
+## LOG-SMITH-COMPLETE-006 · A 신체 기준 24장 재정규화와 D 저채도 수정
+
+- 날짜: 2026-08-27
+- 실사용 원화: A·B `RUNTIME-DIRECTIONS P01`, C·D `RUNTIME-DIRECTIONS P02`
+- 런타임 미리보기: `generated/SMITH-CLERK-RUNTIME-24-PREVIEW-V0.4.png`
+- 도구: built-in image generation/edit + `tools/slice-smith-clerks.cjs` + `tools/qa-smith-clerks.cjs`
+- 결과: `Revised / User review`
+
+### 수정
+
+- A의 눈·귀·몸통·발·카메라를 기준 신체로 고정하고 B~D는 털색·큰 무늬·앞치마만 바꿨다.
+- B의 하이앵글 시점을 제거했고 C의 분리된 꼬리를 전 단계에서 보존했다.
+- D의 고채도 연황색을 탁한 한지·볏짚 베이지로 낮추고 작은 A형 눈과 짧은 귀를 적용했다.
+- 전체 외곽이 아니라 몸 중심을 A에 맞춰, 떨어진 꼬리의 간격이 캐릭터 몸 크기를 바꾸지 않게 했다.
+
+### 검사
+
+- 24/24장 `144×144 RGBA`.
+- 단계·방향별 A~D 몸 중심은 폭 최대 1px, 높이 0px, 중심 최대 0.5px, 접지선 0px 차이다.
+- 필수 방향은 `↘ side`와 `↗ back`뿐이며 반대 방향은 코드 반전을 사용한다.
+- 상태: 실제 144px 비교판 사용자 확인 전까지 `User review`.

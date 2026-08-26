@@ -713,26 +713,26 @@
 
 ---
 
-## 대장간 일꾼 완성형 A~D · 1~3단 · 2026-08-26
+## 대장간 점장 완성형 A~D · 1~3단 · 2026-08-27
 
-장비를 붙이는 구조는 중단했다. 대장간 일꾼은 A~D 무늬 타입별 완성형이며, 최초 배치와 추가 채용을 같은 그림 체계로 쓴다. 손 도구 없이 앞치마만 승급한다. 런타임 필수 원화는 `↘ ↗` 두 방향이며 반대쪽은 코드 반전을 사용한다. A~C의 네 방향 판은 기존 검토 원화로 보존하고, 재설계한 D부터 두 방향만 제작한다.
+장비를 붙이는 구조와 점장·일꾼 이미지 분리는 중단했다. 대장간 너구리는 A~D 무늬 타입별 완성형이며 손 도구 없이 앞치마만 승급한다. 런타임 필수 원화는 `↘ side`·`↗ back` 두 방향이며 반대쪽은 코드 반전을 사용한다. A 신체를 기준으로 B~D의 눈·귀·몸·발을 통일했고 D는 개나리색 대신 저채도 한지·볏짚 베이지를 쓴다.
 
 <table>
   <tr>
-    <td align="center"><img src="./generated/CLERK-SMITH-TYPE-A-GROWTH-DIAGONALS-V0.1-P03.png" width="360" alt="대장간 점장 A타입 1~3단 대각선 차렷자세 수정본"></td>
-    <td align="center"><img src="./generated/CLERK-SMITH-TYPE-B-GROWTH-DIAGONALS-V0.1-P04.png" width="360" alt="대장간 점장 B타입 1~3단 대각선 차렷자세와 귀 수정본"></td>
+    <td align="center"><img src="./generated/CLERK-SMITH-TYPE-A-GROWTH-RUNTIME-DIRECTIONS-V0.1-P01.png" width="360" alt="대장간 점장 A타입 1~3단 실사용 두 방향 기준판"></td>
+    <td align="center"><img src="./generated/CLERK-SMITH-TYPE-B-GROWTH-RUNTIME-DIRECTIONS-V0.1-P01.png" width="360" alt="대장간 점장 B타입 1~3단 A 신체 기준 시점 수정본"></td>
   </tr>
   <tr>
-    <td><strong>A타입 · 초안</strong><br>황토색 면 → 갈색 가죽 → 멜빵형 가죽 앞치마.</td>
-    <td><strong>B타입 · 초안</strong><br>같은 승급 규칙, B타입 비대칭 털 무늬.</td>
+    <td><strong>A타입 · 기준</strong><br>황토색 면 → 갈색 가죽 → 멜빵형 가죽 앞치마.</td>
+    <td><strong>B타입 · 수정</strong><br>A와 같은 눈 높이·몸 크기, 회색 비대칭 등 무늬.</td>
   </tr>
   <tr>
-    <td align="center"><img src="./generated/CLERK-SMITH-TYPE-C-GROWTH-DIAGONALS-V0.1-P03.png" width="360" alt="대장간 점장 C타입 1~3단 대각선 차렷자세 수정본"></td>
-    <td align="center"><img src="./generated/CLERK-SMITH-TYPE-D-GROWTH-DIAGONALS-V0.1-P08.png" width="360" alt="대장간 점장 D타입 1~3단 실제 사용 방향 ↘ ↗ 재설계본"></td>
+    <td align="center"><img src="./generated/CLERK-SMITH-TYPE-C-GROWTH-RUNTIME-DIRECTIONS-V0.1-P02.png" width="360" alt="대장간 점장 C타입 1~3단 꼬리 보존 수정본"></td>
+    <td align="center"><img src="./generated/CLERK-SMITH-TYPE-D-GROWTH-RUNTIME-DIRECTIONS-V0.1-P02.png" width="360" alt="대장간 점장 D타입 1~3단 저채도 한지 베이지 수정본"></td>
   </tr>
   <tr>
-    <td><strong>C타입 · 초안</strong><br>손에 든 물건 없이 앞치마 재료만 성장.</td>
-    <td><strong>D타입 · 초안</strong><br>귀 무늬·점박이를 없앤 연황색 몸, 단순 얼굴 마스크, 큰 등판 한 면, 단색 꼬리 끝. 열은 `↘ ↗`만 사용.</td>
+    <td><strong>C타입 · 수정</strong><br>A와 같은 몸 중심, 분리된 꼬리를 세 단계 모두 보존.</td>
+    <td><strong>D타입 · 수정</strong><br>귀 무늬·점박이 없는 한지 베이지 몸, 단순 얼굴 마스크, 등판 한 면, 단색 꼬리 끝.</td>
   </tr>
 </table>
 
@@ -741,6 +741,6 @@
 ### 런타임 24장 분리
 
 <table>
-  <tr><td align="center"><img src="./generated/SMITH-CLERK-RUNTIME-24-PREVIEW-V0.3.png" width="900" alt="차렷자세 발 크기 귀 무늬를 수정한 대장간 점장 A D 무늬 1 3단 옆 뒤 런타임 24장"></td></tr>
-  <tr><td><strong>Hold · LOG-SMITH-COMPLETE-005</strong><br>24장 모두 144×144 RGBA, 발끝 y=143, 중심 오차 1px 이내라는 기계 검사는 통과했지만 신체 크기·눈·시점·꼬리 보존 검사는 실패했다. A~C는 작고 D는 크며, D 눈은 A보다 크고 B 얼굴은 아래로 내려가 있다. C 3단 side 꼬리도 파생 중 누락됐다. 현재 파일은 비교용 초안이며 재정규화 전 최종 승인하지 않는다.</td></tr>
+  <tr><td align="center"><img src="./generated/SMITH-CLERK-RUNTIME-24-PREVIEW-V0.4.png" width="900" alt="A 신체 기준으로 크기와 시점을 통일한 대장간 점장 A D 타입 1 3단 옆 뒤 런타임 24장"></td></tr>
+  <tr><td><strong>User review · LOG-SMITH-COMPLETE-006</strong><br>24장 모두 144×144 RGBA. A~D 몸 중심 차이는 폭 최대 1px, 높이 0px, 중심 최대 0.5px, 접지선 0px다. B 하이앵글과 C 꼬리 누락을 수정했고 D는 저채도 한지·볏짚 베이지로 변경했다.</td></tr>
 </table>
