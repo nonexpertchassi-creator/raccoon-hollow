@@ -1063,6 +1063,27 @@ func _new_quest(rng: Rng) -> Variant:
 	_ev("%s마을에서 %s %s개를 청했다" % [_guest_by_id[gid].name, item_name(item_id), str(int(need))], "quest")
 	return q2
 
+## 이 물건으로 채워야 할 의뢰 물량이 얼마나 남았나(2026-08-27).
+func _quest_rem(item_id: String) -> float:
+	var s2: float = 0.0
+	for q in quests:
+		if String(q.itemId) == item_id and not bool(q.get("done", false)):
+			s2 += max(0.0, float(q.need) - float(q.got))
+	return s2
+
+## 만든 물건 한 개를 의뢰에 넣는다. 넣었으면 참.
+func _quest_put(item_id: String) -> bool:
+	for q in quests:
+		if String(q.itemId) != item_id or bool(q.get("done", false)):
+			continue
+		q.got += 1.0
+		bump("quest.made")
+		if q.got >= float(q.need):
+			q["done"] = true
+			_ev("%s마을 의뢰를 다 만들었다 — 눌러서 보상을 받으시오" % _guest_by_id[String(q.gid)].name, "quest")
+		return true
+	return false
+
 func _quest_gain(gid: String, item_id: String, n: float) -> void:
 	var q: Variant = null
 	for x in quests:
@@ -1099,6 +1120,7 @@ func claim_quest(qid: float) -> bool:
 	var coin: float = floor(price(String(q.itemId)) * q.need * Content.QUEST.payMul)
 	money += coin
 	revenue += coin
+	bump("coin.quest", coin)          # 지표 — 의뢰가 번 몫(판매와 갈라 본다)
 	if auto:
 		_purse += coin * Content.AUTO_SHARE
 	gems += q.gems
@@ -1201,16 +1223,22 @@ func tick(dt: float, rng: Rng) -> Dictionary:
 		# ★ 미리 만들지 않는다(2026-08-26, 유저) — **주문된 것만** 만든다.
 		#   재고라는 개념이 사라졌다: 주문한다 → 만든다 → 들고 간다 → 판다.
 		var first: Array = []
+		var second: Array = []
 		for it in shop_by_id(String(sh)).items:
 			var cid: String = String(it.id)
 			if not items.has(cid):
 				continue
 			if _order_rem(cid) > 0.0:
 				first.append(cid)
+			elif _quest_rem(cid) > 0.0:
+				# ★ 의뢰 물량은 **손님 주문 다음**이다(2026-08-27, 유저).
+				#   손님은 눈앞에서 기다리고 의뢰는 기한이 길다 — 급한 쪽 먼저.
+				#   이 줄 덕에 "노는 너구리"에게 할 일이 생긴다(지표 hand.idle).
+				second.append(cid)
 		# ★ 손도 끈끈하다 — 잡은 물건을 다 채울 때까지 안 놓는다. 매 틱
 		#   우선순위대로 다시 잡게 했더니 손이 매대 사이를 쉴 새 없이 갈아타며
 		#   걷는 값(walk)만 내다 4시간 매출이 반토막 났다(319M — 재서 잡았다).
-		var pool: Array = first
+		var pool: Array = first + second
 		var line2: Array = []
 		for id0 in _prevCraft:
 			if pool.has(id0) and line2.size() < hands and items.has(String(id0)) \
@@ -1235,9 +1263,15 @@ func tick(dt: float, rng: Rng) -> Dictionary:
 				continue                     # 아직 걸어가는 중 — 손은 찼지만 진행은 없다
 			st.prog += dt * speed
 			var need: float = craft_time(id)
-			while st.prog >= need and _order_rem(id) > 0.0:
+			while st.prog >= need and (_order_rem(id) > 0.0 or _quest_rem(id) > 0.0):
 				st.prog -= need
-				_give_to_order(id)
+				if not _give_to_order(id):
+					_quest_put(id)
+		# 지표(2026-08-27) — **손이 논 시간.** 한 매대엔 한 손이라, 같은 물건
+		# 주문이 겹치면 남는 너구리가 갈 곳이 없다. 얼마나 잦은지는 짐작이
+		# 아니라 이 숫자로 판단한다(의뢰를 생산으로 채우면 줄어야 한다).
+		bump("hand.work", dt * float(used))
+		bump("hand.idle", dt * float(hands - used))
 
 	# 손을 댄 지 얼마나 됐나 — regrip 유예의 시계
 	for rid in _recent.keys():
@@ -1259,6 +1293,11 @@ func tick(dt: float, rng: Rng) -> Dictionary:
 					if arrived_orders_of(sh0) - 1 >= order_slots(sh0):
 						o["passed"] = true
 						_passed.append(int(o.id))
+						# 지표(2026-08-27) — **눈앞에서 돌아선 발길.** 이 수가
+						# 크면 계산대가 모자란 것이다. 지표는 거슬러 올라가
+						# 모을 수 없으니 사람이 오기 전에 심는다.
+						bump("pass.arrive")
+						bump("pass.arrive." + sh0)
 			var all_done: bool = true
 			for l in o.lines:
 				if l.rem > 0.0:
@@ -1410,6 +1449,7 @@ func _buy(g: Dictionary, rng: Rng) -> Variant:
 	#   다만 출발을 아예 안 막으면 거리가 주문으로 넘쳐 4시간이 3.3B까지
 	#   끓었다(재서 잡았다) — 걸어오는 무리에도 자리 수만큼 상한을 건다.
 	if orders_of(pick_shop) - arrived_orders_of(pick_shop) >= order_slots(pick_shop):
+		bump("pass.start")            # 지표 — 오다 말고 돌아선 발길
 		return null
 	# ★ 한 주문 = **한 종류**(2026-08-26, 유저). 여러 종을 담으면 풍선(첫
 	#   물건 하나만 보인다)에 없는 물건이 만들어져 "안 보이는데 생산"이 됐다.
@@ -1456,6 +1496,7 @@ func _settle(g: Dictionary, lines: Array, want: float, grumbles: Array, waited: 
 		out.append({"item": item_by_id(l.id), "n": got, "gain": m})
 	money += gain
 	revenue += gain
+	bump("coin.sale", gain)           # 지표 — 손님에게 판 몫
 	if auto:
 		_purse += gain * Content.AUTO_SHARE
 
@@ -1464,7 +1505,8 @@ func _settle(g: Dictionary, lines: Array, want: float, grumbles: Array, waited: 
 			_hold[ln.item.shop] = serve_pause()
 
 	for ln in out:
-		_quest_gain(g.id, ln.item.id, ln.n)
+		# ★ 의뢰는 이제 **판매로 안 찬다**(2026-08-27, 유저): 만들어야 찬다.
+		#   손님 주문이 늘 먼저고, 남는 손이 의뢰 물량을 만든다(craft 참고).
 		_ledger_add(g.id, ln.item.id, ln.n)   # 장날 소식에 쓸 기록
 
 	if n > 0.0:

@@ -890,12 +890,12 @@ const PESTS := [
 ]
 
 const QUEST := {
-	"slots": 3.0,
+	"slots": 1.0,
 	"every": 90.0,
 	"first": 240.0,
 	"seconds": 300.0,
 	"min": 3.0,
-	"payMul": 1.5,
+	"payMul": 0.9,
 	"gemPerStar": 6.0,
 	"gemCap": 5.0
 }
