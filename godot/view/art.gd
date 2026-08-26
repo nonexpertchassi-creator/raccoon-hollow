@@ -76,9 +76,14 @@ static func fit(t: Texture2D) -> Dictionary:
 ## 등급이 있는 그림(물건)은 **등급 것부터 찾는다.** `pick-1.png`가 있으면
 ## 참쇠곡괭이는 그걸 쓰고, 없으면 기본 `pick.png`를 쓴다.
 ## 40종 × 3등급 = 120장을 다 그릴 이유는 없다 — 그리고 싶은 것만 그리면 된다.
+## 등급 그림을 **한 단씩 내려오며** 찾는다: 3단이면 -2 → -1 → 기본.
+## ★ 예전엔 -2가 없으면 곧장 기본으로 떨어졌다. 2026-08-27에 물건 그림 목록이
+##   "그 물건이 처음 나오는 단부터"로 바뀌면서(5~6번째 물건은 2단부터, 7~8번째는
+##   3단부터) **기본 그림이 아예 없는 물건**이 생겼다 — 그때 -1만 받아 두면
+##   3단 가게에서 그림이 통째로 사라진다. 한 단씩 내려오면 그런 구멍이 없다.
 static func ranked(dir: String, id: String, rank: int) -> Texture2D:
-	if rank > 0:
-		var t: Texture2D = tex(dir, "%s-%d" % [id, rank])
+	for r in range(rank, 0, -1):
+		var t: Texture2D = tex(dir, "%s-%d" % [id, r])
 		if t != null:
 			return t
 	return tex(dir, id)
