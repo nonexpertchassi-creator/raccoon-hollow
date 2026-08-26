@@ -239,7 +239,7 @@ func _walk(wk: Dictionary, delta: float) -> bool:
 		wk.up = d.y < 0.0
 	# 손님마다 걸음이 다르다 — 토끼는 빠르고 거북은 느리다.
 	# 이 숫자는 content.js에 처음부터 있었는데 화면이 안 쓰고 있었다.
-	var step: float = WALK * float(wk.speed) * delta
+	var step: float = WALK * float(Content.GUEST_WALK) * float(wk.speed) * delta
 	if d.length() <= step:
 		wk.pos = target
 		if wk.state != "buy":

@@ -831,6 +831,8 @@ const GUESTS := [
 	}
 ]
 
+const GUEST_WALK := 0.45
+
 const LEDGER := {
 	"dayMinutes": 8.0,
 	"daysPerFair": 5.0,

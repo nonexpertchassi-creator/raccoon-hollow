@@ -1399,7 +1399,7 @@ func _buy(g: Dictionary, rng: Rng) -> Variant:
 	# 제작은 도착해야 시작된다(2026-08-26, 유저: "도착 전에 만든다").
 	# 빠른 짐승은 금방, 거북은 한참 — 화면의 걸음과 대충 맞는다.
 	orders.append({"id": _oid, "gid": g.id, "lines": lines, "want": qty, "grumbles": [],
-		"t": 0.0, "eta": 8.0 / float(g.get("speed", 1.0))})
+		"t": 0.0, "eta": 8.0 / (float(g.get("speed", 1.0)) * float(Content.GUEST_WALK))})
 	var shown: Array = []
 	for l in lines:
 		shown.append({"item": item_by_id(l.id), "n": l.n, "gain": floor(l.unit * l.n)})
