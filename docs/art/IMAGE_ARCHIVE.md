@@ -713,26 +713,26 @@
 
 ---
 
-## 대장간 일꾼 완성형 A~D · 1~3단 × 대각선 4방향 · 2026-08-26
+## 대장간 일꾼 완성형 A~D · 1~3단 · 2026-08-26
 
-장비를 붙이는 구조는 중단했다. 대장간 일꾼은 A~D 무늬 타입별 완성형이며, 최초 배치와 추가 채용을 같은 그림 체계로 쓴다. 손 도구 없이 앞치마만 승급한다. 열 순서는 `↙ ↘ ↖ ↗`, 행 순서는 1~3단이다.
+장비를 붙이는 구조는 중단했다. 대장간 일꾼은 A~D 무늬 타입별 완성형이며, 최초 배치와 추가 채용을 같은 그림 체계로 쓴다. 손 도구 없이 앞치마만 승급한다. 런타임 필수 원화는 `↘ ↗` 두 방향이며 반대쪽은 코드 반전을 사용한다. A~C의 네 방향 판은 기존 검토 원화로 보존하고, 재설계한 D부터 두 방향만 제작한다.
 
 <table>
   <tr>
-    <td align="center"><img src="./generated/CLERK-SMITH-TYPE-A-GROWTH-DIAGONALS-V0.1-P02.png" width="360" alt="대장간 점장 A타입 1~3단 대각선 네 방향 수정본"></td>
-    <td align="center"><img src="./generated/CLERK-SMITH-TYPE-B-GROWTH-DIAGONALS-V0.1-P03.png" width="360" alt="대장간 점장 B타입 1~3단 대각선 네 방향 수정본"></td>
+    <td align="center"><img src="./generated/CLERK-SMITH-TYPE-A-GROWTH-DIAGONALS-V0.1-P03.png" width="360" alt="대장간 점장 A타입 1~3단 대각선 차렷자세 수정본"></td>
+    <td align="center"><img src="./generated/CLERK-SMITH-TYPE-B-GROWTH-DIAGONALS-V0.1-P04.png" width="360" alt="대장간 점장 B타입 1~3단 대각선 차렷자세와 귀 수정본"></td>
   </tr>
   <tr>
     <td><strong>A타입 · 초안</strong><br>황토색 면 → 갈색 가죽 → 멜빵형 가죽 앞치마.</td>
     <td><strong>B타입 · 초안</strong><br>같은 승급 규칙, B타입 비대칭 털 무늬.</td>
   </tr>
   <tr>
-    <td align="center"><img src="./generated/CLERK-SMITH-TYPE-C-GROWTH-DIAGONALS-V0.1-P02.png" width="360" alt="대장간 점장 C타입 1~3단 대각선 네 방향 수정본"></td>
-    <td align="center"><img src="./generated/CLERK-SMITH-TYPE-D-GROWTH-DIAGONALS-V0.1-P03.png" width="360" alt="대장간 점장 D타입 1~3단 대각선 네 방향 수정본"></td>
+    <td align="center"><img src="./generated/CLERK-SMITH-TYPE-C-GROWTH-DIAGONALS-V0.1-P03.png" width="360" alt="대장간 점장 C타입 1~3단 대각선 차렷자세 수정본"></td>
+    <td align="center"><img src="./generated/CLERK-SMITH-TYPE-D-GROWTH-DIAGONALS-V0.1-P07.png" width="360" alt="대장간 점장 D타입 1~3단 실제 사용 방향 ↘ ↗ 재설계본"></td>
   </tr>
   <tr>
     <td><strong>C타입 · 초안</strong><br>손에 든 물건 없이 앞치마 재료만 성장.</td>
-    <td><strong>D타입 · 초안</strong><br>런타임 분리 전 전체 실루엣 검토 시트.</td>
+    <td><strong>D타입 · 초안</strong><br>귀 무늬·점박이를 없앤 연황색 몸, 단순 얼굴 마스크, 큰 등판 한 면, 단색 꼬리 끝. 열은 `↘ ↗`만 사용.</td>
   </tr>
 </table>
 
@@ -741,6 +741,6 @@
 ### 런타임 24장 분리
 
 <table>
-  <tr><td align="center"><img src="./generated/SMITH-CLERK-RUNTIME-24-PREVIEW-V0.2.png" width="900" alt="방향 귀 발 위치를 수정한 대장간 일꾼 A D 무늬 1 3단 옆 뒤 런타임 24장"></td></tr>
+  <tr><td align="center"><img src="./generated/SMITH-CLERK-RUNTIME-24-PREVIEW-V0.3.png" width="900" alt="차렷자세 발 크기 귀 무늬를 수정한 대장간 점장 A D 무늬 1 3단 옆 뒤 런타임 24장"></td></tr>
   <tr><td><strong>Revised · LOG-SMITH-COMPLETE-003</strong><br>가까운 두 열을 ↙·↘로 분리하고 귀·발·몸 중심을 블루프린트에 맞췄다. 수정된 ↘ 원화는 side, ↗ 원화는 back이며 반대쪽은 코드가 뒤집는다. 24장 모두 144×144 RGBA, 발끝 y=143, 중심 오차 1px 이내를 통과했다.</td></tr>
 </table>

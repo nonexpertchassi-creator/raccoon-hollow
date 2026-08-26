@@ -2141,16 +2141,21 @@
         };
       }))),
 
-      ...[['A', 'P02'], ['B', 'P03'], ['C', 'P02'], ['D', 'P03']].map(([type, revision]) => ({
-        c: 'clerks', shop: '대장간', archive: true,
-        label: `대장간 일꾼 완성형 원화 · ${type}타입 · 1~3단 × 대각선 4방향`,
-        file: `CLERK-SMITH-TYPE-${type}-GROWTH-DIAGONALS-V0.1-${revision}.png`, icon: '🦝',
-        size: '승급·방향 원화',
-        actual: '1536×1024 RGB 수정 시트 · 귀·발·몸 중심 블루프린트 정렬 · 1단 황토색 면 / 2단 갈색 가죽 / 3단 멜빵형 가죽 앞치마 · ↙ ↘ ↖ ↗',
-        status: 'draft', priority: 10,
-        src: `generated/CLERK-SMITH-TYPE-${type}-GROWTH-DIAGONALS-V0.1-${revision}.png`,
-        path: `docs/art/generated/CLERK-SMITH-TYPE-${type}-GROWTH-DIAGONALS-V0.1-${revision}.png`
-      })),
+      ...[['A', 'P03'], ['B', 'P04'], ['C', 'P03'], ['D', 'P07']].map(([type, revision]) => {
+        const runtimeOnly = type === 'D';
+        return {
+          c: 'clerks', shop: '대장간', archive: true,
+          label: `대장간 일꾼 완성형 원화 · ${type}타입 · 1~3단 × ${runtimeOnly ? '실사용 2방향' : '대각선 검토 원화'}`,
+          file: `CLERK-SMITH-TYPE-${type}-GROWTH-DIAGONALS-V0.1-${revision}.png`, icon: '🦝',
+          size: '승급·방향 원화',
+          actual: runtimeOnly
+            ? '1536×1024 RGBA · 귀 무늬·점박이 제거 · 1단 황토색 면 / 2단 갈색 가죽 / 3단 멜빵형 가죽 앞치마 · ↘ ↗'
+            : '1536×1024 RGBA 검토 시트 · 귀·발·몸 중심 블루프린트 정렬 · 런타임은 ↘ ↗ 두 방향만 사용',
+          status: 'draft', priority: 10,
+          src: `generated/CLERK-SMITH-TYPE-${type}-GROWTH-DIAGONALS-V0.1-${revision}.png`,
+          path: `docs/art/generated/CLERK-SMITH-TYPE-${type}-GROWTH-DIAGONALS-V0.1-${revision}.png`
+        };
+      }),
 
       {
         c: 'clerks', legacy: true, label: '이전 레이어형 점장 본체 · A타입 무늬 · 방향 시트',

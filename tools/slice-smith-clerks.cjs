@@ -7,9 +7,9 @@ const sharp = require(process.env.CODEX_NODE_PATH ? `${process.env.CODEX_NODE_PA
 const root = path.resolve(__dirname, '..');
 const sourceDir = path.join(root, 'docs/art/generated');
 const outputDir = path.join(root, 'godot/art/clerks');
-const previewPath = path.join(sourceDir, 'SMITH-CLERK-RUNTIME-24-PREVIEW-V0.2.png');
+const previewPath = path.join(sourceDir, 'SMITH-CLERK-RUNTIME-24-PREVIEW-V0.3.png');
 const types = ['a', 'b', 'c', 'd'];
-const sourceRevision = { a: 'P02', b: 'P03', c: 'P02', d: 'P03' };
+const sourceRevision = { a: 'P03', b: 'P04', c: 'P03', d: 'P07' };
 // The source sheet keeps all four diagonals for art review. Runtime only needs
 // the two right-facing masters; Godot mirrors them for left-facing movement.
 const directions = [
@@ -122,14 +122,19 @@ async function main() {
     const meta = await image.metadata();
     if (meta.width !== 1536 || meta.height !== 1024) throw new Error(`Unexpected sheet size: ${input}`);
 
+    const sourceColumns = type === 'd' ? 2 : 4;
+    const sourceDirections = type === 'd'
+      ? [{ column: 0, name: 'side' }, { column: 1, name: 'back' }]
+      : directions;
     for (let rank = 0; rank < 3; rank += 1) {
       const top = Math.round(rank * meta.height / 3);
       const bottom = Math.round((rank + 1) * meta.height / 3);
-      for (const direction of directions) {
-        const left = direction.column * (meta.width / 4);
+      for (const direction of sourceDirections) {
+        const cellWidth = meta.width / sourceColumns;
+        const left = direction.column * cellWidth;
         const { data, info } = await sharp(input)
           .removeAlpha()
-          .extract({ left, top, width: meta.width / 4, height: bottom - top })
+          .extract({ left, top, width: cellWidth, height: bottom - top })
           .raw()
           .toBuffer({ resolveWithObject: true });
         const cut = clearConnectedBackground(data, info.width, info.height);
