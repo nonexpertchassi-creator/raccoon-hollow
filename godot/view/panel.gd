@@ -789,6 +789,24 @@ func _tab_work(_shop: Dictionary) -> void:
 
 ## 승급 — 못 하는 이유가 보여야 목표가 된다. 체크리스트로 세운다.
 func _tab_rank(shop: Dictionary) -> void:
+	# 공사 중이면 조건표 대신 **시계**를 보여준다(2026-08-27). 승급값은 이미
+	# 냈고, 남은 것은 기다림뿐 — 나뭇잎으로 당길 수 있다.
+	if sim.is_building(shop_id):
+		var left: float = sim.build_left(shop_id)
+		var full: float = float(Content.RANKS[sim.rank_of(shop_id) + 1].build)
+		_box.add_child(_label("%s → %s 등급 공사 중" % [
+			shop.ranks[sim.rank_of(shop_id)], shop.ranks[sim.rank_of(shop_id) + 1]], 17, Color("a8763e")))
+		_bar(clampf(1.0 - left / max(1.0, full), 0.0, 1.0), Color("4a7c59"))
+		_box.add_child(_label("남은 시간 %s" % Num.dur(left), 14, Color("5a4e3d")))
+		_box.add_child(_label("공사 중에도 장사는 그대로 돈다 — 마당만 그대로다", 12, Color("8a7a63"), true))
+		var cost: int = sim.rush_build_cost(shop_id)
+		_box.add_child(_label("나뭇잎으로 당기기 — 30분에 한 장", 13, Color("5a4e3d")))
+		_box.add_child(_btn("바로 끝내기 🍃%d" % cost, sim.can_rush_build(shop_id),
+			func():
+				if sim.rush_build(shop_id) and on_card.is_valid():
+					on_card.call(shop_id, sim.rank_of(shop_id))
+				rebuild()))
+		return
 	var r: Variant = sim.promote_reqs(shop_id)
 	if r == null:
 		_box.add_child(_label("%s 등급 — 더 오를 곳이 없다" % shop.ranks[sim.rank_of(shop_id)], 15, Color("a8763e")))
@@ -817,9 +835,11 @@ func _tab_rank(shop: Dictionary) -> void:
 		#   "고장 났나" 하고, 그게 이 게임을 끄는 이유가 된다.
 		_box.add_child(_label("· 레벨은 1로 되돌아간다 — 벌이가 잠깐 %d%%로 떨어졌다가, %d레벨이면 본전이고 상한까지 올리면 %.0f배다"
 			% [int(round(g.dip * 100.0)), int(g.even), g.top], 13, Color("5a4e3d"), true))
+		# 승급은 이제 **공사**다 — 누르면 바로가 아니라 기다린다(2026-08-27).
+		_box.add_child(_label("· 누르면 공사가 시작된다 — %s 걸린다(나뭇잎으로 당길 수 있다)"
+			% Num.dur(float(Content.RANKS[r.rank].build)), 13, Color("5a4e3d"), true))
 	var ok: bool = sim.can_promote(shop_id)
-	_box.add_child(_btn("승급하기 🪙" + Num.fmt(r.cost) if ok else "조건을 채워야 한다", ok,
+	_box.add_child(_btn("공사 시작 🪙" + Num.fmt(r.cost) if ok else "조건을 채워야 한다", ok,
 		func():
-			if sim.promote(shop_id) and on_card.is_valid():
-				on_card.call(shop_id, sim.rank_of(shop_id))
+			sim.promote(shop_id)
 			rebuild()))

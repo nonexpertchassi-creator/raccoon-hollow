@@ -31,6 +31,13 @@ static func act(s: Sim, rng: Rng) -> void:
 		if s.can_promote(sh):
 			s.promote(sh)
 			return
+	# 승급 공사(2026-08-27)는 나뭇잎으로 당긴다. 배우가 기다리기만 하면
+	# 도구가 **공사 있는 게임을 영영 안 보는** 셈이 된다(도구 규칙 3).
+	# 승급이 벌이의 제일 큰 손잡이라, 사람도 여기에 잎을 먼저 쓴다.
+	for sh in s.shops:
+		if s.can_rush_build(sh):
+			s.rush_build(sh)
+			return
 	for sh in s.shops:
 		if s.can_hire_staff(sh):
 			s.hire_staff(sh)

@@ -40,3 +40,15 @@ static func josa(word: String, with_jong: String, without: String) -> String:
 	var c: int = word.unicode_at(word.length() - 1) - 0xac00
 	var jong: bool = c >= 0 and c <= 11171 and c % 28 != 0
 	return word + (with_jong if jong else without)
+
+## 남은 시간을 사람 말로 — "3시간 20분" · "12분" · "45초".
+## 승급 공사(2026-08-27)가 생기면서 필요해졌다. 시계는 화면 여러 곳에 뜬다.
+static func dur(secs: float) -> String:
+	var s: int = int(max(0.0, round(secs)))
+	if s >= 3600:
+		var h: int = s / 3600
+		var m: int = (s % 3600) / 60
+		return "%d시간 %d분" % [h, m] if m > 0 else "%d시간" % h
+	if s >= 60:
+		return "%d분" % (s / 60)
+	return "%d초" % s

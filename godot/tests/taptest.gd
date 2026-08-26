@@ -341,6 +341,62 @@ func _process(_d: float) -> void:
 	if int(main.sfx.counts.get("tap", 0)) == 0:
 		fails.append("매대를 눌렀는데 강화 소리를 안 울렸다")
 
+	# 9) 승급 공사(2026-08-27) — 누르면 바로 오르는 게 아니라 시계가 돈다.
+	#    ★ 4시간짜리라 밸런스 도구는 이 뒤를 못 본다(4시간 재기에서 한 번도
+	#      안 끝났다). 그러면 "도구가 안 써 보는 기능"이 되므로 여기서 본다.
+	var s9: Sim = Sim.new()
+	var r9: Rng = Rng.new(11)
+	s9.money = 1.0e18
+	# 승급 조건 다섯을 채운다: 매대 만렙 · 다음 가게 · 성 합계 · 초당 수입 · 값.
+	# 초당 수입은 **가게 전체**를 합쳐 세므로 한 채만으로는 못 넘는다.
+	for sh9 in Content.SHOPS:
+		if not s9.shops.has(String(sh9.id)):
+			s9.shops.append(String(sh9.id))
+		for k9 in range(4):
+			var iid9: String = String(sh9.items[k9].id)
+			if not s9.items.has(iid9):
+				s9.items[iid9] = {"lv": 1.0, "stock": 0.0, "prog": 0.0}
+			for _r9 in range(40):             # MAX_BULK가 있어 한 번엔 다 안 오른다
+				if s9.level_up_many(iid9, 999) <= 0:
+					break
+	for g9 in Content.GUESTS:                 # 조건(성 합계)은 **가진 손님**만 센다
+		if not s9.guests.has(String(g9.id)):
+			s9.guests.append(String(g9.id))
+		s9.stars[String(g9.id)] = 5.0
+	if not s9.can_promote("smith"):
+		var why9: Array = []
+		var rq9: Variant = s9.promote_reqs("smith")
+		if rq9 != null:
+			for x9 in rq9.list:
+				if not x9.ok:
+					why9.append(String(x9.text))
+		fails.append("승급 조건을 다 채웠는데 공사를 시작할 수 없다 — 못 찬 것: %s" % str(why9))
+	else:
+		var rank_before: int = s9.rank_of("smith")
+		s9.promote("smith")
+		if not s9.is_building("smith"):
+			fails.append("공사를 시작했는데 공사 중이 아니다")
+		if s9.rank_of("smith") != rank_before:
+			fails.append("공사가 끝나기도 전에 등급이 올랐다")
+		# 한 시간 돌려도 아직이어야 한다(4시간짜리다)
+		for i9 in range(3600):
+			s9.tick(1.0, r9)
+		if not s9.is_building("smith"):
+			fails.append("네 시간짜리 공사가 한 시간 만에 끝났다")
+		# 나뭇잎으로 당기면 그 자리에서 끝난다
+		var cost9: int = s9.rush_build_cost("smith")
+		if cost9 <= 0:
+			fails.append("공사를 당기는 값이 0이다")
+		s9.gems = float(cost9)
+		if not s9.rush_build("smith"):
+			fails.append("나뭇잎이 값만큼 있는데 공사를 못 당긴다")
+		if s9.rank_of("smith") != rank_before + 1:
+			fails.append("공사를 끝냈는데 등급이 안 올랐다")
+		if s9.gems > 0.001:
+			fails.append("공사를 당겼는데 나뭇잎이 안 빠졌다")
+		if s9.is_building("smith"):
+			fails.append("공사가 끝났는데 아직 공사 중이다")
+
 	if fails.is_empty():
 		print("TAPTEST OK")
 	else:

@@ -284,6 +284,9 @@ func step(delta: float) -> void:
 		village.on_sale(s)
 	for d in r.done:
 		village.on_done(d)     # 완료는 새 손님이 아니다 — 기다리던 손님이 받아 간다
+	for bs in r.get("built", []):
+		# 승급 공사가 끝났다 — 카드는 **끝나는 순간** 뜬다(2026-08-27).
+		_show_card(String(bs), sim.rank_of(String(bs)))
 	for po in r.get("passed", []):
 		village.on_pass(int(po))   # 도착했더니 자리가 차 있었다 — 빈손으로 지나간다
 	if r.ask != null:

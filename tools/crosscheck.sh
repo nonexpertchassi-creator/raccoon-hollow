@@ -27,7 +27,7 @@ fail() { FAIL=1; printf "❌ %-8s %s\n" "$1" "$2"; }
 # 좌표는 눈으로 못 믿는다 — 두드려 보고 sim이 실제로 변했는지 본다
 OUT=$(godot --headless --path godot tests/taptest.tscn 2>&1 || true)
 case "$OUT" in
-  *"TAPTEST OK"*) pass tap "누르기 여섯 가지 다 먹는다" ;;
+  *"TAPTEST OK"*) pass tap "누르기 아홉 가지 다 먹는다(승급 공사 포함)" ;;
   *) fail tap "" ; echo "$OUT" | grep "TAPTEST FAIL" | sed 's/^/     /' ;;
 esac
 

@@ -933,11 +933,17 @@ export const GUARD = {
  *
  * 규칙이 바뀌면 **그 규칙에 기대던 문턱도 같이 바뀌어야 한다.**
  * 이걸 놓치면 아무것도 안 고장 났는데 게임만 멈춘다 — 제일 찾기 어려운 종류다. */
+/* build = **승급 공사에 걸리는 시간**(초, 2026-08-27 유저).
+ * 승급이 누르는 순간 끝나면 무게가 없다 — 기다림이 값을 만든다.
+ * 공사 중에도 장사는 그대로 돈다(멈추면 승급이 벌이 된다 — 4번 규칙).
+ * 나뭇잎으로 30분씩 당길 수 있다(rushPer). */
 export const RANKS = [
-  { maxLv: 30,  priceMul: 1,     guests: 0, ips: 0 },
-  { maxLv: 60,  priceMul: 4,     guests: 10,  ips: 15_000 },
-  { maxLv: 100, priceMul: 16,    guests: 40, ips: 800_000 },
+  { maxLv: 30,  priceMul: 1,     guests: 0, ips: 0,       build: 0 },
+  { maxLv: 60,  priceMul: 4,     guests: 10,  ips: 15_000,  build: 4 * 3600 },
+  { maxLv: 100, priceMul: 16,    guests: 40, ips: 800_000, build: 8 * 3600 },
 ];
+/** 공사를 나뭇잎으로 당길 때 — 잎 한 장이 줄여 주는 시간(초). */
+export const BUILD_RUSH_PER = 1800;
 
 /** 25레벨마다 그 품목의 **판매가**가 2배가 된다. 24→25가 제일 신나야 한다.
  *

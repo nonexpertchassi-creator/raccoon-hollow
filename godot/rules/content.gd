@@ -26,6 +26,8 @@ const AUTO_SHARE := 0.6
 
 const BASKET_SPREAD := 3.0
 
+const BUILD_RUSH_PER := 1800.0
+
 const CARD_GRADES := [
 	{
 		"id": 1.0,
@@ -905,19 +907,22 @@ const RANKS := [
 		"maxLv": 30.0,
 		"priceMul": 1.0,
 		"guests": 0.0,
-		"ips": 0.0
+		"ips": 0.0,
+		"build": 0.0
 	},
 	{
 		"maxLv": 60.0,
 		"priceMul": 4.0,
 		"guests": 10.0,
-		"ips": 15000.0
+		"ips": 15000.0,
+		"build": 14400.0
 	},
 	{
 		"maxLv": 100.0,
 		"priceMul": 16.0,
 		"guests": 40.0,
-		"ips": 800000.0
+		"ips": 800000.0,
+		"build": 28800.0
 	}
 ]
 

@@ -149,6 +149,12 @@ var _switch: Dictionary = {}
 var _recent: Dictionary = {}
 ## 이번 틱에 "도착했더니 자리가 차서" 지나간 주문 번호들 — 화면에 알린다.
 var _passed: Array = []
+## 승급 공사 중인 가게(가게id → 남은 초). 2026-08-27, 유저.
+## 승급이 누르는 순간 끝나면 무게가 없다 — 기다림이 값을 만든다.
+## **공사 중에도 장사는 그대로 돈다**(멈추면 승급이 벌이 된다 — 4번 규칙).
+var building: Dictionary = {}
+## 이번 틱에 공사가 끝난 가게들 — 화면이 카드를 띄우려고 본다.
+var _built: Array = []
 ## 날씨 — content.js의 WEATHER.kinds 중 하나. 손님 발길·손놀림·쥐가 탄다.
 var weather: String = "clear"
 var _wxT: float = 0.0
@@ -787,6 +793,8 @@ func promote_gain(shop_id: String) -> Variant:
 	return out
 
 func can_promote(shop_id: String) -> bool:
+	if is_building(shop_id):
+		return false                 # 이미 공사 중이다
 	var r: Variant = promote_reqs(shop_id)
 	if r == null:
 		return false
@@ -795,19 +803,55 @@ func can_promote(shop_id: String) -> bool:
 			return false
 	return true
 
+## 이 가게가 지금 공사 중인가 / 얼마나 남았나.
+func is_building(shop_id: String) -> bool:
+	return float(building.get(shop_id, 0.0)) > 0.0
+
+func build_left(shop_id: String) -> float:
+	return max(0.0, float(building.get(shop_id, 0.0)))
+
+## 남은 공사를 나뭇잎으로 당기는 값 — 30분에 한 장.
+func rush_build_cost(shop_id: String) -> int:
+	return int(ceil(build_left(shop_id) / Content.BUILD_RUSH_PER))
+
+func can_rush_build(shop_id: String) -> bool:
+	return is_building(shop_id) and gems >= float(rush_build_cost(shop_id))
+
+func rush_build(shop_id: String) -> bool:
+	if not can_rush_build(shop_id):
+		return false
+	gems -= float(rush_build_cost(shop_id))
+	bump("build.rush")
+	building[shop_id] = 0.0
+	_promote_done(shop_id)
+	return true
+
+## 승급값을 내고 **공사를 시작한다.** 오르는 것은 공사가 끝나야 한다.
 func promote(shop_id: String) -> bool:
 	if not can_promote(shop_id):
 		return false
 	var shop: Dictionary = shop_by_id(shop_id)
 	money -= shop.promote[rank_of(shop_id)]
 	bump("open.promote")
+	var secs: float = float(Content.RANKS[rank_of(shop_id) + 1].build)
+	if secs > 0.0:
+		building[shop_id] = secs
+		_ev("%s 승급 공사를 시작했다 — %s" % [shop.name, Num.dur(secs)], "milestone")
+		return true
+	_promote_done(shop_id)
+	return true
+
+## 공사가 끝났다 — 여기서야 등급이 오른다.
+func _promote_done(shop_id: String) -> void:
+	building.erase(shop_id)
+	_built.append(shop_id)          # 화면에 알린다 — 카드는 공사가 끝날 때 뜬다
+	var shop: Dictionary = shop_by_id(shop_id)
 	rank[shop_id] = rank_of(shop_id) + 1
 	# 승급은 너구리를 주지 않는다 — **채용 자리를 하나 연다**(2026-08-26).
 	for it in shop.items:
 		if items.has(it.id):
 			items[it.id].lv = 1.0
 	_ev("%s %s 등급으로 올라섰다" % [Num.josa(shop.name, "이", "가"), shop.ranks[rank_of(shop_id)]], "milestone")
-	return true
 
 # ── 가게 ──
 # ── 구역 ──
@@ -1273,6 +1317,13 @@ func tick(dt: float, rng: Rng) -> Dictionary:
 		bump("hand.work", dt * float(used))
 		bump("hand.idle", dt * float(hands - used))
 
+	# 승급 공사 시계 — 다 되면 그때 등급이 오른다.
+	if not building.is_empty():
+		for bid in building.keys():
+			building[bid] = float(building[bid]) - dt
+			if float(building[bid]) <= 0.0:
+				_promote_done(String(bid))
+
 	# 손을 댄 지 얼마나 됐나 — regrip 유예의 시계
 	for rid in _recent.keys():
 		_recent[rid] = float(_recent[rid]) + dt
@@ -1358,8 +1409,9 @@ func tick(dt: float, rng: Rng) -> Dictionary:
 	#   이제 손님은 **뽑기로만** 온다(pull·spin 안에서 들어온다).
 	var new_guest: Variant = null
 
-	var out: Dictionary = {"passed": _passed.duplicate(), "sales": sales, "done": done, "ask": ask, "newGuest": new_guest,
+	var out: Dictionary = {"passed": _passed.duplicate(), "built": _built.duplicate(), "sales": sales, "done": done, "ask": ask, "newGuest": new_guest,
 		"autoLv": auto_lv, "pests": _pestEvents, "quests": _questDone, "event": _evDone}
+	_built = []
 	if not _passed.is_empty():
 		var keep2: Array = []
 		for o2 in orders:
@@ -1730,6 +1782,7 @@ const SAVE_KEYS: Array[String] = [
 	"cards", "stars", "pulls", "guards", "roulFree", "roulAd", "roulDay",
 	"stats", "zones",
 	"profile", "furs", "_crafting", "_switch", "_recent", "weather", "_wxT",
+	"building",
 ]
 ## 글자로 저장했다 되돌리면 정수가 소수가 된다(-1 → -1.0). 자리를 세는 데
 ## 쓰는 것들은 도로 정수로 되돌린다 — 아니면 배열 자리를 못 찾는다.
@@ -1762,7 +1815,10 @@ const INT_KEYS: Array[String] = ["busy", "_qid", "_evIdx", "_oid"]
 ## 7판: 손의 이동(_crafting·_switch). 옛 저장본은 칸이 없어 빈 값으로
 ## 시작한다 — 첫 틱에 모든 손이 이동 시간을 한 번 내는 것뿐, 옮길 것 없다.
 ## 8판: 날씨(weather·_wxT). 옛 저장본은 맑음으로 시작하면 된다.
-const SAVE_VER: int = 8
+## 9판: 승급 공사(building). 옛 저장본은 그 칸이 없다 — 공사 중인 가게가
+## 없다는 뜻이고, 그게 맞다(옛 판에서는 누르는 즉시 승급했다). 이미 오른
+## 등급은 rank에 그대로 남아 있으니 잃는 것이 없다.
+const SAVE_VER: int = 9
 
 func save() -> Dictionary:
 	var d: Dictionary = {}
