@@ -18,7 +18,7 @@
   </tr>
 </table>
 
-수치와 다른 종 확장 규칙은 [동물 캐릭터 신체·의상 배치 규격 V0.1](./blueprints/CHARACTER-BODY-SCALE-SPEC-V0.1.md)에 기록한다. 현재 값은 A타입 런타임 PNG를 측정해 시작한 `Hypothesis`이며, 토끼와 까치를 같은 기준선에서 검수한 뒤 확정한다.
+수치와 다른 종 확장 규칙은 [동물 캐릭터 신체·의상 배치 규격 V0.1](./blueprints/CHARACTER-BODY-SCALE-SPEC-V0.1.md)에 기록한다. 제작·승인 순서는 [캐릭터 스프라이트 제작·검수 지침 V0.1](./blueprints/CHARACTER-SPRITE-QA-CHECKLIST-V0.1.md), 현재 대장간 A~D의 측정 결과는 [대장간 너구리 제작 오류 감사](./blueprints/SMITH-RACCOON-QA-AUDIT-2026-08-26.md)에서 확인한다. 현재 값은 A타입 런타임 PNG를 측정해 시작한 `Hypothesis`이며, 토끼와 까치를 같은 기준선에서 검수한 뒤 확정한다.
 
 ---
 
@@ -742,5 +742,5 @@
 
 <table>
   <tr><td align="center"><img src="./generated/SMITH-CLERK-RUNTIME-24-PREVIEW-V0.3.png" width="900" alt="차렷자세 발 크기 귀 무늬를 수정한 대장간 점장 A D 무늬 1 3단 옆 뒤 런타임 24장"></td></tr>
-  <tr><td><strong>Revised · LOG-SMITH-COMPLETE-003</strong><br>가까운 두 열을 ↙·↘로 분리하고 귀·발·몸 중심을 블루프린트에 맞췄다. 수정된 ↘ 원화는 side, ↗ 원화는 back이며 반대쪽은 코드가 뒤집는다. 24장 모두 144×144 RGBA, 발끝 y=143, 중심 오차 1px 이내를 통과했다.</td></tr>
+  <tr><td><strong>Hold · LOG-SMITH-COMPLETE-005</strong><br>24장 모두 144×144 RGBA, 발끝 y=143, 중심 오차 1px 이내라는 기계 검사는 통과했지만 신체 크기·눈·시점·꼬리 보존 검사는 실패했다. A~C는 작고 D는 크며, D 눈은 A보다 크고 B 얼굴은 아래로 내려가 있다. C 3단 side 꼬리도 파생 중 누락됐다. 현재 파일은 비교용 초안이며 재정규화 전 최종 승인하지 않는다.</td></tr>
 </table>
