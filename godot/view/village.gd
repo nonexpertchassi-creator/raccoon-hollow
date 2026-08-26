@@ -1298,18 +1298,31 @@ func _staff(i: int, k: int) -> void:
 	var moving: bool = p.distance_to(_staff_goal(i, k)) > 2.0
 	var swing: float = maxf(0.0, sin(fmod(_t / 2.4 + i * 0.37 + (k + 1) * 0.29, 1.0) * TAU))
 	var bob: float = (absf(sin(_t * 6.0)) * 2.0) if moving else (0.0 if idle else swing * 3.0)
-	var rank: String = String(Content.STAFF_RANKS[0].id)     # 아직 등급 규칙이 없다 — 전부 알바
-	var t: Texture2D = Art.tex("staff", "%s-%s" % [rank, "sleep" if idle else "work"])
-	if t == null:
-		t = Art.tex("staff", "%s-work" % rank)
+	# ★ 직원 개념 폐지(2026-08-26, 유저) — 승급하면 "같은 가게 너구리가 한
+	#   마리 더 온다". 전원이 그 가게의 완성형 그림을 쓴다(쌍둥이 형제들).
+	#   경제(손 셈)는 그대로고 화면과 말만 통일했다. 두건 직원 그림은 은퇴.
+	var sid6: String = String(Content.SHOPS[i].id)
+	var job5: int = int(_staffJob.get("%d:%d" % [i, k], -1))
+	var sflip: bool = job5 >= 0 and _stall_at(i, job5).x < p.x   # 맡은 매대를 본다
+	var breath: float = (0.5 + 0.5 * sin(_t * 2.2 + p.x * 0.04)) * 0.03 if idle else 0.0
+	var t: Texture2D = Art.ranked("clerks", "%s-side" % sid6, sim.rank_of(sid6))
 	if t != null:
-		var job5: int = int(_staffJob.get("%d:%d" % [i, k], -1))
-		var sflip: bool = job5 >= 0 and _stall_at(i, job5).x < p.x   # 맡은 매대를 본다
-		var breath: float = (0.5 + 0.5 * sin(_t * 2.2 + p.x * 0.04)) * 0.03 if idle else 0.0
+		if idle:
+			var slp6: Texture2D = Art.ranked("clerks", "%s-sleep" % sid6, sim.rank_of(sid6))
+			if slp6 != null:
+				t = slp6
 		_shadow(p, 14.0)
-		_sprite(t, p + Vector2(0, -bob), "staff", sflip, breath)
+		_sprite(t, p + Vector2(0, -bob), "clerks", sflip, breath)
 		return
-	# 그림이 오기 전 임시 도형. 점장과 **같은 크기**로, 털빛만 조금 다르게.
+	if Art.tex("hero-body", sim.fur_of(sid6) + "-side") != null:
+		_shadow(p, 14.0)
+		_clerk_layers(p + Vector2(0, -bob), sid6, "side", sflip, false)
+		return
+	var t2: Texture2D = Art.tex("staff", "band-%s" % ("sleep" if idle else "work"))
+	if t2 != null:
+		_shadow(p, 14.0)
+		_sprite(t2, p + Vector2(0, -bob), "staff", sflip, breath)
+		return
 	_raccoon(p + Vector2(0, -bob), SHAPE, Color("bfa987"))
 
 func _walker(wk: Dictionary) -> void:

@@ -761,12 +761,10 @@ func _level_btn(id: String, line: Label) -> Button:
 
 ## 일손과 이 가게만의 강화. 둘 다 "한 번 사면 계속 도는 것"이라 같이 둔다.
 func _tab_work(_shop: Dictionary) -> void:
-	_box.add_child(_label("일손  점장 1 + 직원 %d" % int(sim.staff_of(shop_id)), 15))
-	# 2026-08-25 생산 개편 — 손 하나가 물건 하나를 만든다. 직원마다 만드는
-	# 손이 하나씩 는다. 점장은 만들다가 계산도 한다(계산 중엔 손이 빠진다).
-	_box.add_child(_label("손 하나가 물건 하나를 만든다 — 직원마다 만드는 손이 하나 는다", 11, Color("8a7a63"), true))
-	# 직원을 돈으로 사는 단추는 지웠다(유저 — 한 번에 넷을 사는 게 이상했다).
-	_box.add_child(_label("직원은 **가게가 승급할 때** 한 마리씩 온다", 12, Color("4a7c59"), true))
+	# 직원 개념 폐지(2026-08-26) — 전부 그 가게 너구리다. 말도 통일한다.
+	_box.add_child(_label("일손  너구리 %d마리" % (int(sim.staff_of(shop_id)) + 1), 15))
+	_box.add_child(_label("손 하나가 물건 하나를 만든다 — 한 마리는 손님이 오면 계산을 맡는다", 11, Color("8a7a63"), true))
+	_box.add_child(_label("가게가 승급하면 너구리가 한 마리 더 온다", 12, Color("4a7c59"), true))
 
 	var ud: Variant = sim.shop_up_def(shop_id)
 	if ud == null:
