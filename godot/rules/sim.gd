@@ -1381,19 +1381,14 @@ func _buy(g: Dictionary, rng: Rng) -> Variant:
 	#   막힌다 — 차 있으면 이번 발길은 그냥 지나간다.
 	if orders_of(pick_shop) >= order_slots(pick_shop):
 		return null
-	var lines: Array = []
-	var left: float = qty
-	for id in have:
-		if left <= 0.0:
-			break
-		# 질그릇 한 벌 — 이 가게 물건은 한 번에 더 주문한다
-		var want_n: float = min(left, ceil(per * _basket_of(item_by_id(id).shop)))
-		if want_n <= 0.0:
-			continue
-		left -= want_n
-		lines.append({"id": id, "n": want_n, "rem": want_n, "unit": price(id) * pay})
-	if lines.is_empty():
-		return null
+	# ★ 한 주문 = **한 종류**(2026-08-26, 유저). 여러 종을 담으면 풍선(첫
+	#   물건 하나만 보인다)에 없는 물건이 만들어져 "안 보이는데 생산"이 됐다.
+	#   수량은 예전 여러 줄의 총량 수준으로 한 물건에 몰아 담는다.
+	var one: String = String(have[0])
+	# 총량(qty)을 다 몰았더니 4시간 2.6B 과열 — 예전 "한 줄 몫"(qty÷종류수)
+	# 크기가 곡선에 맞는다. 장바구니가 작아진 만큼 발길 수로 벌충되는 셈.
+	var want_n: float = max(1.0, ceil(per * _basket_of(item_by_id(one).shop)))
+	var lines: Array = [{"id": one, "n": want_n, "rem": want_n, "unit": price(one) * pay}]
 
 	_oid += 1
 	# eta — 손님이 가게까지 **걸어오는 시간.** 주문은 출발할 때 접수되지만
