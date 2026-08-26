@@ -706,8 +706,10 @@ func _tab_items(shop: Dictionary) -> void:
 				sim.item_name(it.id), int(sim.lv(it.id)), int(sim.max_lv(it.id)),
 				Num.fmt(sim.price(it.id))], 14)
 			col.add_child(line)
-			col.add_child(_label("재고 %d/%d · %.1f초" % [
-				int(sim.items[it.id].stock), int(sim.cap_of(it.id)), sim.craft_time(it.id)],
+			# 재고 표시는 주문 생산 전환으로 은퇴(2026-08-26) — 주문받아 만든다
+			var rem9: int = int(sim._order_rem(it.id))
+			col.add_child(_label(("주문 %d개 만드는 중 · %.1f초" % [rem9, sim.craft_time(it.id)])
+				if rem9 > 0 else "%.1f초에 하나" % sim.craft_time(it.id),
 				11, Color("8a7a63")))
 			if sim.at_max(it.id):
 				col.add_child(_label("더 올릴 수 없다 — 승급해야 한다", 12, Color("8a7a63")))

@@ -283,7 +283,7 @@ func step(delta: float) -> void:
 	for s in r.sales:
 		village.on_sale(s)
 	for d in r.done:
-		village.on_sale(d)
+		village.on_done(d)     # 완료는 새 손님이 아니다 — 기다리던 손님이 받아 간다
 	if r.ask != null:
 		village.on_ask(r.ask)
 	# 소리는 **드물게 일어나는 일**에만 준다. 파는 순간은 일부러 뺐다 —

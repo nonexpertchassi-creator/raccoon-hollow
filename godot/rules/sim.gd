@@ -516,6 +516,23 @@ func _basket_of(shop_id: String) -> float:
 	return 1.0 + Content.SHOP_UP.pot.step * shop_up_lv("pot")
 
 ## 동시에 걸리는 의뢰 자리 (의뢰방)
+## 계산대 수 — 등급이 정한다(무쇠 1 · 참쇠 2 · 강철 3). 승급 보상 하나 더(2026-08-26).
+func counters_of(shop_id: String) -> int:
+	return rank_of(shop_id) + 1
+
+## 동시에 받아 둘 수 있는 주문 수 — 계산대 하나가 주문 하나를 문다.
+## (둘씩 물렸더니 4시간 1.9B로 과열 — 계산대 수 그대로가 곡선에 맞았다)
+func order_slots(shop_id: String) -> int:
+	return counters_of(shop_id)
+
+func orders_of(shop_id: String) -> int:
+	var n: int = 0
+	for o in orders:
+		if not (o.lines as Array).is_empty() \
+				and String(item_by_id(String(o.lines[0].id)).shop) == shop_id:
+			n += 1
+	return n
+
 func quest_slots() -> int:
 	return int(Content.QUEST.slots) + int(Content.SHOP_UP.paper.step) * shop_up_lv("paper")
 
@@ -1167,23 +1184,19 @@ func tick(dt: float, rng: Rng) -> Dictionary:
 			hands -= 1
 		if hands <= 0:
 			continue
-		# ★ 손님이 주문하고 기다리는 물건이 맨 먼저다(2026-08-25, 유저가 잡았다).
-		#   매대 순서대로만 손을 주면 앞 매대가 손을 다 먹어서, 뒤 매대를 주문한
-		#   손님은 영영 못 받고 빈손으로 갔다 — 기다리는 사람부터 만든다.
+		# ★ 미리 만들지 않는다(2026-08-26, 유저) — **주문된 것만** 만든다.
+		#   재고라는 개념이 사라졌다: 주문한다 → 만든다 → 들고 간다 → 판다.
 		var first: Array = []
-		var rest: Array = []
 		for it in shop_by_id(String(sh)).items:
 			var cid: String = String(it.id)
 			if not items.has(cid):
 				continue
 			if _order_rem(cid) > 0.0:
 				first.append(cid)
-			elif items[cid].stock < cap_of(cid):
-				rest.append(cid)
 		# ★ 손도 끈끈하다 — 잡은 물건을 다 채울 때까지 안 놓는다. 매 틱
 		#   우선순위대로 다시 잡게 했더니 손이 매대 사이를 쉴 새 없이 갈아타며
 		#   걷는 값(walk)만 내다 4시간 매출이 반토막 났다(319M — 재서 잡았다).
-		var pool: Array = first + rest
+		var pool: Array = first
 		var line2: Array = []
 		for id0 in _prevCraft:
 			if pool.has(id0) and line2.size() < hands and items.has(String(id0)) \
@@ -1208,10 +1221,9 @@ func tick(dt: float, rng: Rng) -> Dictionary:
 				continue                     # 아직 걸어가는 중 — 손은 찼지만 진행은 없다
 			st.prog += dt * speed
 			var need: float = craft_time(id)
-			while st.prog >= need and (_order_rem(id) > 0.0 or st.stock < cap_of(id)):
+			while st.prog >= need and _order_rem(id) > 0.0:
 				st.prog -= need
-				if not _give_to_order(id):
-					st.stock += 1.0
+				_give_to_order(id)
 
 	# 손을 댄 지 얼마나 됐나 — regrip 유예의 시계
 	for rid in _recent.keys():
@@ -1229,7 +1241,7 @@ func tick(dt: float, rng: Rng) -> Dictionary:
 			for l in o.lines:
 				if l.rem > 0.0:
 					all_done = false
-			if all_done or o.t >= Content.SERVICE.patience * 2.0:
+			if all_done:      # 기다림 시간은 없다 — 주문은 반드시 완성된다(2026-08-26)
 				finished.append(o)
 		for o in finished:
 			for k in range(orders.size()):
@@ -1355,59 +1367,34 @@ func _buy(g: Dictionary, rng: Rng) -> Variant:
 
 	var sp: float = g.spread if g.get("spread", 0.0) > 0.0 else Content.BASKET_SPREAD
 	var per: float = max(1.0, ceil(qty / sp))
-	var lines: Array = []
-	var grumbles: Array = []
-	var left: float = qty
 
+	# ★ 주문 생산(2026-08-26, 유저): 재고에서 집지 않는다 — **주문한다 →
+	#   만든다 → 들고 간다 → 판다.** 기다림 시간(patience)도 없앴다: 주문은
+	#   반드시 완성된다. 대신 동시에 받는 주문 수가 계산대 수(등급+1)×2로
+	#   막힌다 — 차 있으면 이번 발길은 그냥 지나간다.
+	if orders_of(pick_shop) >= order_slots(pick_shop):
+		return null
+	var lines: Array = []
+	var left: float = qty
 	for id in have:
 		if left <= 0.0:
 			break
-		var st: Dictionary = items[id]
-		# 질그릇 한 벌 — 이 가게 물건은 한 번에 더 집는다
+		# 질그릇 한 벌 — 이 가게 물건은 한 번에 더 주문한다
 		var want_n: float = min(left, ceil(per * _basket_of(item_by_id(id).shop)))
 		if want_n <= 0.0:
 			continue
-		var take: float = min(want_n, st.stock)
-		var rem: float = want_n - take
-
-		if rem > 0.0:
-			var wait_t: float = (_order_rem(id) + rem) * craft_time(id)
-			if wait_t > Content.SERVICE.patience:
-				if take > 0.0:
-					st.stock -= take
-					left -= take
-					lines.append({"id": id, "n": take, "rem": 0.0, "unit": price(id) * pay})
-				else:
-					grumbles.append({"item": item_by_id(id), "n": want_n})
-				continue
-			st.stock -= take
-			left -= want_n
-			lines.append({"id": id, "n": want_n, "rem": rem, "unit": price(id) * pay})
-			continue
-		if take <= 0.0:
-			continue
-		st.stock -= take
-		left -= take
-		lines.append({"id": id, "n": take, "rem": 0.0, "unit": price(id) * pay})
-
+		left -= want_n
+		lines.append({"id": id, "n": want_n, "rem": want_n, "unit": price(id) * pay})
 	if lines.is_empty():
-		if grumbles.is_empty():
-			return null
-		return {"guest": g, "lines": [], "gain": 0.0, "n": 0.0, "want": qty, "grumbles": grumbles}
+		return null
 
-	var waiting: bool = false
+	_oid += 1
+	orders.append({"id": _oid, "gid": g.id, "lines": lines, "want": qty, "grumbles": [], "t": 0.0})
+	var shown: Array = []
 	for l in lines:
-		if l.rem > 0.0:
-			waiting = true
-	if waiting:
-		_oid += 1
-		orders.append({"id": _oid, "gid": g.id, "lines": lines, "want": qty, "grumbles": grumbles, "t": 0.0})
-		var shown: Array = []
-		for l in lines:
-			shown.append({"item": item_by_id(l.id), "n": l.n, "gain": floor(l.unit * l.n)})
-		return {"guest": g, "orderId": _oid, "waiting": true, "gain": 0.0, "n": 0.0,
-				"want": qty, "grumbles": grumbles, "lines": shown}
-	return _settle(g, lines, qty, grumbles, 0.0, 0)
+		shown.append({"item": item_by_id(l.id), "n": l.n, "gain": floor(l.unit * l.n)})
+	return {"guest": g, "orderId": _oid, "waiting": true, "gain": 0.0, "n": 0.0,
+			"want": qty, "grumbles": [], "lines": shown}
 
 ## 계산대에서 실제로 돈이 오가는 순간. 즉시 판매든 기다린 주문이든 여기를 지난다.
 func _settle(g: Dictionary, lines: Array, want: float, grumbles: Array, waited: float, order_id: int) -> Dictionary:

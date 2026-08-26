@@ -117,7 +117,7 @@ func setup(s: Sim) -> void:
 	clerks = []
 	line = []
 	for i in range(Content.SHOPS.size()):
-		clerks.append({"pos": Iso.foot(sim, i).work, "at": "work", "busy": 0.0, "walking": false})
+		clerks.append({"pos": Iso.foot(sim, i).work, "at": "work", "busy": 0.0, "walking": false, "carry": 0.0})
 		line.append([])
 	var start: Vector2i = Iso.GATES[0]
 	mayor = {"pos": Iso.w(start.x + 0.5, start.y + 0.5), "at": start,
@@ -163,9 +163,26 @@ func on_sale(sale: Dictionary) -> void:
 		"pos": Iso.w(enter.x + 0.5, enter.y + 0.5), "out_gate": _gate(),
 		"path": path, "step": 1, "wait": 0.0, "qwait": 0.0, "empty": empty,
 		"n": int(sale.n), "gain": float(sale.gain), "sold": _order_of(sale, shop_id), "q": 0,
+		"oid": int(sale.get("orderId", -1)), "ready": false, "leaveT": 0.9,
 		"speed": float(sale.guest.get("speed", 1.0)), "off": (_grng.next() - 0.5) * 30.0,
 	})
 	line[idx].append(walkers[walkers.size() - 1])
+
+## 주문이 완성됐다 — 만든 너구리가 상자를 들고 계산대로 가고, 손님은
+## 받아서 떠난다. 예전엔 완료가 **두 번째 손님을 또 만들어냈다**(on_sale로
+## 들어가서) — 주문 생산 전환(2026-08-26)에서 정리됐다.
+func on_done(d: Dictionary) -> void:
+	var oid: int = int(d.get("orderId", 0))
+	for wk in walkers:
+		if int(wk.get("oid", -1)) == oid:
+			# 아직 걸어오는 중이어도 표를 남긴다 — 도착하면 받고 떠난다.
+			# (state까지 따졌더니 길 위에서 완성된 주문의 손님이 유령으로 남았다)
+			wk.gain = float(d.gain)
+			wk.ready = true
+			wk.leaveT = 0.9                       # 상자가 계산대로 오는 시간
+			clerks[wk.shop].carry = 0.9           # 너구리가 상자를 들고 계산대로
+			clerks[wk.shop].busy = 0.9            # 나르는 동안만 계산 자세다
+			return
 
 ## 이 손님이 무엇을 몇 개 사러 왔나. 머리 위에 띄울 주문표다.
 ## 셋까지만 담는다 — 넷을 넘기면 말풍선이 손님보다 커져서 길을 덮는다.
@@ -312,22 +329,23 @@ func _advance(delta: float) -> void:
 					wk.q = _lineSeq       # 줄 번호는 **도착한 순서**다(아래 _line_index 참고)
 			"buy":
 				if _walk(wk, delta):
-					# 맨 앞에 설 때까지는 시계가 안 돈다 — 줄은 기다리는 곳이다
-					if _line_index(wk) == 0:
-						wk.wait += delta
-						wk.qwait = 0.0        # 제 차례가 왔으면 화를 푼다
-					else:
+					# 줄은 기다리는 곳이다 — 주문이 **완성돼야** 받아서 떠난다
+					# (2026-08-26, 대기시간 폐지). 앞줄이 아니면 답답한 표정만.
+					if _line_index(wk) >= sim.counters_of(String(Content.SHOPS[wk.shop].id)):
 						wk.qwait += delta
-					if wk.wait >= BUY_TIME:
-						wk.state = "out"
-						if not wk.empty and wk.gain > 0.0:
-							# 엽전은 **팔린 순간**에만 뜬다. 손님 머리 위에 계속
-							# 붙여 두면 "얼마 낼 손님"이 되는데, 그건 아직 안 일어난 일이다.
-							floats.append({"pos": Iso.foot(sim, wk.shop).serve + Vector2(0, -40),
-								"text": "🪙" + Num.fmt(wk.gain), "t": 1.3})
-						line[wk.shop].erase(wk)
-						wk.path = Iso.route(Iso.nearest_road(Iso.door(sim, wk.shop)), wk.out_gate)
-						wk.step = 1
+					else:
+						wk.qwait = 0.0
+					if bool(wk.get("ready", false)):
+						wk.leaveT = float(wk.get("leaveT", 0.9)) - delta
+						if wk.leaveT <= 0.0:
+							wk.state = "out"
+							if wk.gain > 0.0:
+								# 엽전은 **팔린 순간**에만 뜬다
+								floats.append({"pos": Iso.foot(sim, wk.shop).serve + Vector2(0, -40),
+									"text": "🪙" + Num.fmt(wk.gain), "t": 1.3})
+							line[wk.shop].erase(wk)
+							wk.path = Iso.route(Iso.nearest_road(Iso.door(sim, wk.shop)), wk.out_gate)
+							wk.step = 1
 			"out":
 				if _walk(wk, delta) and wk.step >= wk.path.size():
 					continue                      # 마을을 떠났다
@@ -339,20 +357,13 @@ func _advance(delta: float) -> void:
 	#   점장을 보냈다. 손님은 몇 초를 걸어와야 하는데 점장은 이미 가 있으니,
 	#   **아무도 없는 계산대에서 물건을 옮기는** 그림이 됐다.
 	#   폰에서 유저가 바로 알아챈 것이 이것이다.
-	for i in range(Content.SHOPS.size()):
-		for wk in line[i]:
-			# 앞자리에 손님이 **실제로 서 있는 동안**만 계산 상태다. 0.6초의
-			# 여유는 앞사람이 떠나고 뒷사람이 한 칸 걸어오는 다리 — 이 사이에
-			# 자세가 갈리면 깜박이고, 너무 길게 잡으면(줄 전체) 점장이 계산대에
-			# 영영 묶여 만드는 모습이 사라진다(유저 — 셋 다 겪고 잡은 값이다).
-			if wk.state == "buy" and _line_index(wk) == 0:
-				# 1.2초: 0.6초는 손님마다 출퇴근(탭 댄스), 3초는 안 오는 손님을
-				# 기다리며 계산대에서 노는 그림이 됐다(유저가 둘 다 잡았다).
-				clerks[i].busy = 1.2
-				break
+	# 주문 생산(2026-08-26)에선 손님이 기다려도 너구리는 **만들러 간다** —
+	# 계산 자세(busy)는 완성 상자를 나르는 순간(on_done)에만 걸린다.
+	# 예전의 "줄에 손님이 있으면 계산대 붙박이"를 여기서 걷어냈다.
 	for i in range(Content.SHOPS.size()):
 		var c: Dictionary = clerks[i]
 		c.busy = max(0.0, c.busy - delta)
+		c.carry = max(0.0, float(c.get("carry", 0.0)) - delta)
 		var f: Dictionary = Iso.foot(sim, i)
 		# 점장도 직원처럼 **만드는 매대 앞**으로 간다. 작업대에 서 있는데
 		# 저쪽 매대가 만들어지면 오류로 보인다(유저). 만들 게 없으면 작업대.
@@ -851,26 +862,33 @@ func _stall(i: int, k: int, spot: Vector2i) -> void:
 			_text(p + Vector2(24, -52 + bob3), "▲", 15, Color("c7563f") if can_max else C.jade)
 
 func _counter(i: int) -> void:
+	# ★ 계산대도 등급 따라 는다(2026-08-26, 유저): 무쇠 1 · 참쇠 2 · 강철 3.
+	#   같은 변을 따라 반 칸씩 벌려 놓는다. 주문 자리(sim.order_slots)와 한 몸.
+	var n_ct: int = sim.counters_of(String(Content.SHOPS[i].id))
+	for c2 in range(n_ct):
+		_counter_one(i, (float(c2) - float(n_ct - 1) * 0.5) * 0.58)
+
+func _counter_one(i: int, toff: float) -> void:
 	var o: Vector2i = Iso.org(sim, i)
 	var yd: Dictionary = Iso.yard(Iso.YARD_KIND[i], Iso.plot_dim(sim, i))
 	var ct: Vector2i = yd.counter
-	var p: Vector2 = Iso.w(o.x + ct.x + 0.5, o.y + ct.y + 0.5)
+	# 변을 따라 미끄러뜨린다 — 세로 길 가게(gate x)는 y축, 골목 가게는 x축
+	var bx: float = float(o.x + ct.x) + (toff if String(yd.gate) == "y" else 0.0)
+	var by: float = float(o.y + ct.y) + (toff if String(yd.gate) == "x" else 0.0)
+	var p: Vector2 = Iso.w(bx + 0.5, by + 0.5)
 	# 계산대도 매대와 같은 규칙이다 — **정면치기 한 장 + 코드 뒤집기.**
-	# 마당의 문이 어느 쪽이냐(gate x·y)에 따라 손님이 서는 쪽이 갈리는데,
-	# 그림을 두 장 받는 대신 한 장을 좌우로 뒤집는다.
 	var pic3: Texture2D = Art.ranked("counters", String(Content.SHOPS[i].id), sim.rank_of(String(Content.SHOPS[i].id)))
 	if pic3 != null:
 		_sprite(pic3, p + Vector2(0, 14), "counters", String(yd.gate) == "y")
 	else:
 		# 임시 상자도 **방향은 있어야 한다**(유저 — "저게 계산대 맞나").
-		# 손님이 서는 문(door) 쪽 면을 짙게 칠해 "이쪽이 앞"을 만든다.
-		_box(o.x + ct.x + 0.16, o.y + ct.y + 0.3, 0.68, 0.4, 18, C.paper2, C.wood2)
+		_box(bx + 0.16, by + 0.3, 0.68, 0.4, 18, C.paper2, C.wood2)
 		var face_r: bool = String(yd.gate) == "x"      # 세로 길 가게는 ↘가 앞
-		var fN: Vector2 = Iso.w(o.x + ct.x + (0.84 if face_r else 0.16), o.y + ct.y + 0.3)
-		var fS: Vector2 = Iso.w(o.x + ct.x + (0.84 if face_r else 0.16), o.y + ct.y + 0.98)
+		var fN: Vector2 = Iso.w(bx + (0.84 if face_r else 0.16), by + 0.3)
+		var fS: Vector2 = Iso.w(bx + (0.84 if face_r else 0.16), by + 0.98)
 		if not face_r:
-			fN = Iso.w(o.x + ct.x + 0.16, o.y + ct.y + 0.98)
-			fS = Iso.w(o.x + ct.x + 0.84, o.y + ct.y + 0.98)
+			fN = Iso.w(bx + 0.16, by + 0.98)
+			fS = Iso.w(bx + 0.84, by + 0.98)
 		draw_colored_polygon(PackedVector2Array([
 			fN, fS, fS + Vector2(0, -18), fN + Vector2(0, -18)]), _shade(C.wood2, -0.06))
 		# 상판 위 엽전함(짙은 통) + 엽전 — 계산하는 자리라는 표
@@ -917,6 +935,14 @@ func _dog() -> void:
 ## 안에서 낮과 밤을 다 만난다. 색은 화면 전체에 얇게 한 겹만 얹는다.
 ## 하루 시계는 sim의 것이다(밤엔 손님·손놀림·쥐 규칙이 실제로 달라진다).
 ## clock_override는 찍는 도구용 — 화면만 그 시각인 척한다.
+## 완성된 주문 상자 — 물건 모양이 아니라 **그냥 상자**다(2026-08-26, 유저).
+## 나르는 동안 너구리 손께에 얹는다. 전부 코드 그림.
+func _crate(p2: Vector2, flip: bool) -> void:
+	var bx: Vector2 = p2 + Vector2(-16.0 if flip else 16.0, -40.0)
+	draw_rect(Rect2(bx - Vector2(8, 6), Vector2(16, 12)), Color("a97e4f"))
+	draw_rect(Rect2(bx - Vector2(8, 6), Vector2(16, 4)), Color("c19a6b"))
+	draw_rect(Rect2(bx - Vector2(9, 8), Vector2(18, 2)), Color("6d5236"))
+
 func day_phase() -> float:
 	return clock_override if clock_override >= 0.0 else sim.day_phase()
 
@@ -1002,17 +1028,10 @@ func _raccoon(p: Vector2, size: float, tint: Color) -> void:
 	draw_circle(at + Vector2(-size * 0.11, -size * 0.90), size * 0.09, Color(0.17, 0.14, 0.11, 0.85))
 	draw_circle(at + Vector2(size * 0.11, -size * 0.90), size * 0.09, Color(0.17, 0.14, 0.11, 0.85))
 
-## 이 가게가 **할 일이 없나** — 열린 물건이 전부 진열대까지 찼으면 존다.
-## 이게 있어야 "더 만들 데가 없다"가 화면으로 보인다(늘리라는 신호다).
+## 이 가게가 **할 일이 없나** — 주문 생산(2026-08-26)에선 "받은 주문이
+## 없다"가 곧 한가함이다. 한가하면 존다.
 func _idle(i: int) -> bool:
-	var any: bool = false
-	for it in Content.SHOPS[i].items:
-		if not sim.is_open(it.id):
-			continue
-		any = true
-		if sim.items[it.id].stock < sim.cap_of(it.id):
-			return false
-	return any
+	return sim.orders_of(String(Content.SHOPS[i].id)) == 0
 
 ## 점장 그림 — **가게 것이 있으면 가게 것**, 없으면 공통 점장.
 ## 대장간 너구리는 망치를 들고, 필방 너구리는 앞치마를 두르는 식이다.
@@ -1097,6 +1116,8 @@ func _clerk(i: int) -> void:
 		var br3: float = 0.0 if c.walking else (0.5 + 0.5 * sin(_t * 2.4 + c.pos.x * 0.03)) * 0.03
 		_shadow(c.pos, 14.0)
 		_sprite(full, c.pos, "clerks", bool(c.get("flip", false)), br3)
+		if float(c.get("carry", 0.0)) > 0.0:
+			_crate(c.pos, bool(c.get("flip", false)))
 		if pose == "sleep" and Art.ranked("clerks", "%s-sleep" % id, sim.rank_of(id)) == null:
 			_text(c.pos + Vector2(14, -70 + sin(_t * 2.0) * 3.0), "💤", 14, Color.WHITE)
 		return
@@ -1104,6 +1125,8 @@ func _clerk(i: int) -> void:
 	if Art.tex("hero-body", sim.fur_of(id) + "-side") != null:
 		_shadow(c.pos, 14.0)
 		_clerk_layers(c.pos, id, dirn, bool(c.get("flip", false)), c.walking)
+		if float(c.get("carry", 0.0)) > 0.0:
+			_crate(c.pos, bool(c.get("flip", false)))
 		return
 	var t: Texture2D = _hero_tex(id, pose)
 	if t == null:                       # 그 자세가 아직 없으면 만드는 자세로
@@ -1113,6 +1136,8 @@ func _clerk(i: int) -> void:
 		_shadow(c.pos, 14.0)
 		_sprite(t, c.pos, "clerks" if Art.tex("clerks", "%s-%s" % [id, pose]) != null else "hero",
 			bool(c.get("flip", false)), breath2)
+		if float(c.get("carry", 0.0)) > 0.0:
+			_crate(c.pos, bool(c.get("flip", false)))
 		return
 	_raccoon(c.pos, SHAPE, Color("a8815a"))
 
