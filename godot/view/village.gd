@@ -169,6 +169,21 @@ func on_sale(sale: Dictionary) -> void:
 	})
 	line[idx].append(walkers[walkers.size() - 1])
 
+## 도착했더니 자리가 차 있었다 — 이 손님은 사지 못하고 지나간다.
+## 유령 방지: 줄 명단에서 빼고, 걷던 중이면 문 앞에서 돌아서게 표시만 남긴다.
+func on_pass(oid: int) -> void:
+	for wk in walkers:
+		if int(wk.get("oid", -1)) != oid:
+			continue
+		wk.empty = true
+		wk["passed"] = true
+		line[wk.shop].erase(wk)
+		if wk.state == "buy":
+			wk.state = "out"
+			wk.path = Iso.route(Iso.nearest_road(Iso.door(sim, wk.shop)), wk.out_gate)
+			wk.step = 1
+		return
+
 ## 주문이 완성됐다 — 만든 너구리가 상자를 들고 계산대로 가고, 손님은
 ## 받아서 떠난다. 예전엔 완료가 **두 번째 손님을 또 만들어냈다**(on_sale로
 ## 들어가서) — 주문 생산 전환(2026-08-26)에서 정리됐다.
@@ -327,9 +342,14 @@ func _advance(delta: float) -> void:
 		match wk.state:
 			"in":
 				if _walk(wk, delta) and wk.step >= wk.path.size():
-					wk.state = "buy"
-					_lineSeq += 1
-					wk.q = _lineSeq       # 줄 번호는 **도착한 순서**다(아래 _line_index 참고)
+					if bool(wk.get("passed", false)):
+						wk.state = "out"     # 문 앞까지 왔지만 자리가 없었다
+						wk.path = Iso.route(Iso.nearest_road(Iso.door(sim, wk.shop)), wk.out_gate)
+						wk.step = 1
+					else:
+						wk.state = "buy"
+						_lineSeq += 1
+						wk.q = _lineSeq       # 줄 번호는 **도착한 순서**다(아래 _line_index 참고)
 			"buy":
 				if _walk(wk, delta):
 					# 줄은 기다리는 곳이다 — 주문이 **완성돼야** 받아서 떠난다

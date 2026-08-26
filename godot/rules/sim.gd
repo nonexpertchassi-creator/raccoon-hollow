@@ -147,6 +147,8 @@ var _crafting: Dictionary = {}
 var _switch: Dictionary = {}
 ## 마지막으로 손을 댄 지 얼마나 됐나(id → 초). regrip 유예 판정용.
 var _recent: Dictionary = {}
+## 이번 틱에 "도착했더니 자리가 차서" 지나간 주문 번호들 — 화면에 알린다.
+var _passed: Array = []
 ## 날씨 — content.js의 WEATHER.kinds 중 하나. 손님 발길·손놀림·쥐가 탄다.
 var weather: String = "clear"
 var _wxT: float = 0.0
@@ -525,6 +527,17 @@ func counters_of(shop_id: String) -> int:
 ## 질식(걸어오는 내내 자리를 물고 있어서) → +1이 숨통이다.
 func order_slots(shop_id: String) -> int:
 	return counters_of(shop_id) + 1
+
+## 도착해서 줄에 선 주문만 센다 — 자리 규칙(2026-08-27)의 기준.
+func arrived_orders_of(shop_id: String) -> int:
+	var n: int = 0
+	for o in orders:
+		if float(o.get("eta", 0.0)) > 0.0:
+			continue
+		if not (o.lines as Array).is_empty() \
+				and String(item_by_id(String(o.lines[0].id)).shop) == shop_id:
+			n += 1
+	return n
 
 func orders_of(shop_id: String) -> int:
 	var n: int = 0
@@ -1240,6 +1253,12 @@ func tick(dt: float, rng: Rng) -> Dictionary:
 			o.t += dt
 			if float(o.get("eta", 0.0)) > 0.0:
 				o.eta = float(o.eta) - dt
+				if float(o.eta) <= 0.0:
+					# 도착 — 줄이 차 있으면 이 손님은 그냥 지나간다.
+					var sh0: String = String(item_by_id(String(o.lines[0].id)).shop)
+					if arrived_orders_of(sh0) - 1 >= order_slots(sh0):
+						o["passed"] = true
+						_passed.append(int(o.id))
 			var all_done: bool = true
 			for l in o.lines:
 				if l.rem > 0.0:
@@ -1300,8 +1319,15 @@ func tick(dt: float, rng: Rng) -> Dictionary:
 	#   이제 손님은 **뽑기로만** 온다(pull·spin 안에서 들어온다).
 	var new_guest: Variant = null
 
-	var out: Dictionary = {"sales": sales, "done": done, "ask": ask, "newGuest": new_guest,
+	var out: Dictionary = {"passed": _passed.duplicate(), "sales": sales, "done": done, "ask": ask, "newGuest": new_guest,
 		"autoLv": auto_lv, "pests": _pestEvents, "quests": _questDone, "event": _evDone}
+	if not _passed.is_empty():
+		var keep2: Array = []
+		for o2 in orders:
+			if not bool(o2.get("passed", false)):
+				keep2.append(o2)
+		orders = keep2
+		_passed = []
 	_evDone = null
 	return out
 
@@ -1379,7 +1405,11 @@ func _buy(g: Dictionary, rng: Rng) -> Variant:
 	#   만든다 → 들고 간다 → 판다.** 기다림 시간(patience)도 없앴다: 주문은
 	#   반드시 완성된다. 대신 동시에 받는 주문 수가 계산대 수(등급+1)×2로
 	#   막힌다 — 차 있으면 이번 발길은 그냥 지나간다.
-	if orders_of(pick_shop) >= order_slots(pick_shop):
+	# ★ 자리 규칙(2026-08-27, 유저): 걸어오는 손님은 줄 자리를 **안** 문다.
+	#   자리는 도착한 줄만 세고, 도착 순간 차 있으면 그때 지나간다(아래 tick).
+	#   다만 출발을 아예 안 막으면 거리가 주문으로 넘쳐 4시간이 3.3B까지
+	#   끓었다(재서 잡았다) — 걸어오는 무리에도 자리 수만큼 상한을 건다.
+	if orders_of(pick_shop) - arrived_orders_of(pick_shop) >= order_slots(pick_shop):
 		return null
 	# ★ 한 주문 = **한 종류**(2026-08-26, 유저). 여러 종을 담으면 풍선(첫
 	#   물건 하나만 보인다)에 없는 물건이 만들어져 "안 보이는데 생산"이 됐다.

@@ -284,6 +284,8 @@ func step(delta: float) -> void:
 		village.on_sale(s)
 	for d in r.done:
 		village.on_done(d)     # 완료는 새 손님이 아니다 — 기다리던 손님이 받아 간다
+	for po in r.get("passed", []):
+		village.on_pass(int(po))   # 도착했더니 자리가 차 있었다 — 빈손으로 지나간다
 	if r.ask != null:
 		village.on_ask(r.ask)
 	# 소리는 **드물게 일어나는 일**에만 준다. 파는 순간은 일부러 뺐다 —
