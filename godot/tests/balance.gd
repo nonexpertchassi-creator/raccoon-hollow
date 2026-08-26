@@ -218,4 +218,14 @@ func _init() -> void:
 		for sh in s.shops:
 			got.append("%s %d/%d" % [Content.SHOP_UP[sh].name, s.shop_up_lv(sh), int(Content.SHOP_UP[sh].max)])
 		print("   산 강화: " + " · ".join(got))
+	# 패시브 스킬(2026-08-27) — 배우가 나뭇잎을 어디에 썼나. 안 적으면 도구가
+	# 스킬을 산 것도, 안 산 것도 말해 주지 않는다(도구 규칙 3).
+	var sk: Array[String] = []
+	for u in Content.GEM_UPGRADES:
+		var l: int = int(s.up_lv(u.id))
+		if l > 0:
+			sk.append("%s %d/%d" % [u.name, l, int(u.max)])
+	print("   패시브 스킬: " + (" · ".join(sk) if not sk.is_empty() else "한 칸도 안 올림"))
+	print("   승급 공사: 시작한 승급 %d · 잎으로 당김 %d · 아직 공사 중 %d" % [
+		int(s.stats.get("open.promote", 0.0)), int(s.stats.get("build.rush", 0.0)), s.building.size()])
 	quit()

@@ -364,6 +364,101 @@ const GEM_UPGRADES := [
 			62.0
 		],
 		"desc": "모든 물건 값 +1.5%"
+	},
+	{
+		"id": "walk",
+		"name": "손님 걸음",
+		"face": "👣",
+		"max": 20.0,
+		"step": 0.0275,
+		"costMul": 5.0,
+		"desc": "손님이 오는 걸음 +2.75%p (45% → 100%)"
+	},
+	{
+		"id": "carry",
+		"name": "너구리 걸음",
+		"face": "🏃",
+		"max": 20.0,
+		"step": 0.01,
+		"costMul": 5.0,
+		"desc": "너구리가 걷고 나르는 속도 +1%"
+	},
+	{
+		"id": "night",
+		"name": "밤일 익숙",
+		"face": "🌙",
+		"max": 20.0,
+		"step": 0.01,
+		"costMul": 5.0,
+		"desc": "밤에 손이 느려지는 정도 −1%p"
+	},
+	{
+		"id": "rainy",
+		"name": "비 오는 날 장사",
+		"face": "🌧️",
+		"max": 20.0,
+		"step": 0.01,
+		"costMul": 5.0,
+		"desc": "비 올 때 줄어드는 발길 −1%p"
+	},
+	{
+		"id": "offtime",
+		"name": "오프라인 시간",
+		"face": "🛏️",
+		"max": 20.0,
+		"step": 1080.0,
+		"costMul": 10.0,
+		"desc": "자리 비운 벌이를 쳐주는 시간 +18분 (2시간 → 8시간)"
+	},
+	{
+		"id": "offrate",
+		"name": "오프라인 배율",
+		"face": "💰",
+		"max": 20.0,
+		"step": 0.025,
+		"costMul": 10.0,
+		"desc": "자리 비운 벌이 +2.5%p (50% → 100%)"
+	},
+	{
+		"id": "offleaf",
+		"name": "오프라인 나뭇잎",
+		"face": "🍃",
+		"max": 20.0,
+		"step": 0.05,
+		"costMul": 10.0,
+		"desc": "자리 비운 동안 모이는 나뭇잎 +5%"
+	},
+	{
+		"id": "questpay",
+		"name": "의뢰 보상",
+		"face": "📜",
+		"max": 20.0,
+		"step": 0.025,
+		"costMul": 10.0,
+		"desc": "의뢰 보상 엽전 +2.5%p (90% → 140%)"
+	},
+	{
+		"id": "questleaf",
+		"name": "의뢰 나뭇잎",
+		"face": "🌿",
+		"max": 20.0,
+		"step": 0.05,
+		"costMul": 10.0,
+		"desc": "의뢰가 주는 나뭇잎 +5%"
+	},
+	{
+		"id": "questslot",
+		"name": "의뢰 자리",
+		"face": "📋",
+		"max": 4.0,
+		"step": 1.0,
+		"cost": [
+			100.0,
+			300.0,
+			600.0,
+			1000.0
+		],
+		"desc": "동시에 받는 의뢰 +1 (1 → 5)"
 	}
 ]
 
@@ -857,8 +952,8 @@ const MILESTONE_EVERY := 25.0
 const MILESTONE_MULT := 1.25
 
 const OFFLINE := {
-	"capHours": 4.0,
-	"efficiency": 0.6
+	"capHours": 2.0,
+	"efficiency": 0.5
 }
 
 const PESTS := [

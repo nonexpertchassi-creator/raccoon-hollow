@@ -648,7 +648,10 @@ export class Sim {
   /** 다음 한 단계의 나뭇잎 값. 다 올렸으면 null */
   gemCost(id) {
     const u = GU[id]; const lv = this.upLv(id);
-    return !u || lv >= u.max ? null : u.cost[lv];
+    if (!u || lv >= u.max) return null;
+    // 패시브 스킬(2026-08-27)은 값이 레벨 × costMul이다. 이 판(답안지)에는
+    // 스킬이 없지만, 모양을 모르면 여기서 터진다 — 답안지도 안 죽게 받아준다.
+    return u.costMul ? (lv + 1) * u.costMul : u.cost[lv];
   }
   canBuyGemUp(id) { const c = this.gemCost(id); return c != null && this.gems >= c; }
   buyGemUp(id) {

@@ -328,7 +328,7 @@ func _walk(wk: Dictionary, delta: float) -> bool:
 		wk.up = d.y < 0.0
 	# 손님마다 걸음이 다르다 — 토끼는 빠르고 거북은 느리다.
 	# 이 숫자는 content.js에 처음부터 있었는데 화면이 안 쓰고 있었다.
-	var step: float = WALK * float(Content.GUEST_WALK) * float(wk.speed) * delta
+	var step: float = WALK * sim.guest_walk() * float(wk.speed) * delta
 	if d.length() <= step:
 		wk.pos = target
 		if wk.state != "buy":
@@ -402,7 +402,7 @@ func _advance(delta: float) -> void:
 			var carry: int = int(_staffCarry.get(skey, 0))
 			var goal: Vector2 = _serve_of(i, carry) if carry != 0 else _staff_goal(i, k)
 			var cur: Vector2 = _staffAt.get(skey, _staff_pos(i, k))
-			cur = cur.move_toward(goal, 52.0 * delta)
+			cur = cur.move_toward(goal, 52.0 * sim.carry_speed() * delta)
 			_staffAt[skey] = cur
 			if carry != 0 and cur.distance_to(goal) < 10.0:
 				var r: int = _try_deliver(i, carry)
@@ -493,7 +493,7 @@ func _advance(delta: float) -> void:
 		# 필요 없어졌다 — 빈 칸 사이 직선은 가구를 안 밟는다.
 		var tgt: Vector2 = goal
 		var d: Vector2 = tgt - c.pos
-		var step: float = CLERK_SPEED * delta
+		var step: float = CLERK_SPEED * sim.carry_speed() * delta
 		c.walking = d.length() > step        # 걷는 중이면 걷는 그림을 쓴다
 		if c.walking and absf(d.y) > 0.2:
 			c.up = d.y < 0.0                 # 위로 걸으면 뒷모습을 쓴다(3방향 계약)

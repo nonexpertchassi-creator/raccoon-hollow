@@ -27,7 +27,7 @@ fail() { FAIL=1; printf "❌ %-8s %s\n" "$1" "$2"; }
 # 좌표는 눈으로 못 믿는다 — 두드려 보고 sim이 실제로 변했는지 본다
 OUT=$(godot --headless --path godot tests/taptest.tscn 2>&1 || true)
 case "$OUT" in
-  *"TAPTEST OK"*) pass tap "누르기 아홉 가지 다 먹는다(승급 공사 포함)" ;;
+  *"TAPTEST OK"*) pass tap "누르기 열 가지 다 먹는다(승급 공사·패시브 스킬 포함)" ;;
   *) fail tap "" ; echo "$OUT" | grep "TAPTEST FAIL" | sed 's/^/     /' ;;
 esac
 
@@ -61,6 +61,9 @@ case "$OUT" in
 esac
 
 for S in $SUBJECTS; do
+  # ★ sim은 자바스크립트 **답**은 안 쓰지만(2026-08-22에 갈라졌다) 이 줄은
+  #   **문제지(cases.txt)도 만든다.** 건너뛰었더니 옛 문제지가 남아 Godot이
+  #   영영 안 끝나는 판을 돌았다(2026-08-27에 한 번 당했다). 답안지는 계속 돈다.
   node tools/answers.mjs "$S"
   godot --headless --path godot --script tests/crosscheck.gd -- "$S" >/dev/null 2>&1
   # ── sim은 이제 **어제의 자신**과 대조한다 ──

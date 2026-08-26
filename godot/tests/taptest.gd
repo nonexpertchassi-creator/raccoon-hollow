@@ -397,6 +397,38 @@ func _process(_d: float) -> void:
 		if s9.is_building("smith"):
 			fails.append("공사가 끝났는데 아직 공사 중이다")
 
+	# 10) 패시브 스킬(2026-08-27) — 사면 실제로 세지는가.
+	#     값만 빠지고 효과가 안 붙는 종류의 고장은 화면으로는 안 보인다.
+	var sA: Sim = Sim.new()
+	sA.gems = 1.0e9
+	var walk0: float = sA.guest_walk()
+	var cap0: float = sA.offline_cap()
+	var slot0: int = sA.quest_slots()
+	var pay0: float = sA.quest_pay_mul()
+	for _i in range(20):
+		sA.buy_gem_up("walk")
+		sA.buy_gem_up("offtime")
+		sA.buy_gem_up("questpay")
+	for _i in range(4):
+		sA.buy_gem_up("questslot")
+	if not is_equal_approx(sA.guest_walk(), 1.0):
+		fails.append("손님 걸음을 만렙까지 올렸는데 %.2f (1.00이어야 한다)" % sA.guest_walk())
+	if sA.guest_walk() <= walk0:
+		fails.append("손님 걸음 스킬을 샀는데 걸음이 안 빨라졌다")
+	if sA.offline_cap() <= cap0:
+		fails.append("오프라인 시간 스킬을 샀는데 쳐주는 시간이 그대로다")
+	if not is_equal_approx(sA.offline_cap(), 8.0 * 3600.0):
+		fails.append("오프라인 시간 만렙이 여덟 시간이 아니라 %.0f초" % sA.offline_cap())
+	if sA.quest_slots() != slot0 + 4:
+		fails.append("의뢰 자리 스킬 만렙인데 자리가 %d (%d이어야)" % [sA.quest_slots(), slot0 + 4])
+	if sA.quest_pay_mul() <= pay0:
+		fails.append("의뢰 보상 스킬을 샀는데 보상 배수가 그대로다")
+	if int(sA.up_lv("walk")) != 20:
+		fails.append("스무 번 샀는데 손님 걸음이 %d단계" % int(sA.up_lv("walk")))
+	# 만렙을 넘겨 더 못 산다
+	if sA.buy_gem_up("walk"):
+		fails.append("만렙인데 한 번 더 팔았다")
+
 	if fails.is_empty():
 		print("TAPTEST OK")
 	else:

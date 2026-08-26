@@ -314,7 +314,7 @@ func _quests_body() -> void:
 	if sim.quests.size() < sim.quest_slots():
 		_box.add_child(_label("다음 의뢰가 오는 중… (%d초)" % int(ceil(max(0.0, sim._qCool))), 12, Color("8a7a63")))
 
-	_box.add_child(_label("나뭇잎 쓰는 곳", 15, Color("5a4e3d")))
+	_box.add_child(_label("패시브 스킬 — 나뭇잎으로 영영 세지는 것들", 15, Color("5a4e3d")))
 	_box.add_child(_label("👷 부스터 — %s" % ("빨라지는 중… %d초" % int(ceil(sim.rush))
 		if sim.rush > 0.0 else "%d초 동안 만드는 속도가 %d배"
 		% [int(Content.GEM.rush.secs), int(Content.GEM.rush.mult)]), 13))
@@ -324,12 +324,14 @@ func _quests_body() -> void:
 		var lv: int = int(sim.up_lv(u.id))
 		var cost: Variant = sim.gem_cost(u.id)
 		_box.add_child(_label("%s %s %d/%d — %s" % [u.face, u.name, lv, int(u.max), u.desc], 13))
+		# 얼마나 왔나를 막대로 — 만렙 20짜리는 숫자만으로 감이 안 온다.
+		_bar(float(lv) / float(u.max), Color("4a7c59"))
 		if cost == null:
 			_box.add_child(_label("끝까지 올렸다", 11, Color("4a7c59")))
 		else:
 			_box.add_child(_btn("🍃%d" % int(cost), sim.can_buy_gem_up(u.id),
 				func(): sim.buy_gem_up(u.id); rebuild()))
-	_box.add_child(_label("뽑기 · 룰렛 · 스킨 상점은 다음 판에 붙는다", 11, Color("8a7a63")))
+	_box.add_child(_label("광고로 한 레벨 올리기·나뭇잎 묶음은 다음 판에 붙는다", 11, Color("8a7a63")))
 
 func _hhmm(sec: float) -> String:
 	var h: int = int(sec / 3600.0)

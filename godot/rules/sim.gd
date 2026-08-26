@@ -196,7 +196,7 @@ func _gap(g: Dictionary, rng: Rng) -> float:
 	# 성이 오르면 발걸음도 잦아진다 — content.js의 REGULAR_COME 참고
 	# 밤엔 발길이 뜸하다(DAY.nightCome) — 짐승도 잘 시간이다. 날씨도 탄다.
 	return _wild_gap(g.every / (1.0 + Content.REGULAR_COME * regular_lv(String(g.id)))
-		* (Content.DAY.nightCome if is_night() else 1.0) / float(weather_def().come),
+		* (Content.DAY.nightCome if is_night() else 1.0) / weather_come(),
 		g.get("wild", 0.0), rng)
 
 ## wild가 0이면 시계처럼, 1이면 완전히 운. 평균 간격은 어느 쪽이든 every 그대로다.
@@ -553,8 +553,14 @@ func orders_of(shop_id: String) -> int:
 			n += 1
 	return n
 
+## 지금 날씨의 발길 배수 — **비 올 때만** 스킬이 덜어 준다(이름 그대로).
+func weather_come() -> float:
+	var c: float = float(weather_def().come)
+	return minf(1.0, c + skill("rainy")) if String(weather_def().id) == "rain" else c
+
 func quest_slots() -> int:
-	return int(Content.QUEST.slots) + int(Content.SHOP_UP.paper.step) * shop_up_lv("paper")
+	return int(Content.QUEST.slots) + int(Content.SHOP_UP.paper.step) * shop_up_lv("paper") \
+		+ int(up_lv("questslot"))
 
 # ── 가게 등급 ──
 func rank_of(shop_id: String) -> int: return int(rank.get(shop_id, 0))
@@ -592,7 +598,7 @@ func craft_time(id: String) -> float:
 	var f: float = max(Content.LEVEL.timeFloor, pow(Content.LEVEL.timeReduce, lv(id) - 1.0))
 	# handSpeed — 손 하나의 손놀림 배수(생산 개편 보정, content.js의 CRAFT 참고)
 	# 밤엔 손이 느리다(DAY.nightCraft) — 밤 규칙은 화면이 아니라 여기(sim)의 것이다
-	return it.time * f * forge_mul() * _forge_of(it.shop) / Content.CRAFT.handSpeed 		* (Content.DAY.nightCraft if is_night() else 1.0) * float(weather_def().craft)
+	return it.time * f * forge_mul() * _forge_of(it.shop) / Content.CRAFT.handSpeed 		* (night_craft() if is_night() else 1.0) * float(weather_def().craft)
 
 func cap_of(id: String) -> float:
 	return Content.STOCK_CAP + Content.STAFF.capAdd * staff_of(item_by_id(id).shop)
@@ -986,7 +992,13 @@ func gem_cost(id: String) -> Variant:
 		return null
 	var u: Dictionary = _gu[id]
 	var l: int = int(up_lv(id))
-	return null if l >= int(u.max) else u.cost[l]
+	if l >= int(u.max):
+		return null
+	# 패시브 스킬(2026-08-27)은 값이 **레벨 × costMul**이다 — 표를 스무 줄씩
+	# 손으로 적지 않는다. 옛 강화 셋은 그대로 표(cost)를 쓴다.
+	if u.has("costMul"):
+		return float(l + 1) * float(u.costMul)
+	return u.cost[l]
 
 func can_buy_gem_up(id: String) -> bool:
 	var c: Variant = gem_cost(id)
@@ -999,6 +1011,33 @@ func buy_gem_up(id: String) -> bool:
 	gemUp[id] = up_lv(id) + 1.0
 	_ev("%s %s단계" % [_gu[id].name, str(int(up_lv(id)))], "gem")
 	return true
+
+## 스킬 한 가지가 지금 얼마나 세졌나 — step × 레벨.
+func skill(id: String) -> float:
+	return float(_gu[id].step) * up_lv(id) if _gu.has(id) else 0.0
+
+## 손님 걸음 — 기본 0.45에서 스킬로 1.00까지 올라간다(2026-08-27).
+## 일부러 느리게 두고 시작한다. 되찾는 30%가 첫 성장의 손맛이다.
+func guest_walk() -> float:
+	return minf(1.0, float(Content.GUEST_WALK) + skill("walk"))
+
+## 너구리가 걷고 나르는 속도 배수(화면이 읽는다).
+func carry_speed() -> float: return 1.0 + skill("carry")
+
+## 밤에 손이 느려지는 정도 — 1.35에서 스킬로 1.15까지.
+func night_craft() -> float:
+	return maxf(1.0, float(Content.DAY.nightCraft) - skill("night"))
+
+## 의뢰 보상 배수 / 의뢰가 주는 나뭇잎 배수.
+func quest_pay_mul() -> float: return float(Content.QUEST.payMul) + skill("questpay")
+func quest_leaf_mul() -> float: return 1.0 + skill("questleaf")
+
+## 오프라인 — 쳐주는 시간(초)과 배율.
+func offline_cap() -> float:
+	return float(Content.OFFLINE.capHours) * 3600.0 + skill("offtime")
+func offline_rate() -> float:
+	return minf(1.0, float(Content.OFFLINE.efficiency) + skill("offrate"))
+func offline_leaf_mul() -> float: return 1.0 + skill("offleaf")
 
 func haggle() -> float: return 1.0 + _gu.haggle.step * up_lv("haggle")
 func forge_mul() -> float: return 1.0 - _gu.forge.step * up_lv("forge")
@@ -1161,13 +1200,13 @@ func claim_quest(qid: float) -> bool:
 			quests.remove_at(k)
 			break
 	_qCool = Content.QUEST.every
-	var coin: float = floor(price(String(q.itemId)) * q.need * Content.QUEST.payMul)
+	var coin: float = floor(price(String(q.itemId)) * q.need * quest_pay_mul())
 	money += coin
 	revenue += coin
 	bump("coin.quest", coin)          # 지표 — 의뢰가 번 몫(판매와 갈라 본다)
 	if auto:
 		_purse += coin * Content.AUTO_SHARE
-	gems += q.gems
+	gems += floor(float(q.gems) * quest_leaf_mul())
 	_ev("%s마을 의뢰를 마쳤다 — 🪙%s · 🍃%s" % [_guest_by_id[String(q.gid)].name, Num.fmt(coin), str(int(q.gems))], "quest")
 	_event_gain("quest", 1.0)
 	var d: Dictionary = (q as Dictionary).duplicate()
@@ -1521,7 +1560,7 @@ func _buy(g: Dictionary, rng: Rng) -> Variant:
 	# 제작은 도착해야 시작된다(2026-08-26, 유저: "도착 전에 만든다").
 	# 빠른 짐승은 금방, 거북은 한참 — 화면의 걸음과 대충 맞는다.
 	orders.append({"id": _oid, "gid": g.id, "lines": lines, "want": qty, "grumbles": [],
-		"t": 0.0, "eta": 8.0 / (float(g.get("speed", 1.0)) * float(Content.GUEST_WALK))})
+		"t": 0.0, "eta": 8.0 / (float(g.get("speed", 1.0)) * guest_walk())})
 	var shown: Array = []
 	for l in lines:
 		shown.append({"item": item_by_id(l.id), "n": l.n, "gain": floor(l.unit * l.n)})
@@ -1752,16 +1791,20 @@ func spin(by_ad: bool, rng: Rng) -> Variant:
 func offline(seconds: float) -> Variant:
 	# 수익은 4시간까지만 쌓이지만 **이벤트 마감은 그대로 흐른다**
 	wall += seconds
-	var real: float = min(seconds, Content.OFFLINE.capHours * 3600.0)
+	var cap: float = offline_cap()
+	var real: float = min(seconds, cap)
 	if real < 60.0:
 		return null
-	var earned: float = floor(income_per_sec() * real * Content.OFFLINE.efficiency)
+	var earned: float = floor(income_per_sec() * real * offline_rate())
+	# 나뭇잎도 얹는다(2026-08-27, 유저) — 쳐주는 두 시간마다 한 장.
+	var leaf: float = floor(floor(real / 7200.0) * offline_leaf_mul())
 	bump("run.offline")
 	money += earned
 	revenue += earned
+	gems += leaf
 	if auto:
 		_purse += earned * Content.AUTO_SHARE
-	return {"earned": earned, "seconds": real, "capped": seconds > Content.OFFLINE.capHours * 3600.0}
+	return {"earned": earned, "leaf": leaf, "seconds": real, "capped": seconds > cap}
 
 ## ── 저장 ──
 ##

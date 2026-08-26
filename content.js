@@ -984,7 +984,10 @@ export const STOCK_CAP = 5;
 export const BASKET_SPREAD = 3;
 
 /** 오프라인 수익 — 방치형의 심장. 껐다 켰을 때 쌓여 있어야 다시 켠다. */
-export const OFFLINE = { capHours: 4, efficiency: 0.6 };
+/* 자리 비운 동안의 벌이 — **기본은 두 시간 · 절반**이고, 패시브 스킬로
+ * 여덟 시간 · 온전히까지 자란다(2026-08-27, 유저). 처음부터 넉넉하면
+ * 스킬이 올릴 자리가 없다 — 성장할 곳을 남겨 두는 쪽을 고른다. */
+export const OFFLINE = { capHours: 2, efficiency: 0.5 };
 
 /* ───────────── 마을 의뢰 ─────────────
  * "토끼마을에서 호미 30개를 청했다."
@@ -1067,6 +1070,34 @@ export const GEM_UPGRADES = [
   { id: 'haggle', name: '흥정 솜씨', face: '🤝', max: 10, step: 0.015,
     cost: [5, 7, 10, 14, 19, 25, 32, 40, 50, 62],
     desc: '모든 물건 값 +1.5%' },
+
+  /* ── 패시브 스킬(2026-08-27, 유저) ──
+   * 옛 '나뭇잎 강화'와 **한 목록이다.** 쓸 곳이 두 갈래면 헷갈리기만 한다.
+   * 효과는 찔끔찔끔(레벨당 1~3%), 만렙 20, 값은 **레벨 × costMul**이다 —
+   * 첫 레벨은 오늘 닿는 맛, 만렙은 몇 달짜리 목표. 전부 만렙까지 모으면
+   * 약 1만 7천 장으로, 뽑기(누적 ~2,700장)를 훨씬 넘는 제일 긴 독이다.
+   * 그 긴 독이 곧 지갑이 당기는 자리다(장부 '나뭇잎' 참고). */
+  { id: 'walk', name: '손님 걸음', face: '👣', max: 20, step: 0.0275, costMul: 5,
+    desc: '손님이 오는 걸음 +2.75%p (45% → 100%)' },
+  { id: 'carry', name: '너구리 걸음', face: '🏃', max: 20, step: 0.01, costMul: 5,
+    desc: '너구리가 걷고 나르는 속도 +1%' },
+  { id: 'night', name: '밤일 익숙', face: '🌙', max: 20, step: 0.01, costMul: 5,
+    desc: '밤에 손이 느려지는 정도 −1%p' },
+  { id: 'rainy', name: '비 오는 날 장사', face: '🌧️', max: 20, step: 0.01, costMul: 5,
+    desc: '비 올 때 줄어드는 발길 −1%p' },
+  { id: 'offtime', name: '오프라인 시간', face: '🛏️', max: 20, step: 1080, costMul: 10,
+    desc: '자리 비운 벌이를 쳐주는 시간 +18분 (2시간 → 8시간)' },
+  { id: 'offrate', name: '오프라인 배율', face: '💰', max: 20, step: 0.025, costMul: 10,
+    desc: '자리 비운 벌이 +2.5%p (50% → 100%)' },
+  { id: 'offleaf', name: '오프라인 나뭇잎', face: '🍃', max: 20, step: 0.05, costMul: 10,
+    desc: '자리 비운 동안 모이는 나뭇잎 +5%' },
+  { id: 'questpay', name: '의뢰 보상', face: '📜', max: 20, step: 0.025, costMul: 10,
+    desc: '의뢰 보상 엽전 +2.5%p (90% → 140%)' },
+  { id: 'questleaf', name: '의뢰 나뭇잎', face: '🌿', max: 20, step: 0.05, costMul: 10,
+    desc: '의뢰가 주는 나뭇잎 +5%' },
+  { id: 'questslot', name: '의뢰 자리', face: '📋', max: 4, step: 1,
+    cost: [100, 300, 600, 1000],
+    desc: '동시에 받는 의뢰 +1 (1 → 5)' },
 ];
 
 /* ★ 세 가지가 전부 **생산 쪽**에 붙어 있다. 처음엔 장(場)에 붙였다가
