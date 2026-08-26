@@ -6,12 +6,18 @@ const path = require('path');
 
 const output = process.argv[2] || 'docs/art/generated/SMITH-ITEMS-RUNTIME-PREVIEW.png';
 const items = ['pick', 'sickle', 'hoe', 'axe', 'shears', 'knife', 'lock', 'cauldr'];
+const availableByRank = [
+  new Set(['pick', 'sickle', 'hoe', 'axe']),
+  new Set(['pick', 'sickle', 'hoe', 'axe', 'shears', 'knife']),
+  new Set(items),
+];
 const tileW = 150, tileH = 250;
 
 (async () => {
   const composites = [];
   for (let rank = 0; rank < 3; rank += 1) {
     for (let col = 0; col < items.length; col += 1) {
+      if (!availableByRank[rank].has(items[col])) continue;
       const suffix = rank ? `-${rank}` : '';
       const file = `godot/art/items/${items[col]}${suffix}.png`;
       composites.push({ input: await sharp(file).png().toBuffer(), left: col * tileW + 11, top: rank * tileH + 13 });

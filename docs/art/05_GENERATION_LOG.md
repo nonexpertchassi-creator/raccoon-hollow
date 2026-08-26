@@ -2211,25 +2211,62 @@
 
 ---
 
-## LOG-ITEM-CAULDR-RANKS-001 · 가마솥 참쇠·강철 승급판
+## LOG-ITEM-CAULDR-RANKS-001 · 가마솥 강철 승급판
 
 - 날짜: 2026-08-27
 - 기준: `godot/art/items/cauldr.png`
-- 결과: `godot/art/items/cauldr-1.png`, `godot/art/items/cauldr-2.png`
-- 비교판: `generated/SMITH-ITEMS-RUNTIME-PREVIEW-V0.2.png`
+- 결과: `godot/art/items/cauldr-2.png` (`cauldr-1.png` 시험본은 등장 규칙 확인 뒤 폐기)
+- 비교판: `generated/SMITH-ITEMS-RUNTIME-PREVIEW-V0.3.png`
 - 도구: built-in image generation/edit + `tools/fit-item-variant.cjs` + `tools/qa-item-ranks.cjs`
 
 ### 수정
 
 - 기본 가마솥의 뚜껑·고리 손잡이·세 발·3/4 실루엣은 그대로 유지했다.
-- 참쇠는 밝고 정돈된 철면, 강철은 짙은 숯빛 강철과 억제된 가장자리 반사로 구분했다.
+- 강철은 짙은 숯빛 강철과 억제된 가장자리 반사로 구분했다.
 - 등급 테두리·마법광·문양은 쓰지 않고 물건 자체의 재료와 마감만 바꿨다.
 - 생성기의 체크 배경은 기준 가마솥의 알파 마스크로 교체해 1~3단의 위치와 실루엣을 정확히 맞췄다.
 
 ### 검사
 
-- 대장간 물건 8종 × 3단 24장 모두 `128×224 RGBA`.
-- 같은 품목의 단계별 알파 상자 차이는 최대 6px 이내이며 가마솥은 0px다.
+- 실제 등장하는 대장간 물건 18장 모두 `128×224 RGBA`다.
+- 같은 품목의 사용 단계별 알파 상자 차이는 최대 6px 이내이며 가마솥 3단은 기준 실루엣과 0px 차이다.
+
+---
+
+## LOG-ITEM-AVAILABILITY-001 · 실제 등장 단계 18장 정리
+
+- 날짜: 2026-08-27
+- 기준: 최신 `ASSETS.md` 물건 등장 규칙
+- 비교판: `generated/SMITH-ITEMS-RUNTIME-PREVIEW-V0.3.png`
+- 결과: `Corrected / Draft`
+
+### 수정
+
+- 1~4번째 품목은 1·2·3단, 5~6번째 품목은 2·3단, 7~8번째 품목은 3단만 남겼다.
+- 대장간에서는 곡괭이·낫·호미·도끼 3단계, 가위·칼 2단계, 자물쇠·가마솥 3단 한 장씩으로 총 18장이다.
+- 런타임에 등장하지 않는 `cauldr-1.png`를 제거했고 라이브러리도 낮은 단계 자물쇠·가마솥을 누락 에셋으로 표시하지 않게 했다.
+
+### 검사
+
+- 18/18장 `128×224 RGBA`와 투명 배경을 통과했다.
+- 비교판의 빈 칸은 누락이 아니라 해당 단에서 아직 등장하지 않는 품목이다.
+
+---
+
+## LOG-COUNTER-SMITH-001 · 대장간 계산대
+
+- 날짜: 2026-08-27
+- 게임 파일: `godot/art/counters/smith.png`
+- 규격: `168×144 RGBA`, 실제 표시 `84×72`
+- 도구: built-in image generation + `tools/fit-transparent-prop.cjs`
+- 결과: `Generated / Draft`
+
+### 판정
+
+- 넓은 나무 전면과 중앙의 가는 철 보강띠만 남겨 84×72에서도 계산대로 읽힌다.
+- 손님이 보는 넓은 면은 화면 오른쪽 아래를 향하며 상판은 판매품·효과가 코드로 올라가도록 비워 뒀다.
+- 모루·망치·도구·동전·주판·글자·문양·UI와 바닥 그림자를 넣지 않았다.
+- 외곽 실루엣은 좌우 반전해도 어색하지 않도록 거의 대칭으로 유지했다.
 
 ---
 

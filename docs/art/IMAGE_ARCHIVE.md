@@ -715,8 +715,13 @@
 </table>
 
 <table>
-  <tr><td align="center"><img src="./generated/SMITH-ITEMS-RUNTIME-PREVIEW-V0.2.png" width="760" alt="대장간 물건 8종의 무쇠 참쇠 강철 3단"></td></tr>
-  <tr><td><strong>Generated · LOG-ITEM-CAULDR-RANKS-001</strong><br>곡괭이·낫·호미·도끼·가위·부엌칼·자물쇠·가마솥의 3단 24장. 가마솥도 다른 판매품과 같이 무쇠 → 참쇠 → 강철의 재료·마감 변화로 통일했다.</td></tr>
+  <tr><td align="center"><img src="./generated/SMITH-ITEMS-RUNTIME-PREVIEW-V0.3.png" width="760" alt="대장간에서 실제 등장하는 단계만 남긴 판매품 18장"></td></tr>
+  <tr><td><strong>Corrected · LOG-ITEM-AVAILABILITY-001</strong><br>실제로 등장하는 18장만 표시한다. 1단은 앞 네 품목, 2단은 앞 여섯 품목, 3단은 여덟 품목 전부다. 자물쇠와 가마솥은 3단에서 처음 등장하므로 낮은 단계 변형을 런타임에 쓰지 않는다.</td></tr>
+</table>
+
+<table>
+  <tr><td align="center"><img src="../../godot/art/counters/smith.png" width="168" alt="대장간 나무 계산대"></td></tr>
+  <tr><td><strong>Generated · LOG-COUNTER-SMITH-001</strong><br>168×144 RGBA. 오른쪽 아래를 향한 넓은 판매면과 중앙 철 보강띠만 남기고 상판은 판매품·효과를 위해 비웠다.</td></tr>
 </table>
 
 게임 연결 파일은 `godot/art/hero-body/`, `hero-tail/`, `gear/`, `items/`에 있다.

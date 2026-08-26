@@ -10,8 +10,27 @@ if (!input || !output || [canvasW, canvasH, maxW, maxH, bottomMargin].some((n) =
   process.exit(2);
 }
 
+function isChecker(r, g, b) {
+  return Math.min(r, g, b) >= 220 && Math.max(r, g, b) - Math.min(r, g, b) <= 14;
+}
+
+async function normalizedInput() {
+  const meta = await sharp(input).metadata();
+  if (meta.hasAlpha) return sharp(input).png().toBuffer();
+  const { data, info } = await sharp(input).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const rgba = Buffer.alloc(info.width * info.height * 4);
+  for (let i = 0; i < info.width * info.height; i += 1) {
+    rgba[i * 4] = data[i * 3];
+    rgba[i * 4 + 1] = data[i * 3 + 1];
+    rgba[i * 4 + 2] = data[i * 3 + 2];
+    rgba[i * 4 + 3] = isChecker(data[i * 3], data[i * 3 + 1], data[i * 3 + 2]) ? 0 : 255;
+  }
+  return sharp(rgba, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
+}
+
 (async () => {
-  const { data, info } = await sharp(input).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  const normalized = await normalizedInput();
+  const { data, info } = await sharp(normalized).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
   let minX = info.width;
   let minY = info.height;
   let maxX = -1;
@@ -26,7 +45,7 @@ if (!input || !output || [canvasW, canvasH, maxW, maxH, bottomMargin].some((n) =
     }
   }
   if (maxX < 0) throw new Error('no visible pixels');
-  const fitted = await sharp(input)
+  const fitted = await sharp(normalized)
     .extract({ left: minX, top: minY, width: maxX - minX + 1, height: maxY - minY + 1 })
     .resize(maxW, maxH, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
     .png()

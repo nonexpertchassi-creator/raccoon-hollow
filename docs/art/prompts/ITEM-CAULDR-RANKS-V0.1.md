@@ -1,11 +1,13 @@
-# 가마솥 2·3단 승급판 프롬프트 V0.1
+# 가마솥 등급 시험 프롬프트 V0.1
 
 - 방식: built-in image generation/edit
 - 기준 이미지: `godot/art/items/cauldr.png`
 - 스타일 참고: `pick.png`, `pick-1.png`, `pick-2.png`
 - 게임용 파생: `tools/fit-item-variant.cjs`로 기준 가마솥의 알파 실루엣과 위치를 복제
 
-## 2단 · 참쇠
+## 2단 · 참쇠 · 폐기
+
+최신 등장 규칙에서 가마솥은 3단에 처음 열린다. 이 시험 프롬프트의 결과는 런타임에 넣지 않고 `cauldr-1.png`도 제거한다.
 
 ```text
 Use case: precise-object-edit

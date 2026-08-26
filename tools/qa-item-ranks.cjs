@@ -5,9 +5,12 @@ const path = require('path');
 const sharp = require(process.env.CODEX_NODE_PATH ? `${process.env.CODEX_NODE_PATH}/sharp` : 'sharp');
 
 const root = path.resolve(__dirname, '..');
-const items = process.argv.slice(2);
-if (!items.length) {
-  console.error('usage: qa-item-ranks item-id [item-id ...]');
+const specs = process.argv.slice(2).map((value) => {
+  const [item, ranks = '012'] = value.split(':');
+  return { item, ranks: [...ranks].map(Number) };
+});
+if (!specs.length) {
+  console.error('usage: qa-item-ranks item-id[:rank-indices] [...] (0=base, 1=rank2, 2=rank3)');
   process.exit(2);
 }
 
@@ -36,16 +39,15 @@ async function inspect(file) {
 (async () => {
   const rows = [];
   let failed = false;
-  for (const item of items) {
+  for (const { item, ranks } of specs) {
     const boxes = [];
-    for (let rank = 0; rank < 3; rank += 1) {
+    for (const rank of ranks) {
       const suffix = rank ? `-${rank}` : '';
       const file = path.join(root, 'godot/art/items', `${item}${suffix}.png`);
-      boxes.push(await inspect(file));
+      boxes.push({ rank, box: await inspect(file) });
     }
-    for (let rank = 0; rank < 3; rank += 1) {
-      const box = boxes[rank];
-      const base = boxes[0];
+    for (const { rank, box } of boxes) {
+      const base = boxes[0].box;
       const delta = Math.max(
         Math.abs(box.x - base.x),
         Math.abs(box.y - base.y),
@@ -59,7 +61,7 @@ async function inspect(file) {
   }
   console.table(rows);
   if (failed) throw new Error('item rank alpha boxes differ by more than 6px');
-  console.log(`PASS: ${items.length} items × 3 ranks are 128x224 RGBA and aligned.`);
+  console.log(`PASS: ${specs.length} item progressions use only requested ranks and are 128x224 RGBA.`);
 })().catch((error) => {
   console.error(error.message || error);
   process.exitCode = 1;
