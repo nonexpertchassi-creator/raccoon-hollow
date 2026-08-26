@@ -246,6 +246,20 @@ func _process(_d: float) -> void:
 	if not s3.furs.has("smith"):
 		fails.append("옛 저장본(5판)에 무늬가 배정 안 됐다")
 
+	# 채용 — 등급이 자리를 연다(무쇠 1자리), 채용하면 자리별 무늬가 배정된다
+	if int(s.staff_max("smith")) != s.rank_of("smith") + 1:
+		fails.append("채용 자리가 등급+1이 아니다")
+	if s.staff_of("smith") < s.staff_max("smith"):
+		s.money += s.staff_cost("smith")
+		if not s.hire_staff("smith"):
+			fails.append("돈이 있는데 채용이 안 된다")
+		elif not s.furs.has("smith:%d" % int(s.staff_of("smith"))):
+			fails.append("채용한 너구리에 무늬가 배정 안 됐다")
+	if s.staff_of("smith") >= s.staff_max("smith"):
+		s.money += 1e12
+		if s.hire_staff("smith"):
+			fails.append("자리가 다 찼는데 채용이 됐다")
+
 	# 룰렛 — 무료 한 번
 	main.panel.tab = "work"
 	main.panel.rebuild()

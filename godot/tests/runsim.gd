@@ -31,6 +31,10 @@ static func act(s: Sim, rng: Rng) -> void:
 		if s.can_promote(sh):
 			s.promote(sh)
 			return
+	for sh in s.shops:
+		if s.can_hire_staff(sh):
+			s.hire_staff(sh)
+			return
 	# 다 찬 의뢰의 삯 받기 — 저절로 안 들어온다(2026-08-25, 수동 수령)
 	for q in s.quests:
 		if bool(q.get("done", false)):

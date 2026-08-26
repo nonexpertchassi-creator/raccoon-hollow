@@ -1122,10 +1122,12 @@ func _clerk(i: int) -> void:
 ## 겹 순서 — front: 몸→장비(꼬리 없음) · side: 꼬리→몸→장비 · back: 몸→장비→꼬리.
 ## 장비는 투명 스티커다(몸·손·얼굴·무늬·꼬리·그림자 픽셀 금지) — 본체 위에 핀만 맞춘다.
 ## 꼬리는 방향별 뿌리 축으로 코드가 천천히 흔든다 — 프레임 그림은 없다.
-func _clerk_layers(foot: Vector2, shop_id: String, dir3: String, flip: bool, walking: bool) -> void:
-	var fur: String = sim.fur_of(shop_id)
+func _clerk_layers(foot: Vector2, shop_id: String, dir3: String, flip: bool, walking: bool, slot: int = 0) -> void:
+	var fur: String = sim.fur_of(shop_id, slot)
 	var sz: Vector2 = Art.SIZE["hero"]
 	var body: Texture2D = Art.tex("hero-body", "%s-%s" % [fur, dir3])
+	if body == null:
+		body = Art.tex("hero-body", "a-%s" % dir3)   # 그 무늬가 아직 없으면 A로
 	if body == null:
 		body = Art.tex("hero-body", "%s-front" % fur)
 	# 그림 밑 여백을 재서 발을 그림자에 앉힌다 — 겹그림이 이걸 안 타서
@@ -1314,9 +1316,10 @@ func _staff(i: int, k: int) -> void:
 		_shadow(p, 14.0)
 		_sprite(t, p + Vector2(0, -bob), "clerks", sflip, breath)
 		return
-	if Art.tex("hero-body", sim.fur_of(sid6) + "-side") != null:
+	if Art.tex("hero-body", sim.fur_of(sid6, k + 1) + "-side") != null \
+			or Art.tex("hero-body", "a-side") != null:
 		_shadow(p, 14.0)
-		_clerk_layers(p + Vector2(0, -bob), sid6, "side", sflip, false)
+		_clerk_layers(p + Vector2(0, -bob), sid6, "side", sflip, false, k + 1)
 		return
 	var t2: Texture2D = Art.tex("staff", "band-%s" % ("sleep" if idle else "work"))
 	if t2 != null:

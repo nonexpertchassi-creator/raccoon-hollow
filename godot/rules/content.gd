@@ -2453,13 +2453,13 @@ const SMALL_SHOPS := [
 
 const STAFF := {
 	"capAdd": 0.0,
-	"max": 4.0,
 	"costMul": [
-		0.06,
-		0.001,
-		0.003,
-		0.008
-	]
+		0.5,
+		0.01,
+		0.03,
+		0.08
+	],
+	"max": 4.0
 }
 
 const STAFF_RANKS := [

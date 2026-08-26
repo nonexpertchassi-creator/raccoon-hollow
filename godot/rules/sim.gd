@@ -423,12 +423,35 @@ func shop_todo(shop_id: String) -> int:
 			n += 1
 	if can_promote(shop_id):
 		n += 1
+	if can_hire_staff(shop_id):
+		n += 1
 	return n
 
-# ── 직원 ──
-## 직원은 **승급이 준다**(promote 참고). 돈으로 사는 길은 2026-08-25에 없앴다 —
-## 한 번에 네 마리를 사 버리는 게 이상했다(유저). staff_cost·hire_staff도 지웠다.
+# ── 일꾼 너구리 ──
+## 채용 부활(2026-08-26, 유저): **승급이 채용 자리를 연다.** 오픈 1마리 +
+## 등급마다 자리 하나(무쇠 1·참쇠 2·강철 3) = 최대 4마리. 돈 내고 채용한다.
 func staff_of(shop_id: String) -> float: return staff.get(shop_id, 0.0)
+func staff_max(shop_id: String) -> float:
+	return float(rank_of(shop_id) + 1) if shops.has(shop_id) else 0.0
+
+func staff_cost(shop_id: String) -> float:
+	var shop: Dictionary = shop_by_id(shop_id)
+	var n: int = int(staff_of(shop_id))
+	var base: float = shop.promote[0] if n == 0 else shop.promote[1]
+	return floor(base * Content.STAFF.costMul[n])
+
+func can_hire_staff(shop_id: String) -> bool:
+	return shops.has(shop_id) and staff_of(shop_id) < staff_max(shop_id) and money >= staff_cost(shop_id)
+
+func hire_staff(shop_id: String) -> bool:
+	if not can_hire_staff(shop_id):
+		return false
+	money -= staff_cost(shop_id)
+	bump("open.staff")
+	staff[shop_id] = staff_of(shop_id) + 1.0
+	_deal_fur("%s:%d" % [shop_id, int(staff[shop_id])])
+	_ev("%s에 너구리가 왔다 (%s마리)" % [shop_by_id(shop_id).name, str(int(staff[shop_id]) + 1)], "shop")
+	return true
 
 ## 매대 칸 수 — 마당 크기가 정한다. 무쇠 4 · 참쇠 6 · 강철 8
 func stall_cap(shop_id: String) -> int: return 4 + 2 * min(2, rank_of(shop_id))
@@ -748,11 +771,7 @@ func promote(shop_id: String) -> bool:
 	money -= shop.promote[rank_of(shop_id)]
 	bump("open.promote")
 	rank[shop_id] = rank_of(shop_id) + 1
-	# 승급 선물 — 직원 한 마리(2026-08-25, 유저). 돈으로 사던 것을 없앴다:
-	# 한 번에 네 마리를 사 버리는 게 이상했다. 손의 성장 축이 승급으로 모인다.
-	if staff_of(shop_id) < Content.STAFF.max:
-		staff[shop_id] = staff_of(shop_id) + 1.0
-		bump("open.staff")
+	# 승급은 너구리를 주지 않는다 — **채용 자리를 하나 연다**(2026-08-26).
 	for it in shop.items:
 		if items.has(it.id):
 			items[it.id].lv = 1.0
@@ -809,8 +828,12 @@ func unlock_district(id: String) -> bool:
 
 ## 다음에 열 가게. **잠긴 구역의 가게는 없는 셈 친다** — 무너진 집 표시도,
 ## 가상 플레이어의 판단도 전부 여기를 거친다.
-func fur_of(id: String) -> String:
-	return String(furs.get(id, "a"))
+## k번째 일꾼의 무늬(0 = 첫 너구리). 자리마다 따로 배정된다 — "쌍둥이 말고
+## 랜덤 너구리"(2026-08-26, 유저).
+func fur_of(id: String, k: int = 0) -> String:
+	if k <= 0:
+		return String(furs.get(id, "a"))
+	return String(furs.get("%s:%d" % [id, k], "a"))
 
 ## 무늬 주머니 — 덜 쓴 무늬만 담아 뽑는다(초반 중복 방지, 유저 규칙).
 ## 뽑는 손은 여는 순간의 게임 시계다 — 저장본마다 다르고(여는 시각이 다르니),
