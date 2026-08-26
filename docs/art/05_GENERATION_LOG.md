@@ -2288,6 +2288,24 @@
 
 ---
 
+## LOG-COUNTER-PAPER-001 · 지물포 계산대
+
+- 날짜: 2026-08-27
+- 게임 파일: `godot/art/counters/paper.png`
+- 비교판: `generated/COUNTERS-RUNTIME-PREVIEW-V0.2.png`
+- 규격: `168×144 RGBA`, 실제 표시 `84×72`
+- 도구: built-in image generation + `tools/fit-transparent-prop.cjs`
+- 결과: `Generated / Draft`
+
+### 판정
+
+- 필방 계산대의 한지 상판·서랍과 겹치지 않게, 넓은 한지 미닫이 두 면을 정면의 가장 큰 색면으로 삼았다.
+- 대장간·필방과 같은 화면 폭, 오른쪽 아래를 향한 판매면, 갈색 색연필 외곽선, 두 단계 이내 명암을 유지했다.
+- 실제 84×72 비교에서 종이 가게가 읽히며 두루마리·부채·붓·글자·UI·바닥 그림자는 없다.
+- 외곽 알파 상자는 164×97이고 아래 여백은 4px다.
+
+---
+
 ## LOG-KILN-SMITH-001 · 대장간 풀무·화덕
 
 - 날짜: 2026-08-27
