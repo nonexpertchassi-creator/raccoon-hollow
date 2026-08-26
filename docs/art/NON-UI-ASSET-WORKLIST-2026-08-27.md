@@ -19,7 +19,7 @@
 - [x] 대장간 물건 기본 8종: 곡괭이·낫·호미·도끼·가위·부엌칼·자물쇠·가마솥
 - [x] 대장간 물건 2·3단 중 7종 14장
 - [x] 가마솥 2·3단: `cauldr-1.png`, `cauldr-2.png`
-- [ ] 대장간 풀무·화덕: `godot/art/kilns/smith.png`
+- [x] 대장간 풀무·화덕: `godot/art/kilns/smith.png`
 - [ ] 대장간 계산대: `godot/art/counters/smith.png` — 선택 자산이므로 풀무 다음
 - [ ] 대장간 점장 카드 1단: `godot/art/cards/smith-1.png` — 24장 필드 디자인과 같은 개체
 

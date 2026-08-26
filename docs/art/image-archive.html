@@ -2275,10 +2275,16 @@
         c: 'counters', shop: name, label: `${name} 계산대`, file: `${id}.png`, icon,
         size: '168×144', status: 'none', optional: true
       })),
-      ...shopCatalog.map(({ id, name, icon }) => ({
-        c: 'kilns', shop: name, label: `${name} 가마·풀무`, file: `${id}.png`, icon,
-        size: '168×192', status: 'none'
-      }))
+      ...shopCatalog.map(({ id, name, icon }) => {
+        const made = id === 'smith';
+        return {
+          c: 'kilns', shop: name, label: `${name} 가마·풀무`, file: `${id}.png`, icon,
+          size: '168×192', status: made ? 'draft' : 'none',
+          actual: made ? '168×192 RGBA · 짧은 숯 화덕 + 붙박이 나무 풀무 · 정면 3/4' : undefined,
+          src: made ? `../../godot/art/kilns/${id}.png` : undefined,
+          path: made ? `godot/art/kilns/${id}.png` : undefined
+        };
+      })
     ];
 
     const smithUpgradeIds = new Set(['pick', 'sickle', 'hoe', 'axe', 'shears', 'knife', 'lock', 'cauldr']);

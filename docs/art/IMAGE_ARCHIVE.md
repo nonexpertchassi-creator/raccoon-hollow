@@ -373,6 +373,17 @@
   </tr>
 </table>
 
+### 대장간 풀무·화덕
+
+<table>
+  <tr>
+    <td align="center"><img src="../../godot/art/kilns/smith.png" width="336" alt="짧은 숯 화덕과 나무 풀무로 구성된 대장간 제작 설비"></td>
+  </tr>
+  <tr>
+    <td><strong>Generated · LOG-KILN-SMITH-001</strong><br>좌판의 모루와 역할이 겹치지 않도록 짧은 숯 화덕과 붙박이 나무 풀무만 남겼다. 건물·인물·도구·바구니 없이 168×192 RGBA 한 장으로 쓴다.</td>
+  </tr>
+</table>
+
 ### 필방부터 국밥집까지 좌판 5종 초안
 
 <table>
