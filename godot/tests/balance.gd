@@ -216,7 +216,11 @@ func _init() -> void:
 	if use_up:
 		var got: Array[String] = []
 		for sh in s.shops:
-			got.append("%s %d/%d" % [Content.SHOP_UP[sh].name, s.shop_up_lv(sh), int(Content.SHOP_UP[sh].max)])
+			# ★ 가게 고유 강화는 **다섯 채에만** 있다(smith·brush·paper·pot·herb).
+			#   없는 가게를 그냥 찾다가 24시간 측정이 끝에서 죽었다(2026-08-27,
+			#   여섯째 가게가 열리는 순간). 긴 판을 못 재면 뒷구역을 영영 못 본다.
+			if Content.SHOP_UP.has(sh):
+				got.append("%s %d/%d" % [Content.SHOP_UP[sh].name, s.shop_up_lv(sh), int(Content.SHOP_UP[sh].max)])
 		print("   산 강화: " + " · ".join(got))
 	# 패시브 스킬(2026-08-27) — 배우가 나뭇잎을 어디에 썼나. 안 적으면 도구가
 	# 스킬을 산 것도, 안 산 것도 말해 주지 않는다(도구 규칙 3).
