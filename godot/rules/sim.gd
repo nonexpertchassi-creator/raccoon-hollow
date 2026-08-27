@@ -1873,7 +1873,11 @@ const INT_KEYS: Array[String] = ["busy", "_qid", "_evIdx", "_oid"]
 ## 9판: 승급 공사(building). 옛 저장본은 그 칸이 없다 — 공사 중인 가게가
 ## 없다는 뜻이고, 그게 맞다(옛 판에서는 누르는 즉시 승급했다). 이미 오른
 ## 등급은 rank에 그대로 남아 있으니 잃는 것이 없다.
-const SAVE_VER: int = 9
+## 10판: 박쥐가 매로 바뀌었다(손님 id bat → falcon). 담는 칸은 그대로지만
+## **칸 안에 든 이름이 달라졌다** — 그냥 두면 이미 박쥐를 뽑은 사람의
+## 레전드가 목록에서 사라지고, 쌓아 둔 성과 카드도 주인을 잃는다.
+## 옛 저장본을 읽을 때 bat을 falcon으로 옮겨 준다.
+const SAVE_VER: int = 10
 
 func save() -> Dictionary:
 	var d: Dictionary = {}
@@ -1938,6 +1942,14 @@ func load_from(d: Dictionary, ver: int = SAVE_VER) -> void:
 	if ver < 2 and stars.is_empty() and not visits.is_empty():
 		for gid in visits.keys():
 			stars[gid] = float(regular_lv_old(String(gid)))
+	# 10판 전 저장본 — 박쥐(bat)가 매(falcon)로 바뀌었다. 이름만 갈아 끼운다.
+	# 성·카드·등장 간격까지 통째로 옮겨야 뽑아 둔 레전드를 안 잃는다.
+	if ver < 10 and guests.has("bat"):
+		guests[guests.find("bat")] = "falcon"
+		for d2 in [stars, cards, visits, _guestAcc, _guestGap]:
+			if d2.has("bat"):
+				d2["falcon"] = d2["bat"]
+				d2.erase("bat")
 	for gid in guests:
 		if not cards.has(gid):
 			cards[gid] = 0.0
