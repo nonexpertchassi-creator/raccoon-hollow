@@ -22,7 +22,7 @@ export const SHOPS = [
      * 무쇠(부어 만든 거친 쇠) → 참쇠(두드려 단련한 쇠) → 강철.
      * 실제 조선의 쇠 등급이라 시대 콘셉트에도 맞는다. */
     ranks: ['무쇠', '참쇠', '강철'],
-    promote: [8_000_000, 10_000_000_000],
+    promote: [3_000_000, 1_500_000_000],
     items: [
       { id: 'pick',   name: '곡괭이', price: 12,     time: 3.0, cost: 0, icon: '⛏️' },
       { id: 'sickle', name: '낫',     price: 34,     time: 3.8, cost: 80, icon: '🌾' },
@@ -43,7 +43,7 @@ export const SHOPS = [
     desc: '붓과 먹을 다룬다',
     color: '#3f6f4a',
     ranks: ['거친', '고운', '명품'],
-    promote: [90_000_000, 20_000_000_000],
+    promote: [85_000_000, 15_000_000_000],
     items: [
       { id: 'brush',    name: '붓',   price: 500,    time: 4.2, cost: 0, icon: '🖌️' },
       { id: 'ink',      name: '먹',   price: 1_300,  time: 5.0, cost: 2_500, icon: '🖋️' },
@@ -60,7 +60,7 @@ export const SHOPS = [
     desc: '닥나무를 떠서 종이를 만든다',
     color: '#8a7440',
     ranks: ['막', '고운', '진상'],
-    promote: [450_000_000, 35_000_000_000],
+    promote: [150_000_000, 30_000_000_000],
     items: [
       { id: 'hanji',  name: '한지',   price: 1_100,   time: 5.0, cost: 0, icon: '📜' },
       { id: 'fan',    name: '부채',   price: 2_800,   time: 6.0, cost: 65_000, icon: '🪭' },
@@ -77,7 +77,7 @@ export const SHOPS = [
     desc: '흙을 빚어 항아리를 굽는다',
     color: '#6b4a3a',
     ranks: ['질', '오지', '왕실'],
-    promote: [2_000_000_000, 60_000_000_000],
+    promote: [350_000_000, 60_000_000_000],
     items: [
       { id: 'jar',   name: '옹기',   price: 2_400,     time: 5.4, cost: 0, icon: '🏺' },
       { id: 'bowl',  name: '사발',   price: 6_000,     time: 6.4, cost: 3_000_000, icon: '🥣' },
@@ -94,7 +94,7 @@ export const SHOPS = [
     desc: '산에서 캔 것을 말리고 썬다',
     color: '#4a5f7a',
     ranks: ['햇', '묵은', '천년'],
-    promote: [3_000_000_000, 100_000_000_000],
+    promote: [850_000_000, 150_000_000_000],
     items: [
       { id: 'root',    name: '도라지', price: 5_000,       time: 5.6, cost: 0, icon: '🌿' },
       { id: 'ginseng', name: '산삼',   price: 12_000,      time: 7.0, cost: 100_000_000, icon: '🌱' },
@@ -111,7 +111,7 @@ export const SHOPS = [
     desc: '뜨끈한 국밥 한 그릇을 만다',
     color: '#8a6a45',
     ranks: ['장국', '곰국', '용봉탕'],
-    promote: [21_000_000_000, 600_000_000_000],
+    promote: [2_500_000_000, 900_000_000_000],
     items: [
       { id: 'bap',       name: '국밥', price: 10_000, time: 6.2, cost: 0, icon: '🍲' },
       { id: 'kuk',       name: '장국', price: 27_000, time: 7.0, cost: 1_200_000, icon: '🥣' },
@@ -132,7 +132,7 @@ export const SHOPS = [
     desc: '길손을 재우고 술과 안주를 낸다',
     color: '#8a6a45',
     ranks: ['막', '청', '법'],
-    promote: [150_000_000_000, 3_600_000_000_000],
+    promote: [5_000_000_000, 2_000_000_000_000],
     items: [
       { id: 'makgeol',   name: '막걸리', price: 22_000, time: 6.8, cost: 0, icon: '🍶' },
       { id: 'jeon',      name: '파전', price: 57_000, time: 7.6, cost: 2_600_000, icon: '🥞' },
@@ -149,7 +149,7 @@ export const SHOPS = [
     desc: '숯불에 꿰어 굽는다',
     color: '#8a6a45',
     ranks: ['숯', '참숯', '백탄'],
-    promote: [1_000_000_000_000, 22_000_000_000_000],
+    promote: [10_000_000_000, 4_000_000_000_000],
     items: [
       { id: 'tteokggo',  name: '떡꼬치', price: 46_000, time: 7.4, cost: 0, icon: '🍡' },
       { id: 'dakggo',    name: '닭꼬치', price: 120_000, time: 8.2, cost: 5_400_000, icon: '🍢' },
@@ -166,7 +166,7 @@ export const SHOPS = [
     desc: '쌀을 쳐서 떡을 빚는다',
     color: '#8a6a45',
     ranks: ['햅쌀', '찹쌀', '진상'],
-    promote: [7_200_000_000_000, 130_000_000_000_000],
+    promote: [20_000_000_000, 8_500_000_000_000],
     items: [
       { id: 'garae',     name: '가래떡', price: 97_000, time: 8.0, cost: 0, icon: '🍥' },
       { id: 'injeol',    name: '인절미', price: 250_000, time: 8.8, cost: 11_000_000, icon: '🍡' },
@@ -183,7 +183,7 @@ export const SHOPS = [
     desc: '뼈를 발라 고기를 판다',
     color: '#8a6a45',
     ranks: ['막', '상', '진상'],
-    promote: [50_000_000_000_000, 780_000_000_000_000],
+    promote: [45_000_000_000, 20_000_000_000_000],
     items: [
       { id: 'dwaeji',    name: '돼지고기', price: 200_000, time: 8.6, cost: 0, icon: '🥓' },
       { id: 'dak',       name: '닭고기', price: 530_000, time: 9.4, cost: 24_000_000, icon: '🍗' },
@@ -200,7 +200,7 @@ export const SHOPS = [
     desc: '바닷것을 절이고 말려 판다',
     color: '#8a6a45',
     ranks: ['갯', '말린', '진상'],
-    promote: [350_000_000_000_000, 4_700_000_000_000_000],
+    promote: [95_000_000_000, 40_000_000_000_000],
     items: [
       { id: 'gulbi',         name: '굴비', price: 430_000, time: 9.2, cost: 0, icon: '🐟' },
       { id: 'miyeok',        name: '미역', price: 1_100_000, time: 10.0, cost: 50_000_000, icon: '🌿' },
@@ -217,7 +217,7 @@ export const SHOPS = [
     desc: '베를 짜고 물들여 판다',
     color: '#8a6a45',
     ranks: ['무명', '명주', '비단'],
-    promote: [2_500_000_000_000_000, 28_000_000_000_000_000],
+    promote: [200_000_000_000, 80_000_000_000_000],
     items: [
       { id: 'mumyeong',      name: '무명', price: 900_000, time: 9.8, cost: 0, icon: '🧵' },
       { id: 'sambe',         name: '삼베', price: 2_300_000, time: 10.6, cost: 100_000_000, icon: '🪢' },
@@ -234,7 +234,7 @@ export const SHOPS = [
     desc: '갓을 겯고 다듬어 판다',
     color: '#8a6a45',
     ranks: ['대', '중', '진상'],
-    promote: [17_000_000_000_000_000, 170_000_000_000_000_000],
+    promote: [400_000_000_000, 150_000_000_000_000],
     items: [
       { id: 'satgat',        name: '삿갓', price: 1_900_000, time: 10.4, cost: 0, icon: '👒' },
       { id: 'manggeon',      name: '망건', price: 4_900_000, time: 11.2, cost: 220_000_000, icon: '🪖' },
@@ -251,7 +251,7 @@ export const SHOPS = [
     desc: '놋쇠를 두드려 그릇을 만든다',
     color: '#8a6a45',
     ranks: ['방짜', '상', '왕실'],
-    promote: [120_000_000_000_000_000, 1_000_000_000_000_000_000],
+    promote: [900_000_000_000, 350_000_000_000_000],
     items: [
       { id: 'notsujeo',      name: '놋수저', price: 4_000_000, time: 11.0, cost: 0, icon: '🥄' },
       { id: 'notjubal',      name: '놋주발', price: 10_000_000, time: 11.8, cost: 450_000_000, icon: '🥣' },
@@ -268,7 +268,7 @@ export const SHOPS = [
     desc: '자개를 박아 세간을 꾸민다',
     color: '#8a6a45',
     ranks: ['자개', '진주', '왕실'],
-    promote: [850_000_000_000_000_000, 6_000_000_000_000_000_000],
+    promote: [2_000_000_000_000, 750_000_000_000_000],
     items: [
       { id: 'najeonbit',     name: '나전빗', price: 8_300_000, time: 11.6, cost: 0, icon: '💈' },
       { id: 'gyeongdae',     name: '경대', price: 22_000_000, time: 12.4, cost: 990_000_000, icon: '🪞' },
