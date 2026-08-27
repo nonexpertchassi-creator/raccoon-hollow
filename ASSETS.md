@@ -242,7 +242,7 @@ clerks/<가게>-<무늬>-<방향>-2.png     3단 앞치마
 > 이 칸은 `node tools/art.mjs --write`가 다시 쓴다.
 > **그림을 폴더에 넣으면 목록에서 저절로 빠진다** — 손으로 지울 필요 없다.
 
-**87 / 539장** 들어왔다.
+**83 / 539장** 들어왔다.
 
 ### 점장 너구리 (폴백) · 촌장 — `godot/art/hero/` · 144×144 · **0장 남음**
 
@@ -507,10 +507,10 @@ clerks/<가게>-<무늬>-<방향>-2.png     3단 앞치마
 - [ ] `magpie-back.png` — 까치 뒷모습 — 올라갈 때
 - [ ] `squirrel-front.png` — 다람쥐 정면 — 줄 설 때
 - [ ] `squirrel-back.png` — 다람쥐 뒷모습 — 올라갈 때
-- [ ] `badger-front.png` — 오소리 정면 — 줄 설 때
-- [ ] `badger-back.png` — 오소리 뒷모습 — 올라갈 때
-- [ ] `fox-front.png` — 여우 정면 — 줄 설 때
-- [ ] `fox-back.png` — 여우 뒷모습 — 올라갈 때
+- [ ] `hedgehog-front.png` — 고슴도치 정면 — 줄 설 때
+- [ ] `hedgehog-back.png` — 고슴도치 뒷모습 — 올라갈 때
+- [ ] `otter-front.png` — 수달 정면 — 줄 설 때
+- [ ] `otter-back.png` — 수달 뒷모습 — 올라갈 때
 - [ ] `deer-front.png` — 사슴 정면 — 줄 설 때
 - [ ] `deer-back.png` — 사슴 뒷모습 — 올라갈 때
 - [ ] `boar-front.png` — 멧돼지 정면 — 줄 설 때
@@ -527,42 +527,42 @@ clerks/<가게>-<무늬>-<방향>-2.png     3단 앞치마
 - [ ] `tiger-back.png` — 호랑이 뒷모습 — 올라갈 때
 - [ ] `sparrow-front.png` — 참새 정면 — 줄 설 때
 - [ ] `sparrow-back.png` — 참새 뒷모습 — 올라갈 때
-- [ ] `frog-front.png` — 개구리 정면 — 줄 설 때
-- [ ] `frog-back.png` — 개구리 뒷모습 — 올라갈 때
-- [ ] `mole-front.png` — 두더지 정면 — 줄 설 때
-- [ ] `mole-back.png` — 두더지 뒷모습 — 올라갈 때
-- [ ] `hedgehog-front.png` — 고슴도치 정면 — 줄 설 때
-- [ ] `hedgehog-back.png` — 고슴도치 뒷모습 — 올라갈 때
-- [ ] `duck-front.png` — 오리 정면 — 줄 설 때
-- [ ] `duck-back.png` — 오리 뒷모습 — 올라갈 때
-- [ ] `otter-front.png` — 수달 정면 — 줄 설 때
-- [ ] `otter-back.png` — 수달 뒷모습 — 올라갈 때
-- [ ] `hen-front.png` — 닭 정면 — 줄 설 때
-- [ ] `hen-back.png` — 닭 뒷모습 — 올라갈 때
-- [ ] `weasel-front.png` — 족제비 정면 — 줄 설 때
-- [ ] `weasel-back.png` — 족제비 뒷모습 — 올라갈 때
-- [ ] `wildcat-front.png` — 살쾡이 정면 — 줄 설 때
-- [ ] `wildcat-back.png` — 살쾡이 뒷모습 — 올라갈 때
-- [ ] `goral-front.png` — 산양 정면 — 줄 설 때
-- [ ] `goral-back.png` — 산양 뒷모습 — 올라갈 때
-- [ ] `cat-front.png` — 고양이 정면 — 줄 설 때
-- [ ] `cat-back.png` — 고양이 뒷모습 — 올라갈 때
-- [ ] `mandarin-front.png` — 원앙 정면 — 줄 설 때
-- [ ] `mandarin-back.png` — 원앙 뒷모습 — 올라갈 때
-- [ ] `wolf-front.png` — 늑대 정면 — 줄 설 때
-- [ ] `wolf-back.png` — 늑대 뒷모습 — 올라갈 때
 - [ ] `dog-front.png` — 개 정면 — 줄 설 때
 - [ ] `dog-back.png` — 개 뒷모습 — 올라갈 때
-- [ ] `leopard-front.png` — 표범 정면 — 줄 설 때
-- [ ] `leopard-back.png` — 표범 뒷모습 — 올라갈 때
+- [ ] `hen-front.png` — 닭 정면 — 줄 설 때
+- [ ] `hen-back.png` — 닭 뒷모습 — 올라갈 때
+- [ ] `cat-front.png` — 고양이 정면 — 줄 설 때
+- [ ] `cat-back.png` — 고양이 뒷모습 — 올라갈 때
+- [ ] `duck-front.png` — 오리 정면 — 줄 설 때
+- [ ] `duck-back.png` — 오리 뒷모습 — 올라갈 때
+- [ ] `badger-front.png` — 오소리 정면 — 줄 설 때
+- [ ] `badger-back.png` — 오소리 뒷모습 — 올라갈 때
+- [ ] `frog-front.png` — 개구리 정면 — 줄 설 때
+- [ ] `frog-back.png` — 개구리 뒷모습 — 올라갈 때
+- [ ] `weasel-front.png` — 족제비 정면 — 줄 설 때
+- [ ] `weasel-back.png` — 족제비 뒷모습 — 올라갈 때
+- [ ] `fox-front.png` — 여우 정면 — 줄 설 때
+- [ ] `fox-back.png` — 여우 뒷모습 — 올라갈 때
+- [ ] `sheep-front.png` — 양 정면 — 줄 설 때
+- [ ] `sheep-back.png` — 양 뒷모습 — 올라갈 때
+- [ ] `pig-front.png` — 돼지 정면 — 줄 설 때
+- [ ] `pig-back.png` — 돼지 뒷모습 — 올라갈 때
+- [ ] `mandarin-front.png` — 원앙 정면 — 줄 설 때
+- [ ] `mandarin-back.png` — 원앙 뒷모습 — 올라갈 때
 - [ ] `owl-front.png` — 부엉이 정면 — 줄 설 때
 - [ ] `owl-back.png` — 부엉이 뒷모습 — 올라갈 때
+- [ ] `horse-front.png` — 말 정면 — 줄 설 때
+- [ ] `horse-back.png` — 말 뒷모습 — 올라갈 때
+- [ ] `leopard-front.png` — 표범 정면 — 줄 설 때
+- [ ] `leopard-back.png` — 표범 뒷모습 — 올라갈 때
+- [ ] `wolf-front.png` — 늑대 정면 — 줄 설 때
+- [ ] `wolf-back.png` — 늑대 뒷모습 — 올라갈 때
 - [ ] `moonbear-front.png` — 반달곰 정면 — 줄 설 때
 - [ ] `moonbear-back.png` — 반달곰 뒷모습 — 올라갈 때
-- [ ] `haetae-front.png` — 해태 정면 — 줄 설 때
-- [ ] `haetae-back.png` — 해태 뒷모습 — 올라갈 때
+- [ ] `elephant-front.png` — 코끼리 정면 — 줄 설 때
+- [ ] `elephant-back.png` — 코끼리 뒷모습 — 올라갈 때
 
-### 손님 카드 1단 (1~5성) — `godot/art/cards/` · 512×768 · **5장 남음**
+### 손님 카드 1단 (1~5성) — `godot/art/cards/` · 512×768 · **9장 남음**
 
 **세로로 긴 초상.** 정면을 보고 서 있는 모습, 배경까지 그린 한 장.
 뽑기에서 크게 뜨고 도감에 모인다 — 이 게임에서 제일 오래 들여다보는 그림이다.
@@ -570,10 +570,14 @@ clerks/<가게>-<무늬>-<방향>-2.png     3단 앞치마
 파일 이름은 `<손님id>-1.png`. 6~10성은 `-2`, 11~15성은 `-3`, 16~20성은 `-4`.
 
 - [ ] `bat-1.png` — 박쥐 (영물) — 1~5성
-- [ ] `hen-1.png` — 닭 (드묾) — 1~5성
-- [ ] `cat-1.png` — 고양이 (귀함) — 1~5성
-- [ ] `dog-1.png` — 개 (귀함) — 1~5성
-- [ ] `owl-1.png` — 부엉이 (진귀) — 1~5성
+- [ ] `dog-1.png` — 개 (흔함) — 1~5성
+- [ ] `hen-1.png` — 닭 (흔함) — 1~5성
+- [ ] `cat-1.png` — 고양이 (흔함) — 1~5성
+- [ ] `sheep-1.png` — 양 (드묾) — 1~5성
+- [ ] `pig-1.png` — 돼지 (귀함) — 1~5성
+- [ ] `owl-1.png` — 부엉이 (귀함) — 1~5성
+- [ ] `horse-1.png` — 말 (귀함) — 1~5성
+- [ ] `elephant-1.png` — 코끼리 (영물) — 1~5성
 
 ### 점장 카드 (가게를 열 때 뜨는 초상) — `godot/art/cards/` · 512×768 · **15장 남음**
 
@@ -678,7 +682,7 @@ clerks/<가게>-<무늬>-<방향>-2.png     3단 앞치마
 - [ ] `brass.png` — 유기전 — 놋쇠를 두드려 그릇을 만든다
 - [ ] `lacquer.png` — 나전방 — 자개를 박아 세간을 꾸민다
 
-### 손님 카드 2~4단 (6~20성) (선택) — `godot/art/cards/` · 512×768 · **15장 남음**
+### 손님 카드 2~4단 (6~20성) (선택) — `godot/art/cards/` · 512×768 · **27장 남음**
 
 **나중에.** 없으면 1단 그림을 계속 쓴다.
 같은 짐승이 성이 오를수록 차림이 좋아지는 식으로 — 옷·장신구·배경이 달라진다.
@@ -686,18 +690,30 @@ clerks/<가게>-<무늬>-<방향>-2.png     3단 앞치마
 - [ ] `bat-2.png` — 박쥐 — 6~10성
 - [ ] `bat-3.png` — 박쥐 — 11~15성
 - [ ] `bat-4.png` — 박쥐 — 16~20성
+- [ ] `dog-2.png` — 개 — 6~10성
+- [ ] `dog-3.png` — 개 — 11~15성
+- [ ] `dog-4.png` — 개 — 16~20성
 - [ ] `hen-2.png` — 닭 — 6~10성
 - [ ] `hen-3.png` — 닭 — 11~15성
 - [ ] `hen-4.png` — 닭 — 16~20성
 - [ ] `cat-2.png` — 고양이 — 6~10성
 - [ ] `cat-3.png` — 고양이 — 11~15성
 - [ ] `cat-4.png` — 고양이 — 16~20성
-- [ ] `dog-2.png` — 개 — 6~10성
-- [ ] `dog-3.png` — 개 — 11~15성
-- [ ] `dog-4.png` — 개 — 16~20성
+- [ ] `sheep-2.png` — 양 — 6~10성
+- [ ] `sheep-3.png` — 양 — 11~15성
+- [ ] `sheep-4.png` — 양 — 16~20성
+- [ ] `pig-2.png` — 돼지 — 6~10성
+- [ ] `pig-3.png` — 돼지 — 11~15성
+- [ ] `pig-4.png` — 돼지 — 16~20성
 - [ ] `owl-2.png` — 부엉이 — 6~10성
 - [ ] `owl-3.png` — 부엉이 — 11~15성
 - [ ] `owl-4.png` — 부엉이 — 16~20성
+- [ ] `horse-2.png` — 말 — 6~10성
+- [ ] `horse-3.png` — 말 — 11~15성
+- [ ] `horse-4.png` — 말 — 16~20성
+- [ ] `elephant-2.png` — 코끼리 — 6~10성
+- [ ] `elephant-3.png` — 코끼리 — 11~15성
+- [ ] `elephant-4.png` — 코끼리 — 16~20성
 
 ### 나쁜 놈 — `godot/art/pests/` · 128×128 · **0장 남음**
 
@@ -746,8 +762,8 @@ clerks/<가게>-<무늬>-<방향>-2.png     3단 앞치마
 - [ ] `rabbit.png` — 토끼 — 뽑으면 고를 수 있다
 - [ ] `magpie.png` — 까치 — 뽑으면 고를 수 있다
 - [ ] `squirrel.png` — 다람쥐 — 뽑으면 고를 수 있다
-- [ ] `badger.png` — 오소리 — 뽑으면 고를 수 있다
-- [ ] `fox.png` — 여우 — 뽑으면 고를 수 있다
+- [ ] `hedgehog.png` — 고슴도치 — 뽑으면 고를 수 있다
+- [ ] `otter.png` — 수달 — 뽑으면 고를 수 있다
 - [ ] `deer.png` — 사슴 — 뽑으면 고를 수 있다
 - [ ] `boar.png` — 멧돼지 — 뽑으면 고를 수 있다
 - [ ] `bear.png` — 곰 — 뽑으면 고를 수 있다
@@ -756,23 +772,23 @@ clerks/<가게>-<무늬>-<방향>-2.png     3단 앞치마
 - [ ] `ox.png` — 소 — 뽑으면 고를 수 있다
 - [ ] `tiger.png` — 호랑이 — 뽑으면 고를 수 있다
 - [ ] `sparrow.png` — 참새 — 뽑으면 고를 수 있다
-- [ ] `frog.png` — 개구리 — 뽑으면 고를 수 있다
-- [ ] `mole.png` — 두더지 — 뽑으면 고를 수 있다
-- [ ] `hedgehog.png` — 고슴도치 — 뽑으면 고를 수 있다
-- [ ] `duck.png` — 오리 — 뽑으면 고를 수 있다
-- [ ] `otter.png` — 수달 — 뽑으면 고를 수 있다
-- [ ] `hen.png` — 닭 — 뽑으면 고를 수 있다
-- [ ] `weasel.png` — 족제비 — 뽑으면 고를 수 있다
-- [ ] `wildcat.png` — 살쾡이 — 뽑으면 고를 수 있다
-- [ ] `goral.png` — 산양 — 뽑으면 고를 수 있다
-- [ ] `cat.png` — 고양이 — 뽑으면 고를 수 있다
-- [ ] `mandarin.png` — 원앙 — 뽑으면 고를 수 있다
-- [ ] `wolf.png` — 늑대 — 뽑으면 고를 수 있다
 - [ ] `dog.png` — 개 — 뽑으면 고를 수 있다
-- [ ] `leopard.png` — 표범 — 뽑으면 고를 수 있다
+- [ ] `hen.png` — 닭 — 뽑으면 고를 수 있다
+- [ ] `cat.png` — 고양이 — 뽑으면 고를 수 있다
+- [ ] `duck.png` — 오리 — 뽑으면 고를 수 있다
+- [ ] `badger.png` — 오소리 — 뽑으면 고를 수 있다
+- [ ] `frog.png` — 개구리 — 뽑으면 고를 수 있다
+- [ ] `weasel.png` — 족제비 — 뽑으면 고를 수 있다
+- [ ] `fox.png` — 여우 — 뽑으면 고를 수 있다
+- [ ] `sheep.png` — 양 — 뽑으면 고를 수 있다
+- [ ] `pig.png` — 돼지 — 뽑으면 고를 수 있다
+- [ ] `mandarin.png` — 원앙 — 뽑으면 고를 수 있다
 - [ ] `owl.png` — 부엉이 — 뽑으면 고를 수 있다
+- [ ] `horse.png` — 말 — 뽑으면 고를 수 있다
+- [ ] `leopard.png` — 표범 — 뽑으면 고를 수 있다
+- [ ] `wolf.png` — 늑대 — 뽑으면 고를 수 있다
 - [ ] `moonbear.png` — 반달곰 — 뽑으면 고를 수 있다
-- [ ] `haetae.png` — 해태 — 뽑으면 고를 수 있다
+- [ ] `elephant.png` — 코끼리 — 뽑으면 고를 수 있다
 
 ### 가게별 일꾼 세트 (무늬4×옆/뒤, 앞치마 등급판은 -1·-2) — `godot/art/clerks/` · 144×144 · **120장 남음**
 

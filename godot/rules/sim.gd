@@ -196,8 +196,16 @@ func _gap(g: Dictionary, rng: Rng) -> float:
 	# 성이 오르면 발걸음도 잦아진다 — content.js의 REGULAR_COME 참고
 	# 밤엔 발길이 뜸하다(DAY.nightCome) — 짐승도 잘 시간이다. 날씨도 탄다.
 	return _wild_gap(g.every / (1.0 + Content.REGULAR_COME * regular_lv(String(g.id)))
-		* (Content.DAY.nightCome if is_night() else 1.0) / weather_come(),
+		* (Content.DAY.nightCome if is_night() else 1.0) / weather_come() / _wx_of(g),
 		g.get("wild", 0.0), rng)
+
+## 짐승마다 좋아하는 날씨 — 개구리는 비 오는 날 1.8배로 자주 온다(2026-08-27).
+## ★ 도감에 "비 오는 날이면 더 자주 온다"고 적어 놓고 규칙에는 없었다.
+##   글이 약속한 것을 규칙이 안 지키면 그 도감은 거짓말이 된다.
+func _wx_of(g: Dictionary) -> float:
+	if String(g.get("wx", "")) == "" or String(g.wx) != String(weather_def().id):
+		return 1.0
+	return float(g.get("wxMul", 1.0))
 
 ## wild가 0이면 시계처럼, 1이면 완전히 운. 평균 간격은 어느 쪽이든 every 그대로다.
 func _wild_gap(every: float, w: float, rng: Rng) -> float:
