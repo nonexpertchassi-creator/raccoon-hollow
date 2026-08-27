@@ -612,9 +612,9 @@ const GUESTS := [
 		"look": "등딱지에 보따리를 얹고 아주 천천히, 씀씀이는 제일 크다"
 	},
 	{
-		"id": "crane",
-		"name": "두루미",
-		"face": "🦢",
+		"id": "bat",
+		"name": "박쥐",
+		"face": "🦇",
 		"every": 145.0,
 		"qty": 16.0,
 		"pay": 6.0,
@@ -747,9 +747,9 @@ const GUESTS := [
 		"look": "매끈한 물빛 털, 물건을 앞발로 조몰락거려 보고 산다"
 	},
 	{
-		"id": "roe",
-		"name": "노루",
-		"face": "🦌",
+		"id": "hen",
+		"name": "닭",
+		"face": "🐔",
 		"every": 20.0,
 		"qty": 6.0,
 		"pay": 1.4,
@@ -807,9 +807,9 @@ const GUESTS := [
 		"look": "굽은 뿔, 바위 타던 다리로 느긋하게 두루 본다"
 	},
 	{
-		"id": "marten",
-		"name": "담비",
-		"face": "🦫",
+		"id": "cat",
+		"name": "고양이",
+		"face": "🐈‍⬛",
 		"every": 45.0,
 		"qty": 9.0,
 		"pay": 2.4,
@@ -852,9 +852,9 @@ const GUESTS := [
 		"look": "잿빛 털에 곧은 눈, 정해 둔 것만 사 가는 외골수"
 	},
 	{
-		"id": "egret",
-		"name": "백로",
-		"face": "🕊️",
+		"id": "dog",
+		"name": "개",
+		"face": "🐶",
 		"every": 95.0,
 		"qty": 14.0,
 		"pay": 3.2,
@@ -882,9 +882,9 @@ const GUESTS := [
 		"look": "금빛 무늬 털, 드물게 나타나 값을 묻지 않고 산다"
 	},
 	{
-		"id": "muskdeer",
-		"name": "사향노루",
-		"face": "🦌",
+		"id": "owl",
+		"name": "부엉이",
+		"face": "🦉",
 		"every": 130.0,
 		"qty": 13.0,
 		"pay": 8.0,
