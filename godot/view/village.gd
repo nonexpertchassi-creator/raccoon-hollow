@@ -1082,9 +1082,18 @@ func _night() -> bool:
 ## 하루 어디쯤인가 — 머리띠 오른쪽 끝의 그림 한 개.
 ## ★ 십이지시(사시·자시) → 몇 시 → **그림만**, 두 번 깎였다(유저).
 ##   글자는 결국 소음이었다 — 해가 떠 있으면 낮이고 달이 떠 있으면 밤이다.
+## ★ 날씨와 시각이 **같은 이모지**를 쓰고 있었다(맑음 ☀️ · 낮 ☀️) — 머리띠에
+##   "☀️☀️"가 떠서 둘 중 무엇이 무엇인지 알 수가 없었다(2026-08-27, 유저).
+##   시각은 이제 **시계 글자**로 말한다. 그림이 오면 시계만 그림으로 갈면 된다.
 func day_icon() -> String:
 	var ph: float = day_phase()
-	return "☀️" if ph < 0.5 else ("🌆" if ph < 0.66 else ("🌙" if ph < 0.9 else "🌄"))
+	return "🌑" if ph >= float(Content.DAY.night[0]) and ph < float(Content.DAY.night[1]) else "🕐"
+
+## 게임 안 시각 — 하루(2400초)를 스물네 시간으로 편다. 새벽 여섯 시에서 시작해서
+## 밤 구간([0.62,0.92])이 저녁 아홉 시 ~ 새벽 네 시쯤에 오게 맞췄다.
+func day_clock() -> String:
+	var h: float = fmod(day_phase() * 24.0 + 6.0, 24.0)
+	return "%02d:%02d" % [int(h), int(fmod(h, 1.0) * 60.0)]
 
 func _sky() -> Color:
 	var ph: float = day_phase()

@@ -167,8 +167,12 @@ func _ready() -> void:
 	row.add_child(money_box)
 	_hud = _pill(money_box)
 	_gemlbl = _pill(money_box)
+	# 날씨와 시각을 한 줄에 담는다. 글자가 늘어나므로(산들바람 같은 것) 크기를
+	# 줄이고 오른쪽에 붙인다 — 24로 두었더니 "07:48"의 끝이 화면 밖으로 나갔다.
 	_clock = Label.new()
-	_clock.add_theme_font_size_override("font_size", 24)
+	_clock.add_theme_font_size_override("font_size", 15)
+	_clock.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_clock.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	row.add_child(_clock)
 	_sub = Label.new()
 	_sub.add_theme_font_size_override("font_size", 12)
@@ -392,7 +396,9 @@ func _paint() -> void:
 	# 폰 폭에 맞춘다. 한 줄에 다 넣으면 오른쪽이 잘려서 나뭇잎이 안 보인다.
 	_hud.text = "🪙 " + Num.fmt(sim.money)
 	_gemlbl.text = "🍃 %d" % int(sim.gems)
-	_clock.text = String(sim.weather_def().face) + village.day_icon()   # 날씨 + 시각
+	# 날씨와 시각을 **갈라서** 보여준다 — 이모지 둘이 같아 보이던 것을 고쳤다.
+	_clock.text = "%s %s\n%s %s" % [String(sim.weather_def().face), String(sim.weather_def().name),
+		village.day_icon(), village.day_clock()]
 	_sub.text = "🪙%s/s" % Num.fmt(sim.income_per_sec())
 	_namelbl.text = String(sim.profile.name)
 	var bi: int = sim.band_of()
