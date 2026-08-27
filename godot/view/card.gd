@@ -189,7 +189,11 @@ func show_card(shop_id: String, rank: int) -> void:
 	_gridbox.visible = false
 	_cardbox.visible = true
 	var shop: Dictionary = Sim.shop_by_id(shop_id)
-	# 완성형 회귀(2026-08-26): 카드 초상 → 완성형 옆모습 → 옛 make → 공통 점장.
+	# 카드 초상 → 완성형 옆모습 → 옛 make → **겹그림(꼬리+몸+차림)** → 공통 점장.
+	#
+	# ★ 겹그림 칸을 예전부터 만들어 두고 늘 비워 뒀다(2026-08-27에 발견).
+	#   마을 화면이 겹치기로 바뀌었으니 카드도 **같은 재료로 같은 모습**이어야 한다 —
+	#   여기만 통짜 그림을 쓰면 뽑은 카드와 마당의 점장이 다르게 생긴다.
 	_art_tail.texture = null
 	_art_gear.texture = null
 	var t: Texture2D = Art.tex("cards", "%s-%d" % [shop_id, rank + 1])
@@ -197,6 +201,12 @@ func show_card(shop_id: String, rank: int) -> void:
 		t = Art.ranked("clerks", "%s-side" % shop_id, rank)
 	if t == null:
 		t = Art.ranked("clerks", "%s-make" % shop_id, rank)
+	if t == null:
+		# 무늬 A로 겹친다 — 카드는 "이 가게의 점장"을 보여주는 자리라 대표 무늬 하나면 된다.
+		t = Art.ranked("hero-body", "a-side", rank)
+		if t != null:
+			_art_tail.texture = Art.ranked("hero-tail", "a-side", rank)
+			_art_gear.texture = Art.ranked("gear", "%s-side" % shop_id, rank)
 	if t == null:
 		t = Art.tex("hero", "raccoon-make")
 	_art.texture = t

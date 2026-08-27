@@ -1055,15 +1055,38 @@ func _dog() -> void:
 ## 일꾼 그림 찾기(2026-08-26 확정 계약): ① 그 가게 세트(clerks/<가게>-<무늬>-<방향>,
 ## 앞치마 등급은 -1·-2) → ② 공용 무늬 세트(hero-body/<무늬>-<방향>) → ③ A 무늬.
 ## 무늬는 채용 자리마다 랜덤(sim.fur_of), 복장은 가게가, 앞치마는 등급이 정한다.
-func _worker_tex(shop_id: String, slot: int, dir3: String) -> Texture2D:
+## 일꾼 너구리의 **층**을 돌려준다 — [꼬리, 몸, 차림] 순(뒤에서 앞).
+##
+## ★ 왜 겹치나(2026-08-27, 유저): 예전엔 가게마다 `clerks/<가게>-<무늬>-<방향>`
+##   한 장을 통째로 받았다. 무늬 넷 × 방향 둘 × 가게 열다섯 = **120장**이고,
+##   가게가 하나 늘 때마다 8장씩 늘었다. 그런데 그 120장에 든 너구리는
+##   **같은 무늬 넷**이다 — 앞치마와 연장만 다른데 몸을 열다섯 번 다시 그린 것이다.
+##
+##   층을 나누면 몸(무늬 4 × 방향 3)은 **한 번만** 그리고, 가게는 차림 두 장만
+##   보태면 된다. 120장 → 몸 12 + 꼬리 8 + 차림 30 = 50장. **가게가 늘어도 2장씩.**
+##
+## 완성본이 있으면 그것을 그대로 쓴다 — 이미 그린 스물한 장을 버리지 않고,
+## 특별히 손으로 그리고 싶은 가게가 생기면 그 길도 열어 둔다.
+func _worker_layers(shop_id: String, slot: int, dir3: String) -> Array:
 	var fur: String = sim.fur_of(shop_id, slot)
 	var rk: int = sim.rank_of(shop_id)
-	var t: Texture2D = Art.ranked("clerks", "%s-%s-%s" % [shop_id, fur, dir3], rk)
-	if t == null:
-		t = Art.ranked("hero-body", "%s-%s" % [fur, dir3], rk)
-	if t == null:
-		t = Art.ranked("hero-body", "a-%s" % dir3, rk)
-	return t
+	var whole: Texture2D = Art.ranked("clerks", "%s-%s-%s" % [shop_id, fur, dir3], rk)
+	if whole != null:
+		return [whole]
+	var body: Texture2D = Art.ranked("hero-body", "%s-%s" % [fur, dir3], rk)
+	if body == null:
+		body = Art.ranked("hero-body", "a-%s" % dir3, rk)
+	if body == null:
+		return []
+	# 꼬리는 몸 뒤, 차림(앞치마·연장)은 몸 앞. 없으면 그 층만 빠진다.
+	return [Art.ranked("hero-tail", "%s-%s" % [fur, dir3], rk), body,
+		Art.ranked("gear", "%s-%s" % [shop_id, dir3], rk)]
+
+## 자리를 정하는 그림 한 장 — 겹그림이라도 **몸**이 자리를 정한다.
+func _worker_base(layers: Array) -> Texture2D:
+	if layers.size() == 1:
+		return layers[0]
+	return layers[1] if layers.size() > 1 else null
 
 ## 완성된 주문 상자 — 물건 모양이 아니라 **그냥 상자**다(2026-08-26, 유저).
 ## 나르는 동안 너구리 손께에 얹는다. 전부 코드 그림.
@@ -1123,6 +1146,27 @@ func _shadow(foot: Vector2, r: float) -> void:
 ## 닿게"라고 적어 둔 이유가 이것이다 — 발끝이 곧 그 물건이 서 있는 자리이고,
 ## 앞뒤 가리기(깊이)도 발끝 높이로 정한다.
 func _sprite(t: Texture2D, foot: Vector2, kind: String, flip: bool = false, squash: float = 0.0) -> void:
+	_blit(t, _sprite_rect(t, foot, kind, flip, squash), flip)
+
+## 겹그림 — **자리는 맨 아래 그림 하나로 정한다.**
+## 층마다 제 알파를 재서 앉히면(꼬리는 좁고 몸은 넓다) 층끼리 어긋난다.
+## 꼬리가 몸에서 떨어져 나가는, 눈으로만 잡히는 종류의 고장이 된다.
+## layers는 뒤에서 앞 순서다 — [꼬리, 몸, 차림].
+func _sprite_stack(layers: Array, base: Texture2D, foot: Vector2, kind: String, flip: bool = false, squash: float = 0.0) -> void:
+	if base == null:
+		return
+	var r: Rect2 = _sprite_rect(base, foot, kind, flip, squash)
+	for t in layers:
+		if t != null:
+			_blit(t, r, flip)
+
+func _blit(t: Texture2D, r: Rect2, flip: bool) -> void:
+	if flip:
+		_mirrored(t, r)
+	else:
+		draw_texture_rect(t, r, false)
+
+func _sprite_rect(t: Texture2D, foot: Vector2, kind: String, flip: bool = false, squash: float = 0.0) -> Rect2:
 	var sz: Vector2 = Art.SIZE[kind]
 	# 짐승은 그림을 재서 앉힌다 — 밑 여백만큼 내리고(발이 그림자에 닿게),
 	# 몸이 액자에서 옆으로 치우쳐 있으면 그만큼 당긴다(그림자와 몸이 어긋나던
@@ -1139,15 +1183,12 @@ func _sprite(t: Texture2D, foot: Vector2, kind: String, flip: bool = false, squa
 		r.position.y += r.size.y * squash
 		r.size.x *= 1.0 + squash * 0.7
 		r.size.y *= 1.0 - squash
-	if flip:
-		# 그림은 오른쪽 보는 것 한 장만 받는다. 왼쪽은 여기서 뒤집는다 —
-		# 두 장씩 그리게 하면 장수가 두 배가 되고, 둘이 미묘하게 달라진다.
-		# ★ 뒤집기 삽질의 역사(둘 다 유저가 잡았다): 목적지 네모를 음수로 —
-		#   한 칸 옆으로 밀려 그려짐(4·7 매대가 5·8로). 원본 네모를 음수로 —
-		#   아예 안 그려짐. **좌표계를 거울로 걸고 정상으로 그리는 것**만 확실하다.
-		_mirrored(t, r)
-	else:
-		draw_texture_rect(t, r, false)
+	# 그림은 오른쪽 보는 것 한 장만 받는다. 왼쪽은 _blit이 뒤집는다 —
+	# 두 장씩 그리게 하면 장수가 두 배가 되고, 둘이 미묘하게 달라진다.
+	# ★ 뒤집기 삽질의 역사(둘 다 유저가 잡았다): 목적지 네모를 음수로 —
+	#   한 칸 옆으로 밀려 그려짐(4·7 매대가 5·8로). 원본 네모를 음수로 —
+	#   아예 안 그려짐. **좌표계를 거울로 걸고 정상으로 그리는 것**만 확실하다.
+	return r
 
 ## 세로축 거울 — r 자리에 t를 좌우 반전으로 그린다. 자리는 절대 안 밀린다.
 func _mirrored(t: Texture2D, r: Rect2) -> void:
@@ -1251,12 +1292,13 @@ func _clerk(i: int) -> void:
 	# 옆모습(오른쪽 한 장, 왼쪽은 뒤집기). 정면은 없다 — 서 있을 땐 마지막
 	# 방향 그대로 멈추고, 할 일 없으면 존다.
 	var dirn: String = "back" if (c.walking and bool(c.get("up", false))) else "side"
-	var full: Texture2D = _worker_tex(id, 0, dirn)
+	var lays: Array = _worker_layers(id, 0, dirn)
+	var full: Texture2D = _worker_base(lays)
 	if full != null:
 		var br3: float = 0.0 if c.walking else (0.5 + 0.5 * sin(_t * 2.4 + c.pos.x * 0.03)) * 0.03
 		var hop: float = absf(sin(_t * 7.0 + c.pos.x * 0.05)) * 3.5 if c.walking else 0.0
 		_shadow(c.pos, 14.0)
-		_sprite(full, c.pos + Vector2(0, -hop), "clerks", bool(c.get("flip", false)), br3)
+		_sprite_stack(lays, full, c.pos + Vector2(0, -hop), "clerks", bool(c.get("flip", false)), br3)
 		if int(c.get("carry_oid", 0)) != 0 or float(c.get("carry", 0.0)) > 0.0:
 			_crate(c.pos, bool(c.get("flip", false)))
 		if pose == "sleep":
@@ -1428,10 +1470,11 @@ func _staff(i: int, k: int) -> void:
 	if carry6 != 0 or busy6:
 		sflip = String(Iso.yard(Iso.YARD_KIND[i], Iso.plot_dim(sim, i)).gate) == "y"
 	var breath: float = (0.5 + 0.5 * sin(_t * 2.2 + p.x * 0.04)) * 0.03 if idle else 0.0
-	var t: Texture2D = _worker_tex(sid6, k + 1, "side")
+	var lays6: Array = _worker_layers(sid6, k + 1, "side")
+	var t: Texture2D = _worker_base(lays6)
 	if t != null:
 		_shadow(p, 14.0)
-		_sprite(t, p + Vector2(0, -bob), "clerks", sflip, breath)
+		_sprite_stack(lays6, t, p + Vector2(0, -bob), "clerks", sflip, breath)
 		if carry6 != 0:
 			_crate(p, sflip)
 		if idle:
