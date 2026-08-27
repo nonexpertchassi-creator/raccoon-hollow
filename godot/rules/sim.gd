@@ -1102,12 +1102,6 @@ func _event_gain(kind: String, n: float = 1.0) -> void:
 	_evAt = wall + Content.EVENT.gapHours * 3600.0
 
 # ── 마을 의뢰 ──
-func quest_item_for(gid: String) -> Variant:
-	for q in quests:
-		if q.gid == gid:
-			return q.itemId if items.has(q.itemId) else null
-	return null
-
 func quest_rate(gid: String, item_id: String) -> float:
 	if not _guest_by_id.has(gid) or not items.has(item_id):
 		return 0.0
@@ -1491,26 +1485,18 @@ func _buy(g: Dictionary, rng: Rng) -> Variant:
 		have[j] = tmp
 		i -= 1
 
-	# 의뢰를 건 마을은 청한 물건을 맨 먼저 집는다
-	var want_q: Variant = quest_item_for(g.id)
-	if want_q != null:
-		var at: int = have.find(want_q)
-		if at > 0:
-			have.remove_at(at)
-			have.push_front(want_q)
-
 	# ★ 한 손님은 **한 가게만** 본다(2026-08-25, 유저가 잡은 치명 오류 —
 	#   "필방에 손님이 온 적이 없는데 재고가 떨어진다"). 줄 선 가게가 곧
 	#   장 본 가게다.
 	# ★ 가게는 **균등하게** 고른다(2026-08-26, 유저 — "필방도 지물포도 안
 	#   간다"). 처음에 "섞은 바구니의 첫 물건이 정한 가게"로 했더니 방문이
 	#   물건 칸 수에 비례해 쏠렸다 — 물건 여섯인 대장간이 물건 하나인 새
-	#   가게의 여섯 배로 손님을 독차지했다. 의뢰를 건 마을은 의뢰 가게로.
-	var pick_shop: String
-	if want_q != null:
-		pick_shop = String(item_by_id(String(want_q)).shop)
-	else:
-		pick_shop = String(shops[int(floor(rng.next() * shops.size())) % shops.size()])
+	#   가게의 여섯 배로 손님을 독차지했다.
+	# ★ **의뢰는 방문과 무관하다**(2026-08-27, 유저). 예전엔 의뢰를 건 마을
+	#   손님을 그 가게로 보냈는데, 그건 **판매가 의뢰를 채우던 시절의 규칙**이다.
+	#   어제 "의뢰는 만들어서 채운다"로 바뀌면서 저 쏠림은 하는 일이 없어졌고,
+	#   "의뢰한 짐승이 줄을 선다"는 오해만 남겼다. 이제 예외 없이 균등하다.
+	var pick_shop: String = String(shops[int(floor(rng.next() * shops.size())) % shops.size()])
 	var mine: Array = []
 	for id2 in have:
 		if String(item_by_id(String(id2)).shop) == pick_shop:
