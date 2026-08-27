@@ -117,7 +117,7 @@ const DISTRICTS := [
 			"gaekju",
 			"skewer",
 			"ricecake",
-			"butcher"
+			"fruit"
 		],
 		"desc": "객주와 먹거리 가게가 늘어선 아랫동네"
 	},
@@ -1632,20 +1632,20 @@ const SHOPS := [
 				"icon": "🌱"
 			},
 			{
-				"id": "antler",
-				"name": "녹용",
+				"id": "hasuo",
+				"name": "하수오",
 				"price": 28000.0,
 				"time": 8.4,
 				"cost": 1000000000.0,
-				"icon": "🦌"
+				"icon": "🌿"
 			},
 			{
-				"id": "bezoar",
-				"name": "우황",
+				"id": "gamcho",
+				"name": "감초",
 				"price": 65000.0,
 				"time": 9.5,
 				"cost": 1500000000.0,
-				"icon": "💊"
+				"icon": "🌱"
 			},
 			{
 				"id": "danggui",
@@ -1689,9 +1689,9 @@ const SHOPS := [
 		"desc": "뜨끈한 국밥 한 그릇을 만다",
 		"color": "#8a6a45",
 		"ranks": [
-			"장국",
-			"곰국",
-			"용봉탕"
+			"된장",
+			"들깨",
+			"송이"
 		],
 		"promote": [
 			2500000000.0,
@@ -1731,36 +1731,36 @@ const SHOPS := [
 				"icon": "🧊"
 			},
 			{
-				"id": "gomtang",
-				"name": "곰탕",
+				"id": "kongguk",
+				"name": "콩국",
 				"price": 480000.0,
 				"time": 9.4,
 				"cost": 1000000000.0,
-				"icon": "🍜"
+				"icon": "🥛"
 			},
 			{
-				"id": "samgye",
-				"name": "삼계탕",
+				"id": "deulkkae",
+				"name": "들깨탕",
 				"price": 1200000.0,
 				"time": 10.2,
 				"cost": 3000000000.0,
-				"icon": "🐔"
+				"icon": "🥣"
 			},
 			{
-				"id": "chueo",
-				"name": "추어탕",
+				"id": "jeongol",
+				"name": "버섯전골",
 				"price": 3200000.0,
 				"time": 11.0,
 				"cost": 360000000000.0,
-				"icon": "🐟"
+				"icon": "🍲"
 			},
 			{
-				"id": "yongbong",
-				"name": "용봉탕",
+				"id": "yeonip",
+				"name": "연잎밥",
 				"price": 8400000.0,
 				"time": 11.8,
 				"cost": 1100000000000.0,
-				"icon": "🐲"
+				"icon": "🍚"
 			}
 		]
 	},
@@ -1822,12 +1822,12 @@ const SHOPS := [
 				"icon": "🍾"
 			},
 			{
-				"id": "bossam",
-				"name": "보쌈",
+				"id": "modeum",
+				"name": "모둠전",
 				"price": 2600000.0,
 				"time": 10.8,
 				"cost": 6000000000.0,
-				"icon": "🥬"
+				"icon": "🥘"
 			},
 			{
 				"id": "beopju",
@@ -1873,12 +1873,12 @@ const SHOPS := [
 				"icon": "🍡"
 			},
 			{
-				"id": "dakggo",
-				"name": "닭꼬치",
+				"id": "gamja",
+				"name": "감자꼬치",
 				"price": 120000.0,
 				"time": 8.2,
 				"cost": 5400000.0,
-				"icon": "🍢"
+				"icon": "🥔"
 			},
 			{
 				"id": "beoseot",
@@ -1897,12 +1897,12 @@ const SHOPS := [
 				"icon": "🐠"
 			},
 			{
-				"id": "sanjeok",
-				"name": "산적",
+				"id": "eunhaeng",
+				"name": "은행꼬치",
 				"price": 2100000.0,
 				"time": 10.6,
 				"cost": 4000000000.0,
-				"icon": "🍖"
+				"icon": "🌰"
 			},
 			{
 				"id": "jangeo",
@@ -1913,20 +1913,20 @@ const SHOPS := [
 				"icon": "🐍"
 			},
 			{
-				"id": "neobiani",
-				"name": "너비아니",
+				"id": "deodeok",
+				"name": "더덕구이",
 				"price": 14000000.0,
 				"time": 12.2,
 				"cost": 1600000000000.0,
-				"icon": "🥩"
+				"icon": "🌿"
 			},
 			{
-				"id": "yukhoe",
-				"name": "육회",
+				"id": "songi",
+				"name": "송이꼬치",
 				"price": 37000000.0,
 				"time": 13.0,
 				"cost": 4800000000000.0,
-				"icon": "🌶️"
+				"icon": "🍄"
 			}
 		]
 	},
@@ -2014,16 +2014,16 @@ const SHOPS := [
 		]
 	},
 	{
-		"id": "butcher",
-		"name": "푸줏간",
-		"sign": "肉",
+		"id": "fruit",
+		"name": "과일전",
+		"sign": "果",
 		"cost": 230000000000000.0,
-		"desc": "뼈를 발라 고기를 판다",
+		"desc": "철 따라 나는 과일을 골라 판다",
 		"color": "#8a6a45",
 		"ranks": [
-			"막",
-			"상",
-			"진상"
+			"풋",
+			"햇",
+			"꿀"
 		],
 		"promote": [
 			45000000000.0,
@@ -2031,68 +2031,68 @@ const SHOPS := [
 		],
 		"items": [
 			{
-				"id": "dwaeji",
-				"name": "돼지고기",
+				"id": "chamoe",
+				"name": "참외",
 				"price": 200000.0,
 				"time": 8.6,
 				"cost": 0.0,
-				"icon": "🥓"
+				"icon": "🍈"
 			},
 			{
-				"id": "dak",
-				"name": "닭고기",
+				"id": "salgu",
+				"name": "살구",
 				"price": 530000.0,
 				"time": 9.4,
 				"cost": 24000000.0,
-				"icon": "🍗"
+				"icon": "🍑"
 			},
 			{
-				"id": "sogogi",
-				"name": "쇠고기",
+				"id": "jadu",
+				"name": "자두",
 				"price": 1400000.0,
 				"time": 10.2,
 				"cost": 63000000.0,
-				"icon": "🥩"
+				"icon": "🫐"
 			},
 			{
-				"id": "galbi",
-				"name": "갈비",
+				"id": "boksung",
+				"name": "복숭아",
 				"price": 3600000.0,
 				"time": 11.0,
 				"cost": 160000000.0,
-				"icon": "🍖"
+				"icon": "🍑"
 			},
 			{
-				"id": "ugeoji",
-				"name": "우거지",
+				"id": "subak",
+				"name": "수박",
 				"price": 9300000.0,
 				"time": 11.8,
 				"cost": 18000000000.0,
-				"icon": "🥬"
+				"icon": "🍉"
 			},
 			{
-				"id": "gopchang",
-				"name": "곱창",
+				"id": "hongsi",
+				"name": "홍시",
 				"price": 24000000.0,
 				"time": 12.6,
 				"cost": 54000000000.0,
-				"icon": "🌭"
+				"icon": "🍊"
 			},
 			{
-				"id": "ansim",
-				"name": "안심",
+				"id": "yuja",
+				"name": "유자",
 				"price": 63000000.0,
 				"time": 13.4,
 				"cost": 8000000000000.0,
-				"icon": "🍽️"
+				"icon": "🍋"
 			},
 			{
-				"id": "hanwoo",
-				"name": "한우 등심",
+				"id": "seokryu",
+				"name": "석류",
 				"price": 160000000.0,
 				"time": 14.2,
 				"cost": 24000000000000.0,
-				"icon": "👑"
+				"icon": "🍎"
 			}
 		]
 	},

@@ -1877,7 +1877,23 @@ const INT_KEYS: Array[String] = ["busy", "_qid", "_evIdx", "_oid"]
 ## **칸 안에 든 이름이 달라졌다** — 그냥 두면 이미 박쥐를 뽑은 사람의
 ## 레전드가 목록에서 사라지고, 쌓아 둔 성과 카드도 주인을 잃는다.
 ## 옛 저장본을 읽을 때 bat을 falcon으로 옮겨 준다.
-const SAVE_VER: int = 10
+## 11판: 손님으로 만들던 물건의 이름을 갈았다(2026-08-27, 유저).
+## 사슴이 줄을 서는데 녹용을 팔고, 닭 손님 옆에서 닭꼬치를 굽고 있었다.
+## 가게 하나(푸줏간 → 과일전)와 물건 열아홉의 id가 바뀌었다 — **담는 칸은
+## 그대로고 칸에 든 이름표만 달라졌다.** 그냥 두면 열어 둔 가게와 물건,
+## 올려 둔 등급이 통째로 사라진다. 이름표를 갈아 끼워 준다.
+const SAVE_VER: int = 11
+
+## 11판에서 바뀐 이름표. 옛 id → 새 id.
+const RENAMED_V11: Dictionary = {
+	"butcher": "fruit",
+	"dwaeji": "chamoe", "dak": "salgu", "sogogi": "jadu", "galbi": "boksung",
+	"ugeoji": "subak", "gopchang": "hongsi", "ansim": "yuja", "hanwoo": "seokryu",
+	"antler": "hasuo", "bezoar": "gamcho",
+	"gomtang": "kongguk", "samgye": "deulkkae", "chueo": "jeongol", "yongbong": "yeonip",
+	"bossam": "modeum",
+	"dakggo": "gamja", "sanjeok": "eunhaeng", "neobiani": "deodeok", "yukhoe": "songi",
+}
 
 func save() -> Dictionary:
 	var d: Dictionary = {}
@@ -1942,6 +1958,31 @@ func load_from(d: Dictionary, ver: int = SAVE_VER) -> void:
 	if ver < 2 and stars.is_empty() and not visits.is_empty():
 		for gid in visits.keys():
 			stars[gid] = float(regular_lv_old(String(gid)))
+	# 11판 전 저장본 — 가게 하나와 물건 열아홉의 이름표가 바뀌었다.
+	# 배열 칸(값이 id)과 사전 칸(열쇠가 id)을 나눠서 갈아 끼운다.
+	# 열쇠가 "가게:번호" 꼴인 것(furs·shopUp)은 앞부분만 바꾼다.
+	if ver < 11:
+		for arr in [shops, zones, asked, guests, skins]:
+			for i2 in range(arr.size()):
+				if RENAMED_V11.has(arr[i2]):
+					arr[i2] = RENAMED_V11[arr[i2]]
+		for d3 in [rank, items, bought, cleared, furs, shopUp]:
+			for k3 in d3.keys():
+				# 열쇠가 "가게:번호" 꼴인 것이 있다(furs·shopUp) — **앞부분만** 간다.
+				# 통째로 바꾸려다 replace()에 인자를 셋 줬는데, Godot의 replace는
+				# 둘까지다. 조각으로 나눠 첫 조각만 바꾸는 편이 뜻도 분명하다.
+				var parts: PackedStringArray = String(k3).split(":")
+				var head: String = parts[0]
+				if not RENAMED_V11.has(head):
+					continue
+				parts[0] = String(RENAMED_V11[head])
+				var nk: String = ":".join(parts)
+				d3[nk] = d3[k3]
+				d3.erase(k3)
+		# 진행 중인 의뢰도 물건 이름을 들고 있다 — 안 갈면 못 채우는 의뢰가 된다.
+		for q in quests:
+			if q is Dictionary and RENAMED_V11.has(q.get("item", "")):
+				q["item"] = RENAMED_V11[q["item"]]
 	# 10판 전 저장본 — 박쥐(bat)가 매(falcon)로 바뀌었다. 이름만 갈아 끼운다.
 	# 성·카드·등장 간격까지 통째로 옮겨야 뽑아 둔 레전드를 안 잃는다.
 	if ver < 10 and guests.has("bat"):

@@ -17,6 +17,33 @@ SUBJECTS="${*:-fmt rng content sim save}"
 # 조건부로 건너뛰게 했더니 .gd를 고쳐도 옛 이름이 남을 여지가 있었다. 늘 훑는다.
 godot --headless --path godot --import >/dev/null 2>&1 || true
 
+# ★ 매달리면 죽인다(2026-08-28). GDScript에 문법 오류가 나면 Godot은
+#   **실패하는 게 아니라 그대로 매달린다** — _init이 못 돌아서 quit()에 못 닿고,
+#   헤드리스 SceneTree는 영원히 돈다. 실제로 오타 하나에 검사가 열 분씩
+#   멈췄고, 화면에는 아무 말도 안 나왔다(출력이 파이프에 갇혀서).
+#   시간을 걸어 두면 "멈췄다"가 "실패했다"로 바뀐다 — 그건 볼 수 있는 고장이다.
+#   맥에는 timeout이 없어서 직접 잰다.
+GD_LIMIT="${GD_LIMIT:-180}"
+gd() {
+	"$@" >/tmp/gd_out.$$ 2>&1 &
+	_pid=$!
+	_n=0
+	while kill -0 "$_pid" 2>/dev/null; do
+		_n=$((_n + 1))
+		if [ "$_n" -gt "$((GD_LIMIT * 2))" ]; then
+			kill -9 "$_pid" 2>/dev/null
+			echo "★ ${GD_LIMIT}초가 지나도 안 끝난다 — 문법 오류일 가능성이 크다:"
+			tail -6 /tmp/gd_out.$$
+			rm -f /tmp/gd_out.$$
+			return 1
+		fi
+		sleep 0.5
+	done
+	wait "$_pid" 2>/dev/null || true
+	cat /tmp/gd_out.$$
+	rm -f /tmp/gd_out.$$
+}
+
 # 누르기·저장은 자바스크립트에 짝이 없다(브라우저 저장을 쓰니까).
 # 그래서 답안지 대신 **Godot 안에서 스스로 증명하게** 한다.
 FAIL=0
@@ -25,20 +52,20 @@ pass() { printf "✅ %-8s %s\n" "$1" "$2"; }
 fail() { FAIL=1; printf "❌ %-8s %s\n" "$1" "$2"; }
 
 # 좌표는 눈으로 못 믿는다 — 두드려 보고 sim이 실제로 변했는지 본다
-OUT=$(godot --headless --path godot tests/taptest.tscn 2>&1 || true)
+OUT=$(gd godot --headless --path godot tests/taptest.tscn 2>&1 || true)
 case "$OUT" in
   *"TAPTEST OK"*) pass tap "누르기 열 가지 다 먹는다(승급 공사·패시브 스킬 포함)" ;;
   *) fail tap "" ; echo "$OUT" | grep "TAPTEST FAIL" | sed 's/^/     /' ;;
 esac
 
 # 규칙만 시험하면 "저장은 되는데 파일이 안 써진다"를 놓친다
-OUT=$(godot --headless --path godot --script tests/yard.gd 2>&1 || true)
+OUT=$(gd godot --headless --path godot --script tests/yard.gd 2>&1 || true)
 case "$OUT" in
   *"YARD OK"*) pass yard "마당 배치가 장부와 같다" ;;
   *) fail yard "" ; echo "$OUT" | grep "YARD FAIL" | sed 's/^/     /' ;;
 esac
 
-OUT=$(godot --headless --path godot --script tests/savefile.gd 2>&1 || true)
+OUT=$(gd godot --headless --path godot --script tests/savefile.gd 2>&1 || true)
 case "$OUT" in
   *"같은가: 예"*) pass file "파일에 담았다 꺼내도 같다" ;;
   *) fail file "" ; echo "$OUT" | grep -iE "아니오|error" | head -3 | sed 's/^/     /' ;;
@@ -46,7 +73,7 @@ esac
 
 # 소수가 비트 하나까지 돌아오는지. 글자로 비교하면 표기 차이에 속는다 —
 # 실제로 JSON으로 저장했을 때 1비트가 어긋나 있었고, 글자 비교로는 못 잡았다.
-OUT=$(godot --headless --path godot --script tests/precision.gd 2>&1 || true)
+OUT=$(gd godot --headless --path godot --script tests/precision.gd 2>&1 || true)
 case "$OUT" in
   *"다른 것 0개"*) pass bits "저장한 소수가 비트까지 그대로다" ;;
   *) fail bits "" ; echo "$OUT" | grep "값이 다르다" | head -3 | sed 's/^/     /' ;;
@@ -54,7 +81,7 @@ esac
 
 # 뽑기·룰렛은 자바스크립트에 짝이 없다(Godot에만 있는 규칙이다).
 # 확률은 눈으로 못 보므로 십만 번씩 굴려 표와 견준다.
-OUT=$(godot --headless --path godot --script tests/gacha.gd 2>&1 || true)
+OUT=$(gd godot --headless --path godot --script tests/gacha.gd 2>&1 || true)
 case "$OUT" in
   *"GACHA OK"*) pass gacha "뽑기·룰렛·주사위 확률이 표대로다" ;;
   *) fail gacha "" ; echo "$OUT" | grep "GACHA FAIL" | head -4 | sed 's/^/     /' ;;

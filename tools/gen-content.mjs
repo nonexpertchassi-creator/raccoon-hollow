@@ -64,6 +64,36 @@ for (const n of names) {
   if (typeof v === 'function') continue;
   out += `const ${n} := ${emit(v, 0)}\n\n`;
 }
+/* ★ 뽑기 전에 **id가 겹치는지** 본다(2026-08-27).
+ *
+ * 손님으로 만들던 물건 이름을 갈다가 버섯전골 id를 `beoseot`으로 줬는데,
+ * 꼬치집 버섯꼬치가 이미 그 id였다. 겹친 id 하나에 검사가 **10분씩 멈췄고**,
+ * 어디가 원인인지 아무 말도 안 해 줬다 — 데이터가 어긋나면 코드는 조용히
+ * 헛도는 법이라, 그건 사람이 찾을 일이 아니라 도구가 잡을 일이다.
+ *
+ * 여기서 막으면 잘못된 content.gd가 아예 안 만들어진다. */
+const dupes = [];
+const seenShop = new Set(), seenItem = new Map();
+for (const sh of C.SHOPS) {
+  if (seenShop.has(sh.id)) dupes.push(`가게 id 겹침: ${sh.id}`);
+  seenShop.add(sh.id);
+  for (const it of sh.items) {
+    if (seenItem.has(it.id))
+      dupes.push(`물건 id 겹침: '${it.id}' — ${seenItem.get(it.id)} vs ${sh.name}/${it.name}`);
+    seenItem.set(it.id, `${sh.name}/${it.name}`);
+  }
+}
+const seenGuest = new Set();
+for (const g of C.GUESTS) {
+  if (seenGuest.has(g.id)) dupes.push(`손님 id 겹침: ${g.id}`);
+  seenGuest.add(g.id);
+}
+if (dupes.length) {
+  console.error('★ 뽑지 않았다 — id가 겹친다:');
+  for (const d of dupes) console.error('   ' + d);
+  process.exit(1);
+}
+
 fs.writeFileSync('godot/rules/content.gd', out);
 const n = out.split('\n').length;
 console.log(`godot/rules/content.gd — ${names.length}덩이 · ${n}줄`);

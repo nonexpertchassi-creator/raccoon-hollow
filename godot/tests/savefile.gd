@@ -28,4 +28,30 @@ func _init() -> void:
 	print("한 시간 자리 비운 값: ", "🪙" + Num.fmt(r.earned) if r != null else "없음",
 		" · 받으면 돈이 늘었나: ", "예" if b.money > before else "아니오")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(P))
-	quit(0 if ok else 1)
+
+	# ── 옛 저장본 받아주기: 11판에서 갈린 이름표가 실제로 옮겨지는가.
+	#   이건 눈으로 못 보는 고장이다 — 옛 판을 켠 사람만 겪고, 그 사람은
+	#   "가게가 사라졌다"고만 말할 수 있다. 그래서 여기서 흉내 내 본다.
+	var old_save: Dictionary = a.save()
+	# 새 이름을 옛 이름으로 되돌려 **10판 저장본을 만든다**
+	var back: Dictionary = {}
+	for k in Sim.RENAMED_V11:
+		back[Sim.RENAMED_V11[k]] = k
+	var arr2: Array = (old_save["shops"] as Array).duplicate()
+	for i2 in range(arr2.size()):
+		if back.has(arr2[i2]):
+			arr2[i2] = back[arr2[i2]]
+	old_save["shops"] = arr2
+	var rk2: Dictionary = {}
+	for k2 in (old_save["rank"] as Dictionary):
+		rk2[back.get(k2, k2)] = old_save["rank"][k2]
+	old_save["rank"] = rk2
+	var c := Sim.new()
+	c.load_from(old_save, 10)
+	var kept: bool = c.shops == (a.save()["shops"] as Array) and c.rank.keys().size() == a.rank.keys().size()
+	var stale: bool = false
+	for k4 in c.rank:
+		if back.has(k4) or Sim.RENAMED_V11.has(k4):
+			stale = true
+	print("10판 저장본을 열면 이름표가 갈아 끼워지나: ", "예" if (kept and not stale) else "아니오")
+	quit(0 if (ok and kept and not stale) else 1)

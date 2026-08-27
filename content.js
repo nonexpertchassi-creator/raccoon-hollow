@@ -98,8 +98,8 @@ export const SHOPS = [
     items: [
       { id: 'root',    name: '도라지', price: 5_000,       time: 5.6, cost: 0, icon: '🌿' },
       { id: 'ginseng', name: '산삼',   price: 12_000,      time: 7.0, cost: 100_000_000, icon: '🌱' },
-      { id: 'antler',  name: '녹용',   price: 28_000,      time: 8.4, cost: 1_000_000_000, icon: '🦌' },
-      { id: 'bezoar',  name: '우황',   price: 65_000,      time: 9.5, cost: 1_500_000_000, icon: '💊' },
+      { id: 'hasuo',  name: '하수오',   price: 28_000,      time: 8.4, cost: 1_000_000_000, icon: '🌿' },
+      { id: 'gamcho',  name: '감초',   price: 65_000,      time: 9.5, cost: 1_500_000_000, icon: '🌱' },
       { id: 'danggui', name: '당귀',   price: 95_000,   time: 10.3, cost: 340_000_000, icon: '🍂' },
       { id: 'reishi',  name: '영지',   price: 139_000,  time: 11.1, cost: 1_000_000_000, icon: '🍄' },
       { id: 'agar',    name: '침향',   price: 204_000,  time: 12.0, cost: 60_000_000_000, icon: '🪵' },
@@ -110,17 +110,17 @@ export const SHOPS = [
     id: 'soup', name: '국밥집', sign: '湯', cost: 990_000_000,
     desc: '뜨끈한 국밥 한 그릇을 만다',
     color: '#8a6a45',
-    ranks: ['장국', '곰국', '용봉탕'],
+    ranks: ['된장', '들깨', '송이'],
     promote: [2_500_000_000, 900_000_000_000],
     items: [
       { id: 'bap',       name: '국밥', price: 10_000, time: 6.2, cost: 0, icon: '🍲' },
       { id: 'kuk',       name: '장국', price: 27_000, time: 7.0, cost: 1_200_000, icon: '🥣' },
       { id: 'sujebi',    name: '수제비', price: 71_000, time: 7.8, cost: 3_200_000, icon: '🥟' },
       { id: 'naeng',     name: '냉국', price: 180_000, time: 8.6, cost: 8_100_000, icon: '🧊' },
-      { id: 'gomtang',   name: '곰탕', price: 480_000, time: 9.4, cost: 1_000_000_000, icon: '🍜' },
-      { id: 'samgye',    name: '삼계탕', price: 1_200_000, time: 10.2, cost: 3_000_000_000, icon: '🐔' },
-      { id: 'chueo',     name: '추어탕', price: 3_200_000, time: 11.0, cost: 360_000_000_000, icon: '🐟' },
-      { id: 'yongbong',  name: '용봉탕', price: 8_400_000, time: 11.8, cost: 1_100_000_000_000, icon: '🐲' },
+      { id: 'kongguk',   name: '콩국', price: 480_000, time: 9.4, cost: 1_000_000_000, icon: '🥛' },
+      { id: 'deulkkae',    name: '들깨탕', price: 1_200_000, time: 10.2, cost: 3_000_000_000, icon: '🥣' },
+      { id: 'jeongol',     name: '버섯전골', price: 3_200_000, time: 11.0, cost: 360_000_000_000, icon: '🍲' },
+      { id: 'yeonip',  name: '연잎밥', price: 8_400_000, time: 11.8, cost: 1_100_000_000_000, icon: '🍚' },
     ],
   },
   {
@@ -139,7 +139,7 @@ export const SHOPS = [
       { id: 'dongdong',  name: '동동주', price: 150_000, time: 8.4, cost: 6_800_000, icon: '🍯' },
       { id: 'muk',       name: '묵무침', price: 390_000, time: 9.2, cost: 18_000_000, icon: '🥗' },
       { id: 'cheongju',  name: '청주', price: 1_000_000, time: 10.0, cost: 2_000_000_000, icon: '🍾' },
-      { id: 'bossam',    name: '보쌈', price: 2_600_000, time: 10.8, cost: 6_000_000_000, icon: '🥬' },
+      { id: 'modeum',    name: '모둠전', price: 2_600_000, time: 10.8, cost: 6_000_000_000, icon: '🥘' },
       { id: 'beopju',    name: '법주', price: 6_800_000, time: 11.6, cost: 800_000_000_000, icon: '🏺' },
       { id: 'gujeol',    name: '구절판', price: 18_000_000, time: 12.4, cost: 2_400_000_000_000, icon: '🍱' },
     ],
@@ -152,13 +152,13 @@ export const SHOPS = [
     promote: [10_000_000_000, 4_000_000_000_000],
     items: [
       { id: 'tteokggo',  name: '떡꼬치', price: 46_000, time: 7.4, cost: 0, icon: '🍡' },
-      { id: 'dakggo',    name: '닭꼬치', price: 120_000, time: 8.2, cost: 5_400_000, icon: '🍢' },
+      { id: 'gamja',    name: '감자꼬치', price: 120_000, time: 8.2, cost: 5_400_000, icon: '🥔' },
       { id: 'beoseot',   name: '버섯꼬치', price: 310_000, time: 9.0, cost: 14_000_000, icon: '🍄' },
       { id: 'saengseon',  name: '생선꼬치', price: 810_000, time: 9.8, cost: 36_000_000, icon: '🐠' },
-      { id: 'sanjeok',   name: '산적', price: 2_100_000, time: 10.6, cost: 4_000_000_000, icon: '🍖' },
+      { id: 'eunhaeng',   name: '은행꼬치', price: 2_100_000, time: 10.6, cost: 4_000_000_000, icon: '🌰' },
       { id: 'jangeo',    name: '장어구이', price: 5_500_000, time: 11.4, cost: 12_000_000_000, icon: '🐍' },
-      { id: 'neobiani',  name: '너비아니', price: 14_000_000, time: 12.2, cost: 1_600_000_000_000, icon: '🥩' },
-      { id: 'yukhoe',    name: '육회', price: 37_000_000, time: 13.0, cost: 4_800_000_000_000, icon: '🌶️' },
+      { id: 'deodeok',  name: '더덕구이', price: 14_000_000, time: 12.2, cost: 1_600_000_000_000, icon: '🌿' },
+      { id: 'songi',    name: '송이꼬치', price: 37_000_000, time: 13.0, cost: 4_800_000_000_000, icon: '🍄' },
     ],
   },
   {
@@ -179,20 +179,23 @@ export const SHOPS = [
     ],
   },
   {
-    id: 'butcher', name: '푸줏간', sign: '肉', cost: 230_000_000_000_000,
-    desc: '뼈를 발라 고기를 판다',
+/* ★ 푸줏간을 과일전으로 바꿨다(2026-08-27, 유저). 돼지·닭·소가 손님으로
+     * 줄을 서는데 그 옆에서 돼지고기를 파는 그림이 됐다. **값·시간·여는 값은
+     * 한 자도 안 건드렸다** — 이름만 갈아 끼워서 경제 곡선을 안 흔든다. */
+    id: 'fruit', name: '과일전', sign: '果', cost: 230_000_000_000_000,
+    desc: '철 따라 나는 과일을 골라 판다',
     color: '#8a6a45',
-    ranks: ['막', '상', '진상'],
+    ranks: ['풋', '햇', '꿀'],
     promote: [45_000_000_000, 20_000_000_000_000],
     items: [
-      { id: 'dwaeji',    name: '돼지고기', price: 200_000, time: 8.6, cost: 0, icon: '🥓' },
-      { id: 'dak',       name: '닭고기', price: 530_000, time: 9.4, cost: 24_000_000, icon: '🍗' },
-      { id: 'sogogi',    name: '쇠고기', price: 1_400_000, time: 10.2, cost: 63_000_000, icon: '🥩' },
-      { id: 'galbi',     name: '갈비', price: 3_600_000, time: 11.0, cost: 160_000_000, icon: '🍖' },
-      { id: 'ugeoji',    name: '우거지', price: 9_300_000, time: 11.8, cost: 18_000_000_000, icon: '🥬' },
-      { id: 'gopchang',  name: '곱창', price: 24_000_000, time: 12.6, cost: 54_000_000_000, icon: '🌭' },
-      { id: 'ansim',     name: '안심', price: 63_000_000, time: 13.4, cost: 8_000_000_000_000, icon: '🍽️' },
-      { id: 'hanwoo',    name: '한우 등심', price: 160_000_000, time: 14.2, cost: 24_000_000_000_000, icon: '👑' },
+      { id: 'chamoe',    name: '참외', price: 200_000, time: 8.6, cost: 0, icon: '🍈' },
+      { id: 'salgu',       name: '살구', price: 530_000, time: 9.4, cost: 24_000_000, icon: '🍑' },
+      { id: 'jadu',    name: '자두', price: 1_400_000, time: 10.2, cost: 63_000_000, icon: '🫐' },
+      { id: 'boksung',     name: '복숭아', price: 3_600_000, time: 11.0, cost: 160_000_000, icon: '🍑' },
+      { id: 'subak',    name: '수박', price: 9_300_000, time: 11.8, cost: 18_000_000_000, icon: '🍉' },
+      { id: 'hongsi',  name: '홍시', price: 24_000_000, time: 12.6, cost: 54_000_000_000, icon: '🍊' },
+      { id: 'yuja',     name: '유자', price: 63_000_000, time: 13.4, cost: 8_000_000_000_000, icon: '🍋' },
+      { id: 'seokryu',    name: '석류', price: 160_000_000, time: 14.2, cost: 24_000_000_000_000, icon: '🍎' },
     ],
   },
   {
@@ -904,7 +907,7 @@ export const DISTRICTS = [
    * 목표를 시각으로 잡았다: 저잣거리 **3시간**, 큰장마당 **12시간**.
    * 벽은 잦아지되 낮아진다 — 방치형은 그쪽이 맞다. */
   { id: 'jeoja', name: '저잣거리', rows: [18, 29], cost: 50_000_000, stars: 10,
-    shops: ['gaekju', 'skewer', 'ricecake', 'butcher'],
+    shops: ['gaekju', 'skewer', 'ricecake', 'fruit'],
     desc: '객주와 먹거리 가게가 늘어선 아랫동네' },
   /* ★ 옛 값(성 40·500T)은 "긴 판을 못 돌려서 곡선에서 이은 값"이라고 적혀 있었다.
    * 이제 24시간을 돌린다 — 그 값으로는 **48시간에도 못 연다**(24시간 초당 54.7M로
