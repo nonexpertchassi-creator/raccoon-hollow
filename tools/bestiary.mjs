@@ -43,7 +43,7 @@ for (const gr of CARD_GRADES) {
     out.push(`### ${g.face} ${g.name} \`${g.id}\`
 - **성격** ${g.desc}
 - **생김새** ${g.look}
-- **버릇** ${gapWord(g)} 와서 한 번에 ${g.qty}개, ${g.spread}종류를 훑고, ${payWord(g)}. ${walkWord(g)}.
+- **버릇** ${gapWord(g)} 와서 한 번에 최대 ${g.qty}개까지 사고(1~${g.qty} 사이 랜덤), ${payWord(g)}. ${walkWord(g)}.
 `);
   }
 }

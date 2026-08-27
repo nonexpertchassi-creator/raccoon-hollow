@@ -1505,9 +1505,6 @@ func _buy(g: Dictionary, rng: Rng) -> Variant:
 	if have.is_empty():
 		return null
 
-	var sp: float = g.spread if g.get("spread", 0.0) > 0.0 else Content.BASKET_SPREAD
-	var per: float = max(1.0, ceil(qty / sp))
-
 	# ★ 주문 생산(2026-08-26, 유저): 재고에서 집지 않는다 — **주문한다 →
 	#   만든다 → 들고 간다 → 판다.** 기다림 시간(patience)도 없앴다: 주문은
 	#   반드시 완성된다. 대신 동시에 받는 주문 수가 계산대 수(등급+1)×2로
