@@ -2,7 +2,7 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bb7vafdosntsu"
+uid="uid://bbkrq4r0bbi10"
 path="res://.godot/imported/smith-sell.webp-ba8e91633176bdb9f181ad348413a39d.ctex"
 metadata={
 "vram_texture": false
@@ -15,9 +15,9 @@ dest_files=["res://.godot/imported/smith-sell.webp-ba8e91633176bdb9f181ad348413a
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
-compress/lossy_quality=0.7
+compress/lossy_quality=0.9
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1

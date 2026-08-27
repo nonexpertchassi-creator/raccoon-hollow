@@ -2,7 +2,7 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bvcrcrfp78rtw"
+uid="uid://2mljjvfmd1gj"
 path="res://.godot/imported/injeol.webp-b9cbf96eb2e434f7f72dc812806b1d42.ctex"
 metadata={
 "vram_texture": false
@@ -15,9 +15,9 @@ dest_files=["res://.godot/imported/injeol.webp-b9cbf96eb2e434f7f72dc812806b1d42.
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
-compress/lossy_quality=0.7
+compress/lossy_quality=0.9
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1

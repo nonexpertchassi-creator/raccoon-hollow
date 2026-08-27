@@ -2,7 +2,7 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dod3ij3r1yhh8"
+uid="uid://f4ksebny6nio"
 path="res://.godot/imported/crow.webp-b1ba12ba0fb463c90bbbfc5ca630fab3.ctex"
 metadata={
 "vram_texture": false
@@ -15,9 +15,9 @@ dest_files=["res://.godot/imported/crow.webp-b1ba12ba0fb463c90bbbfc5ca630fab3.ct
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
-compress/lossy_quality=0.7
+compress/lossy_quality=0.9
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1

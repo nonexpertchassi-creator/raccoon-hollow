@@ -2,7 +2,7 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://gd1q4olbcop3"
+uid="uid://unb8f2jtfoyj"
 path="res://.godot/imported/shears.webp-ca806d3fbf29d4ecc6b496effbbaf068.ctex"
 metadata={
 "vram_texture": false
@@ -15,9 +15,9 @@ dest_files=["res://.godot/imported/shears.webp-ca806d3fbf29d4ecc6b496effbbaf068.
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
-compress/lossy_quality=0.7
+compress/lossy_quality=0.9
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1

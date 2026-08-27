@@ -49,3 +49,16 @@ window/handheld/orientation=1
 
 renderer/rendering_method="gl_compatibility"
 textures/vram_compression/import_etc2_astc=true
+
+[importer_defaults]
+
+; 그림을 **어떻게 구울 것인가**. 이게 없으면 Godot 기본값(무손실)으로 구워서,
+; webp로 줄여 둔 그림을 도로 풀어 png처럼 만든다 — 원본 16MB가 구우면 77MB가 됐다.
+; 게임에 실려 나가는 건 원본이 아니라 이 구운 것이라, 여기가 진짜 용량이다.
+;   compress/mode 1 = 손실(webp). 2D 그림에는 이게 맞다.
+;   lossy_quality 0.9 = 원본이 이미 webp라 두 번 줄어드는 셈이니 높게 잡는다.
+texture={
+"compress/mode": 1,
+"compress/lossy_quality": 0.9,
+"mipmaps/generate": false
+}

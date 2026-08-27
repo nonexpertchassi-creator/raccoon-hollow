@@ -2,7 +2,7 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://123wmjvcltas"
+uid="uid://bwdaf5qq5nh58"
 path="res://.godot/imported/weasel-3.webp-58768df4ccf76d918e7d8e829e243f12.ctex"
 metadata={
 "vram_texture": false
@@ -15,9 +15,9 @@ dest_files=["res://.godot/imported/weasel-3.webp-58768df4ccf76d918e7d8e829e243f1
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
-compress/lossy_quality=0.7
+compress/lossy_quality=0.9
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1

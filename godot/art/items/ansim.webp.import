@@ -2,7 +2,7 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://l8mk2pco4xx0"
+uid="uid://dff1tchsyoqth"
 path="res://.godot/imported/ansim.webp-d258c0eb23d2dc67bc2fe87cda836db3.ctex"
 metadata={
 "vram_texture": false
@@ -15,9 +15,9 @@ dest_files=["res://.godot/imported/ansim.webp-d258c0eb23d2dc67bc2fe87cda836db3.c
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
-compress/lossy_quality=0.7
+compress/lossy_quality=0.9
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
