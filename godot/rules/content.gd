@@ -2688,4 +2688,3 @@ const WEATHER := {
 		}
 	]
 }
-

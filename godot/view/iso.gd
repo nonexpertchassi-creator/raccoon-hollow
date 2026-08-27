@@ -54,7 +54,9 @@ const SHOP_T := [
 ]
 ## 마당 생김새는 **돌려 가며** 준다. 열 채가 다 같은 모양이면 마을이 아니라
 ## 창고가 된다. 어느 것을 줘도 규칙은 같다 — 계산대가 길 쪽에 붙기만 하면 된다.
-const YARD_KIND := ["A", "B", "D", "C", "C", "A", "D", "B", "C", "A", "B", "C", "A", "D", "C"]
+## 가게마다 어느 판을 쓰나 — 세 판을 골고루 돌린다(2026-08-27).
+## 열다섯 채가 다 같은 모양이면 마을이 아니라 창고가 된다.
+const YARD_KIND := ["갑", "을", "병", "갑", "을", "병", "갑", "을", "병", "갑", "을", "병", "갑", "을", "병"]
 ## 마을 드나드는 목 — 길이 마을 가장자리에 닿는 칸 전부.
 ##
 ## ★ 예전엔 위쪽 한 곳(6,0)뿐이었다. 그래서 손님이 **늘 같은 데서 같은 줄로**
@@ -84,6 +86,8 @@ const GATE_OFF := {"x": Vector2(44, 22), "y": Vector2(-44, 22)}
 ## 쪽으로 서는 게 장터의 상식이다 — 세로 길(gate x)은 위로, 가로 골목
 ## (gate y)은 왼쪽으로, 마당 변을 끼고 뻗는다.
 const LINE_OFF := {"x": Vector2(42, -21), "y": Vector2(-42, -21)}
+## 을 판만 줄이 **아래로** 뻗는다 — 계산대가 뒤 꼭짓점에서 아래로 늘어서기 때문.
+const LINE_DOWN := Vector2(-42, 21)
 
 static func plot_dim(sim: Sim, i: int) -> int:
 	return 3 + min(2, sim.rank_of(Content.SHOPS[i].id))
@@ -92,67 +96,45 @@ static func org(sim: Sim, i: int) -> Vector2i:
 	var n: int = plot_dim(sim, i)
 	return Vector2i(SHOP_T[i].x - n, SHOP_T[i].y - n)
 
-## 마당 생김새 넷. 마당 안 좌표는 (0,0)이 뒤 꼭짓점(화면 위),
+## 마당 생김새 **셋**. 마당 안 좌표는 (0,0)이 뒤 꼭짓점(화면 위),
 ## (n-1,n-1)이 앞 꼭짓점(화면 아래)이다.
-##   A 마주보기 · B 왼쪽살림 · C 길가진열 · D 옆문
-## 계산대는 반드시 **길에 닿는 변**에 둔다. 담은 늘 뒤 두 변에만 세운다.
-## ★ 2026-08-27, 유저가 칸 번호로 직접 정한 판이다(장부 "마당 배치판").
-##   예전엔 계산대가 **한 칸에 여러 개 겹쳐** 놓였다 — 등급이 오르면 계산대가
-##   둘·셋이 되는데 자리는 하나였으니, 그림이 스스로 모순이었다. 이제 계산대는
-##   길가 변의 **진짜 칸**을 하나씩 차지하고, 계산 자리(일꾼이 서는 곳)가
-##   그 안쪽 이웃 칸에 짝으로 붙는다.
+##   갑 앞마당 · 을 뒷마당 · 병 옆문
 ##
-##   길 쪽 변은 **오른쪽(↘)과 아래(↙) 둘뿐이다.** 마당은 SHOP_T(길 모서리)에서
-##   길 반대쪽으로 자라므로 위(↗)·왼쪽(↖) 변에는 길이 닿지 않는다 — C를 "길이
-##   오른쪽 위"로 바꾸자는 이야기가 있었으나 격자상 불가능해서 보류했다.
+## ★ 2026-08-27, 넷에서 셋으로 줄였다(유저). 계산대는 반드시 **꼭짓점에서
+##   시작해 한 변을 따라** 늘어선다 — 그래야 줄이 길 위로 곧게 뻗는다.
+##   변 가운데에서 시작하던 판(옛 B·C)은 줄이 뻗을 자리가 모자랐다.
+##   길 쪽 변은 오른쪽(↘)과 아래(↙) 둘뿐이라(마당이 길 반대쪽으로 자란다)
+##   "오른쪽 변 위로 · 오른쪽 변 아래로 · 아래 변 왼쪽으로" 셋이 전부다.
+##
+## 줄 길이도 등급을 탄다 — 동시 주문 자리 = 계산대 + 1 = 2 · 3 · 4명.
 static func yard(kind: String, n: int) -> Dictionary:
-	var nct: int = n - 2                    # 계산대 수 = 등급 + 1 (마당 크기가 곧 등급)
+	var nct: int = n - 2                    # 계산대 수 = 등급 + 1
 	var cts: Array = []
 	var stalls: Array = []
 	var kiln: Vector2i
 	var gate: String
-	if kind == "B":
-		# 왼쪽살림 — 살림(가마)이 길가 위쪽에, 매대는 왼담을 따라 늘어선다.
-		kiln = Vector2i(n - 1, 0)
-		gate = "x"
-		for k in range(nct):
-			cts.append(Vector2i(n - 1, 1 + k))
-		for y in range(n):
-			stalls.append(Vector2i(0, y))
-		for x in range(2, n - 1):
-			stalls.append(Vector2i(x, 0))
-		stalls.append(Vector2i(n - 1, n - 1))
-	elif kind == "C":
-		# 길가진열 — 매대가 뒷줄과 길가에 늘어선다. 계산대는 길가 변 가운데부터.
+	if kind == "을":
+		# 뒷마당 — 계산대가 **뒤 꼭짓점**에서 길가 변을 따라 아래로.
 		kiln = Vector2i(0, n - 1)
 		gate = "x"
-		var m: int = int(ceil((n - 1) / 2.0))
 		for k in range(nct):
-			cts.append(Vector2i(n - 1, mini(m + k, n - 1)))
-		for x in range(n):
-			stalls.append(Vector2i(x, 0))
-		for y in range(1, n):
-			var rc: Vector2i = Vector2i(n - 1, y)
-			if not cts.has(rc):
-				stalls.append(rc)
-		var fill: int = 1
-		while stalls.size() < 2 * (n - 1) and fill < n:
-			stalls.append(Vector2i(0, fill))
-			fill += 1
-	elif kind == "D":
-		# 옆문 — 문(계산대)이 아래 골목으로 났다. 매대는 윗줄과 두 꼭짓점.
+			cts.append(Vector2i(n - 1, k))
+		for x in range(1, n):
+			stalls.append(Vector2i(x, n - 1))
+		for y in range(0, n - 1):
+			stalls.append(Vector2i(0, y))
+	elif kind == "병":
+		# 옆문 — 계산대가 **앞 꼭짓점**에서 아래 골목 변을 따라 왼쪽으로.
 		kiln = Vector2i(0, 0)
 		gate = "y"
 		for k in range(nct):
-			cts.append(Vector2i(1 + k, n - 1))
+			cts.append(Vector2i(n - 1 - k, n - 1))
 		for x in range(1, n):
 			stalls.append(Vector2i(x, 0))
-		for y in range(1, n - 2):
+		for y in range(1, n):
 			stalls.append(Vector2i(0, y))
-		stalls.append(Vector2i(0, n - 1))
-		stalls.append(Vector2i(n - 1, n - 1))
 	else:
-		# A 마주보기 — 가마가 뒤 꼭짓점, 매대가 두 뒷변, 계산대가 길가 세로줄.
+		# 갑 앞마당 — 계산대가 **앞 꼭짓점**에서 길가 변을 따라 위로.
 		kiln = Vector2i(0, 0)
 		gate = "x"
 		for k in range(nct):
@@ -162,12 +144,17 @@ static func yard(kind: String, n: int) -> Dictionary:
 		for y in range(1, n):
 			stalls.append(Vector2i(0, y))
 	stalls = stalls.slice(0, 2 * (n - 1))
-	# 계산 자리 — 계산대의 **안쪽 이웃 칸**. 길가 변이 세로줄이면 왼쪽 칸,
-	# 아래 골목이면 윗칸이다. 계산대마다 하나씩 짝이 된다.
 	var svs: Array = []
 	for c in cts:
 		svs.append(Vector2i(c.x - 1, c.y) if gate == "x" else Vector2i(c.x, c.y - 1))
-	return {"kind": kind, "gate": gate, "kiln": kiln,
+	# 줄이 뻗는 쪽 — 계산대가 늘어선 방향의 **연장선**이다. 그래야 줄이 꺾이지 않는다.
+	#   갑 위로(↗) · 을 아래로(↙) · 병 왼쪽으로(↖)
+	var loff: Vector2 = LINE_OFF.x
+	if kind == "을":
+		loff = LINE_DOWN
+	elif kind == "병":
+		loff = LINE_OFF.y
+	return {"kind": kind, "gate": gate, "kiln": kiln, "lineOff": loff,
 		"counter": cts[0], "counters": cts, "serve": svs[0], "serves": svs,
 		"stalls": stalls}
 
@@ -242,7 +229,7 @@ static func line_spot(sim: Sim, i: int, k: int) -> Vector2:
 	var nct: int = (f.stands as Array).size()
 	if k < nct:
 		return f.stands[k]
-	return f.stands[nct - 1] + LINE_OFF[f.yard.gate] * (k - nct + 1)
+	return f.stands[nct - 1] + (f.yard.lineOff as Vector2) * (k - nct + 1)
 
 # ── 길찾기 ──
 # 길칸은 60칸 남짓이라 너비우선탐색이면 충분하다. 길 모양은 절대 안 변하므로
