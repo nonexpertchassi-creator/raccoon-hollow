@@ -31,37 +31,37 @@ const BUILD_RUSH_PER := 1800.0
 const CARD_GRADES := [
 	{
 		"id": 1.0,
-		"name": "흔함",
+		"name": "베이직",
 		"face": "⚪",
 		"color": "#b3a992"
 	},
 	{
 		"id": 2.0,
-		"name": "드묾",
+		"name": "레어",
 		"face": "🟢",
 		"color": "#6f8a5c"
 	},
 	{
 		"id": 3.0,
-		"name": "귀함",
+		"name": "에픽",
 		"face": "🔵",
 		"color": "#4a7c9e"
 	},
 	{
 		"id": 4.0,
-		"name": "진귀",
+		"name": "유니크",
 		"face": "🟣",
 		"color": "#8a5c9e"
 	},
 	{
 		"id": 5.0,
-		"name": "영물",
+		"name": "레전드",
 		"face": "🟠",
 		"color": "#c78a3f"
 	},
 	{
 		"id": 6.0,
-		"name": "신수",
+		"name": "신화",
 		"face": "🔴",
 		"color": "#c7563f"
 	}

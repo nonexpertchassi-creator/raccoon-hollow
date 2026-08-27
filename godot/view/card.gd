@@ -20,12 +20,12 @@ var _phase: String = ""
 var _pt: float = 0.0
 var _front: Dictionary = {}          ## 뒤집힌 뒤에 보여줄 앞면
 var _bg: StyleBoxFlat                ## 테두리 색을 등급 색으로 물들이려고 잡아 둔다
-var _flash: ColorRect                ## 진귀 이상에서 한 번 번쩍이는 막
+var _flash: ColorRect                ## 유니크 이상에서 한 번 번쩍이는 막
 
 ## ── 여러 장 뽑기: 카드가 **판으로 깔린다** ──
 ## 열 장이면 열 장, 서른 장이면 서른 장이 뒷면으로 깔렸다가 차례로 뒤집힌다.
 ## 순서는 뽑힌 그대로다 — 귀한 것부터 줄 세우지 않는다. 정렬하면 "다음에 뭐가
-## 나올까"가 사라진다(유저 지적). 특별한 카드(처음 만난 손님·영물·신수)는
+## 나올까"가 사라진다(유저 지적). 특별한 카드(처음 만난 손님·레전드·신화)는
 ## 제 차례에 **멈춰서 떨다가** 터진다 — 고슴도치인 줄 알았는데, 가 이 순간이다.
 var _gridbox: PanelContainer
 var _grid: GridContainer
@@ -160,7 +160,7 @@ func _ready() -> void:
 	_grid_ok.pressed.connect(_grid_done_pressed)
 	gv.add_child(_grid_ok)
 
-	# 번쩍이는 막 — 제일 위에. 진귀 이상이 나올 때 한 번 하얗게 스친다.
+	# 번쩍이는 막 — 제일 위에. 유니크 이상이 나올 때 한 번 하얗게 스친다.
 	_flash = ColorRect.new()
 	_flash.color = Color(1, 0.98, 0.9, 0.0)
 	_flash.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -350,7 +350,7 @@ func _flip_tile(i: int) -> void:
 	if _special(r):
 		_flash.color.a = 0.7
 
-## 떨 만한 카드인가 — 처음 만난 손님, 또는 영물·신수
+## 떨 만한 카드인가 — 처음 만난 손님, 또는 레전드·신화
 func _special(r: Dictionary) -> bool:
 	return r.get("isNew", false) or int(r.grade) >= 5
 
@@ -407,7 +407,7 @@ func _finish_flip() -> void:
 	_head_label.text = String(_front.head)
 	_bg.border_color = _front.color
 	_cardbox.scale = Vector2.ONE
-	# 진귀 이상은 한 번 번쩍인다. 흔함은 조용히 — 전부 요란하면 아무것도 요란하지 않다.
+	# 유니크 이상은 한 번 번쩍인다. 베이직은 조용히 — 전부 요란하면 아무것도 요란하지 않다.
 	_flash.color.a = 0.75 if int(_front.grade) >= 4 else 0.0
 	_phase = ""
 	_front = {}
@@ -509,7 +509,7 @@ func _process(delta: float) -> void:
 			_cardbox.scale = Vector2.ONE * (0.86 + 0.14 * e)
 
 ## 판 연출 한 걸음 — 보통 카드는 0.09초마다 한 장씩 폭포처럼,
-## 특별한 카드(처음 만남·영물·신수)는 제 차례에 **0.55초 떨다가** 터진다.
+## 특별한 카드(처음 만남·레전드·신화)는 제 차례에 **0.55초 떨다가** 터진다.
 func _grid_step(delta: float) -> void:
 	# 뒤집힌 카드의 튀어오름(pop)을 가라앉힌다
 	for t in _tiles:
