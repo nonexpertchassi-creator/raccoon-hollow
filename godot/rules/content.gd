@@ -111,8 +111,8 @@ const DISTRICTS := [
 			18.0,
 			29.0
 		],
-		"cost": 2000000000.0,
-		"stars": 15.0,
+		"cost": 50000000.0,
+		"stars": 10.0,
 		"shops": [
 			"gaekju",
 			"skewer",
@@ -128,8 +128,8 @@ const DISTRICTS := [
 			30.0,
 			47.0
 		],
-		"cost": 500000000000000.0,
-		"stars": 40.0,
+		"cost": 3000000000.0,
+		"stars": 30.0,
 		"shops": [
 			"fish",
 			"cloth",

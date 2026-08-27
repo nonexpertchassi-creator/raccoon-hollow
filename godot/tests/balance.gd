@@ -169,7 +169,13 @@ func _init() -> void:
 				last_new = s.t
 		if s.t >= next_hour:
 			next_hour += 3600.0
-			curve.append([s.t, s.revenue, s.income_per_sec()])
+			# ★ 돈만 찍으면 구역 문턱을 못 잡는다(2026-08-27). 문턱은 **돈과 성 둘 다**라,
+			#   "이 시각에 성이 몇이고 손에 돈이 얼마인가"를 같이 봐야 값을 정할 수 있다.
+			#   재려는 것을 도구가 안 찍으면 그 값은 결국 짐작이 된다.
+			var st: int = 0
+			for gid2 in s.guests:
+				st += s.regular_lv(String(gid2))
+			curve.append([s.t, s.revenue, s.income_per_sec(), float(st), s.money])
 
 	var tag: String = OS.get_environment("BAL_ONLY") if OS.has_environment("BAL_ONLY") else ("전부" if use_up else "끔")
 	var line: String = "%-10s" % tag
@@ -180,8 +186,8 @@ func _init() -> void:
 		quit()
 	print("═══ %d시간 · 씨앗 %d · 가게 강화 %s ═══" % [int(hours), seed_value, tag])
 	for c in curve:
-		print("   %2d시간   누적매출 %-9s 초당 %s" % [
-			int(c[0] / 3600.0), Num.fmt(c[1]), Num.fmt(c[2])])
+		print("   %2d시간   누적매출 %-9s 초당 %-8s 성 %-4d 가진 돈 %s" % [
+			int(c[0] / 3600.0), Num.fmt(c[1]), Num.fmt(c[2]), int(c[3]), Num.fmt(c[4])])
 	print("   손님 열둘이 다 온 시각: %s" % (
 		_mm(guest_at.values().max()) if guest_at.size() >= Content.GUESTS.size() else "아직 다 안 옴"))
 	print("   마지막으로 새것이 열린 시각: %s  (그 뒤는 레벨업뿐)" % _mm(last_new))
