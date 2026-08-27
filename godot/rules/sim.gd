@@ -1167,7 +1167,17 @@ func _quest_put(item_id: String) -> bool:
 		return true
 	return false
 
-## 다 찬 의뢰의 삯을 받는다 — 여기서야 돈·나뭇잎이 들어온다.
+## 이 의뢰를 마치면 얼마를 받나 — **화면이 물어보는 자리.**
+## ★ 창이 이 식을 베껴 쓰고 있었다(2026-08-27에 잡았다). 그래서 그날 넣은
+##   '의뢰 보상'·'의뢰 나뭇잎' 패시브 스킬을 화면만 못 보고 실제보다 적게
+##   적었다. 베낀 식은 반드시 뒤처진다 — 값을 묻는 곳은 하나여야 한다.
+func quest_reward(q: Dictionary) -> Dictionary:
+	return {
+		"coin": floor(price(String(q.itemId)) * float(q.need) * quest_pay_mul()),
+		"leaf": floor(float(q.gems) * quest_leaf_mul()),
+	}
+
+## 다 찬 의뢰의 보상을 받는다 — 여기서야 돈·나뭇잎이 들어온다.
 func claim_quest(qid: float) -> bool:
 	var q: Variant = null
 	for x in quests:
@@ -1181,13 +1191,13 @@ func claim_quest(qid: float) -> bool:
 			quests.remove_at(k)
 			break
 	_qCool = Content.QUEST.every
-	var coin: float = floor(price(String(q.itemId)) * q.need * quest_pay_mul())
+	var coin: float = float(quest_reward(q).coin)
 	money += coin
 	revenue += coin
 	bump("coin.quest", coin)          # 지표 — 의뢰가 번 몫(판매와 갈라 본다)
 	if auto:
 		_purse += coin * Content.AUTO_SHARE
-	gems += floor(float(q.gems) * quest_leaf_mul())
+	gems += float(quest_reward(q).leaf)
 	_ev("%s마을 의뢰를 마쳤다 — 🪙%s · 🍃%s" % [_guest_by_id[String(q.gid)].name, Num.fmt(coin), str(int(q.gems))], "quest")
 	_event_gain("quest", 1.0)
 	var d: Dictionary = (q as Dictionary).duplicate()

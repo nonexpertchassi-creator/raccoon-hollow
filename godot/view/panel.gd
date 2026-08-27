@@ -298,19 +298,21 @@ func _quests_body() -> void:
 
 	for q in sim.quests:
 		var g: Dictionary = Sim.guest_by_id(q.gid)
+		# ★ 보상은 **sim에게 묻는다.** 여기서 식을 베껴 쓰다가 '의뢰 보상' 스킬을
+		#   화면만 못 보고 실제보다 적게 적었다(2026-08-27에 잡았다).
+		var rw: Dictionary = sim.quest_reward(q)
 		_box.add_child(_label("%s %s마을 — %s %d개  🍃%d" % [
-			g.face, g.name, sim.item_name(q.itemId), int(q.need), int(q.gems)], 14))
+			g.face, g.name, sim.item_name(q.itemId), int(q.need), int(rw.leaf)], 14))
 		_bar(minf(q.got / q.need, 1.0), Color("4a7c59"))
 		if bool(q.get("done", false)):
 			# 저절로 안 끝난다(유저) — 보상은 눌러야 들어온다
 			var qid: float = float(q.id)
-			_box.add_child(_btn("보상 받기 — 🪙%s · 🍃%d" % [
-				Num.fmt(floor(sim.price(q.itemId) * q.need * Content.QUEST.payMul)), int(q.gems)],
+			_box.add_child(_btn("보상 받기 — 🪙%s · 🍃%d" % [Num.fmt(rw.coin), int(rw.leaf)],
 				true, func(): sim.claim_quest(qid); rebuild()))
 		else:
 			_box.add_child(_label("%d / %d · %d성 %s · 마치면 🪙%s" % [
 				int(q.got), int(q.need), sim.regular_star(q.gid), sim.regular_name(q.gid),
-				Num.fmt(floor(sim.price(q.itemId) * q.need * Content.QUEST.payMul))], 11, Color("8a7a63")))
+				Num.fmt(rw.coin)], 11, Color("8a7a63")))
 	if sim.quests.size() < sim.quest_slots():
 		_box.add_child(_label("다음 의뢰가 오는 중… (%d초)" % int(ceil(max(0.0, sim._qCool))), 12, Color("8a7a63")))
 
