@@ -9,8 +9,12 @@ class_name Num
 
 static func fmt(x: float) -> String:
 	var n: float = floor(x)
-	if n < 1000.0:
-		return str(int(n))
+	# ★ 만 미만은 **콤마로 정확히** 보여준다(2026-08-27, 유저).
+	#   1,000부터 바로 "1K"로 줄였더니 동전을 한 닢씩 세는 초반에 정확한
+	#   숫자를 잃었다 — 곡괭이 값이 1.9K인지 1,900인지가 그때는 중요하다.
+	#   sim.js와 **같이** 고쳐야 한다(fmt 시험이 둘을 대조 중이다).
+	if n < 10000.0:
+		return _comma(int(n))
 	# Qa 뒤로 여섯 더 — 가게 스무 채까지 갈 자리를 미리 낸다.
 	# 여기서 멈추면 '12345678Qa' 처럼 줄인 숫자가 다시 안 읽히게 된다.
 	# sim.js와 **같이** 고쳐야 한다(fmt 시험이 둘을 대조 중이다).
@@ -25,6 +29,18 @@ static func fmt(x: float) -> String:
 	elif v < 100.0:
 		return _cut(v, 1) + U[i]
 	return str(int(floor(v))) + U[i]
+
+## 천 단위마다 콤마 — 1900 → "1,900"
+static func _comma(n: int) -> String:
+	var t: String = str(absi(n))
+	var out: String = ""
+	var c: int = 0
+	for i in range(t.length() - 1, -1, -1):
+		out = t[i] + out
+		c += 1
+		if c % 3 == 0 and i > 0:
+			out = "," + out
+	return ("-" + out) if n < 0 else out
 
 ## 소수점 아래를 버린다. 반올림을 쓰면 JS와 갈린다 — sim.js의 cut() 주석 참고.
 static func _cut(x: float, d: int) -> String:

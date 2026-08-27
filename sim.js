@@ -1187,7 +1187,10 @@ const cut = (x, d) => { const p = 10 ** d; return (Math.floor(x * p) / p).toFixe
  *  얻는 게 없었다. 세 자리마다 끊는 쪽이 게임에서 더 흔하다. */
 export function fmt(n) {
   n = Math.floor(n);
-  if (n < 1000) return String(n);
+  /* ★ 만 미만은 **콤마로 정확히**(2026-08-27, 유저) — 1,000부터 바로 "1K"로
+   *   줄이면 동전을 한 닢씩 세는 초반에 정확한 숫자를 잃는다.
+   *   Godot의 num.gd와 **같이** 고쳤다(fmt 시험이 둘을 대조 중이다). */
+  if (n < 10000) return n.toLocaleString('en-US');
   /* ★ Qa 뒤로 여섯을 더 붙였다(2026-08-22).
    *   가게가 열 채가 되면서 푸줏간이 이미 230조다. 스무 채까지 갈 참인데
    *   Qa에서 멈추면 그때부터 '12345678Qa' 같은 글자가 나온다 — 읽으라고
