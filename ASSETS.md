@@ -6,11 +6,23 @@ GPT/그림 도구에 통째로 넘기는 문서. **기획과 그림 사이의 �
 ## 어디에 넣나 — `godot/art/` 안이다
 
 ```
-godot/art/hero/raccoon-make.png     ← 점장 너구리
-godot/art/items/pick.png            ← 물건
-godot/art/guests/rabbit.png         ← 손님
-godot/art/pests/rat.png             ← 나쁜 놈
+godot/art/hero/raccoon-make.webp     ← 점장 너구리
+godot/art/items/pick.webp            ← 물건
+godot/art/guests/rabbit.webp         ← 손님
+godot/art/pests/rat.webp             ← 나쁜 놈
 ```
+
+## 그림 형식은 **webp**다 (2026-08-27)
+
+png로 받던 것을 webp로 바꿨다. 같은 그림인데 **91MB가 15MB**가 됐다 —
+그림이 500장을 넘어갈 예정이라 png로는 저장소가 감당이 안 된다.
+
+- **webp로 주면 된다.** 투명(알파)도 그대로 살아 있다.
+- png로 줘도 코드는 읽는다(webp를 먼저 찾고 없으면 png를 찾는다).
+  다만 저장소에 들어가기 전에 webp로 바꾼다.
+- 손실 압축이라도 눈에 안 보인다 — 카드는 품질 92, 나머지는 94로 잡았다.
+- 바꾸는 명령: `cwebp -q 94 -alpha_q 100 -m 6 그림.png -o 그림.webp`
+
 
 **저장소 뿌리의 `art/`가 아니다.** Godot은 제 프로젝트 폴더(`godot/`) 밖의
 파일을 못 읽는다. 밖에 두면 주문서 목록에서는 사라지는데 화면에는 영영
@@ -243,9 +255,9 @@ tests/artfit.gd`가 어긋난 장을 자동으로 집어준다.
 
 (처음엔 옆모습 한 장으로 때우자고 했다가 만드는 사람이 되돌렸다.)
 
-- `<id>.png` — **옆모습**(오른쪽 보기). 걷는 대부분을 맡는다. 왼쪽은 코드가 뒤집는다
-- `<id>-front.png` — **정면.** 줄에 서서 계산할 때 카메라를 본다
-- `<id>-back.png` — **뒷모습.** 화면 위로 걸어 올라갈 때
+- `<id>.webp` — **옆모습**(오른쪽 보기). 걷는 대부분을 맡는다. 왼쪽은 코드가 뒤집는다
+- `<id>-front.webp` — **정면.** 줄에 서서 계산할 때 카메라를 본다
+- `<id>-back.webp` — **뒷모습.** 화면 위로 걸어 올라갈 때
 
 없는 방향은 옆모습으로 때우니 **흔한 손님부터 한 장씩** 넣으면 된다.
 네 방향을 다 그릴 필요는 없다 — 좌우는 언제나 코드 뒤집기다.
@@ -280,7 +292,7 @@ tests/artfit.gd`가 어긋난 장을 자동으로 집어준다.
   승급하면 그 가게 너구리 전원이 갈아입는다.
 
 ```
-clerks/<가게>-<무늬>-<방향>.png       예: smith-a-side.png (1단)
+clerks/<가게>-<무늬>-<방향>.webp      예: smith-a-side.webp (1단)
 clerks/<가게>-<무늬>-<방향>-1.png     2단 앞치마
 clerks/<가게>-<무늬>-<방향>-2.png     3단 앞치마
 ```

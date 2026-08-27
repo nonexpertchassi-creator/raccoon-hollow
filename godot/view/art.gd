@@ -104,7 +104,14 @@ static func tex(dir: String, id: String) -> Texture2D:
 	var key: String = dir + "/" + id
 	if _cache.has(key):
 		return _cache[key]
-	var path: String = "res://art/%s.png" % key
-	var t: Texture2D = load(path) as Texture2D if ResourceLoader.exists(path) else null
+	# webp를 먼저 찾고 없으면 png를 찾는다. **둘 다 받는 이유**: 그림이
+	# 한 장씩 들어오는데 형식을 갈아타는 중이라, 한쪽만 받으면 갈아타는
+	# 동안 화면이 비는 그림이 생긴다. 같은 이름이면 webp가 이긴다.
+	var t: Texture2D = null
+	for ext in ["webp", "png"]:
+		var path: String = "res://art/%s.%s" % [key, ext]
+		if ResourceLoader.exists(path):
+			t = load(path) as Texture2D
+			break
 	_cache[key] = t
 	return t

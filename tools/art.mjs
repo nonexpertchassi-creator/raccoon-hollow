@@ -2,12 +2,13 @@
  *
  * 실행:  node tools/art.mjs          남은 그림을 화면에 뿌린다
  *        node tools/art.mjs --write  ASSETS.md의 목록 칸을 다시 쓴다
+ *        node tools/art.mjs --audit  **주문서에 없는 그림**을 찾는다(지울 후보)
  *
  * 왜 도구로 만드나: 목록을 손으로 관리하면 반드시 어긋난다 — 그림을 넣고
  * 목록에서 지우는 걸 잊거나, 품목을 추가하고 목록에 안 적거나. 목록은
  * **content.js와 art/ 폴더에서 계산**하면 절대 안 어긋난다.
  */
-import { readdirSync, existsSync, readFileSync, writeFileSync } from 'fs';
+import { readdirSync, existsSync, readFileSync, writeFileSync, statSync } from 'fs';
 import { SHOPS, GUESTS, PESTS, STAFF_RANKS, CARD_GRADES } from '../content.js';
 
 const ROOT = new URL('..', import.meta.url).pathname;
@@ -15,7 +16,11 @@ const ROOT = new URL('..', import.meta.url).pathname;
  *   Godot은 제 프로젝트 폴더(godot/) 밖의 파일을 못 읽는다 — 밖에 두면
  *   목록은 채워지는데 화면에는 영영 안 나오는, 제일 나쁜 종류가 된다. */
 const DIR = 'godot/art';
-const has = (dir, id) => existsSync(`${ROOT}${DIR}/${dir}/${id}.png`);
+/* webp든 png든 있으면 들어온 것으로 친다 — 형식을 갈아타는 중이다.
+ * 코드(art.gd)도 webp를 먼저 찾고 없으면 png를 찾는다. 둘이 어긋나면
+ * 주문서는 "없다"는데 화면에는 나오는 유령이 생긴다. */
+const has = (dir, id) =>
+  existsSync(`${ROOT}${DIR}/${dir}/${id}.webp`) || existsSync(`${ROOT}${DIR}/${dir}/${id}.png`);
 
 /* 점장 포즈. work·sell만 있으면 나머지는 코드가 돌려 쓴다 — 그래서 순서가 이렇다. */
 const HERO = [
@@ -174,6 +179,44 @@ const GROUPS = [
       { id: `${f}-back`, why: `무늬 ${f.toUpperCase()} 뒤` },
     ]) },
 ];
+
+/* --audit — **주문서에 없는 그림**을 일러 준다.
+ * 손님이 바뀌거나(박쥐→매) 물건이 갈리면 옛 그림이 폴더에 남는다. 그건
+ * 화면에 안 나오면서 저장소만 불린다 — 그런데 눈으로는 절대 안 보인다.
+ * 여기서 세면 다음에 또 셀 일이 없다. */
+if (process.argv.includes('--audit')) {
+  const want = new Map();               // dir → 기대하는 id 집합
+  for (const g of GROUPS) {
+    if (!want.has(g.dir)) want.set(g.dir, new Set());
+    for (const r of g.rows) want.get(g.dir).add(r.id);
+  }
+  /* ★ 주문서에 없어도 **코드가 읽는** 그림이 있다. 이걸 모르면 이 도구는
+   *   "안 쓴다"고 거짓말을 하고, 그 말을 믿고 지우면 화면에서 그림이 사라진다.
+   *   실제로 한 번 그럴 뻔했다(2026-08-27).
+   *   - items/<id>  : 주문서는 등장하는 단의 그림(-2·-3)만 시키지만,
+   *                   art.gd의 ranked()가 못 찾으면 **기본 이름으로 내려온다**.
+   *   - staff/band-*: clerks/ 그림이 없을 때 쓰는 폴백(village.gd).
+   *                   band 말고 다른 무늬는 코드가 안 읽는다 — 그건 진짜 찌꺼기다. */
+  for (const g of GROUPS) if (g.dir === 'items') for (const r of g.rows)
+    want.get('items').add(r.id.replace(/-[123]$/, ''));
+  want.set('staff', new Set(['band-work', 'band-sleep']));
+  let n = 0, bytes = 0;
+  for (const dir of readdirSync(`${ROOT}${DIR}`, { withFileTypes: true })) {
+    if (!dir.isDirectory()) continue;
+    const ok = want.get(dir.name);
+    if (!ok) { console.log(`## ${dir.name}/ — 주문서에 없는 폴더 통째`); }
+    for (const f of readdirSync(`${ROOT}${DIR}/${dir.name}`)) {
+      if (!/\.(png|webp)$/.test(f)) continue;
+      const id = f.replace(/\.(png|webp)$/, '');
+      if (ok && ok.has(id)) continue;
+      const { size } = statSync(`${ROOT}${DIR}/${dir.name}/${f}`);
+      console.log(`  ${dir.name}/${f}  ${(size / 1024).toFixed(0)}KB`);
+      n++; bytes += size;
+    }
+  }
+  console.log(`\n주문서에 없는 그림 ${n}장 · ${(bytes / 1048576).toFixed(1)}MB`);
+  process.exit(0);
+}
 
 let done = 0, total = 0;
 const lines = [];
