@@ -1057,30 +1057,47 @@ func _dog() -> void:
 ## 무늬는 채용 자리마다 랜덤(sim.fur_of), 복장은 가게가, 앞치마는 등급이 정한다.
 ## 일꾼 너구리의 **층**을 돌려준다 — [꼬리, 몸, 차림] 순(뒤에서 앞).
 ##
-## ★ 왜 겹치나(2026-08-27, 유저): 예전엔 가게마다 `clerks/<가게>-<무늬>-<방향>`
-##   한 장을 통째로 받았다. 무늬 넷 × 방향 둘 × 가게 열다섯 = **120장**이고,
-##   가게가 하나 늘 때마다 8장씩 늘었다. 그런데 그 120장에 든 너구리는
-##   **같은 무늬 넷**이다 — 앞치마와 연장만 다른데 몸을 열다섯 번 다시 그린 것이다.
+## ★ 가게별 점장을 접었다(2026-08-27, 유저). 가게마다 전용으로 그리면
+##   무늬 4 × 방향 2 × 가게 20 = **160장**이고, 가게가 늘 때마다 8장씩 늘어
+##   "무한히 계속 뽑아야" 한다. 게다가 실제로는 **이름 체계가 셋으로 갈려
+##   싸우고 있었다**:
+##     clerks/<가게>-<자세>        20장 있음 — 가게 앞에서 일하는 점장
+##     clerks/<가게>-<무늬>-<방향>  0장  — 주문서만 시키고 아무도 안 그림
+##     hero-body/<무늬>-<방향>      5장  — 걸을 때의 폴백
+##   그래서 걷는 점장과 일하는 점장이 다르게 생겼다(유저: "점장이 두 모습").
 ##
-##   층을 나누면 몸(무늬 4 × 방향 3)은 **한 번만** 그리고, 가게는 차림 두 장만
-##   보태면 된다. 120장 → 몸 12 + 꼬리 8 + 차림 30 = 50장. **가게가 늘어도 2장씩.**
+##   이제 한 갈래다: **hero-body/<무늬>-<자세>**.
+##   자세는 side · back · make · sell · sleep 다섯. 무늬 하나가 **어느 가게에서든**
+##   돌고, 가게가 늘어도 그림은 0장이다. 무늬(타입)를 하나 더 그리면 모든
+##   가게에서 동시에 쓰이니, 무늬가 일감이 아니라 **모으는 재미**가 된다.
 ##
-## 완성본이 있으면 그것을 그대로 쓴다 — 이미 그린 스물한 장을 버리지 않고,
-## 특별히 손으로 그리고 싶은 가게가 생기면 그 길도 열어 둔다.
-func _worker_layers(shop_id: String, slot: int, dir3: String) -> Array:
+##   가게 정체성은 마당(가마·매대·현판)과 **손에 든 물건**이 낸다 —
+##   그 그림들은 이미 있다.
+func _clerk_layers(shop_id: String, slot: int, pose: String) -> Array:
 	var fur: String = sim.fur_of(shop_id, slot)
 	var rk: int = sim.rank_of(shop_id)
-	var whole: Texture2D = Art.ranked("clerks", "%s-%s-%s" % [shop_id, fur, dir3], rk)
+	# 가게 전용 그림이 있으면 그게 이긴다 — 이미 그린 스무 장을 안 버리고,
+	# 특별히 손으로 그리고 싶은 가게가 생기면 그 길도 열어 둔다. 새로 안 시킨다.
+	var whole: Texture2D = Art.ranked("clerks", "%s-%s" % [shop_id, pose], rk)
+	if whole == null and pose != "make":
+		whole = Art.ranked("clerks", "%s-make" % shop_id, rk)
 	if whole != null:
 		return [whole]
-	var body: Texture2D = Art.ranked("hero-body", "%s-%s" % [fur, dir3], rk)
+	var body: Texture2D = Art.ranked("hero-body", "%s-%s" % [fur, pose], rk)
+	if body == null:                      # 그 자세가 아직 없으면 옆모습으로 선다
+		body = Art.ranked("hero-body", "%s-side" % fur, rk)
+	if body == null:                      # 그 무늬가 아직 없으면 기본 무늬로
+		body = Art.ranked("hero-body", "a-%s" % pose, rk)
 	if body == null:
-		body = Art.ranked("hero-body", "a-%s" % dir3, rk)
+		body = Art.ranked("hero-body", "a-side", rk)
+	if body == null:
+		body = Art.tex("hero", "raccoon-" + pose)
 	if body == null:
 		return []
-	# 꼬리는 몸 뒤, 차림(앞치마·연장)은 몸 앞. 없으면 그 층만 빠진다.
-	return [Art.ranked("hero-tail", "%s-%s" % [fur, dir3], rk), body,
-		Art.ranked("gear", "%s-%s" % [shop_id, dir3], rk)]
+	# 꼬리는 몸 뒤, 차림(가게 앞치마)은 몸 앞. 둘 다 없으면 그 층만 빠진다 —
+	# 차림은 **주문서가 안 시킨다**(선택). 넣으면 저절로 얹힌다.
+	return [Art.ranked("hero-tail", "%s-%s" % [fur, pose], rk), body,
+		Art.ranked("gear", "%s-%s" % [shop_id, pose], rk)]
 
 ## 자리를 정하는 그림 한 장 — 겹그림이라도 **몸**이 자리를 정한다.
 func _worker_base(layers: Array) -> Texture2D:
@@ -1292,7 +1309,9 @@ func _clerk(i: int) -> void:
 	# 옆모습(오른쪽 한 장, 왼쪽은 뒤집기). 정면은 없다 — 서 있을 땐 마지막
 	# 방향 그대로 멈추고, 할 일 없으면 존다.
 	var dirn: String = "back" if (c.walking and bool(c.get("up", false))) else "side"
-	var lays: Array = _worker_layers(id, 0, dirn)
+	# 그림 이름은 한 갈래다: 걸을 땐 방향(side·back), 서 있을 땐 하는 일(make·sell·sleep).
+	var apose: String = dirn if c.walking else ("sleep" if pose == "sleep" else ("sell" if pose == "sell" else "make"))
+	var lays: Array = _clerk_layers(id, 0, apose)
 	var full: Texture2D = _worker_base(lays)
 	if full != null:
 		var br3: float = 0.0 if c.walking else (0.5 + 0.5 * sin(_t * 2.4 + c.pos.x * 0.03)) * 0.03
@@ -1470,7 +1489,7 @@ func _staff(i: int, k: int) -> void:
 	if carry6 != 0 or busy6:
 		sflip = String(Iso.yard(Iso.YARD_KIND[i], Iso.plot_dim(sim, i)).gate) == "y"
 	var breath: float = (0.5 + 0.5 * sin(_t * 2.2 + p.x * 0.04)) * 0.03 if idle else 0.0
-	var lays6: Array = _worker_layers(sid6, k + 1, "side")
+	var lays6: Array = _clerk_layers(sid6, k + 1, "sleep" if idle else "make")
 	var t: Texture2D = _worker_base(lays6)
 	if t != null:
 		_shadow(p, 14.0)

@@ -12,6 +12,22 @@ godot/art/guests/rabbit.webp         ← 손님
 godot/art/pests/rat.webp             ← 나쁜 놈
 ```
 
+## 주문서는 **코드가 찾는 이름**을 적는다 (2026-08-27)
+
+한 번 크게 어긋났다. 주문서가 `clerks/<가게>-<무늬>-<방향>` 120장을 시키고
+있었는데 **코드는 그 이름을 찾은 적이 없다.** 실제로는 이름 체계가 셋이었다 —
+`<가게>-<자세>`(스무 장 들어와 있음) · `<가게>-<무늬>-<방향>`(주문서만) ·
+`hero-body/<무늬>-<방향>`(폴백). 그래서 걷는 점장과 일하는 점장이 다르게 생겼고,
+아무도 안 쓸 120장이 주문서에 남아 있었다.
+
+**규칙: 주문서의 한 칸마다 그것을 읽는 코드 함수를 적어 둔다.**
+`tools/art.mjs`의 각 묶음 주석에 있다(예: 일꾼 → `village.gd`의 `_clerk_layers`).
+그림 이름을 바꾸려면 **코드와 주문서를 같이** 바꾼다. 한쪽만 바꾸면
+"시켰는데 안 나오는 그림"이나 "그렸는데 안 쓰이는 그림"이 생긴다.
+
+`node tools/art.mjs --audit`이 뒤쪽 절반(그렸는데 안 쓰이는 것)을 잡아 준다.
+앞쪽 절반은 아직 사람이 봐야 한다.
+
 ## 그림 형식은 **webp**다 (2026-08-27)
 
 png로 받던 것을 webp로 바꿨다. 같은 그림인데 **91MB가 15MB**가 됐다 —
@@ -386,7 +402,7 @@ clerks/<가게>-<무늬>-<방향>-2.png     3단 앞치마
 > 이 칸은 `node tools/art.mjs --write`가 다시 쓴다.
 > **그림을 폴더에 넣으면 목록에서 저절로 빠진다** — 손으로 지울 필요 없다.
 
-**109 / 499장** 들어왔다.
+**106 / 469장** 들어왔다.
 
 ### 점장 너구리 (폴백) · 촌장 — `godot/art/hero/` · 144×144 · **0장 남음**
 
@@ -950,28 +966,41 @@ clerks/<가게>-<무늬>-<방향>-2.png     3단 앞치마
 - [ ] `moonbear.webp` — 반달곰 — 뽑으면 고를 수 있다
 - [ ] `elephant.webp` — 코끼리 — 뽑으면 고를 수 있다
 
-### 일꾼 너구리 몸 (무늬 4 × 방향 3) — 공용 — `godot/art/hero-body/` · 144×144 · **9장 남음**
+### 일꾼 너구리 (무늬 × 자세) — 모든 가게가 같이 쓴다 — `godot/art/hero-body/` · 144×144 · **18장 남음**
 
-**모든 가게가 이 몸을 쓴다.** 앞치마·연장은 안 그린다 — 그건 `gear/`가 얹는다.
-side는 오른쪽 훼이크 측면(오른팔 뻗음, 왼쪽은 코드 뒤집기), back은 뒷모습,
-front는 카드·계산대용 정면. 그림자·꼬리 낱장 금지(꼬리는 `hero-tail/`).
-발끝은 아래 변, 몸은 가로 정중앙 — 층이 겹치려면 이게 어긋나면 안 된다.
+파일명: `<무늬>-<자세>.webp`. 자세 다섯: `side`(옆·걷기 겸용) ·
+`back`(뒷모습) · `make`(만드는 중) · `sell`(파는 중, ★손바닥은 비워 둘 것) ·
+`sleep`(조는 중). side는 오른쪽 훼이크 측면 — 왼쪽은 코드가 뒤집는다.
+**앞치마·연장은 안 그린다.** 가게 정체성은 마당(가마·매대·현판)과
+손에 든 물건이 낸다 — 그 그림은 이미 있다.
+그림자·꼬리 낱장 금지. 발끝은 아래 변, 몸은 가로 정중앙.
+없는 자세는 코드가 옆모습으로, 없는 무늬는 무늬 A로 때운다 —
+**무늬 하나를 다섯 자세까지 끝내는 편이** 넷을 반쯤 하는 것보다 낫다.
 
-- [ ] `b-side.webp` — 무늬 B 옆
-- [ ] `b-back.webp` — 무늬 B 뒤
-- [ ] `b-front.webp` — 무늬 B 정면
-- [ ] `c-side.webp` — 무늬 C 옆
-- [ ] `c-back.webp` — 무늬 C 뒤
-- [ ] `c-front.webp` — 무늬 C 정면
-- [ ] `d-side.webp` — 무늬 D 옆
-- [ ] `d-back.webp` — 무늬 D 뒤
-- [ ] `d-front.webp` — 무늬 D 정면
+- [ ] `a-make.webp` — 무늬 A · 만드는 중
+- [ ] `a-sell.webp` — 무늬 A · 파는 중
+- [ ] `a-sleep.webp` — 무늬 A · 조는 중
+- [ ] `b-side.webp` — 무늬 B · 옆(걷기 겸용)
+- [ ] `b-back.webp` — 무늬 B · 뒤
+- [ ] `b-make.webp` — 무늬 B · 만드는 중
+- [ ] `b-sell.webp` — 무늬 B · 파는 중
+- [ ] `b-sleep.webp` — 무늬 B · 조는 중
+- [ ] `c-side.webp` — 무늬 C · 옆(걷기 겸용)
+- [ ] `c-back.webp` — 무늬 C · 뒤
+- [ ] `c-make.webp` — 무늬 C · 만드는 중
+- [ ] `c-sell.webp` — 무늬 C · 파는 중
+- [ ] `c-sleep.webp` — 무늬 C · 조는 중
+- [ ] `d-side.webp` — 무늬 D · 옆(걷기 겸용)
+- [ ] `d-back.webp` — 무늬 D · 뒤
+- [ ] `d-make.webp` — 무늬 D · 만드는 중
+- [ ] `d-sell.webp` — 무늬 D · 파는 중
+- [ ] `d-sleep.webp` — 무늬 D · 조는 중
 
-### 일꾼 너구리 꼬리 (몸 뒤에 깔린다) — 공용 — `godot/art/hero-tail/` · 144×144 · **6장 남음**
+### 꼬리 낱장 (선택 — 몸 뒤에 깔린다) (선택) — `godot/art/hero-tail/` · 144×144 · **6장 남음**
 
-몸과 **같은 액자·같은 자리**로 그린다. 코드는 자리를 몸 하나로 정하고
-꼬리를 그 위에 그대로 얹는다 — 액자가 다르면 꼬리가 몸에서 떨어져 나간다.
-정면(front)은 꼬리가 안 보이므로 안 그린다.
+몸에 꼬리를 같이 그리면 **안 그려도 된다**. 꼬리를 따로 흔들고 싶어질 때만.
+몸과 같은 액자·같은 자리로 그린다 — 코드는 자리를 몸 하나로 정하고
+꼬리를 그 위에 그대로 얹는다. 액자가 다르면 꼬리가 몸에서 떨어져 나간다.
 
 - [ ] `b-side.webp` — 무늬 B 꼬리 옆
 - [ ] `b-back.webp` — 무늬 B 꼬리 뒤
@@ -980,171 +1009,61 @@ front는 카드·계산대용 정면. 그림자·꼬리 낱장 금지(꼬리는 
 - [ ] `d-side.webp` — 무늬 D 꼬리 옆
 - [ ] `d-back.webp` — 무늬 D 꼬리 뒤
 
-### 가게 차림 (앞치마·연장 — 몸 위에 얹는다) — `godot/art/gear/` · 144×144 · **30장 남음**
+### 가게 앞치마·연장 (선택 — 몸 위에 얹는다) (선택) — `godot/art/gear/` · 144×144 · **30장 남음**
 
-파일명: `<가게>-<방향>.webp`. 등급판은 `-1`(2단)·`-2`(3단)를 뒤에 붙인다.
-**너구리를 그리지 않는다** — 앞치마·머리쓰개·연장만, 나머지는 투명하게.
-몸(`hero-body/`)과 **같은 액자·같은 자리**여야 겹쳤을 때 맞는다.
-무늬와 상관없이 한 벌만 그린다 — 무늬 넷에 다 얹힌다.
-가게가 늘면 여기 두 장만 늘면 된다.
+파일명: `<가게>-<자세>.webp`. **너구리를 그리지 않는다** —
+앞치마·머리쓰개·연장만, 나머지는 투명. 몸과 같은 액자·같은 자리.
+무늬와 상관없이 한 벌만 그리면 무늬 넷에 다 얹힌다.
+**안 그려도 된다** — 가게 정체성은 마당과 손에 든 물건이 이미 낸다.
+가게 색을 내고 싶어질 때 한 가게씩 넣으면 그때부터 보인다.
 
-- [ ] `smith-side.webp` — 대장간 · 차림 옆
-- [ ] `smith-back.webp` — 대장간 · 차림 뒤
-- [ ] `brush-side.webp` — 필방 · 차림 옆
-- [ ] `brush-back.webp` — 필방 · 차림 뒤
-- [ ] `paper-side.webp` — 지물포 · 차림 옆
-- [ ] `paper-back.webp` — 지물포 · 차림 뒤
-- [ ] `pot-side.webp` — 옹기점 · 차림 옆
-- [ ] `pot-back.webp` — 옹기점 · 차림 뒤
-- [ ] `herb-side.webp` — 약재상 · 차림 옆
-- [ ] `herb-back.webp` — 약재상 · 차림 뒤
-- [ ] `soup-side.webp` — 국밥집 · 차림 옆
-- [ ] `soup-back.webp` — 국밥집 · 차림 뒤
-- [ ] `gaekju-side.webp` — 객주 · 차림 옆
-- [ ] `gaekju-back.webp` — 객주 · 차림 뒤
-- [ ] `skewer-side.webp` — 꼬치집 · 차림 옆
-- [ ] `skewer-back.webp` — 꼬치집 · 차림 뒤
-- [ ] `ricecake-side.webp` — 떡집 · 차림 옆
-- [ ] `ricecake-back.webp` — 떡집 · 차림 뒤
-- [ ] `butcher-side.webp` — 푸줏간 · 차림 옆
-- [ ] `butcher-back.webp` — 푸줏간 · 차림 뒤
-- [ ] `fish-side.webp` — 어물전 · 차림 옆
-- [ ] `fish-back.webp` — 어물전 · 차림 뒤
-- [ ] `cloth-side.webp` — 포목전 · 차림 옆
-- [ ] `cloth-back.webp` — 포목전 · 차림 뒤
-- [ ] `hat-side.webp` — 갓방 · 차림 옆
-- [ ] `hat-back.webp` — 갓방 · 차림 뒤
-- [ ] `brass-side.webp` — 유기전 · 차림 옆
-- [ ] `brass-back.webp` — 유기전 · 차림 뒤
-- [ ] `lacquer-side.webp` — 나전방 · 차림 옆
-- [ ] `lacquer-back.webp` — 나전방 · 차림 뒤
+- [ ] `smith-make.webp` — 대장간 · 차림 (만드는 중)
+- [ ] `smith-side.webp` — 대장간 · 차림 (옆)
+- [ ] `brush-make.webp` — 필방 · 차림 (만드는 중)
+- [ ] `brush-side.webp` — 필방 · 차림 (옆)
+- [ ] `paper-make.webp` — 지물포 · 차림 (만드는 중)
+- [ ] `paper-side.webp` — 지물포 · 차림 (옆)
+- [ ] `pot-make.webp` — 옹기점 · 차림 (만드는 중)
+- [ ] `pot-side.webp` — 옹기점 · 차림 (옆)
+- [ ] `herb-make.webp` — 약재상 · 차림 (만드는 중)
+- [ ] `herb-side.webp` — 약재상 · 차림 (옆)
+- [ ] `soup-make.webp` — 국밥집 · 차림 (만드는 중)
+- [ ] `soup-side.webp` — 국밥집 · 차림 (옆)
+- [ ] `gaekju-make.webp` — 객주 · 차림 (만드는 중)
+- [ ] `gaekju-side.webp` — 객주 · 차림 (옆)
+- [ ] `skewer-make.webp` — 꼬치집 · 차림 (만드는 중)
+- [ ] `skewer-side.webp` — 꼬치집 · 차림 (옆)
+- [ ] `ricecake-make.webp` — 떡집 · 차림 (만드는 중)
+- [ ] `ricecake-side.webp` — 떡집 · 차림 (옆)
+- [ ] `butcher-make.webp` — 푸줏간 · 차림 (만드는 중)
+- [ ] `butcher-side.webp` — 푸줏간 · 차림 (옆)
+- [ ] `fish-make.webp` — 어물전 · 차림 (만드는 중)
+- [ ] `fish-side.webp` — 어물전 · 차림 (옆)
+- [ ] `cloth-make.webp` — 포목전 · 차림 (만드는 중)
+- [ ] `cloth-side.webp` — 포목전 · 차림 (옆)
+- [ ] `hat-make.webp` — 갓방 · 차림 (만드는 중)
+- [ ] `hat-side.webp` — 갓방 · 차림 (옆)
+- [ ] `brass-make.webp` — 유기전 · 차림 (만드는 중)
+- [ ] `brass-side.webp` — 유기전 · 차림 (옆)
+- [ ] `lacquer-make.webp` — 나전방 · 차림 (만드는 중)
+- [ ] `lacquer-side.webp` — 나전방 · 차림 (옆)
 
-### 가게별 통짜 일꾼 (선택 — 겹치기를 덮어쓴다) (선택) — `godot/art/clerks/` · 144×144 · **120장 남음**
+### 가게 전용 점장 (선택 — 겹치기를 통째로 덮는다) (선택) — `godot/art/clerks/` · 144×144 · **10장 남음**
 
-파일명: `<가게>-<무늬>-<방향>.webp`. **이건 새로 안 시킨다** —
-겹치기(몸+꼬리+차림)로 안 나오는 특별한 가게가 생겼을 때만 그린다.
-있으면 그 가게·그 무늬는 겹치기를 건너뛰고 이 한 장으로 그려진다.
+파일명: `<가게>-<자세>.webp` — 이미 스무 장이 들어와 있고 그대로 쓰인다.
+**새로 안 시킨다.** 공통 너구리로 안 나오는 특별한 가게가 생겼을 때만.
+있으면 그 가게는 겹치기를 건너뛰고 이 한 장으로 그려진다.
 
-- [ ] `smith-a-side.webp` — 대장간 · 무늬 A 옆
-- [ ] `smith-a-back.webp` — 대장간 · 무늬 A 뒤
-- [ ] `smith-b-side.webp` — 대장간 · 무늬 B 옆
-- [ ] `smith-b-back.webp` — 대장간 · 무늬 B 뒤
-- [ ] `smith-c-side.webp` — 대장간 · 무늬 C 옆
-- [ ] `smith-c-back.webp` — 대장간 · 무늬 C 뒤
-- [ ] `smith-d-side.webp` — 대장간 · 무늬 D 옆
-- [ ] `smith-d-back.webp` — 대장간 · 무늬 D 뒤
-- [ ] `brush-a-side.webp` — 필방 · 무늬 A 옆
-- [ ] `brush-a-back.webp` — 필방 · 무늬 A 뒤
-- [ ] `brush-b-side.webp` — 필방 · 무늬 B 옆
-- [ ] `brush-b-back.webp` — 필방 · 무늬 B 뒤
-- [ ] `brush-c-side.webp` — 필방 · 무늬 C 옆
-- [ ] `brush-c-back.webp` — 필방 · 무늬 C 뒤
-- [ ] `brush-d-side.webp` — 필방 · 무늬 D 옆
-- [ ] `brush-d-back.webp` — 필방 · 무늬 D 뒤
-- [ ] `paper-a-side.webp` — 지물포 · 무늬 A 옆
-- [ ] `paper-a-back.webp` — 지물포 · 무늬 A 뒤
-- [ ] `paper-b-side.webp` — 지물포 · 무늬 B 옆
-- [ ] `paper-b-back.webp` — 지물포 · 무늬 B 뒤
-- [ ] `paper-c-side.webp` — 지물포 · 무늬 C 옆
-- [ ] `paper-c-back.webp` — 지물포 · 무늬 C 뒤
-- [ ] `paper-d-side.webp` — 지물포 · 무늬 D 옆
-- [ ] `paper-d-back.webp` — 지물포 · 무늬 D 뒤
-- [ ] `pot-a-side.webp` — 옹기점 · 무늬 A 옆
-- [ ] `pot-a-back.webp` — 옹기점 · 무늬 A 뒤
-- [ ] `pot-b-side.webp` — 옹기점 · 무늬 B 옆
-- [ ] `pot-b-back.webp` — 옹기점 · 무늬 B 뒤
-- [ ] `pot-c-side.webp` — 옹기점 · 무늬 C 옆
-- [ ] `pot-c-back.webp` — 옹기점 · 무늬 C 뒤
-- [ ] `pot-d-side.webp` — 옹기점 · 무늬 D 옆
-- [ ] `pot-d-back.webp` — 옹기점 · 무늬 D 뒤
-- [ ] `herb-a-side.webp` — 약재상 · 무늬 A 옆
-- [ ] `herb-a-back.webp` — 약재상 · 무늬 A 뒤
-- [ ] `herb-b-side.webp` — 약재상 · 무늬 B 옆
-- [ ] `herb-b-back.webp` — 약재상 · 무늬 B 뒤
-- [ ] `herb-c-side.webp` — 약재상 · 무늬 C 옆
-- [ ] `herb-c-back.webp` — 약재상 · 무늬 C 뒤
-- [ ] `herb-d-side.webp` — 약재상 · 무늬 D 옆
-- [ ] `herb-d-back.webp` — 약재상 · 무늬 D 뒤
-- [ ] `soup-a-side.webp` — 국밥집 · 무늬 A 옆
-- [ ] `soup-a-back.webp` — 국밥집 · 무늬 A 뒤
-- [ ] `soup-b-side.webp` — 국밥집 · 무늬 B 옆
-- [ ] `soup-b-back.webp` — 국밥집 · 무늬 B 뒤
-- [ ] `soup-c-side.webp` — 국밥집 · 무늬 C 옆
-- [ ] `soup-c-back.webp` — 국밥집 · 무늬 C 뒤
-- [ ] `soup-d-side.webp` — 국밥집 · 무늬 D 옆
-- [ ] `soup-d-back.webp` — 국밥집 · 무늬 D 뒤
-- [ ] `gaekju-a-side.webp` — 객주 · 무늬 A 옆
-- [ ] `gaekju-a-back.webp` — 객주 · 무늬 A 뒤
-- [ ] `gaekju-b-side.webp` — 객주 · 무늬 B 옆
-- [ ] `gaekju-b-back.webp` — 객주 · 무늬 B 뒤
-- [ ] `gaekju-c-side.webp` — 객주 · 무늬 C 옆
-- [ ] `gaekju-c-back.webp` — 객주 · 무늬 C 뒤
-- [ ] `gaekju-d-side.webp` — 객주 · 무늬 D 옆
-- [ ] `gaekju-d-back.webp` — 객주 · 무늬 D 뒤
-- [ ] `skewer-a-side.webp` — 꼬치집 · 무늬 A 옆
-- [ ] `skewer-a-back.webp` — 꼬치집 · 무늬 A 뒤
-- [ ] `skewer-b-side.webp` — 꼬치집 · 무늬 B 옆
-- [ ] `skewer-b-back.webp` — 꼬치집 · 무늬 B 뒤
-- [ ] `skewer-c-side.webp` — 꼬치집 · 무늬 C 옆
-- [ ] `skewer-c-back.webp` — 꼬치집 · 무늬 C 뒤
-- [ ] `skewer-d-side.webp` — 꼬치집 · 무늬 D 옆
-- [ ] `skewer-d-back.webp` — 꼬치집 · 무늬 D 뒤
-- [ ] `ricecake-a-side.webp` — 떡집 · 무늬 A 옆
-- [ ] `ricecake-a-back.webp` — 떡집 · 무늬 A 뒤
-- [ ] `ricecake-b-side.webp` — 떡집 · 무늬 B 옆
-- [ ] `ricecake-b-back.webp` — 떡집 · 무늬 B 뒤
-- [ ] `ricecake-c-side.webp` — 떡집 · 무늬 C 옆
-- [ ] `ricecake-c-back.webp` — 떡집 · 무늬 C 뒤
-- [ ] `ricecake-d-side.webp` — 떡집 · 무늬 D 옆
-- [ ] `ricecake-d-back.webp` — 떡집 · 무늬 D 뒤
-- [ ] `butcher-a-side.webp` — 푸줏간 · 무늬 A 옆
-- [ ] `butcher-a-back.webp` — 푸줏간 · 무늬 A 뒤
-- [ ] `butcher-b-side.webp` — 푸줏간 · 무늬 B 옆
-- [ ] `butcher-b-back.webp` — 푸줏간 · 무늬 B 뒤
-- [ ] `butcher-c-side.webp` — 푸줏간 · 무늬 C 옆
-- [ ] `butcher-c-back.webp` — 푸줏간 · 무늬 C 뒤
-- [ ] `butcher-d-side.webp` — 푸줏간 · 무늬 D 옆
-- [ ] `butcher-d-back.webp` — 푸줏간 · 무늬 D 뒤
-- [ ] `fish-a-side.webp` — 어물전 · 무늬 A 옆
-- [ ] `fish-a-back.webp` — 어물전 · 무늬 A 뒤
-- [ ] `fish-b-side.webp` — 어물전 · 무늬 B 옆
-- [ ] `fish-b-back.webp` — 어물전 · 무늬 B 뒤
-- [ ] `fish-c-side.webp` — 어물전 · 무늬 C 옆
-- [ ] `fish-c-back.webp` — 어물전 · 무늬 C 뒤
-- [ ] `fish-d-side.webp` — 어물전 · 무늬 D 옆
-- [ ] `fish-d-back.webp` — 어물전 · 무늬 D 뒤
-- [ ] `cloth-a-side.webp` — 포목전 · 무늬 A 옆
-- [ ] `cloth-a-back.webp` — 포목전 · 무늬 A 뒤
-- [ ] `cloth-b-side.webp` — 포목전 · 무늬 B 옆
-- [ ] `cloth-b-back.webp` — 포목전 · 무늬 B 뒤
-- [ ] `cloth-c-side.webp` — 포목전 · 무늬 C 옆
-- [ ] `cloth-c-back.webp` — 포목전 · 무늬 C 뒤
-- [ ] `cloth-d-side.webp` — 포목전 · 무늬 D 옆
-- [ ] `cloth-d-back.webp` — 포목전 · 무늬 D 뒤
-- [ ] `hat-a-side.webp` — 갓방 · 무늬 A 옆
-- [ ] `hat-a-back.webp` — 갓방 · 무늬 A 뒤
-- [ ] `hat-b-side.webp` — 갓방 · 무늬 B 옆
-- [ ] `hat-b-back.webp` — 갓방 · 무늬 B 뒤
-- [ ] `hat-c-side.webp` — 갓방 · 무늬 C 옆
-- [ ] `hat-c-back.webp` — 갓방 · 무늬 C 뒤
-- [ ] `hat-d-side.webp` — 갓방 · 무늬 D 옆
-- [ ] `hat-d-back.webp` — 갓방 · 무늬 D 뒤
-- [ ] `brass-a-side.webp` — 유기전 · 무늬 A 옆
-- [ ] `brass-a-back.webp` — 유기전 · 무늬 A 뒤
-- [ ] `brass-b-side.webp` — 유기전 · 무늬 B 옆
-- [ ] `brass-b-back.webp` — 유기전 · 무늬 B 뒤
-- [ ] `brass-c-side.webp` — 유기전 · 무늬 C 옆
-- [ ] `brass-c-back.webp` — 유기전 · 무늬 C 뒤
-- [ ] `brass-d-side.webp` — 유기전 · 무늬 D 옆
-- [ ] `brass-d-back.webp` — 유기전 · 무늬 D 뒤
-- [ ] `lacquer-a-side.webp` — 나전방 · 무늬 A 옆
-- [ ] `lacquer-a-back.webp` — 나전방 · 무늬 A 뒤
-- [ ] `lacquer-b-side.webp` — 나전방 · 무늬 B 옆
-- [ ] `lacquer-b-back.webp` — 나전방 · 무늬 B 뒤
-- [ ] `lacquer-c-side.webp` — 나전방 · 무늬 C 옆
-- [ ] `lacquer-c-back.webp` — 나전방 · 무늬 C 뒤
-- [ ] `lacquer-d-side.webp` — 나전방 · 무늬 D 옆
-- [ ] `lacquer-d-back.webp` — 나전방 · 무늬 D 뒤
+- [ ] `fish-make.webp` — 어물전 · 만드는 중
+- [ ] `fish-sell.webp` — 어물전 · 파는 중
+- [ ] `cloth-make.webp` — 포목전 · 만드는 중
+- [ ] `cloth-sell.webp` — 포목전 · 파는 중
+- [ ] `hat-make.webp` — 갓방 · 만드는 중
+- [ ] `hat-sell.webp` — 갓방 · 파는 중
+- [ ] `brass-make.webp` — 유기전 · 만드는 중
+- [ ] `brass-sell.webp` — 유기전 · 파는 중
+- [ ] `lacquer-make.webp` — 나전방 · 만드는 중
+- [ ] `lacquer-sell.webp` — 나전방 · 파는 중
 
 <!-- 목록끝 -->
 
