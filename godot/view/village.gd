@@ -948,7 +948,8 @@ func _stall(i: int, k: int, spot: Vector2i) -> void:
 	draw_arc(bc, 17.0, 0, TAU, 32, Color(0.55, 0.44, 0.32, 0.8), 2.0)
 	var pic: Texture2D = Art.ranked("items", String(it.id), rk)
 	if pic != null:
-		draw_texture_rect(pic, Rect2(bc - Vector2(9, 15), Vector2(18, 30)), false)
+		# 배지 안 물건 — 액자 비율 그대로(17×30 ≒ 128:224). 지름 34 원 안에 든다.
+		draw_texture_rect(pic, Rect2(bc - Vector2(8.5, 15), Vector2(17, 30)), false)
 	else:
 		_text(bc + Vector2(0, 7), String(it.icon), 18, Color.WHITE)
 	if here:
@@ -1510,7 +1511,9 @@ func _order(wk: Dictionary) -> void:
 		Color(1.0, 0.99, 0.96, 0.97))
 	var pic4: Texture2D = Art.ranked("items", String(first.id), sim.rank_of(String(Content.SHOPS[wk.shop].id)))
 	if pic4 != null:
-		draw_texture_rect(pic4, Rect2(c0 - Vector2(11, 16), Vector2(22, 28)), false)
+		# ★ 액자 비율(128:224)을 지킨다. 22×28로 그렸더니 물건이 **옆으로
+		#   늘어났다**(2026-08-27에 잡았다) — 낫이 넓적한 칼처럼 보였다.
+		draw_texture_rect(pic4, Rect2(c0 - Vector2(8, 16), Vector2(16, 28)), false)
 	else:
 		_text(c0 + Vector2(0, 7), String(first.icon), 20, Color.WHITE)
 	# 개수 동그라미 — 레퍼런스의 초록 배지 그대로
