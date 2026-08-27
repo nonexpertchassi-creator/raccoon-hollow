@@ -265,7 +265,7 @@ func _pest_born(P: Dictionary, rng: Rng) -> Variant:
 	if amount < 1.0:
 		return null
 	return {"kind": P.id, "amount": amount, "left": P.life, "life": P.life,
-			"what": "엽전 %s닢을 노린다" % Num.fmt(amount)}
+			"what": "엽전 %s냥을 노린다" % Num.fmt(amount)}
 
 # ── 삽살개 ──
 ## 삽살개 값 — 마리마다 오른다. 두 번째부터는 첫 마리의 2.2배씩.
@@ -310,7 +310,7 @@ func _pest_escape(rng: Rng) -> void:
 		var gain: float = floor(worth * Content.GUARD.fine)
 		money += gain
 		revenue += gain
-		_ev("%s가 %s 물었다 — 벌금 엽전 %s닢" % [Content.GUARD.name, Num.josa(P.name, "을", "를"), Num.fmt(gain)], "guard")
+		_ev("%s가 %s 물었다 — 벌금 엽전 %s냥" % [Content.GUARD.name, Num.josa(P.name, "을", "를"), Num.fmt(gain)], "guard")
 		var e1: Dictionary = where.duplicate(); e1["result"] = "guard"; e1["amount"] = gain
 		_pestEvents.append(e1)
 		return
@@ -325,7 +325,7 @@ func _pest_escape(rng: Rng) -> void:
 	else:
 		var n2: float = min(money, tt.amount)
 		money -= n2
-		_ev("%s 엽전 %s닢을 채 갔다" % [Num.josa(P.name, "이", "가"), Num.fmt(n2)], "pest")
+		_ev("%s 엽전 %s냥을 채 갔다" % [Num.josa(P.name, "이", "가"), Num.fmt(n2)], "pest")
 		var e3: Dictionary = where.duplicate(); e3["result"] = "stolen"; e3["amount"] = -n2
 		_pestEvents.append(e3)
 
@@ -348,7 +348,7 @@ func catch_pest(rng: Rng) -> Variant:
 	if rng.next() < Content.GEM.catchRate:
 		gem = 1
 		gems += 1.0
-	_ev("%s 잡았다 — 벌금 엽전 %s닢%s" % [Num.josa(P.name, "을", "를"), Num.fmt(gain), (" · 🍃1" if gem > 0 else "")], "catch")
+	_ev("%s 잡았다 — 벌금 엽전 %s냥%s" % [Num.josa(P.name, "을", "를"), Num.fmt(gain), (" · 🍃1" if gem > 0 else "")], "catch")
 	_event_gain("catch", 1.0)
 	return {"kind": tt.kind, "gain": gain, "gem": gem}
 
