@@ -22,46 +22,19 @@ const DIR = 'godot/art';
 const has = (dir, id) =>
   existsSync(`${ROOT}${DIR}/${dir}/${id}.webp`) || existsSync(`${ROOT}${DIR}/${dir}/${id}.webp`);
 
-/* ★ **'대신 나오는 너구리'는 주문서에서 뺐다**(2026-08-28, 유저: "풀백 너구리
- *   빼버려, 장터 청소부 따로 해").
+/* ★ **옛 그림은 전부 지웠다**(2026-08-28, 유저: "제발 옛 그림 지우자,
+ *   진짜 마지막 명령이야").
  *
- *   `hero/raccoon-make·sell·walk1·walk2·sleep` 다섯 장은 **주문이 아니다.**
- *   무늬 그림이 아직 없는 자리를 메우는 마지막 그물이고, 다섯 장 다 이미
- *   폴더에 있다. 그런데 목록에 있으니 "만들 것"으로 읽혔다 —
- *   **목록에 있는 줄은 언젠가 누가 그린다.** 꼬리 여덟 장이 그렇게 그려졌다.
+ *   그동안 이름 규칙이 세 번 바뀌었고(옆모습 한 장 → 옆+뒤 → 방향 넷),
+ *   그때마다 **옛 그림을 지우지 않고 그물로 남겼다.** 그 그물이 문제였다 —
+ *   화면에는 옛 그림이 나오니 "다 된 것 같은데 어딘가 어색하다"가 되고,
+ *   목록에는 안 뜨니 무엇이 옛것인지도 안 보였다. 이번 주에 잡은 꼬임의
+ *   절반이 여기서 나왔다.
  *
- *   파일은 그대로 둔다. 지우면 무늬 A가 다 차기 전까지 화면이 도형으로
- *   내려앉는다. 지우지 않고 **안 시킬 뿐**이다 — 그래서 아래 KEEP에 적어
- *   --audit이 "지울 후보"라고 거짓말하지 않게 한다.
- *
- *   장터 청소부는 아예 **따로** 뺐다. 청소부는 그물이 아니라 등장인물이고,
- *   지금 들어 있는 건 옛 촌장 그림이라 **다시 그려야 하는 한 장**이다. */
-const KEEP = [
-  'hero/raccoon-make', 'hero/raccoon-sell', 'hero/raccoon-walk1',
-  'hero/raccoon-walk2', 'hero/raccoon-sleep',
-];
-
-/* ★ **옛 계약으로 들어온 그림들** — 주문은 아니지만 지우지 않는다.
- *   2026-08-28에 방향을 넷으로 늘리면서 이름이 바뀌었다:
- *     guests/<id>          → guests/<id>-<방향>
- *     hero-body/<무늬>-side → hero-body/<무늬>-<자세>-<방향>
- *   새 그림이 다 올 때까지 **이것들이 마지막 그물**이다. 지우면 그 손님이
- *   도형 덩어리가 된다. 새 방향 그림이 들어오면 코드가 저절로 그쪽을 쓰고,
- *   그때 이 줄들을 지우면 된다. */
-const KEEP_OLD = (() => {
-  const out = [];
-  for (const [d, keep] of [['guests', (f) => !f.includes('-')],
-                           ['hero-body', (f) => f.split('-').length === 2]]) {
-    let files = [];
-    try { files = readdirSync(`${ROOT}${DIR}/${d}`); } catch { /* 폴더가 없을 수 있다 */ }
-    for (const f of files) {
-      if (!f.endsWith('.webp') && !f.endsWith('.png')) continue;
-      const id = f.replace(/\.(webp|png)$/, '');
-      if (keep(id)) out.push(`${d}/${id}`);
-    }
-  }
-  return out;
-})();
+ *   그래서 KEEP·KEEP_OLD를 없애고 **주문서에 없는 그림을 전부 지웠다.**
+ *   이제 규칙은 하나다: **주문서에 있으면 쓰고, 없으면 없다.**
+ *   그림이 없는 자리는 코드가 도형으로 그린다 — 도형은 "아직 안 왔다"가
+ *   눈에 바로 보인다. 그게 어중간한 옛 그림보다 낫다. */
 
 const GROUPS = [
   /* 마을 길을 도는 너구리 한 마리. 마당 안 일꾼과 **다른 사람**이다. */
@@ -131,8 +104,9 @@ const GROUPS = [
           '2등신(머리 둘 높이), 배경 없이, 발이 그림 맨 아래에 닿게.\n' +
           '★ 한 짐승을 **넷 다 끝내고** 다음 짐승으로 간다 — 서른을 한 방향씩\n' +
           '그리면 서른 마리가 다 반쯤 된 채로 오래 간다.\n' +
-          '옛 한 장짜리(`<손님id>.webp` 21장)는 지우지 않았다. 넷이 다 올 때까지\n' +
-          '그 손님의 마지막 그물로 남는다 — 주문서에는 없다(KEEP).',
+          '★ 옛 한 장짜리(`<손님id>.webp`)는 **지웠다.** 그물로 남겨 두면\n' +
+          '"다 된 것 같은데 어딘가 어색하다"가 되고, 무엇이 옛것인지도 안 보인다.\n' +
+          '그림이 없는 손님은 도형으로 나온다 — 안 왔다는 게 바로 보이는 게 낫다.',
     rows: GUESTS.flatMap((g) => [['ne', '↗ 오른쪽 위로'], ['nw', '↖ 왼쪽 위로'],
       ['se', '↘ 오른쪽 아래로'], ['sw', '↙ 왼쪽 아래로']]
       .map(([d, ko]) => ({ id: `${g.id}-${d}`, why: `${g.face} ${g.name} — ${ko}` }))) },
@@ -363,13 +337,7 @@ if (process.argv.includes('--audit')) {
    *   (staff/ 는 2026-08-28에 통째로 없앴다 — 겹치기로 바뀌며 안 닿는 길이 됐다.) */
   for (const g of GROUPS) if (g.dir === 'items') for (const r of g.rows)
     want.get('items').add(r.id.replace(/-[123]$/, ''));
-  /*   - KEEP    : 주문은 아니지만 **일부러 두는** 그림(대신 나오는 너구리 다섯).
-   *               안 적으면 "지울 후보"로 떠서, 지우면 화면이 도형으로 내려앉는다. */
-  for (const k of [...KEEP, ...KEEP_OLD]) {
-    const [d, id] = k.split('/');
-    if (!want.has(d)) want.set(d, new Set());
-    want.get(d).add(id);
-  }
+
   let n = 0, bytes = 0;
   for (const dir of readdirSync(`${ROOT}${DIR}`, { withFileTypes: true })) {
     if (!dir.isDirectory()) continue;

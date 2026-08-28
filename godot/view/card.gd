@@ -9,8 +9,7 @@ class_name CardPopup
 ##   있는 것에서 계산할 수 있으면 계산한다.
 ##
 ## 그림은 나중에 온다. `clerks/<가게>-make-<등급>` → `clerks/<가게>-make`
-## → `hero/raccoon-make` 순으로 찾고, 하나도 없으면 현판 글자를 크게 띄운다.
-## (`hero/`는 등장인물이 아니라 **빈자리에 대신 나오는 그림**이다 — RACCOON.md §6)
+## → `hero-body/a-make-*` 순으로 찾고, 하나도 없으면 현판 글자를 크게 띄운다.
 
 var sim: Sim
 var _t: float = 0.0
@@ -184,7 +183,7 @@ func show_card(shop_id: String, rank: int) -> void:
 	_gridbox.visible = false
 	_cardbox.visible = true
 	var shop: Dictionary = Sim.shop_by_id(shop_id)
-	# 카드 초상 → 완성형 옆모습 → 옛 make → **겹그림(몸+차림)** → 대신 나오는 그림.
+	# 카드 초상 → 완성형 옆모습 → 옛 make → **겹그림(몸+차림)** → 현판 글자.
 	#
 	# ★ 겹그림 칸을 예전부터 만들어 두고 늘 비워 뒀다(2026-08-27에 발견).
 	#   마을 화면이 겹치기로 바뀌었으니 카드도 **같은 재료로 같은 모습**이어야 한다 —
@@ -204,8 +203,6 @@ func show_card(shop_id: String, rank: int) -> void:
 		t = Art.ranked("hero-body", "a-side", rank)
 		if t != null:
 			_art_gear.texture = Art.ranked("gear", "%s-side" % shop_id, rank)
-	if t == null:
-		t = Art.tex("hero", "raccoon-make")
 	_art.texture = t
 	_art.visible = t != null
 	_sign.visible = t == null            # 그림이 없으면 현판 글자로 대신한다

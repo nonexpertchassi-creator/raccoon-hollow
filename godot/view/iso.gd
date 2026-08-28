@@ -69,6 +69,22 @@ const GATES := [
 	Vector2i(GW - 1, 5), Vector2i(GW - 1, 11), Vector2i(GW - 1, 17), Vector2i(GW - 1, 23),  # 오른쪽
 	Vector2i(GW - 1, 29), Vector2i(GW - 1, 35), Vector2i(GW - 1, 41),
 ]
+## 지금 **열린 동네 안에 있는** 목만 돌려준다.
+## 마을은 위(y=0)에서 아래로 열린다 — 열린 동네의 마지막 줄보다 아래는
+## 아직 없는 땅이다. 거기서 손님이 걸어 나오면 안 된다.
+static func gates_open(sim: Sim) -> Array:
+	var last: int = -1
+	for d in Content.DISTRICTS:
+		if sim.zones.has(String(d.id)):
+			last = max(last, int((d.rows as Array)[1]))
+	if last < 0:
+		last = GH - 1
+	var out: Array = []
+	for g in GATES:
+		if (g as Vector2i).y <= last:
+			out.append(g)
+	return out if not out.is_empty() else [GATES[0]]
+
 ## 작은 건물과 개집 — 가게가 열이 되면서 안쪽 칸을 내줬다.
 ## 오른쪽 끝 줄(x=14)은 길도 마당도 아니라 늘 비어 있다. 거기로 옮긴다.
 const SMALL_T := [Vector2i(14, 2), Vector2i(14, 8), Vector2i(14, 14), Vector2i(14, 20)]

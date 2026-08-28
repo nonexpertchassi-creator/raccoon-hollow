@@ -51,8 +51,16 @@ var _zoneFade: Dictionary = {}
 
 func reveal_zone(id: String) -> void:
 	_zoneFade[id] = 1.0
+## 손님이 드나드는 목 하나를 고른다.
+##
+## ★ **열린 동네 안에서만 고른다**(2026-08-28, 유저가 잡았다).
+##   예전에는 스물두 목을 전부 놓고 골랐다. 그런데 그중 열둘은 저잣거리·
+##   큰장마당 안에 있다 — 안골만 열린 사람에게도 **아직 있지도 않은 동네에서**
+##   토끼가 걸어 나와 대장간까지 내려왔다. 마을이 열리는 재미를 미리 까먹는
+##   셈이고, 무엇보다 "저기 아직 안 열었는데?"가 된다.
 func _gate() -> Vector2i:
-	return Iso.GATES[int(_grng.next() * Iso.GATES.size()) % Iso.GATES.size()]
+	var ok: Array = Iso.gates_open(sim)
+	return ok[int(_grng.next() * ok.size()) % ok.size()]
 const LINE_MAX := 4          # 한 가게 앞에 세우는 손님 수
 
 ## 손님이 물어본 것 — "무쇠도끼?" 한 마디가 그 가게 지붕 위에 뜬다.
@@ -1071,7 +1079,10 @@ func _dog() -> void:
 ##     ② 그 무늬의 그 자세·그 방향
 ##     ③ 같은 무늬·같은 자세의 **다른 방향** (방향만 아직 없을 때)
 ##     ④ 무늬 A의 그 자세·그 방향
-##     ⑤ 대신 나오는 그림 (hero/raccoon-*) — 주문서에 없는, 마지막 그물
+##   여기까지 없으면 **도형으로 그린다.** 2026-08-28에 옛 그림 그물을 전부
+##   걷어냈다(유저: "제발 옛 그림 지우자"). 어중간한 옛 그림이 나오면
+##   "다 된 것 같은데 어딘가 어색하다"가 되지만, 도형이 나오면
+##   **아직 안 왔다는 게 바로 보인다.**
 ##   ③에서 **거울을 안 쓴다.** 다른 방향 그림을 그대로 쓴다 —
 ##   잠깐 방향이 안 맞는 게, 빛이 뒤집힌 채로 오래 가는 것보다 낫다.
 func _clerk_layers(shop_id: String, slot: int, pose: String, dir4: String = "se") -> Array:
@@ -1085,10 +1096,6 @@ func _clerk_layers(shop_id: String, slot: int, pose: String, dir4: String = "se"
 	var body: Texture2D = _body_tex(fur, pose, dir4, rk)
 	if body == null and fur != "a":
 		body = _body_tex("a", pose, dir4, rk)
-	if body == null:
-		body = Art.tex("hero", "raccoon-" + ("walk1" if pose == "walk" else pose))
-	if body == null:
-		body = Art.tex("hero", "raccoon-make")
 	if body == null:
 		return []
 	# ★ **꼬리 층은 없앴다**(2026-08-28, 유저: "너구리 꼬리 안 하기로 했어").
@@ -1111,15 +1118,6 @@ func _body_tex(fur: String, pose: String, dir4: String, rk: int) -> Texture2D:
 		if t != null:
 			return t
 	return null
-
-## 이 그림이 **거울 뒤집기가 필요한 옛 그림인가.**
-## hero/raccoon-*는 오른쪽 한 장뿐이라 왼쪽을 만들려면 뒤집을 수밖에 없다.
-## 네 방향 그림(hero-body/clerks)은 왼쪽도 제 그림이 있으니 **절대 안 뒤집는다.**
-func _needs_flip(t: Texture2D) -> bool:
-	if t == null:
-		return false
-	var path: String = t.resource_path
-	return path.contains("/hero/")
 
 ## 자리를 정하는 그림 한 장 — 겹그림이라도 **몸**이 자리를 정하고, 몸은 늘 첫 층이다.
 func _worker_base(layers: Array) -> Texture2D:
@@ -1262,7 +1260,7 @@ func _idle(i: int) -> bool:
 ## 대장간 너구리는 망치를 들고, 필방 너구리는 앞치마를 두르는 식이다.
 ## 한 장도 없으면 도형으로 그린다. 어디서 멈춰도 게임은 돈다.
 ## 가게 등급도 본다 — `smith-make-1.png`가 있으면 참쇠 대장간 일꾼은 그걸 쓴다.
-## 없으면 그 가게 일꾼, 그것도 없으면 공통 일꾼. **세 겹 다 없으면 도형이다.**
+## 없으면 그 가게 일꾼. **둘 다 없으면 도형이다**(옛 그림 그물은 2026-08-28에 걷었다).
 func _hero_tex(shop_id: String, pose: String) -> Texture2D:
 	var t: Texture2D = Art.ranked("clerks", "%s-%s" % [shop_id, pose], sim.rank_of(shop_id))
 	if t != null:
@@ -1270,10 +1268,7 @@ func _hero_tex(shop_id: String, pose: String) -> Texture2D:
 	# ★ 전용 그림이 있는 가게는 없는 자세도 **전용 만들기 그림**으로 때운다.
 	#   걷기만 공통 너구리로 갈아입으니 "일꾼이 두 모습"이 됐다(유저).
 	#   움직임(걷기 두 장 번갈아)보다 **같은 얼굴**이 먼저다.
-	t = Art.ranked("clerks", "%s-make" % shop_id, sim.rank_of(shop_id))
-	if t != null:
-		return t
-	return Art.tex("hero", "raccoon-" + pose)
+	return Art.ranked("clerks", "%s-make" % shop_id, sim.rank_of(shop_id))
 
 func _trash_draw(tr: Dictionary) -> void:
 	var p2: Vector2 = tr.pos
@@ -1355,10 +1350,8 @@ func _clerk(i: int) -> void:
 		var br3: float = 0.0 if c.walking else (0.5 + 0.5 * sin(_t * 2.4 + c.pos.x * 0.03)) * 0.03
 		var hop: float = absf(sin(_t * 7.0 + c.pos.x * 0.05)) * 3.5 if c.walking else 0.0
 		_shadow(c.pos, 14.0)
-		# ★ 네 방향 그림이면 **안 뒤집는다.** 옛 그림(hero/raccoon-*)으로 떨어졌을
-		#   때만 뒤집는다 — 그건 오른쪽 한 장뿐이라 왼쪽을 만들 길이 그것뿐이다.
-		_sprite_stack(lays, full, c.pos + Vector2(0, -hop), "clerks",
-			_needs_flip(full) and bool(c.get("flip", false)), br3)
+		# ★ **절대 안 뒤집는다.** 네 방향이 다 제 그림이다(2026-08-28).
+		_sprite_stack(lays, full, c.pos + Vector2(0, -hop), "clerks", false, br3)
 		if int(c.get("carry_oid", 0)) != 0 or float(c.get("carry", 0.0)) > 0.0:
 			_crate(c.pos, bool(c.get("flip", false)))
 		if pose == "sleep":
@@ -1538,15 +1531,14 @@ func _staff(i: int, k: int) -> void:
 	var t: Texture2D = _worker_base(lays6)
 	if t != null:
 		_shadow(p, 14.0)
-		_sprite_stack(lays6, t, p + Vector2(0, -bob), "clerks", _needs_flip(t) and sflip, breath)
+		_sprite_stack(lays6, t, p + Vector2(0, -bob), "clerks", false, breath)
 		if carry6 != 0:
 			_crate(p, sflip)
 		if idle:
 			_text(p + Vector2(14, -70 + sin(_t * 2.0 + float(k)) * 3.0), "💤", 12, Color.WHITE)
 		return
 	# (2026-08-28) 여기 `staff/band-*` 폴백이 있었다. 겹치기로 바꾸면서
-	# _clerk_layers가 늘 무언가를 돌려주게 됐고 — 못 찾으면 hero/raccoon-make까지
-	# 내려간다 — 이 줄에 닿을 길이 없어졌다. 안 닿는 길은 없는 길이라 지운다.
+	# _clerk_layers가 못 찾으면 빈 배열을 돌려주고, 아래 도형 그리기로 떨어진다.
 	# 그림 주문서에 "staff/"가 남아 있으면 아무도 안 쓸 그림을 시키게 된다.
 	_raccoon(p + Vector2(0, -bob), SHAPE, Color("bfa987"))
 	if carry6 != 0:
