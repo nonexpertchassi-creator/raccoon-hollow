@@ -125,7 +125,7 @@ func setup(s: Sim) -> void:
 	clerks = []
 	line = []
 	for i in range(Content.SHOPS.size()):
-		clerks.append({"pos": Iso.foot(sim, i).work, "at": "work", "busy": 0.0, "walking": false,
+		clerks.append({"pos": Iso.foot(sim, i).work, "at": "work", "busy": 0.0, "walking": false, "dir": "se",
 			"carry": 0.0, "carry_oid": 0})
 		line.append([])
 	var start: Vector2i = Iso.GATES[0]
@@ -172,7 +172,7 @@ func on_sale(sale: Dictionary) -> void:
 		"pos": Iso.w(enter.x + 0.5, enter.y + 0.5), "out_gate": _gate(),
 		"path": path, "step": 1, "wait": 0.0, "qwait": 0.0, "empty": empty,
 		"n": int(sale.n), "gain": float(sale.gain), "sold": _order_of(sale, shop_id), "q": 0,
-		"oid": int(sale.get("orderId", -1)), "ready": false, "leaveT": 0.9,
+		"oid": int(sale.get("orderId", -1)), "ready": false, "leaveT": 0.9, "dir": "se",
 		"speed": float(sale.guest.get("speed", 1.0)), "off": (_grng.next() - 0.5) * 30.0,
 	})
 	line[idx].append(walkers[walkers.size() - 1])
@@ -320,10 +320,14 @@ func _walk(wk: Dictionary, delta: float) -> bool:
 	# 걷는 방향으로 몸을 돌린다. 왼쪽이면 뒤집고, **화면 위로 올라가면 뒷모습**을
 	# 쓴다(-back 그림이 있으면). 옆모습만으로 때우려던 것을 유저가 되돌렸다 —
 	# 등을 보이고 올라가는 짐승이 옆을 보면 어색한 게 맞다.
+	if d.length() > 0.5:
+		# ★ 이름을 dir로 둔다 — walker의 face는 **손님 이모지**다(🐰). 거기에
+		#   방향을 넣었다가 화면에 'se'가 뜰 뻔했다.
+		wk.dir = Iso.dir4(d)             # ↗ ↖ ↘ ↙ 넷 중 하나
+	# 옛 그림(한 장짜리 옆모습)으로 떨어질 때만 쓰는 뒤집기. 네 방향 그림이
+	# 들어오면 이 값은 안 쓰인다 — 거울은 빛과 소품을 같이 뒤집기 때문이다.
 	if absf(d.x) > 0.5:
 		wk.flip = d.x < 0.0
-	if absf(d.y) > 0.2:
-		wk.up = d.y < 0.0
 	# 손님마다 걸음이 다르다 — 토끼는 빠르고 거북은 느리다.
 	# 이 숫자는 content.js에 처음부터 있었는데 화면이 안 쓰고 있었다.
 	var step: float = WALK * sim.guest_walk() * float(wk.speed) * delta
@@ -495,8 +499,8 @@ func _advance(delta: float) -> void:
 		var d: Vector2 = tgt - c.pos
 		var step: float = CLERK_SPEED * sim.carry_speed() * delta
 		c.walking = d.length() > step        # 걷는 중이면 걷는 그림을 쓴다
-		if c.walking and absf(d.y) > 0.2:
-			c.up = d.y < 0.0                 # 위로 걸으면 뒷모습을 쓴다(3방향 계약)
+		if c.walking and d.length() > 0.5:
+			c.dir = Iso.dir4(d)              # ↗ ↖ ↘ ↙ 넷 중 하나
 		# 계산대 근처(30px)에서는 방향을 **절대 안 바꾼다** — 팔꿈치를 오가는
 		# 짧은 걸음마다 좌우가 뒤집혀 파닥거렸다(유저가 두 번 잡았다).
 		var near_ct: bool = c.pos.distance_to(sv_p) < 30.0
@@ -506,9 +510,12 @@ func _advance(delta: float) -> void:
 		#   7번의 작업 자리이기도 한데, 잠금이 만들 때도 길을 보게 해서
 		#   "만드는 방향이 반대"가 됐다(유저).
 		if near_ct and (carry_o != 0 or c.busy > 0.0):
-			c.flip = String(f.yard.gate) == "y"    # 계산대에선 길 쪽을 본다
+			# 계산대에선 길 쪽을 본다. 문이 x쪽이면 ↘, y쪽이면 ↙ — **그 둘뿐이다.**
+			c.dir = "sw" if String(f.yard.gate) == "y" else "se"
+			c.flip = String(f.yard.gate) == "y"
 		elif not c.walking and hjob >= 0:
-			c.flip = _stall_at(i, hjob).x < c.pos.x   # 매대 앞에선 매대를 본다
+			c.dir = Iso.dir4(_stall_at(i, hjob) - c.pos)    # 매대 앞에선 매대를 본다
+			c.flip = _stall_at(i, hjob).x < c.pos.x
 		c.pos = tgt if d.length() <= step else c.pos + d.normalized() * step
 		# 상자가 계산대에 닿았다 — 이제야 손님이 받는다
 		if carry_o != 0 and c.pos.distance_to(sv_p) < 10.0:
@@ -1047,46 +1054,41 @@ func _dog() -> void:
 ## 안에서 낮과 밤을 다 만난다. 색은 화면 전체에 얇게 한 겹만 얹는다.
 ## 하루 시계는 sim의 것이다(밤엔 손님·손놀림·쥐 규칙이 실제로 달라진다).
 ## clock_override는 찍는 도구용 — 화면만 그 시각인 척한다.
-## 일꾼 그림 찾기(2026-08-26 확정 계약): ① 그 가게 세트(clerks/<가게>-<무늬>-<방향>,
-## 앞치마 등급은 -1·-2) → ② 공용 무늬 세트(hero-body/<무늬>-<방향>) → ③ A 무늬.
-## 무늬는 채용 자리마다 랜덤(sim.fur_of), 복장은 가게가, 앞치마는 등급이 정한다.
-## 일꾼 너구리의 **층**을 돌려준다 — [몸, 차림] 순(뒤에서 앞).
+## ── 일꾼 그림 찾기 (2026-08-28 계약) ──
 ##
-## ★ 가게별 일꾼을 접었다(2026-08-27, 유저). 가게마다 전용으로 그리면
-##   무늬 4 × 방향 2 × 가게 20 = **160장**이고, 가게가 늘 때마다 8장씩 늘어
-##   "무한히 계속 뽑아야" 한다. 게다가 실제로는 **이름 체계가 셋으로 갈려
-##   싸우고 있었다**:
-##     clerks/<가게>-<자세>        20장 있음 — 가게 앞에서 일하는 일꾼
-##     clerks/<가게>-<무늬>-<방향>  0장  — 주문서만 시키고 아무도 안 그림
-##     hero-body/<무늬>-<방향>      5장  — 걸을 때의 폴백
-##   그래서 걷는 일꾼과 일하는 일꾼이 다르게 생겼다(유저: "일꾼이 두 모습").
+## 이름은 딱 한 갈래다: **`hero-body/<무늬>-<자세>-<방향>`**
+##   무늬  a · b · c · d          (가게마다 저장본이 한 번 배정한다)
+##   자세  walk · make · sell · sleep
+##   방향  ne(↗) · nw(↖) · se(↘) · sw(↙)
 ##
-##   이제 한 갈래다: **hero-body/<무늬>-<자세>**.
-##   자세는 side · back · make · sell · sleep 다섯. 무늬 하나가 **어느 가게에서든**
-##   돌고, 가게가 늘어도 그림은 0장이다. 무늬(타입)를 하나 더 그리면 모든
-##   가게에서 동시에 쓰이니, 무늬가 일감이 아니라 **모으는 재미**가 된다.
+## ★ **거울 뒤집기를 그만뒀다**(유저: "↗ ↖ ↘ ↙ 이 방향 다 그리자").
+##   옛날에는 오른쪽 한 장을 그려 왼쪽은 코드가 뒤집었다. 그런데 거울은
+##   **빛 방향까지 뒤집는다** — 왼쪽 위에서 오던 볕이 오른쪽에서 오게 되고
+##   망치가 반대 손으로 간다. 한 장 아끼려다 "왜 어색하지"를 되풀이했다.
 ##
-##   가게 정체성은 마당(가마·매대·현판)과 **손에 든 물건**이 낸다 —
-##   그 그림들은 이미 있다.
-func _clerk_layers(shop_id: String, slot: int, pose: String) -> Array:
+## ★ 그림이 아직 다 안 왔으니 **못 찾으면 내려간다.** 순서는 이게 전부다:
+##     ① 그 가게 전용 (clerks/<가게>-<자세>) — 이미 그린 스무 장. 새로 안 시킨다
+##     ② 그 무늬의 그 자세·그 방향
+##     ③ 같은 무늬·같은 자세의 **다른 방향** (방향만 아직 없을 때)
+##     ④ 무늬 A의 그 자세·그 방향
+##     ⑤ 대신 나오는 그림 (hero/raccoon-*) — 주문서에 없는, 마지막 그물
+##   ③에서 **거울을 안 쓴다.** 다른 방향 그림을 그대로 쓴다 —
+##   잠깐 방향이 안 맞는 게, 빛이 뒤집힌 채로 오래 가는 것보다 낫다.
+func _clerk_layers(shop_id: String, slot: int, pose: String, dir4: String = "se") -> Array:
 	var fur: String = sim.fur_of(shop_id, slot)
 	var rk: int = sim.rank_of(shop_id)
-	# 가게 전용 그림이 있으면 그게 이긴다 — 이미 그린 스무 장을 안 버리고,
-	# 특별히 손으로 그리고 싶은 가게가 생기면 그 길도 열어 둔다. 새로 안 시킨다.
 	var whole: Texture2D = Art.ranked("clerks", "%s-%s" % [shop_id, pose], rk)
 	if whole == null and pose != "make":
 		whole = Art.ranked("clerks", "%s-make" % shop_id, rk)
 	if whole != null:
 		return [whole]
-	var body: Texture2D = Art.ranked("hero-body", "%s-%s" % [fur, pose], rk)
-	if body == null:                      # 그 자세가 아직 없으면 옆모습으로 선다
-		body = Art.ranked("hero-body", "%s-side" % fur, rk)
-	if body == null:                      # 그 무늬가 아직 없으면 기본 무늬로
-		body = Art.ranked("hero-body", "a-%s" % pose, rk)
+	var body: Texture2D = _body_tex(fur, pose, dir4, rk)
+	if body == null and fur != "a":
+		body = _body_tex("a", pose, dir4, rk)
 	if body == null:
-		body = Art.ranked("hero-body", "a-side", rk)
+		body = Art.tex("hero", "raccoon-" + ("walk1" if pose == "walk" else pose))
 	if body == null:
-		body = Art.tex("hero", "raccoon-" + pose)
+		body = Art.tex("hero", "raccoon-make")
 	if body == null:
 		return []
 	# ★ **꼬리 층은 없앴다**(2026-08-28, 유저: "너구리 꼬리 안 하기로 했어").
@@ -1097,6 +1099,27 @@ func _clerk_layers(shop_id: String, slot: int, pose: String) -> Array:
 	#   차림(가게 앞치마)은 몸 앞에 얹는다. 없으면 그 층만 빠진다 —
 	#   주문서가 안 시킨다(선택). 넣으면 저절로 얹힌다.
 	return [body, Art.ranked("gear", "%s-%s" % [shop_id, pose], rk)]
+
+## 한 무늬 안에서 그 자세·방향을 찾는다. 방향이 없으면 **다른 방향으로 대신 선다** —
+## 거울은 안 쓴다(빛이 뒤집힌다).
+func _body_tex(fur: String, pose: String, dir4: String, rk: int) -> Texture2D:
+	var t: Texture2D = Art.ranked("hero-body", "%s-%s-%s" % [fur, pose, dir4], rk)
+	if t != null:
+		return t
+	for d in Iso.DIRS:
+		t = Art.ranked("hero-body", "%s-%s-%s" % [fur, pose, d], rk)
+		if t != null:
+			return t
+	return null
+
+## 이 그림이 **거울 뒤집기가 필요한 옛 그림인가.**
+## hero/raccoon-*는 오른쪽 한 장뿐이라 왼쪽을 만들려면 뒤집을 수밖에 없다.
+## 네 방향 그림(hero-body/clerks)은 왼쪽도 제 그림이 있으니 **절대 안 뒤집는다.**
+func _needs_flip(t: Texture2D) -> bool:
+	if t == null:
+		return false
+	var path: String = t.resource_path
+	return path.contains("/hero/")
 
 ## 자리를 정하는 그림 한 장 — 겹그림이라도 **몸**이 자리를 정하고, 몸은 늘 첫 층이다.
 func _worker_base(layers: Array) -> Texture2D:
@@ -1320,19 +1343,22 @@ func _clerk(i: int) -> void:
 	elif _idle(i):
 		pose = "sleep"
 	var id: String = String(Content.SHOPS[i].id)
-	# 방향은 둘뿐이다(2026-08-26 확정): 위로 걸으면 뒷모습, 나머지 전부
-	# 옆모습(오른쪽 한 장, 왼쪽은 뒤집기). 정면은 없다 — 서 있을 땐 마지막
-	# 방향 그대로 멈추고, 할 일 없으면 존다.
-	var dirn: String = "back" if (c.walking and bool(c.get("up", false))) else "side"
-	# 그림 이름은 한 갈래다: 걸을 땐 방향(side·back), 서 있을 땐 하는 일(make·sell·sleep).
-	var apose: String = dirn if c.walking else ("sleep" if pose == "sleep" else ("sell" if pose == "sell" else "make"))
-	var lays: Array = _clerk_layers(id, 0, apose)
+	# ★ 이름은 **자세 + 방향** 둘로 정해진다(2026-08-28): `<무늬>-<자세>-<방향>`.
+	#   자세 넷(walk·make·sell·sleep) × 방향 넷(ne·nw·se·sw).
+	#   옛날에는 방향이 둘(옆·뒤)이고 왼쪽은 거울로 뒤집었다 — 거울이 빛과
+	#   소품까지 뒤집어서 늘 어딘가 어색했다. 이제 네 장을 다 그린다.
+	var apose: String = "walk" if c.walking else ("sleep" if pose == "sleep"
+		else ("sell" if pose == "sell" else "make"))
+	var lays: Array = _clerk_layers(id, 0, apose, String(c.get("dir", "se")))
 	var full: Texture2D = _worker_base(lays)
 	if full != null:
 		var br3: float = 0.0 if c.walking else (0.5 + 0.5 * sin(_t * 2.4 + c.pos.x * 0.03)) * 0.03
 		var hop: float = absf(sin(_t * 7.0 + c.pos.x * 0.05)) * 3.5 if c.walking else 0.0
 		_shadow(c.pos, 14.0)
-		_sprite_stack(lays, full, c.pos + Vector2(0, -hop), "clerks", bool(c.get("flip", false)), br3)
+		# ★ 네 방향 그림이면 **안 뒤집는다.** 옛 그림(hero/raccoon-*)으로 떨어졌을
+		#   때만 뒤집는다 — 그건 오른쪽 한 장뿐이라 왼쪽을 만들 길이 그것뿐이다.
+		_sprite_stack(lays, full, c.pos + Vector2(0, -hop), "clerks",
+			_needs_flip(full) and bool(c.get("flip", false)), br3)
 		if int(c.get("carry_oid", 0)) != 0 or float(c.get("carry", 0.0)) > 0.0:
 			_crate(c.pos, bool(c.get("flip", false)))
 		if pose == "sleep":
@@ -1500,15 +1526,19 @@ func _staff(i: int, k: int) -> void:
 	if carry6 != 0 or busy6:
 		idle = false
 		bob = 0.0
-	var sflip: bool = job5 >= 0 and _stall_at(i, job5).x < p.x   # 맡은 매대를 본다
+	# 어디를 보나 — 맡은 매대 쪽. 상자를 들었거나 계산 중이면 길 쪽.
+	var sdir: String = Iso.dir4(_stall_at(i, job5) - p) if job5 >= 0 else "se"
+	var sflip: bool = job5 >= 0 and _stall_at(i, job5).x < p.x
 	if carry6 != 0 or busy6:
-		sflip = String(Iso.yard(Iso.YARD_KIND[i], Iso.plot_dim(sim, i)).gate) == "y"
+		var gt: String = String(Iso.yard(Iso.YARD_KIND[i], Iso.plot_dim(sim, i)).gate)
+		sdir = "sw" if gt == "y" else "se"
+		sflip = gt == "y"
 	var breath: float = (0.5 + 0.5 * sin(_t * 2.2 + p.x * 0.04)) * 0.03 if idle else 0.0
-	var lays6: Array = _clerk_layers(sid6, k + 1, "sleep" if idle else "make")
+	var lays6: Array = _clerk_layers(sid6, k + 1, "sleep" if idle else "make", sdir)
 	var t: Texture2D = _worker_base(lays6)
 	if t != null:
 		_shadow(p, 14.0)
-		_sprite_stack(lays6, t, p + Vector2(0, -bob), "clerks", sflip, breath)
+		_sprite_stack(lays6, t, p + Vector2(0, -bob), "clerks", _needs_flip(t) and sflip, breath)
 		if carry6 != 0:
 			_crate(p, sflip)
 		if idle:
@@ -1523,17 +1553,24 @@ func _staff(i: int, k: int) -> void:
 		_crate(p, sflip)
 
 func _walker(wk: Dictionary) -> void:
-	# 방향에 맞는 그림을 고른다: 줄에 서면 정면(-front), 위로 걸으면
-	# 뒷모습(-back), 나머지는 옆모습. 없는 방향은 옆모습으로 때운다 —
-	# 그림이 한 장씩 들어올 때마다 그 방향만 살아난다.
+	# ★ 방향 넷(2026-08-28): `guests/<손님id>-<방향>` — ne(↗) nw(↖) se(↘) sw(↙).
+	#   옛날에는 옆모습 한 장 + 정면 + 뒷모습이었고 왼쪽은 거울로 뒤집었다.
+	#   거울이 빛과 무늬를 같이 뒤집어서, 얼룩이 반대편으로 가는 짐승이 있었다.
+	#
+	#   못 찾으면 ① 같은 손님의 다른 방향 → ② 옛 한 장짜리(guests/<id>).
+	#   옛 한 장으로 떨어졌을 때만 뒤집는다 — 그 길밖에 없어서다.
 	var gid2: String = String(wk.get("id", ""))
-	var t: Texture2D = null
-	if wk.state == "buy":
-		t = Art.tex("guests", gid2 + "-front")
-	elif bool(wk.get("up", false)):
-		t = Art.tex("guests", gid2 + "-back")
+	var wdir: String = String(wk.get("dir", "se"))
+	var t: Texture2D = Art.tex("guests", "%s-%s" % [gid2, wdir])
+	if t == null:
+		for d in Iso.DIRS:
+			t = Art.tex("guests", "%s-%s" % [gid2, d])
+			if t != null:
+				break
+	var old_one: bool = false
 	if t == null:
 		t = Art.tex("guests", gid2)
+		old_one = t != null
 	if t != null:
 		# 걷는 동안 들썩인다 — 이게 없으면 미끄러지듯 떠다니는 유령이 된다
 		# (유저: "공중에 날라다니는 느낌"). 그림자는 땅에 남는다.
@@ -1543,7 +1580,8 @@ func _walker(wk: Dictionary) -> void:
 		# 걸을 땐 착지 눌림, 줄에 서면 숨 쉬는 말캉임 — 다 같은 스쿼시다(유저)
 		var sq6: float = (0.5 + 0.5 * sin(_t * 2.5 + wk.pos.x * 0.05)) * 0.025 \
 			if wk.state == "buy" else (1.0 - ph6) * 0.05
-		_sprite(t, wk.pos + Vector2(0, -stepbob), "guests", bool(wk.get("flip", false)), sq6)
+		_sprite(t, wk.pos + Vector2(0, -stepbob), "guests",
+			old_one and bool(wk.get("flip", false)), sq6)
 	else:
 		_raccoon(wk.pos, SHAPE * 0.9, Color("9c8f7a"))
 		_text(wk.pos + Vector2(0, -58), wk.face, 20, Color.WHITE)

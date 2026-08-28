@@ -401,7 +401,7 @@ clerks/<가게>-<무늬>-<방향>-2.png     3단 앞치마
 > 이 칸은 `node tools/art.mjs --write`가 다시 쓴다.
 > **그림을 폴더에 넣으면 목록에서 저절로 빠진다** — 손으로 지울 필요 없다.
 
-**71 / 411장** 들어왔다.
+**49 / 485장** 들어왔다.
 
 ### 장터 청소부 — `godot/art/hero/` · 144×144 · **0장 남음**
 
@@ -674,89 +674,137 @@ clerks/<가게>-<무늬>-<방향>-2.png     3단 앞치마
 - [ ] `byeongpung-2.webp` — 왕실자개병풍 (나전방 3단 — 여기서 처음 나온다)
 - [ ] `najeonnong-2.webp` — 왕실나전롱 (나전방 3단 — 여기서 처음 나온다)
 
-### 손님 걷는 모습 (기본) — `godot/art/guests/` · 144×144 · **9장 남음**
+### 손님 걷는 모습 — 방향 넷 — `godot/art/guests/` · 144×144 · **120장 남음**
 
-**손님 그림의 기본이자 필수.** 마을 길을 걸어와 줄을 선다.
-옆에서 본 걷는 모습 한 장이면 된다 — 왼쪽으로 갈 때는 코드가 뒤집는다.
-2등신(머리 둘 높이)으로, 배경 없이. 발이 그림 맨 아래에 닿게 그린다.
+파일명: `<손님id>-<방향>.webp`. 방향은 넷: `ne`(↗) · `nw`(↖) · `se`(↘) · `sw`(↙).
+**뒤집지 않는다** — 네 장 다 제 그림이다. 빛은 늘 왼쪽 위에서.
+se·sw는 얼굴이 보이는 쪽, ne·nw는 등이 보이는 쪽이다.
+2등신(머리 둘 높이), 배경 없이, 발이 그림 맨 아래에 닿게.
+★ 한 짐승을 **넷 다 끝내고** 다음 짐승으로 간다 — 서른을 한 방향씩
+그리면 서른 마리가 다 반쯤 된 채로 오래 간다.
+옛 한 장짜리(`<손님id>.webp` 21장)는 지우지 않았다. 넷이 다 올 때까지
+그 손님의 마지막 그물로 남는다 — 주문서에는 없다(KEEP).
 
-- [ ] `falcon.webp` — 🦅 매 — 145초마다 날개를 접고 내려앉는다 — 최대 16개, 값은 6배
-- [ ] `dog.webp` — 🐶 개 — 5.5초마다 주인 심부름으로 와서 최대 3개
-- [ ] `hen.webp` — 🐔 닭 — 6초마다 종종거리며 와서 최대 4개, 값은 5% 깎는다
-- [ ] `cat.webp` — 🐱 고양이 — 5초마다 느긋하게 와서 마음에 든 것 한두 개, 값은 10% 더 쳐준다
-- [ ] `sheep.webp` — 🐑 양 — 38초마다 느긋하게 와서 최대 9개, 값은 1.35배
-- [ ] `pig.webp` — 🐷 돼지 — 45초마다 — 먹을 것 앞에서는 잰걸음이다. 최대 9개, 값은 2.4배
-- [ ] `owl.webp` — 🦉 부엉이 — 70초마다 조용히 와서 최대 13개, 값은 2.6배
-- [ ] `horse.webp` — 🐴 말 — 95초마다 와서 한 짐 최대 14개, 값은 3.2배
-- [ ] `elephant.webp` — 🐘 코끼리 — 300초마다 어쩌다 나타나 최대 24개, 값은 9배
-
-### 손님 정면·뒷모습 — `godot/art/guests/` · 144×144 · **60장 남음**
-
-**옆모습 한 장으로 때우려던 것을 되돌렸다**(만드는 사람 결정).
-`-front`(정면) — 줄에 서서 계산할 때 카메라를 본다.
-`-back`(뒷모습) — 화면 위로 걸어 올라갈 때. 좌우는 여전히 코드가 뒤집는다.
-없는 방향은 옆모습으로 때우니, 흔한 손님부터 한 장씩 넣으면 된다.
-
-- [ ] `rabbit-front.webp` — 토끼 정면 — 줄 설 때
-- [ ] `rabbit-back.webp` — 토끼 뒷모습 — 올라갈 때
-- [ ] `magpie-front.webp` — 까치 정면 — 줄 설 때
-- [ ] `magpie-back.webp` — 까치 뒷모습 — 올라갈 때
-- [ ] `squirrel-front.webp` — 다람쥐 정면 — 줄 설 때
-- [ ] `squirrel-back.webp` — 다람쥐 뒷모습 — 올라갈 때
-- [ ] `hedgehog-front.webp` — 고슴도치 정면 — 줄 설 때
-- [ ] `hedgehog-back.webp` — 고슴도치 뒷모습 — 올라갈 때
-- [ ] `otter-front.webp` — 수달 정면 — 줄 설 때
-- [ ] `otter-back.webp` — 수달 뒷모습 — 올라갈 때
-- [ ] `deer-front.webp` — 사슴 정면 — 줄 설 때
-- [ ] `deer-back.webp` — 사슴 뒷모습 — 올라갈 때
-- [ ] `boar-front.webp` — 멧돼지 정면 — 줄 설 때
-- [ ] `boar-back.webp` — 멧돼지 뒷모습 — 올라갈 때
-- [ ] `bear-front.webp` — 곰 정면 — 줄 설 때
-- [ ] `bear-back.webp` — 곰 뒷모습 — 올라갈 때
-- [ ] `turtle-front.webp` — 거북 정면 — 줄 설 때
-- [ ] `turtle-back.webp` — 거북 뒷모습 — 올라갈 때
-- [ ] `falcon-front.webp` — 매 정면 — 줄 설 때
-- [ ] `falcon-back.webp` — 매 뒷모습 — 올라갈 때
-- [ ] `ox-front.webp` — 소 정면 — 줄 설 때
-- [ ] `ox-back.webp` — 소 뒷모습 — 올라갈 때
-- [ ] `tiger-front.webp` — 호랑이 정면 — 줄 설 때
-- [ ] `tiger-back.webp` — 호랑이 뒷모습 — 올라갈 때
-- [ ] `sparrow-front.webp` — 참새 정면 — 줄 설 때
-- [ ] `sparrow-back.webp` — 참새 뒷모습 — 올라갈 때
-- [ ] `dog-front.webp` — 개 정면 — 줄 설 때
-- [ ] `dog-back.webp` — 개 뒷모습 — 올라갈 때
-- [ ] `hen-front.webp` — 닭 정면 — 줄 설 때
-- [ ] `hen-back.webp` — 닭 뒷모습 — 올라갈 때
-- [ ] `cat-front.webp` — 고양이 정면 — 줄 설 때
-- [ ] `cat-back.webp` — 고양이 뒷모습 — 올라갈 때
-- [ ] `duck-front.webp` — 오리 정면 — 줄 설 때
-- [ ] `duck-back.webp` — 오리 뒷모습 — 올라갈 때
-- [ ] `badger-front.webp` — 오소리 정면 — 줄 설 때
-- [ ] `badger-back.webp` — 오소리 뒷모습 — 올라갈 때
-- [ ] `frog-front.webp` — 개구리 정면 — 줄 설 때
-- [ ] `frog-back.webp` — 개구리 뒷모습 — 올라갈 때
-- [ ] `weasel-front.webp` — 족제비 정면 — 줄 설 때
-- [ ] `weasel-back.webp` — 족제비 뒷모습 — 올라갈 때
-- [ ] `fox-front.webp` — 여우 정면 — 줄 설 때
-- [ ] `fox-back.webp` — 여우 뒷모습 — 올라갈 때
-- [ ] `sheep-front.webp` — 양 정면 — 줄 설 때
-- [ ] `sheep-back.webp` — 양 뒷모습 — 올라갈 때
-- [ ] `pig-front.webp` — 돼지 정면 — 줄 설 때
-- [ ] `pig-back.webp` — 돼지 뒷모습 — 올라갈 때
-- [ ] `mandarin-front.webp` — 원앙 정면 — 줄 설 때
-- [ ] `mandarin-back.webp` — 원앙 뒷모습 — 올라갈 때
-- [ ] `owl-front.webp` — 부엉이 정면 — 줄 설 때
-- [ ] `owl-back.webp` — 부엉이 뒷모습 — 올라갈 때
-- [ ] `horse-front.webp` — 말 정면 — 줄 설 때
-- [ ] `horse-back.webp` — 말 뒷모습 — 올라갈 때
-- [ ] `leopard-front.webp` — 표범 정면 — 줄 설 때
-- [ ] `leopard-back.webp` — 표범 뒷모습 — 올라갈 때
-- [ ] `wolf-front.webp` — 늑대 정면 — 줄 설 때
-- [ ] `wolf-back.webp` — 늑대 뒷모습 — 올라갈 때
-- [ ] `moonbear-front.webp` — 반달곰 정면 — 줄 설 때
-- [ ] `moonbear-back.webp` — 반달곰 뒷모습 — 올라갈 때
-- [ ] `elephant-front.webp` — 코끼리 정면 — 줄 설 때
-- [ ] `elephant-back.webp` — 코끼리 뒷모습 — 올라갈 때
+- [ ] `rabbit-ne.webp` — 🐰 토끼 — ↗ 오른쪽 위로
+- [ ] `rabbit-nw.webp` — 🐰 토끼 — ↖ 왼쪽 위로
+- [ ] `rabbit-se.webp` — 🐰 토끼 — ↘ 오른쪽 아래로
+- [ ] `rabbit-sw.webp` — 🐰 토끼 — ↙ 왼쪽 아래로
+- [ ] `magpie-ne.webp` — 🐦‍⬛ 까치 — ↗ 오른쪽 위로
+- [ ] `magpie-nw.webp` — 🐦‍⬛ 까치 — ↖ 왼쪽 위로
+- [ ] `magpie-se.webp` — 🐦‍⬛ 까치 — ↘ 오른쪽 아래로
+- [ ] `magpie-sw.webp` — 🐦‍⬛ 까치 — ↙ 왼쪽 아래로
+- [ ] `squirrel-ne.webp` — 🐿️ 다람쥐 — ↗ 오른쪽 위로
+- [ ] `squirrel-nw.webp` — 🐿️ 다람쥐 — ↖ 왼쪽 위로
+- [ ] `squirrel-se.webp` — 🐿️ 다람쥐 — ↘ 오른쪽 아래로
+- [ ] `squirrel-sw.webp` — 🐿️ 다람쥐 — ↙ 왼쪽 아래로
+- [ ] `hedgehog-ne.webp` — 🦔 고슴도치 — ↗ 오른쪽 위로
+- [ ] `hedgehog-nw.webp` — 🦔 고슴도치 — ↖ 왼쪽 위로
+- [ ] `hedgehog-se.webp` — 🦔 고슴도치 — ↘ 오른쪽 아래로
+- [ ] `hedgehog-sw.webp` — 🦔 고슴도치 — ↙ 왼쪽 아래로
+- [ ] `otter-ne.webp` — 🦦 수달 — ↗ 오른쪽 위로
+- [ ] `otter-nw.webp` — 🦦 수달 — ↖ 왼쪽 위로
+- [ ] `otter-se.webp` — 🦦 수달 — ↘ 오른쪽 아래로
+- [ ] `otter-sw.webp` — 🦦 수달 — ↙ 왼쪽 아래로
+- [ ] `deer-ne.webp` — 🦌 사슴 — ↗ 오른쪽 위로
+- [ ] `deer-nw.webp` — 🦌 사슴 — ↖ 왼쪽 위로
+- [ ] `deer-se.webp` — 🦌 사슴 — ↘ 오른쪽 아래로
+- [ ] `deer-sw.webp` — 🦌 사슴 — ↙ 왼쪽 아래로
+- [ ] `boar-ne.webp` — 🐗 멧돼지 — ↗ 오른쪽 위로
+- [ ] `boar-nw.webp` — 🐗 멧돼지 — ↖ 왼쪽 위로
+- [ ] `boar-se.webp` — 🐗 멧돼지 — ↘ 오른쪽 아래로
+- [ ] `boar-sw.webp` — 🐗 멧돼지 — ↙ 왼쪽 아래로
+- [ ] `bear-ne.webp` — 🐻 곰 — ↗ 오른쪽 위로
+- [ ] `bear-nw.webp` — 🐻 곰 — ↖ 왼쪽 위로
+- [ ] `bear-se.webp` — 🐻 곰 — ↘ 오른쪽 아래로
+- [ ] `bear-sw.webp` — 🐻 곰 — ↙ 왼쪽 아래로
+- [ ] `turtle-ne.webp` — 🐢 거북 — ↗ 오른쪽 위로
+- [ ] `turtle-nw.webp` — 🐢 거북 — ↖ 왼쪽 위로
+- [ ] `turtle-se.webp` — 🐢 거북 — ↘ 오른쪽 아래로
+- [ ] `turtle-sw.webp` — 🐢 거북 — ↙ 왼쪽 아래로
+- [ ] `falcon-ne.webp` — 🦅 매 — ↗ 오른쪽 위로
+- [ ] `falcon-nw.webp` — 🦅 매 — ↖ 왼쪽 위로
+- [ ] `falcon-se.webp` — 🦅 매 — ↘ 오른쪽 아래로
+- [ ] `falcon-sw.webp` — 🦅 매 — ↙ 왼쪽 아래로
+- [ ] `ox-ne.webp` — 🐄 소 — ↗ 오른쪽 위로
+- [ ] `ox-nw.webp` — 🐄 소 — ↖ 왼쪽 위로
+- [ ] `ox-se.webp` — 🐄 소 — ↘ 오른쪽 아래로
+- [ ] `ox-sw.webp` — 🐄 소 — ↙ 왼쪽 아래로
+- [ ] `tiger-ne.webp` — 🐯 호랑이 — ↗ 오른쪽 위로
+- [ ] `tiger-nw.webp` — 🐯 호랑이 — ↖ 왼쪽 위로
+- [ ] `tiger-se.webp` — 🐯 호랑이 — ↘ 오른쪽 아래로
+- [ ] `tiger-sw.webp` — 🐯 호랑이 — ↙ 왼쪽 아래로
+- [ ] `sparrow-ne.webp` — 🐦 참새 — ↗ 오른쪽 위로
+- [ ] `sparrow-nw.webp` — 🐦 참새 — ↖ 왼쪽 위로
+- [ ] `sparrow-se.webp` — 🐦 참새 — ↘ 오른쪽 아래로
+- [ ] `sparrow-sw.webp` — 🐦 참새 — ↙ 왼쪽 아래로
+- [ ] `dog-ne.webp` — 🐶 개 — ↗ 오른쪽 위로
+- [ ] `dog-nw.webp` — 🐶 개 — ↖ 왼쪽 위로
+- [ ] `dog-se.webp` — 🐶 개 — ↘ 오른쪽 아래로
+- [ ] `dog-sw.webp` — 🐶 개 — ↙ 왼쪽 아래로
+- [ ] `hen-ne.webp` — 🐔 닭 — ↗ 오른쪽 위로
+- [ ] `hen-nw.webp` — 🐔 닭 — ↖ 왼쪽 위로
+- [ ] `hen-se.webp` — 🐔 닭 — ↘ 오른쪽 아래로
+- [ ] `hen-sw.webp` — 🐔 닭 — ↙ 왼쪽 아래로
+- [ ] `cat-ne.webp` — 🐱 고양이 — ↗ 오른쪽 위로
+- [ ] `cat-nw.webp` — 🐱 고양이 — ↖ 왼쪽 위로
+- [ ] `cat-se.webp` — 🐱 고양이 — ↘ 오른쪽 아래로
+- [ ] `cat-sw.webp` — 🐱 고양이 — ↙ 왼쪽 아래로
+- [ ] `duck-ne.webp` — 🦆 오리 — ↗ 오른쪽 위로
+- [ ] `duck-nw.webp` — 🦆 오리 — ↖ 왼쪽 위로
+- [ ] `duck-se.webp` — 🦆 오리 — ↘ 오른쪽 아래로
+- [ ] `duck-sw.webp` — 🦆 오리 — ↙ 왼쪽 아래로
+- [ ] `badger-ne.webp` — 🦡 오소리 — ↗ 오른쪽 위로
+- [ ] `badger-nw.webp` — 🦡 오소리 — ↖ 왼쪽 위로
+- [ ] `badger-se.webp` — 🦡 오소리 — ↘ 오른쪽 아래로
+- [ ] `badger-sw.webp` — 🦡 오소리 — ↙ 왼쪽 아래로
+- [ ] `frog-ne.webp` — 🐸 개구리 — ↗ 오른쪽 위로
+- [ ] `frog-nw.webp` — 🐸 개구리 — ↖ 왼쪽 위로
+- [ ] `frog-se.webp` — 🐸 개구리 — ↘ 오른쪽 아래로
+- [ ] `frog-sw.webp` — 🐸 개구리 — ↙ 왼쪽 아래로
+- [ ] `weasel-ne.webp` — 🦫 족제비 — ↗ 오른쪽 위로
+- [ ] `weasel-nw.webp` — 🦫 족제비 — ↖ 왼쪽 위로
+- [ ] `weasel-se.webp` — 🦫 족제비 — ↘ 오른쪽 아래로
+- [ ] `weasel-sw.webp` — 🦫 족제비 — ↙ 왼쪽 아래로
+- [ ] `fox-ne.webp` — 🦊 여우 — ↗ 오른쪽 위로
+- [ ] `fox-nw.webp` — 🦊 여우 — ↖ 왼쪽 위로
+- [ ] `fox-se.webp` — 🦊 여우 — ↘ 오른쪽 아래로
+- [ ] `fox-sw.webp` — 🦊 여우 — ↙ 왼쪽 아래로
+- [ ] `sheep-ne.webp` — 🐑 양 — ↗ 오른쪽 위로
+- [ ] `sheep-nw.webp` — 🐑 양 — ↖ 왼쪽 위로
+- [ ] `sheep-se.webp` — 🐑 양 — ↘ 오른쪽 아래로
+- [ ] `sheep-sw.webp` — 🐑 양 — ↙ 왼쪽 아래로
+- [ ] `pig-ne.webp` — 🐷 돼지 — ↗ 오른쪽 위로
+- [ ] `pig-nw.webp` — 🐷 돼지 — ↖ 왼쪽 위로
+- [ ] `pig-se.webp` — 🐷 돼지 — ↘ 오른쪽 아래로
+- [ ] `pig-sw.webp` — 🐷 돼지 — ↙ 왼쪽 아래로
+- [ ] `mandarin-ne.webp` — 🦚 원앙 — ↗ 오른쪽 위로
+- [ ] `mandarin-nw.webp` — 🦚 원앙 — ↖ 왼쪽 위로
+- [ ] `mandarin-se.webp` — 🦚 원앙 — ↘ 오른쪽 아래로
+- [ ] `mandarin-sw.webp` — 🦚 원앙 — ↙ 왼쪽 아래로
+- [ ] `owl-ne.webp` — 🦉 부엉이 — ↗ 오른쪽 위로
+- [ ] `owl-nw.webp` — 🦉 부엉이 — ↖ 왼쪽 위로
+- [ ] `owl-se.webp` — 🦉 부엉이 — ↘ 오른쪽 아래로
+- [ ] `owl-sw.webp` — 🦉 부엉이 — ↙ 왼쪽 아래로
+- [ ] `horse-ne.webp` — 🐴 말 — ↗ 오른쪽 위로
+- [ ] `horse-nw.webp` — 🐴 말 — ↖ 왼쪽 위로
+- [ ] `horse-se.webp` — 🐴 말 — ↘ 오른쪽 아래로
+- [ ] `horse-sw.webp` — 🐴 말 — ↙ 왼쪽 아래로
+- [ ] `leopard-ne.webp` — 🐆 표범 — ↗ 오른쪽 위로
+- [ ] `leopard-nw.webp` — 🐆 표범 — ↖ 왼쪽 위로
+- [ ] `leopard-se.webp` — 🐆 표범 — ↘ 오른쪽 아래로
+- [ ] `leopard-sw.webp` — 🐆 표범 — ↙ 왼쪽 아래로
+- [ ] `wolf-ne.webp` — 🐺 늑대 — ↗ 오른쪽 위로
+- [ ] `wolf-nw.webp` — 🐺 늑대 — ↖ 왼쪽 위로
+- [ ] `wolf-se.webp` — 🐺 늑대 — ↘ 오른쪽 아래로
+- [ ] `wolf-sw.webp` — 🐺 늑대 — ↙ 왼쪽 아래로
+- [ ] `moonbear-ne.webp` — 🐻‍❄️ 반달곰 — ↗ 오른쪽 위로
+- [ ] `moonbear-nw.webp` — 🐻‍❄️ 반달곰 — ↖ 왼쪽 위로
+- [ ] `moonbear-se.webp` — 🐻‍❄️ 반달곰 — ↘ 오른쪽 아래로
+- [ ] `moonbear-sw.webp` — 🐻‍❄️ 반달곰 — ↙ 왼쪽 아래로
+- [ ] `elephant-ne.webp` — 🐘 코끼리 — ↗ 오른쪽 위로
+- [ ] `elephant-nw.webp` — 🐘 코끼리 — ↖ 왼쪽 위로
+- [ ] `elephant-se.webp` — 🐘 코끼리 — ↘ 오른쪽 아래로
+- [ ] `elephant-sw.webp` — 🐘 코끼리 — ↙ 왼쪽 아래로
 
 ### 계산대 (선택) — `godot/art/counters/` · 168×144 · **15장 남음**
 
@@ -881,42 +929,73 @@ clerks/<가게>-<무늬>-<방향>-2.png     3단 앞치마
 - [ ] `moonbear.webp` — 반달곰 — 뽑으면 고를 수 있다
 - [ ] `elephant.webp` — 코끼리 — 뽑으면 고를 수 있다
 
-### 일꾼 너구리 (무늬 × 자세) — 모든 가게가 같이 쓴다 — `godot/art/hero-body/` · 144×144 · **11장 남음**
+### 일꾼 너구리 — 무늬 × 자세 × 방향 — `godot/art/hero-body/` · 144×144 · **56장 남음**
 
-파일명: `<무늬>-<자세>.webp`. **자세 셋이면 된다**: `side`(옆·걷기·대기 겸용) ·
-`make`(만드는 중) · `sell`(파는 중, ★손바닥은 비워 둘 것).
-side는 오른쪽을 본 옆모습 — 왼쪽은 코드가 뒤집는다.
-**앞치마·연장은 안 그린다.** 가게 정체성은 마당(가마·매대·현판)과
-손에 든 물건이 낸다 — 그 그림은 이미 있다.
-그림자·꼬리 낱장 금지. 발끝은 아래 변, 몸은 가로 정중앙.
-없는 무늬는 무늬 A로 때운다 — **한 무늬의 셋을 끝내고** 다음 무늬로.
-자세한 것은 `RACCOON.md`에 있다.
+파일명: `<무늬>-<자세>-<방향>.webp`.
+무늬 넷 `a`·`b`·`c`·`d` · 자세 넷 `walk`·`make`·`sell`·`sleep` ·
+방향 넷 `ne`(↗) `nw`(↖) `se`(↘) `sw`(↙).
+**뒤집지 않는다** — 네 장 다 제 그림이다. 빛은 늘 왼쪽 위에서.
+**앞치마·연장은 안 그린다.** 가게 정체성은 마당과 손에 든 물건이 낸다.
+발밑 그림자 금지(코드가 그린다). 발끝은 아래 변, 몸은 가로 정중앙.
+★ **무늬 A를 열넷 다 끝내고** 다음 무늬로 — 없는 무늬는 A로 때운다.
+자세한 것은 `RACCOON.md`.
 
-- [ ] `a-make.webp` — 무늬 A · 만드는 중
-- [ ] `a-sell.webp` — 무늬 A · 파는 중
-- [ ] `b-side.webp` — 무늬 B · 옆(걷기·대기 겸용)
-- [ ] `b-make.webp` — 무늬 B · 만드는 중
-- [ ] `b-sell.webp` — 무늬 B · 파는 중
-- [ ] `c-side.webp` — 무늬 C · 옆(걷기·대기 겸용)
-- [ ] `c-make.webp` — 무늬 C · 만드는 중
-- [ ] `c-sell.webp` — 무늬 C · 파는 중
-- [ ] `d-side.webp` — 무늬 D · 옆(걷기·대기 겸용)
-- [ ] `d-make.webp` — 무늬 D · 만드는 중
-- [ ] `d-sell.webp` — 무늬 D · 파는 중
-
-### 일꾼 너구리 · 자세 둘 더 (선택) (선택) — `godot/art/hero-body/` · 144×144 · **7장 남음**
-
-없으면 코드가 **옆모습으로 때운다** — 그래서 안 그려도 화면이 멀쩡히 돈다.
-`back`은 화면 위쪽으로 걸어 올라갈 때, `sleep`은 할 일이 아예 없을 때.
-무늬 넷의 자세 셋을 다 끝낸 다음에 손대면 된다.
-
-- [ ] `a-sleep.webp` — 무늬 A · 조는 중 — 할 일이 없을 때
-- [ ] `b-back.webp` — 무늬 B · 뒷모습 — 위로 걸어 올라갈 때
-- [ ] `b-sleep.webp` — 무늬 B · 조는 중 — 할 일이 없을 때
-- [ ] `c-back.webp` — 무늬 C · 뒷모습 — 위로 걸어 올라갈 때
-- [ ] `c-sleep.webp` — 무늬 C · 조는 중 — 할 일이 없을 때
-- [ ] `d-back.webp` — 무늬 D · 뒷모습 — 위로 걸어 올라갈 때
-- [ ] `d-sleep.webp` — 무늬 D · 조는 중 — 할 일이 없을 때
+- [ ] `a-walk-ne.webp` — 무늬 A · 걷기 · ↗
+- [ ] `a-walk-nw.webp` — 무늬 A · 걷기 · ↖
+- [ ] `a-walk-se.webp` — 무늬 A · 걷기 · ↘
+- [ ] `a-walk-sw.webp` — 무늬 A · 걷기 · ↙
+- [ ] `a-make-ne.webp` — 무늬 A · 만드는 중 · ↗
+- [ ] `a-make-nw.webp` — 무늬 A · 만드는 중 · ↖
+- [ ] `a-make-se.webp` — 무늬 A · 만드는 중 · ↘
+- [ ] `a-make-sw.webp` — 무늬 A · 만드는 중 · ↙
+- [ ] `a-sell-se.webp` — 무늬 A · 파는 중 (★손바닥은 비워 둘 것) · ↘
+- [ ] `a-sell-sw.webp` — 무늬 A · 파는 중 (★손바닥은 비워 둘 것) · ↙
+- [ ] `a-sleep-ne.webp` — 무늬 A · 조는 중 — 만들 주문이 하나도 없을 때 · ↗
+- [ ] `a-sleep-nw.webp` — 무늬 A · 조는 중 — 만들 주문이 하나도 없을 때 · ↖
+- [ ] `a-sleep-se.webp` — 무늬 A · 조는 중 — 만들 주문이 하나도 없을 때 · ↘
+- [ ] `a-sleep-sw.webp` — 무늬 A · 조는 중 — 만들 주문이 하나도 없을 때 · ↙
+- [ ] `b-walk-ne.webp` — 무늬 B · 걷기 · ↗
+- [ ] `b-walk-nw.webp` — 무늬 B · 걷기 · ↖
+- [ ] `b-walk-se.webp` — 무늬 B · 걷기 · ↘
+- [ ] `b-walk-sw.webp` — 무늬 B · 걷기 · ↙
+- [ ] `b-make-ne.webp` — 무늬 B · 만드는 중 · ↗
+- [ ] `b-make-nw.webp` — 무늬 B · 만드는 중 · ↖
+- [ ] `b-make-se.webp` — 무늬 B · 만드는 중 · ↘
+- [ ] `b-make-sw.webp` — 무늬 B · 만드는 중 · ↙
+- [ ] `b-sell-se.webp` — 무늬 B · 파는 중 (★손바닥은 비워 둘 것) · ↘
+- [ ] `b-sell-sw.webp` — 무늬 B · 파는 중 (★손바닥은 비워 둘 것) · ↙
+- [ ] `b-sleep-ne.webp` — 무늬 B · 조는 중 — 만들 주문이 하나도 없을 때 · ↗
+- [ ] `b-sleep-nw.webp` — 무늬 B · 조는 중 — 만들 주문이 하나도 없을 때 · ↖
+- [ ] `b-sleep-se.webp` — 무늬 B · 조는 중 — 만들 주문이 하나도 없을 때 · ↘
+- [ ] `b-sleep-sw.webp` — 무늬 B · 조는 중 — 만들 주문이 하나도 없을 때 · ↙
+- [ ] `c-walk-ne.webp` — 무늬 C · 걷기 · ↗
+- [ ] `c-walk-nw.webp` — 무늬 C · 걷기 · ↖
+- [ ] `c-walk-se.webp` — 무늬 C · 걷기 · ↘
+- [ ] `c-walk-sw.webp` — 무늬 C · 걷기 · ↙
+- [ ] `c-make-ne.webp` — 무늬 C · 만드는 중 · ↗
+- [ ] `c-make-nw.webp` — 무늬 C · 만드는 중 · ↖
+- [ ] `c-make-se.webp` — 무늬 C · 만드는 중 · ↘
+- [ ] `c-make-sw.webp` — 무늬 C · 만드는 중 · ↙
+- [ ] `c-sell-se.webp` — 무늬 C · 파는 중 (★손바닥은 비워 둘 것) · ↘
+- [ ] `c-sell-sw.webp` — 무늬 C · 파는 중 (★손바닥은 비워 둘 것) · ↙
+- [ ] `c-sleep-ne.webp` — 무늬 C · 조는 중 — 만들 주문이 하나도 없을 때 · ↗
+- [ ] `c-sleep-nw.webp` — 무늬 C · 조는 중 — 만들 주문이 하나도 없을 때 · ↖
+- [ ] `c-sleep-se.webp` — 무늬 C · 조는 중 — 만들 주문이 하나도 없을 때 · ↘
+- [ ] `c-sleep-sw.webp` — 무늬 C · 조는 중 — 만들 주문이 하나도 없을 때 · ↙
+- [ ] `d-walk-ne.webp` — 무늬 D · 걷기 · ↗
+- [ ] `d-walk-nw.webp` — 무늬 D · 걷기 · ↖
+- [ ] `d-walk-se.webp` — 무늬 D · 걷기 · ↘
+- [ ] `d-walk-sw.webp` — 무늬 D · 걷기 · ↙
+- [ ] `d-make-ne.webp` — 무늬 D · 만드는 중 · ↗
+- [ ] `d-make-nw.webp` — 무늬 D · 만드는 중 · ↖
+- [ ] `d-make-se.webp` — 무늬 D · 만드는 중 · ↘
+- [ ] `d-make-sw.webp` — 무늬 D · 만드는 중 · ↙
+- [ ] `d-sell-se.webp` — 무늬 D · 파는 중 (★손바닥은 비워 둘 것) · ↘
+- [ ] `d-sell-sw.webp` — 무늬 D · 파는 중 (★손바닥은 비워 둘 것) · ↙
+- [ ] `d-sleep-ne.webp` — 무늬 D · 조는 중 — 만들 주문이 하나도 없을 때 · ↗
+- [ ] `d-sleep-nw.webp` — 무늬 D · 조는 중 — 만들 주문이 하나도 없을 때 · ↖
+- [ ] `d-sleep-se.webp` — 무늬 D · 조는 중 — 만들 주문이 하나도 없을 때 · ↘
+- [ ] `d-sleep-sw.webp` — 무늬 D · 조는 중 — 만들 주문이 하나도 없을 때 · ↙
 
 ### 가게 앞치마·연장 (선택 — 몸 위에 얹는다) (선택) — `godot/art/gear/` · 144×144 · **30장 남음**
 
