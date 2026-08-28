@@ -1342,68 +1342,68 @@ const SHOPS := [
 		],
 		"items": [
 			{
-				"id": "pick",
-				"name": "곡괭이",
+				"id": "hoe",
+				"name": "호미",
 				"price": 12.0,
 				"time": 3.0,
 				"cost": 0.0,
-				"icon": "⛏️"
+				"icon": "🪴"
+			},
+			{
+				"id": "trowel",
+				"name": "모종삽",
+				"price": 34.0,
+				"time": 3.8,
+				"cost": 80.0,
+				"icon": "🌱"
+			},
+			{
+				"id": "rake",
+				"name": "갈퀴",
+				"price": 95.0,
+				"time": 4.6,
+				"cost": 300.0,
+				"icon": "🍂"
 			},
 			{
 				"id": "sickle",
 				"name": "낫",
-				"price": 34.0,
-				"time": 3.8,
-				"cost": 80.0,
-				"icon": "🌾"
-			},
-			{
-				"id": "hoe",
-				"name": "호미",
-				"price": 95.0,
-				"time": 4.6,
-				"cost": 300.0,
-				"icon": "🪴"
-			},
-			{
-				"id": "axe",
-				"name": "도끼",
 				"price": 260.0,
 				"time": 5.6,
 				"cost": 900.0,
-				"icon": "🪓"
+				"icon": "🌾"
 			},
 			{
-				"id": "shears",
-				"name": "가위",
+				"id": "spade",
+				"name": "삽",
 				"price": 700.0,
 				"time": 6.4,
 				"cost": 1200000.0,
-				"icon": "✂️"
+				"icon": "⛏️"
 			},
 			{
-				"id": "knife",
-				"name": "부엌칼",
+				"id": "fork",
+				"name": "쇠스랑",
 				"price": 1900.0,
 				"time": 7.2,
 				"cost": 3600000.0,
-				"icon": "🔪"
+				"icon": "🔱"
 			},
 			{
-				"id": "lock",
-				"name": "자물쇠",
+				"id": "chaff",
+				"name": "작두",
 				"price": 5000.0,
 				"time": 8.0,
 				"cost": 600000000.0,
-				"icon": "🔒"
+				"icon": "🔪"
 			},
 			{
-				"id": "cauldr",
-				"name": "가마솥",
+				"id": "plow",
+				"name": "쟁기",
 				"price": 13000.0,
 				"time": 8.8,
 				"cost": 1800000000.0,
-				"icon": "🍲"
+				"icon": "🪵"
 			}
 		]
 	},

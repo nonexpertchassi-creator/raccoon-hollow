@@ -1971,7 +1971,10 @@ const INT_KEYS: Array[String] = ["busy", "_qid", "_evIdx", "_oid"]
 ## 13판: 이야기 마디(story). 옛 저장본에는 없다 — 그러면 빈 칸이고, 이미
 ## 한참 논 사람에게 "왔구나"부터 다시 뜬다. 그건 안 된다. 그래서 옛 판을
 ## 받을 때 **가진 것을 보고 지나간 마디를 되짚어** 채운다(load_from 아래).
-const SAVE_VER: int = 13
+## 14판: 대장간이 농기구 가게가 됐다 — 물건 여덟의 이름표가 갈렸다.
+## 담는 칸은 그대로고 칸에 든 이름만 달라졌다. 안 갈아 주면 열어 둔 물건과
+## 올려 둔 레벨이 통째로 사라진다.
+const SAVE_VER: int = 14
 
 ## 11판에서 바뀐 이름표. 옛 id → 새 id.
 const RENAMED_V11: Dictionary = {
@@ -1983,6 +1986,45 @@ const RENAMED_V11: Dictionary = {
 	"bossam": "modeum",
 	"dakggo": "gamja", "sanjeok": "eunhaeng", "neobiani": "deodeok", "yukhoe": "songi",
 }
+
+## 14판 — 대장간이 **농기구 가게**가 됐다(2026-08-28, 유저).
+## 자리 순서대로 이름표만 갈아 끼운다. n번째 물건은 그대로 n번째다 —
+## 값·시간·여는 값을 하나도 안 바꿨으니 올려 둔 레벨이 그대로 산다.
+##
+## ★ 여기 **덫이 하나** 있다. hoe와 sickle은 옛 목록에도 새 목록에도 있는데
+##   자리가 다르다(hoe 3→1, sickle 2→4). 하나씩 제자리에서 바꾸면
+##   먼저 옮긴 것을 나중 것이 덮어쓴다. 그래서 **새 사전을 따로 만들어**
+##   통째로 갈아 끼운다(아래 _rename_v14).
+const RENAMED_V14: Dictionary = {
+	"pick": "hoe", "sickle": "trowel", "hoe": "rake", "axe": "sickle",
+	"shears": "spade", "knife": "fork", "lock": "chaff", "cauldr": "plow",
+}
+
+## 배열·사전을 통째로 새로 만들어 이름표를 간다. 제자리 수정은 안 한다 —
+## 옛 이름과 새 이름이 겹칠 때 덮어쓰기 때문이다.
+func _rename_v14() -> void:
+	var m: Dictionary = RENAMED_V14
+	for name in ["asked"]:
+		var arr: Array = get(name)
+		var out: Array = []
+		for v in arr:
+			out.append(m.get(String(v), v))
+		set(name, out)
+	for name in ["items", "bought", "cleared"]:
+		var d: Dictionary = get(name)
+		var nd: Dictionary = {}
+		for k in d.keys():
+			nd[m.get(String(k), k)] = d[k]
+		set(name, nd)
+	for q in quests:
+		if q is Dictionary and m.has(String(q.get("item", ""))):
+			q["item"] = m[String(q["item"])]
+	for o in orders:
+		if not (o is Dictionary):
+			continue
+		for ln in (o.get("lines", []) as Array):
+			if ln is Dictionary and m.has(String(ln.get("id", ""))):
+				ln["id"] = m[String(ln["id"])]
 
 func save() -> Dictionary:
 	var d: Dictionary = {}
@@ -2032,6 +2074,8 @@ func load_from(d: Dictionary, ver: int = SAVE_VER) -> void:
 	# ★ 12판 이전 저장본에는 이야기 마디가 없다. 그냥 두면 이미 가게 열 채를
 	#   가진 사람에게 "저 무너진 대장간부터일세"가 뜬다. 그래서 **가진 것을 보고
 	#   지나간 마디를 되짚어** 준다 — 이야기는 못 돌려줘도 잔소리는 막는다.
+	if ver < 14:
+		_rename_v14()
 	if ver < 13:
 		for k in ["start", "firstShop", "firstMake", "firstGuest"]:
 			story[k] = true
