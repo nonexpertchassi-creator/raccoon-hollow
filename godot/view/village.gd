@@ -1189,7 +1189,7 @@ func _sprite_rect(t: Texture2D, foot: Vector2, kind: String, flip: bool = false,
 	# 몸이 액자에서 옆으로 치우쳐 있으면 그만큼 당긴다(그림자와 몸이 어긋나던
 	# "밀린 느낌"의 범인). 가구는 손으로 맞춘 자리가 있으니 안 건드린다.
 	var r := Rect2(foot - Vector2(sz.x * 0.5, sz.y), sz)
-	if kind in ["hero", "clerks", "staff", "guests", "pests"]:
+	if kind in ["hero", "clerks", "guests", "pests"]:
 		var ft: Dictionary = Art.fit(t)
 		r.position.y += float(ft.pad) * sz.y
 		var dx: float = (0.5 - float(ft.cx)) * sz.x
@@ -1499,13 +1499,10 @@ func _staff(i: int, k: int) -> void:
 		if idle:
 			_text(p + Vector2(14, -70 + sin(_t * 2.0 + float(k)) * 3.0), "💤", 12, Color.WHITE)
 		return
-	var t2: Texture2D = Art.tex("staff", "band-%s" % ("sleep" if idle else "work"))
-	if t2 != null:
-		_shadow(p, 14.0)
-		_sprite(t2, p + Vector2(0, -bob), "staff", sflip, breath)
-		if carry6 != 0:
-			_crate(p, sflip)
-		return
+	# (2026-08-28) 여기 `staff/band-*` 폴백이 있었다. 겹치기로 바꾸면서
+	# _clerk_layers가 늘 무언가를 돌려주게 됐고 — 못 찾으면 hero/raccoon-make까지
+	# 내려간다 — 이 줄에 닿을 길이 없어졌다. 안 닿는 길은 없는 길이라 지운다.
+	# 그림 주문서에 "staff/"가 남아 있으면 아무도 안 쓸 그림을 시키게 된다.
 	_raccoon(p + Vector2(0, -bob), SHAPE, Color("bfa987"))
 	if carry6 != 0:
 		_crate(p, sflip)

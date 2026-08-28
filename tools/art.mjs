@@ -210,6 +210,17 @@ const GROUPS = [
  * 손님이 바뀌거나(박쥐→매) 물건이 갈리면 옛 그림이 폴더에 남는다. 그건
  * 화면에 안 나오면서 저장소만 불린다 — 그런데 눈으로는 절대 안 보인다.
  * 여기서 세면 다음에 또 셀 일이 없다. */
+/* --json — 주문서를 **기계가 읽을 수 있게** 뱉는다.
+ * 장부의 체크 목록을 손으로 옮겨 적으면 반드시 어긋난다(이번 주에 겪었다).
+ * 여기서 뽑아 쓴다. */
+if (process.argv.includes('--json')) {
+  console.log(JSON.stringify(GROUPS.map((g) => ({
+    dir: g.dir, title: g.title, size: g.size, optional: !!g.optional,
+    rows: g.rows.map((r) => ({ id: r.id, why: r.why, has: has(g.dir, r.id) })),
+  }))));
+  process.exit(0);
+}
+
 if (process.argv.includes('--audit')) {
   const want = new Map();               // dir → 기대하는 id 집합
   for (const g of GROUPS) {
@@ -221,11 +232,9 @@ if (process.argv.includes('--audit')) {
    *   실제로 한 번 그럴 뻔했다(2026-08-27).
    *   - items/<id>  : 주문서는 등장하는 단의 그림(-2·-3)만 시키지만,
    *                   art.gd의 ranked()가 못 찾으면 **기본 이름으로 내려온다**.
-   *   - staff/band-*: clerks/ 그림이 없을 때 쓰는 폴백(village.gd).
-   *                   band 말고 다른 무늬는 코드가 안 읽는다 — 그건 진짜 찌꺼기다. */
+   *   (staff/ 는 2026-08-28에 통째로 없앴다 — 겹치기로 바뀌며 안 닿는 길이 됐다.) */
   for (const g of GROUPS) if (g.dir === 'items') for (const r of g.rows)
     want.get('items').add(r.id.replace(/-[123]$/, ''));
-  want.set('staff', new Set(['band-work', 'band-sleep']));
   let n = 0, bytes = 0;
   for (const dir of readdirSync(`${ROOT}${DIR}`, { withFileTypes: true })) {
     if (!dir.isDirectory()) continue;
