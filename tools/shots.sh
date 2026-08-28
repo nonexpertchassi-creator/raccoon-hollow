@@ -14,10 +14,27 @@ OUT=shots
 mkdir -p $OUT
 rm -f $OUT/*.png
 
+# ★ 화면 장치가 없는 자리(클라우드 상자·서버)에서도 찍는다.
+#   Godot은 그림을 그리려면 화면이 있어야 하는데, 클라우드에는 없다.
+#   xvfb는 **화면인 척하는 가짜 화면**이다 — 아무도 안 보지만 Godot은 만족한다.
+#   2026-08-28에 붙였다: 유저가 맥에서 떨어져 있어도 게임을 눈으로 볼 수 있어야 한다.
+if [ -n "$DISPLAY" ] || [ -n "$WAYLAND_DISPLAY" ]; then
+  run_shot() { env "$@" godot --path godot tests/shot.tscn; }
+elif command -v xvfb-run >/dev/null 2>&1; then
+  echo "(화면이 없어서 가짜 화면으로 찍는다 — xvfb)"
+  run_shot() {
+    xvfb-run -a --server-args="-screen 0 900x1600x24" \
+      env "$@" godot --path godot tests/shot.tscn
+  }
+else
+  echo "화면도 xvfb도 없다. 맥에서 돌리거나 'apt install xvfb'." >&2
+  exit 1
+fi
+
 shot() {   # shot <파일이름> <환경변수들…>
   name=$1; shift
   rm -f godot/shot.png
-  env "$@" SHOT_MINUTES=$M godot --path godot tests/shot.tscn >/dev/null 2>&1 || true
+  run_shot "$@" SHOT_MINUTES=$M >/dev/null 2>&1 || true
   if [ -f godot/shot.png ]; then
     cp godot/shot.png "$OUT/$name.png"
     printf "  %s\n" "$name"
