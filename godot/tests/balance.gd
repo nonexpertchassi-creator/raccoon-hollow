@@ -142,7 +142,12 @@ func _init() -> void:
 	unlocked_at = {}
 	var s := Sim.new()
 	var rng := Rng.new(seed_value)
-	var dt: float = 0.25
+	# ★ 긴 판을 재려면 성글게 돌 수 있어야 한다(2026-08-28). 4주치(봇 33시간)를
+	#   0.25초로 돌면 47만 틱이라 십 분을 훌쩍 넘긴다.
+	#   **다만 성글게 돌면 값이 달라진다** — 얼마나 달라지는지 재 보고 쓸 것.
+	#   BAL_DT=1 은 "가게가 언제 열리나" 같은 **속도 재기 전용**이다.
+	#   돈 곡선을 확정하거나 골든을 박을 때는 반드시 기본값(0.25)으로 돈다.
+	var dt: float = float(OS.get_environment("BAL_DT")) if OS.has_environment("BAL_DT") else 0.25
 
 	var guest_at: Dictionary = {}
 	var last_new: float = 0.0            # 마지막으로 뭔가 새로 열린 시각

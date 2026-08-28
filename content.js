@@ -90,7 +90,7 @@ export const SHOPS = [
     ],
   },
   {
-    id: 'herb', name: '약재상', sign: '藥', cost: 8_000_000,
+    id: 'herb', name: '약재상', sign: '藥', cost: 15_000_000,
     desc: '산에서 캔 것을 말리고 썬다',
     color: '#4a5f7a',
     ranks: ['햇', '묵은', '천년'],
@@ -107,7 +107,7 @@ export const SHOPS = [
     ],
   },
   {
-    id: 'soup', name: '국밥집', sign: '湯', cost: 30_000_000,
+    id: 'soup', name: '국밥집', sign: '湯', cost: 40_000_000,
     desc: '뜨끈한 국밥 한 그릇을 만다',
     color: '#8a6a45',
     ranks: ['된장', '들깨', '송이'],
@@ -128,7 +128,7 @@ export const SHOPS = [
      * 있다** — 같은 것을 다른 말로 불러도 어긋나는데, 다른 것을 같은 말로
      * 부르면 더 어긋난다(NAMES.md 첫 줄). 객주(客主)로 바꿨다 —
      * 길손을 재우고 물산을 중개하던 조선의 진짜 업이라 뜻도 더 맞다. */
-    id: 'gaekju', name: '객주', sign: '客', cost: 45_000_000,
+    id: 'gaekju', name: '객주', sign: '客', cost: 80_000_000,
     desc: '길손을 재우고 술과 안주를 낸다',
     color: '#8a6a45',
     ranks: ['막', '청', '법'],
@@ -145,7 +145,7 @@ export const SHOPS = [
     ],
   },
   {
-    id: 'skewer', name: '꼬치집', sign: '串', cost: 130_000_000,
+    id: 'skewer', name: '꼬치집', sign: '串', cost: 250_000_000,
     desc: '숯불에 꿰어 굽는다',
     color: '#8a6a45',
     ranks: ['숯', '참숯', '백탄'],
@@ -162,7 +162,7 @@ export const SHOPS = [
     ],
   },
   {
-    id: 'ricecake', name: '떡집', sign: '餠', cost: 450_000_000,
+    id: 'ricecake', name: '떡집', sign: '餠', cost: 1_000_000_000,
     desc: '쌀을 쳐서 떡을 빚는다',
     color: '#8a6a45',
     ranks: ['햅쌀', '찹쌀', '진상'],
@@ -182,7 +182,7 @@ export const SHOPS = [
 /* ★ 푸줏간을 과일전으로 바꿨다(2026-08-27, 유저). 돼지·닭·소가 손님으로
      * 줄을 서는데 그 옆에서 돼지고기를 파는 그림이 됐다. **값·시간·여는 값은
      * 한 자도 안 건드렸다** — 이름만 갈아 끼워서 경제 곡선을 안 흔든다. */
-    id: 'fruit', name: '과일전', sign: '果', cost: 1_200_000_000,
+    id: 'fruit', name: '과일전', sign: '果', cost: 6_000_000_000,
     desc: '철 따라 나는 과일을 골라 판다',
     color: '#8a6a45',
     ranks: ['풋', '햇', '꿀'],
@@ -199,7 +199,7 @@ export const SHOPS = [
     ],
   },
   {
-    id: 'fish', name: '어물전', sign: '魚', cost: 7_000_000_000,
+    id: 'fish', name: '어물전', sign: '魚', cost: 25_000_000_000,
     desc: '바닷것을 절이고 말려 판다',
     color: '#8a6a45',
     ranks: ['갯', '말린', '진상'],
@@ -216,7 +216,7 @@ export const SHOPS = [
     ],
   },
   {
-    id: 'cloth', name: '포목전', sign: '布', cost: 30_000_000_000,
+    id: 'cloth', name: '포목전', sign: '布', cost: 300_000_000_000,
     desc: '베를 짜고 물들여 판다',
     color: '#8a6a45',
     ranks: ['무명', '명주', '비단'],
@@ -233,7 +233,7 @@ export const SHOPS = [
     ],
   },
   {
-    id: 'hat', name: '갓방', sign: '笠', cost: 60_000_000_000,
+    id: 'hat', name: '갓방', sign: '笠', cost: 1_500_000_000_000,
     desc: '갓을 겯고 다듬어 판다',
     color: '#8a6a45',
     ranks: ['대', '중', '진상'],
@@ -250,7 +250,7 @@ export const SHOPS = [
     ],
   },
   {
-    id: 'brass', name: '유기전', sign: '鍮', cost: 500_000_000_000,
+    id: 'brass', name: '유기전', sign: '鍮', cost: 4_000_000_000_000,
     desc: '놋쇠를 두드려 그릇을 만든다',
     color: '#8a6a45',
     ranks: ['방짜', '상', '왕실'],
@@ -267,7 +267,7 @@ export const SHOPS = [
     ],
   },
   {
-    id: 'lacquer', name: '나전방', sign: '螺', cost: 2_500_000_000_000,
+    id: 'lacquer', name: '나전방', sign: '螺', cost: 8_000_000_000_000,
     desc: '자개를 박아 세간을 꾸민다',
     color: '#8a6a45',
     ranks: ['자개', '진주', '왕실'],
@@ -912,7 +912,7 @@ export const DISTRICTS = [
   /* ★ 옛 값(성 40·500T)은 "긴 판을 못 돌려서 곡선에서 이은 값"이라고 적혀 있었다.
    * 이제 24시간을 돌린다 — 그 값으로는 **48시간에도 못 연다**(24시간 초당 54.7M로
    * 500T를 모으려면 105시간). 짐작한 값이 아무도 못 닿는 벽이 된 것이다. */
-  { id: 'keunjang', name: '큰장마당', rows: [30, 47], cost: 3_000_000_000, stars: 30,
+  { id: 'keunjang', name: '큰장마당', rows: [30, 47], cost: 15_000_000_000, stars: 33,
     shops: ['fish', 'cloth', 'hat', 'brass', 'lacquer'],
     desc: '팔도의 물산이 모이는 큰 장' },
 ];
