@@ -120,7 +120,7 @@ ${rows([
   ['매대 칸 열기', fmt(g('open.item')), ''],
   ['가게 되살리기', fmt(g('open.shop')), ''],
   ['가게 승급', fmt(g('open.promote')), '여기까지 오는 사람이 얼마나 되나'],
-  ['직원 들이기', fmt(g('open.staff')), ''],
+  ['일꾼 들이기', fmt(g('open.staff')), ''],
   ['삽살개 들이기', fmt(g('open.guard')), ''],
   ['구역 열기', fmt(g('open.district')), '동네째 여는 큰 목표 — 몇 시간에 여나'],
 ])}

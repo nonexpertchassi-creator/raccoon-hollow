@@ -590,16 +590,22 @@ func _tap(p: Vector2) -> void:
 					break
 		return
 
-	# 3) 촌장 — 마을을 돌아다닌다. 누르면 의뢰 창.
-	#    가게보다 먼저 본다. 가게 마당 위를 지나갈 때 그 밑에 깔리면 못 누른다.
-	if not village.mayor.is_empty():
-		var mp: Vector2 = village.mayor.pos
-		if absf(p.x - mp.x) < 34.0 and p.y > mp.y - 92.0 and p.y < mp.y + 14.0:
-			# 장이 설 참이면 장부터 — 작은 건물이 하던 일을 촌장이 물려받았다
-			if sim.busy >= 0 and sim.tap_small(sim.busy):
-				sfx.play("fair")
-				return
-			panel.open_kind("quests")
+	# 3) 의뢰 게시판 — 늘 그 자리에 있는 판때기. 누르면 의뢰 창.
+	#    장이 설 참이면 장부터 연다(촌장이 하던 일을 게시판이 물려받았다).
+	var bp: Vector2 = Iso.w(Iso.BOARD_T.x + 0.5, Iso.BOARD_T.y + 0.5)
+	if absf(p.x - bp.x) < 40.0 and p.y > bp.y - 104.0 and p.y < bp.y + 16.0:
+		if sim.busy >= 0 and sim.tap_small(sim.busy):
+			sfx.play("fair")
+			return
+		panel.open_kind("quests")
+		return
+
+	# 4) 길에 떨어진 것 — 누르면 줍는다. 청소부를 뽑으면 대신 주워 준다.
+	for tr in village.trash:
+		var tp: Vector2 = tr.pos
+		if absf(p.x - tp.x) < 26.0 and p.y > tp.y - 34.0 and p.y < tp.y + 14.0:
+			if sim.tap_trash():
+				sfx.play("sweep")
 			return
 
 	# 3) 삽살개 자리

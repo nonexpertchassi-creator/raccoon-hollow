@@ -85,14 +85,35 @@ func _process(_d: float) -> void:
 			fails.append("마당 빈 칸을 눌렀는데 가게 창이 안 열렸다")
 		main.panel.close()
 
-	# 3) 장이 설 참일 때 촌장을 누르면 장이 열린다 (작은 건물의 일을 물려받았다)
+	# 3) 장이 설 참일 때 의뢰 게시판을 누르면 장이 열린다 (촌장이 하던 일)
 	s.busy = 0
-	main.village.mayor.pos = Iso.w(3.5, 8.5)     # 아무 데도 안 겹치는 풀밭 위
-	main._tap(main.village.mayor.pos + Vector2(0, -10))
+	main._tap(Iso.w(Iso.BOARD_T.x + 0.5, Iso.BOARD_T.y + 0.5) + Vector2(0, -20))
 	if s.fair <= 0.0:
-		fails.append("장이 설 참에 촌장을 눌렀는데 장이 안 열렸다")
+		fails.append("장이 설 참에 게시판을 눌렀는데 장이 안 열렸다")
 	if s.busy != -1:
 		fails.append("장을 열었는데 북적임 깃발이 안 내려갔다")
+	main.panel.close()
+
+	# 3-2) 장이 안 설 때 게시판을 누르면 의뢰 창이 열린다
+	main._tap(Iso.w(Iso.BOARD_T.x + 0.5, Iso.BOARD_T.y + 0.5) + Vector2(0, -20))
+	if not main.panel.visible:
+		fails.append("게시판을 눌렀는데 의뢰 창이 안 열렸다")
+	main.panel.close()
+
+	# 3-3) 길에 떨어진 것을 누르면 줍는다 — 청소부가 없어도 손으로는 된다
+	s.trash = 1.0
+	main.village.trash = []
+	main.village._advance(0.016)
+	if main.village.trash.is_empty():
+		fails.append("sim에 쓰레기가 하나 있는데 화면에 안 놓였다")
+	else:
+		# 나오는 것은 **엽전이 아니라 나뭇잎**이다 — 매출 곡선을 안 건드리려고 그렇게 했다
+		var before: float = s.gems
+		main._tap((main.village.trash[0].pos as Vector2) + Vector2(0, -8))
+		if s.gems <= before:
+			fails.append("길에 떨어진 것을 눌렀는데 나뭇잎이 안 나왔다")
+		if s.trash > 0.0:
+			fails.append("주웠는데 쓰레기가 안 없어졌다")
 
 	# 4) 삽살개 자리
 	main._tap(Iso.w(Iso.DOG_T.x + 1, Iso.DOG_T.y + 1) + Vector2(0, -20))
@@ -231,14 +252,14 @@ func _process(_d: float) -> void:
 	if int(main.sim.profile.band) == 99:
 		fails.append("못 딴 띠가 받아들여졌다")
 
-	# 점장 무늬 — 열 때 한 번 배정되고, 저장을 오가도·옛 판을 받아도 지켜진다
+	# 일꾼 무늬 — 열 때 한 번 배정되고, 저장을 오가도·옛 판을 받아도 지켜진다
 	if not s.furs.has("smith"):
-		fails.append("가게를 열었는데 점장 무늬가 배정 안 됐다")
+		fails.append("가게를 열었는데 일꾼 무늬가 배정 안 됐다")
 	var fur0: String = s.fur_of("smith")
 	var s2 := Sim.new()
 	s2.load_from(Sim.from_blob(s.to_blob()))
 	if s2.fur_of("smith") != fur0:
-		fails.append("저장을 오가니 점장 무늬가 바뀌었다")
+		fails.append("저장을 오가니 일꾼 무늬가 바뀌었다")
 	var oldsave: Dictionary = Sim.from_blob(s.to_blob())
 	oldsave.erase("furs")                    # 6판 전 저장본 흉내
 	var s3 := Sim.new()

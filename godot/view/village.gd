@@ -65,42 +65,40 @@ const BUBBLE_LIFE := 4.5
 ## 먼저 온 손님이 0번(계산대 앞), 나머지는 길을 따라 뒤로 선다.
 var line: Array = []
 
-## 촌장 너구리 — **마당 밖으로 나오는 유일한 너구리**다.
-## 길을 따라 마을을 돌아다니고, 걸린 의뢰가 있으면 머리 위에 ❗를 띄운다.
-## 누르면 의뢰 창이 열린다.
+## 장터 청소부 — **마당 밖으로 나오는 유일한 너구리**다(2026-08-28, 유저).
+## 예전에는 촌장이었다. 촌장은 걸어 다니면서 의뢰를 알리고 쓰레기를 주웠는데,
+## 알림을 보려면 **돌아다니는 사람을 찾아야** 했다. 그래서 둘로 갈랐다 —
+## 알리는 일은 붙박이 게시판이, 줍는 일은 채용하는 청소부가 맡는다.
 ##
-## ★ 여기 있는 것은 **화면뿐**이다. sim은 한 줄도 안 건드린다.
-##   촌장이 경제(돈·나뭇잎)를 만지는 순간 대조 시험이 그 자리에서 깨진다 —
-##   자바스크립트 답안지에는 촌장이 없기 때문이다. 그 이야기는 FLOW.md에 적었다.
-var mayor: Dictionary = {}
-const MAYOR_SPEED := 62.0
+## ★ 걷는 것은 화면 몫이고, **주웠다는 셈은 sim이 한다.** 화면은 sim.trash의
+##   개수에 맞춰 길 위의 자리만 늘리고 줄인다 — 그래야 껐다 켜도 어긋나지 않는다.
+var sweeper: Dictionary = {}
+const SWEEPER_SPEED := 62.0
 ## 삽살개들 — 개집에 앉아만 있었는데(유저: "안 움직이는 것 같다") 이제
 ## 마을 길을 돈다. 화면 전용이다 — 무는 판정은 여전히 sim의 주사위가 한다.
 var dogs: Array = []
 const DOG_SPEED := 88.0
-## 길에 떨어지는 쓰레기(낙엽·검불). **화면 전용이다** — 아직 돈·나뭇잎은 안 나온다.
-## 보상을 붙이는 순간 경제가 되고, 그때는 재는 도구가 마을을 같이 돌려야 한다
-## (FLOW.md §7의 갈림길). 지금은 촌장이 마을을 돌보는 게 **보이게만** 한다.
+## 길에 떨어진 쓰레기의 **자리**. 개수는 sim이 정하고 여기는 어디에 놓을지만 정한다.
+## (2026-08-28에 화면 장식에서 경제 규칙이 됐다 — 주우면 엽전이 나온다.)
 var trash: Array = []
-var _trashAcc: float = 0.0
 
-## 가게별 점장 — 평소엔 작업대, 팔릴 땐 계산대 뒤로 간다
+## 가게별 일꾼 — 평소엔 작업대, 팔릴 땐 계산대 뒤로 간다
 var clerks: Array = []
-## 직원의 현재 자리("가게:번호" → 좌표). 만드는 매대가 바뀌면 걸어서 옮긴다.
+## 일꾼의 현재 자리("가게:번호" → 좌표). 만드는 매대가 바뀌면 걸어서 옮긴다.
 var _staffAt: Dictionary = {}
 ## 줄 도착 순번표 — 늘어나기만 하는 번호. 도착한 차례가 곧 줄 차례다.
 var _lineSeq: int = 0
-## 일감표 — 누가 어느 매대를 잡았나(점장: 가게번호→매대번호, 직원: "가게:직원"→매대번호).
+## 일감표 — 누가 어느 매대를 잡았나(첫 일꾼: 가게번호→매대번호, 더 온 일꾼: "가게:번호"→매대번호).
 ## ★ 한 번 잡은 매대는 그 물건이 다 만들어질 때까지 안 놓는다(2026-08-25, 유저 —
 ##   "5번 자리에서 탭 댄스"). 만드는 목록이 출렁일 때마다 목표를 갈아타면
 ##   일꾼이 마당 가운데서 발만 동동 구른다.
 var _heroJob: Dictionary = {}
 var _staffJob: Dictionary = {}
 ## 완성됐는데 아직 아무도 안 든 상자들(가게 번호 → 주문 번호 배열).
-## ★ 점장 전담이 아니다(2026-08-27, 유저): 계산대가 셋인데 나르는 놈이 하나면
+## ★ 일꾼 전담이 아니다(2026-08-27, 유저): 계산대가 셋인데 나르는 놈이 하나면
 ##   그림이 스스로 모순이다. 상자는 **그때 놀고 있는 너구리**가 든다.
 var _pending: Dictionary = {}
-## 직원이 든 상자("가게:번호" → 주문 번호)와 계산 자세 시계.
+## 일꾼이 든 상자("가게:번호" → 주문 번호)와 계산 자세 시계.
 var _staffCarry: Dictionary = {}
 var _staffBusy: Dictionary = {}
 ## 마당 칸 번호(1~n²)를 바닥에 깐다 — "6번 매대" 같은 말이 통하게 하는
@@ -131,7 +129,7 @@ func setup(s: Sim) -> void:
 			"carry": 0.0, "carry_oid": 0})
 		line.append([])
 	var start: Vector2i = Iso.GATES[0]
-	mayor = {"pos": Iso.w(start.x + 0.5, start.y + 0.5), "at": start,
+	sweeper = {"pos": Iso.w(start.x + 0.5, start.y + 0.5), "at": start,
 		"path": [], "step": 1, "rest": 1.0}
 
 ## sim이 "손님이 물어봤다"고 알려오면 그 가게 위에 말풍선을 띄운다.
@@ -284,15 +282,15 @@ func _assign_crates(i: int) -> void:
 	var ns: int = int(sim.staff_of(String(Content.SHOPS[i].id)))
 	while not q.is_empty():
 		var picked: String = ""
-		for k in range(ns):                       # 1순위 — 맡은 매대가 없는 직원
+		for k in range(ns):                       # 1순위 — 맡은 매대가 없는 일꾼
 			var kk: String = "%d:%d" % [i, k]
 			if int(_staffCarry.get(kk, 0)) == 0 and int(_staffJob.get(kk, -1)) < 0:
 				picked = kk
 				break
 		if picked == "" and int(clerks[i].get("carry_oid", 0)) == 0:
-			picked = "hero"                       # 2순위 — 손이 빈 점장
+			picked = "hero"                       # 2순위 — 손이 빈 일꾼
 		if picked == "":
-			for k2 in range(ns):                  # 3순위 — 만들던 직원이라도
+			for k2 in range(ns):                  # 3순위 — 만들던 일꾼이라도
 				var kk2: String = "%d:%d" % [i, k2]
 				if int(_staffCarry.get(kk2, 0)) == 0:
 					picked = kk2
@@ -355,12 +353,14 @@ func _advance(delta: float) -> void:
 		_zoneFade[zid] = float(_zoneFade[zid]) - delta / 1.4
 		if float(_zoneFade[zid]) <= 0.0:
 			_zoneFade.erase(zid)
-	# 쓰레기 — 이따금 길에 하나씩, 셋까지
-	_trashAcc += delta
-	if _trashAcc >= 24.0 and trash.size() < 3:
-		_trashAcc = 0.0
+	# 쓰레기 — **개수는 sim이 정한다.** 화면은 그 수에 맞춰 자리를 늘리고 줄인다.
+	# 옛날에는 화면이 제 마음대로 뿌렸는데, 그러면 껐다 켤 때마다 길이 달라졌다.
+	while trash.size() < int(sim.trash):
 		var tsp: Vector2i = _road_spot()
 		trash.append({"t": tsp, "pos": Iso.w(tsp.x + 0.5, tsp.y + 0.5)})
+	while trash.size() > int(sim.trash) and not trash.is_empty():
+		floats.append({"pos": (trash[0].pos as Vector2) + Vector2(0, -24), "text": "🧹", "t": 1.0})
+		trash.remove_at(0)
 	# 일감 배정 — 잡은 매대가 아직 만드는 중이면 **그대로 유지**한다.
 	# 목록 순서가 출렁여도 목표는 안 바뀐다 — 탭 댄스 방지의 핵심이다.
 	for i in range(Content.SHOPS.size()):
@@ -390,7 +390,7 @@ func _advance(delta: float) -> void:
 			if sj >= 0:
 				claimed[sj] = true
 
-	# 직원 — 만드는 매대 곁으로 걸어간다. 순간이동하면 "일하러 갔다"가 안 보인다.
+	# 일꾼 — 만드는 매대 곁으로 걸어간다. 순간이동하면 "일하러 갔다"가 안 보인다.
 	# 상자를 들었으면 그 손님이 선 계산대의 안쪽 자리로 간다(2026-08-27).
 	for i in range(Content.SHOPS.size()):
 		if not sim.shops.has(String(Content.SHOPS[i].id)):
@@ -410,7 +410,7 @@ func _advance(delta: float) -> void:
 					_staffCarry[skey] = 0
 					if r > 0:
 						_staffBusy[skey] = 0.8
-	_walk_mayor(delta)
+	_walk_sweeper(delta)
 	# 산 만큼 개를 풀어놓는다
 	while dogs.size() < int(sim.guards):
 		dogs.append({"pos": Iso.w(Iso.DOG_T.x + 0.5, Iso.DOG_T.y + 0.5),
@@ -459,10 +459,10 @@ func _advance(delta: float) -> void:
 					continue                      # 마을을 떠났다
 		keep.append(wk)
 	walkers = keep
-	# 점장 — **손님이 계산대에 닿아 있는 동안** 계산대 뒤에 선다.
+	# 일꾼 — **손님이 계산대에 닿아 있는 동안** 계산대 뒤에 선다.
 	#
 	# ★ 예전엔 sim이 "팔렸다"고 알리는 순간(=손님이 마을 입구에 생기는 순간)
-	#   점장을 보냈다. 손님은 몇 초를 걸어와야 하는데 점장은 이미 가 있으니,
+	#   일꾼을 보냈다. 손님은 몇 초를 걸어와야 하는데 일꾼은 이미 가 있으니,
 	#   **아무도 없는 계산대에서 물건을 옮기는** 그림이 됐다.
 	#   폰에서 유저가 바로 알아챈 것이 이것이다.
 	# 주문 생산(2026-08-26)에선 손님이 기다려도 너구리는 **만들러 간다** —
@@ -473,7 +473,7 @@ func _advance(delta: float) -> void:
 		c.busy = max(0.0, c.busy - delta)
 		c.carry = max(0.0, float(c.get("carry", 0.0)) - delta)
 		var f: Dictionary = Iso.foot(sim, i)
-		# 점장도 직원처럼 **만드는 매대 앞**으로 간다. 작업대에 서 있는데
+		# 일꾼도 일꾼처럼 **만드는 매대 앞**으로 간다. 작업대에 서 있는데
 		# 저쪽 매대가 만들어지면 오류로 보인다(유저). 만들 게 없으면 작업대.
 		# 줄에 손님이 남아 있으면 계산대를 안 떠난다 — 손님 사이마다 매대로
 		# 갔다 오며 몸이 좌우로 홱홱 뒤집혔다(유저: "자세를 한가지로").
@@ -519,40 +519,35 @@ func _advance(delta: float) -> void:
 					c.carry = 0.5                  # 상자 잔상 + 계산 자세 한 박자
 					c.busy = 0.8
 
-## 촌장 걸음 — 길 위의 아무 데나 한 곳을 골라 걸어가고, 닿으면 잠깐 쉬었다 또 간다.
-## 목적지를 마을 문(GATES)에서 고르면 늘 가장자리만 돌게 되므로 길 전체에서 고른다.
-func _walk_mayor(delta: float) -> void:
-	if mayor.is_empty():
+## 청소부 걸음 — 쓰레기가 보이면 그리로, 없으면 길 위 아무 데나.
+## **채용해야 나타난다**(sim.sweepers). 줍는 셈은 sim이 하고, 여기는 걷기만 한다.
+func _walk_sweeper(delta: float) -> void:
+	if sweeper.is_empty() or sim.sweepers <= 0.0:
 		return
-	# 닿은 자리에 쓰레기가 있으면 줍는다 — 비질 표가 잠깐 남는다
-	for k in range(trash.size() - 1, -1, -1):
-		if (trash[k].pos as Vector2).distance_to(mayor.pos) < 20.0:
-			floats.append({"pos": trash[k].pos + Vector2(0, -24), "text": "🧹", "t": 1.0})
-			trash.remove_at(k)
-	if mayor.path.is_empty() or mayor.step >= mayor.path.size():
-		mayor.rest -= delta
-		if mayor.rest > 0.0:
+	if sweeper.path.is_empty() or sweeper.step >= sweeper.path.size():
+		sweeper.rest -= delta
+		if sweeper.rest > 0.0:
 			return
-		# 쓰레기가 보이면 그리로 간다 — 마을 어른이 마을을 돌본다
+		# 쓰레기가 보이면 그리로 간다
 		var to: Vector2i = (trash[0].t as Vector2i) if not trash.is_empty() else _road_spot()
-		mayor.path = Iso.route(mayor.at, to)
-		mayor.step = 1
-		mayor.at = to
-		mayor.rest = 1.4 + _grng.next() * 2.6
-		if mayor.path.is_empty():
-			mayor.at = _road_spot()
+		sweeper.path = Iso.route(sweeper.at, to)
+		sweeper.step = 1
+		sweeper.at = to
+		sweeper.rest = 1.4 + _grng.next() * 2.6
+		if sweeper.path.is_empty():
+			sweeper.at = _road_spot()
 		return
-	var t: Vector2i = mayor.path[mayor.step]
+	var t: Vector2i = sweeper.path[sweeper.step]
 	var target: Vector2 = Iso.w(t.x + 0.5, t.y + 0.5)
-	var d: Vector2 = target - mayor.pos
+	var d: Vector2 = target - sweeper.pos
 	if absf(d.x) > 0.5:
-		mayor.flip = d.x < 0.0
-	var step: float = MAYOR_SPEED * delta
+		sweeper.flip = d.x < 0.0
+	var step: float = SWEEPER_SPEED * delta
 	if d.length() <= step:
-		mayor.pos = target
-		mayor.step += 1
+		sweeper.pos = target
+		sweeper.step += 1
 	else:
-		mayor.pos += d.normalized() * step
+		sweeper.pos += d.normalized() * step
 
 func _walk_dog(dg: Dictionary, delta: float) -> void:
 	if dg.path.is_empty() or dg.step >= dg.path.size():
@@ -1057,14 +1052,14 @@ func _dog() -> void:
 ## 무늬는 채용 자리마다 랜덤(sim.fur_of), 복장은 가게가, 앞치마는 등급이 정한다.
 ## 일꾼 너구리의 **층**을 돌려준다 — [꼬리, 몸, 차림] 순(뒤에서 앞).
 ##
-## ★ 가게별 점장을 접었다(2026-08-27, 유저). 가게마다 전용으로 그리면
+## ★ 가게별 일꾼을 접었다(2026-08-27, 유저). 가게마다 전용으로 그리면
 ##   무늬 4 × 방향 2 × 가게 20 = **160장**이고, 가게가 늘 때마다 8장씩 늘어
 ##   "무한히 계속 뽑아야" 한다. 게다가 실제로는 **이름 체계가 셋으로 갈려
 ##   싸우고 있었다**:
-##     clerks/<가게>-<자세>        20장 있음 — 가게 앞에서 일하는 점장
+##     clerks/<가게>-<자세>        20장 있음 — 가게 앞에서 일하는 일꾼
 ##     clerks/<가게>-<무늬>-<방향>  0장  — 주문서만 시키고 아무도 안 그림
 ##     hero-body/<무늬>-<방향>      5장  — 걸을 때의 폴백
-##   그래서 걷는 점장과 일하는 점장이 다르게 생겼다(유저: "점장이 두 모습").
+##   그래서 걷는 일꾼과 일하는 일꾼이 다르게 생겼다(유저: "일꾼이 두 모습").
 ##
 ##   이제 한 갈래다: **hero-body/<무늬>-<자세>**.
 ##   자세는 side · back · make · sell · sleep 다섯. 무늬 하나가 **어느 가게에서든**
@@ -1238,17 +1233,17 @@ func _idle(i: int) -> bool:
 			return false
 	return true
 
-## 점장 그림 — **가게 것이 있으면 가게 것**, 없으면 공통 점장.
+## 일꾼 그림 — **가게 것이 있으면 가게 것**, 없으면 공통 일꾼.
 ## 대장간 너구리는 망치를 들고, 필방 너구리는 앞치마를 두르는 식이다.
 ## 한 장도 없으면 도형으로 그린다. 어디서 멈춰도 게임은 돈다.
-## 가게 등급도 본다 — `smith-make-1.png`가 있으면 참쇠 대장간 점장은 그걸 쓴다.
-## 없으면 그 가게 점장, 그것도 없으면 공통 점장. **세 겹 다 없으면 도형이다.**
+## 가게 등급도 본다 — `smith-make-1.png`가 있으면 참쇠 대장간 일꾼은 그걸 쓴다.
+## 없으면 그 가게 일꾼, 그것도 없으면 공통 일꾼. **세 겹 다 없으면 도형이다.**
 func _hero_tex(shop_id: String, pose: String) -> Texture2D:
 	var t: Texture2D = Art.ranked("clerks", "%s-%s" % [shop_id, pose], sim.rank_of(shop_id))
 	if t != null:
 		return t
 	# ★ 전용 그림이 있는 가게는 없는 자세도 **전용 만들기 그림**으로 때운다.
-	#   걷기만 공통 너구리로 갈아입으니 "점장이 두 모습"이 됐다(유저).
+	#   걷기만 공통 너구리로 갈아입으니 "일꾼이 두 모습"이 됐다(유저).
 	#   움직임(걷기 두 장 번갈아)보다 **같은 얼굴**이 먼저다.
 	t = Art.ranked("clerks", "%s-make" % shop_id, sim.rank_of(shop_id))
 	if t != null:
@@ -1269,31 +1264,49 @@ func _dog_walker(dg: Dictionary) -> void:
 	else:
 		_text(dg.pos + Vector2(0, -bob), "🐕", 24, Color.WHITE)
 
-## 촌장 — 흰 수염과 지팡이로 가른다. 크기는 점장·직원과 같다.
+## 장터 청소부 — 빗자루로 가른다. 크기는 일꾼과 같다.
 ## 가르는 것은 크기가 아니라 **어디를 다니느냐**다 — 마당 밖은 이 너구리뿐이다.
-func _mayor() -> void:
-	if mayor.is_empty():
+## 장터 청소부 — 채용해야 나타난다. 빗자루를 들고 길을 돈다.
+func _sweeper() -> void:
+	if sweeper.is_empty() or sim.sweepers <= 0.0:
 		return
-	var t: Texture2D = Art.tex("hero", "mayor")
+	var t: Texture2D = Art.tex("hero", "sweeper")
 	if t != null:
-		_shadow(mayor.pos, 14.0)
-		_sprite(t, mayor.pos, "hero", bool(mayor.get("flip", false)))
+		_shadow(sweeper.pos, 14.0)
+		_sprite(t, sweeper.pos, "hero", bool(sweeper.get("flip", false)))
 	else:
-		_raccoon(mayor.pos, SHAPE, Color("cbb79a"))
-		draw_line(mayor.pos + Vector2(15, -6), mayor.pos + Vector2(19, -44), C.wood2, 2.5)
-		draw_circle(mayor.pos + Vector2(0, -26), 5.0, Color(1, 1, 1, 0.85))
-	# 장이 설 참이면 촌장이 알린다 — 누르면 장이 열린다(작은 건물의 일을 물려받았다)
+		# 그림이 오기 전까지 — 몸은 기본 너구리, 손에 빗자루 한 자루
+		_raccoon(sweeper.pos, SHAPE, Color("cbb79a"))
+		draw_line(sweeper.pos + Vector2(15, -4), sweeper.pos + Vector2(21, -42), C.wood2, 2.5)
+		for k in range(4):
+			draw_line(sweeper.pos + Vector2(15, -4), sweeper.pos + Vector2(9 + k * 3, 6), C.wood2, 1.5)
+
+## 의뢰 게시판 — 붙박이다. 걸린 의뢰가 있으면 ❗, 장이 설 참이면 "장 서다!".
+## 예전에는 촌장이 하던 일인데, 걸어 다니는 사람은 **찾아다녀야** 했다.
+func _board() -> void:
+	var p: Vector2 = Iso.w(Iso.BOARD_T.x + 0.5, Iso.BOARD_T.y + 0.5)
+	var t: Texture2D = Art.tex("props", "board")
+	if t != null:
+		_shadow(p, 16.0)
+		_sprite(t, p, "props")
+	else:
+		# 그림이 오기 전 — 기둥 둘에 판때기 하나, 종이 몇 장
+		_shadow(p, 16.0)
+		draw_line(p + Vector2(-16, 0), p + Vector2(-16, -40), C.wood2, 4.0)
+		draw_line(p + Vector2(16, 0), p + Vector2(16, -40), C.wood2, 4.0)
+		draw_rect(Rect2(p + Vector2(-26, -62), Vector2(52, 30)), C.wood, true)
+		draw_rect(Rect2(p + Vector2(-26, -62), Vector2(52, 30)), C.wood2, false, 2.0)
+		draw_rect(Rect2(p + Vector2(-19, -56), Vector2(15, 18)), Color("f2ead6"), true)
+		draw_rect(Rect2(p + Vector2(2, -56), Vector2(15, 18)), Color("f2ead6"), true)
 	if sim.busy >= 0:
 		var bob4: float = absf(sin(_t * 5.0)) * 5.0
-		_chip(mayor.pos + Vector2(0, -92 - bob4), 74, 24, C.red)
-		_text(mayor.pos + Vector2(0, -75 - bob4), "장 서다!", 13, Color("fff3dd"))
+		_chip(p + Vector2(0, -104 - bob4), 74, 24, C.red)
+		_text(p + Vector2(0, -87 - bob4), "장 서다!", 13, Color("fff3dd"))
 		return
-	# 걸린 의뢰가 있으면 알린다. 의뢰 창은 아래 단추에도 있지만,
-	# **마을 안에서 눈에 띄어야** 보러 간다.
 	if not sim.quests.is_empty():
 		var bob: float = absf(sin(_t * 4.0)) * 5.0
-		_chip(mayor.pos + Vector2(0, -86 - bob), 26, 26, Color("c7563f"))
-		_text(mayor.pos + Vector2(0, -67 - bob), "❗", 17, Color.WHITE)
+		_chip(p + Vector2(0, -98 - bob), 26, 26, Color("c7563f"))
+		_text(p + Vector2(0, -79 - bob), "❗", 17, Color.WHITE)
 
 func _clerk(i: int) -> void:
 	var c: Dictionary = clerks[i]
@@ -1336,20 +1349,20 @@ func _clerk(i: int) -> void:
 		return
 	_raccoon(c.pos, SHAPE, Color("a8815a"))
 
-## 겹그림 점장 — 확정 3방향 원화 규칙(2026-08-26, 유저).
+## 겹그림 일꾼 — 확정 3방향 원화 규칙(2026-08-26, 유저).
 ## 본체 12장(무늬4×방향3) + 꼬리 8장(무늬4×side·back) + 장비 스티커(가게×단계×방향).
 ## 방향: front 정면 · side 오른쪽 훼이크 측면 · back 뒷모습. **왼쪽은 side를 뒤집는다.**
 ## 겹 순서 — front: 몸→장비(꼬리 없음) · side: 꼬리→몸→장비 · back: 몸→장비→꼬리.
 ## 장비는 투명 스티커다(몸·손·얼굴·무늬·꼬리·그림자 픽셀 금지) — 본체 위에 핀만 맞춘다.
-## 직원 — 작업대 옆에 서서 계속 만든다.
+## 일꾼 — 작업대 옆에 서서 계속 만든다.
 ##
-## ★ 자바스크립트판에는 있었는데 옮기면서 빠져 있었다. 직원을 뽑아도
+## ★ 자바스크립트판에는 있었는데 옮기면서 빠져 있었다. 일꾼을 뽑아도
 ##   화면에는 아무도 안 나타났다 — 돈만 나가고 아무 일도 안 일어나는,
 ##   제일 나쁜 종류다. (예전에 자리가 0개라 안 보이던 것과 같은 증상이고,
 ##   그때 자리 규칙은 고쳤는데 **그리는 쪽을 안 옮겼다.**)
-## 직원이 실제로 설 자리. **칸 한가운데가 아니라 마당 안쪽으로 당긴다.**
+## 일꾼이 실제로 설 자리. **칸 한가운데가 아니라 마당 안쪽으로 당긴다.**
 ##
-## ★ 3×3 마당에서 직원 자리는 담벼락 칸밖에 안 남는데, 그 앞에는 매대가 선다.
+## ★ 3×3 마당에서 일꾼 자리는 담벼락 칸밖에 안 남는데, 그 앞에는 매대가 선다.
 ##   칸 한가운데에 세웠더니 매대 뒤에 가려서 **머리만 보였다.** 480K를 주고
 ##   머리 하나를 사는 셈이다. 안쪽으로 26px 당기면 매대 앞으로 나온다.
 ##   앞뒤 순서도 이 자리로 정해야 한다 — 안 그러면 그림과 순서가 따로 논다.
@@ -1415,7 +1428,7 @@ func _stall_front(i: int, k: int) -> Vector2:
 
 ## 이 매대를 맡은 일꾼이 **지금 어디 있나**. 매대 앞에 닿기 전엔 만드는
 ## 효과(파이·먼지)를 안 띄우려고 본다 — 가지도 않았는데 만들어지면 오류로
-## 보인다(2026-08-25, 유저). 점장이 계산 중이면 첫 매대부터 직원 몫이다.
+## 보인다(2026-08-25, 유저). 일꾼이 계산 중이면 첫 매대부터 일꾼 몫이다.
 func _worker_of(i: int, k: int) -> Vector2:
 	if int(_heroJob.get(i, -1)) == k:
 		return clerks[i].pos
@@ -1424,10 +1437,10 @@ func _worker_of(i: int, k: int) -> Vector2:
 			return _staffAt.get("%d:%d" % [i, s2], Vector2.INF)
 	return Vector2.INF
 
-## 직원이 지금 있어야 할 자리 — **만드는 매대 곁**이다(2026-08-25, 유저).
-## 제작을 짐승의 동작으로 보여주면 등급×자세만큼 그림이 는다. 대신 직원이
+## 일꾼이 지금 있어야 할 자리 — **만드는 매대 곁**이다(2026-08-25, 유저).
+## 제작을 짐승의 동작으로 보여주면 등급×자세만큼 그림이 는다. 대신 일꾼이
 ## 그 매대로 걸어가 서고, "만들고 있다"는 매대 위 효과(먼지구름·불티)가 말한다.
-## 점장이 계산 중이면 첫 매대부터 직원 몫이고, 아니면 점장이 첫 매대를 맡는다.
+## 일꾼이 계산 중이면 첫 매대부터 일꾼 몫이고, 아니면 일꾼이 첫 매대를 맡는다.
 func _staff_goal(i: int, k: int) -> Vector2:
 	var job: int = int(_staffJob.get("%d:%d" % [i, k], -1))
 	if job < 0:
@@ -1442,7 +1455,7 @@ func _stall_at(i: int, k: int) -> Vector2:
 	var sp: Vector2i = y.stalls[k]
 	return Iso.w(o.x + sp.x + 0.5, o.y + sp.y + 0.5)
 
-## 직원의 현재 자리(걸어가는 중일 수 있다). 그리기와 앞뒤 순서가 같이 쓴다.
+## 일꾼의 현재 자리(걸어가는 중일 수 있다). 그리기와 앞뒤 순서가 같이 쓴다.
 func _staff_cur(i: int, k: int) -> Vector2:
 	return _staffAt.get("%d:%d" % [i, k], _staff_pos(i, k))
 
@@ -1464,7 +1477,7 @@ func _staff(i: int, k: int) -> void:
 		return
 	var p: Vector2 = _staff_cur(i, k)
 	var idle: bool = _idle(i)
-	# 밤엔 수시로 졸았다 깼다 한다(유저) — 직원마다 다른 박자로. sim의 밤
+	# 밤엔 수시로 졸았다 깼다 한다(유저) — 일꾼마다 다른 박자로. sim의 밤
 	# 규칙(손놀림이 느려진다)과 결이 맞는 그림이다.
 	if _night() and sin(_t * 0.35 + float(i * 3 + k) * 1.9) > 0.1:
 		idle = true
@@ -1473,9 +1486,9 @@ func _staff(i: int, k: int) -> void:
 	var moving: bool = p.distance_to(_staff_goal(i, k)) > 2.0
 	var swing: float = maxf(0.0, sin(fmod(_t / 2.4 + i * 0.37 + (k + 1) * 0.29, 1.0) * TAU))
 	var bob: float = (absf(sin(_t * 6.0)) * 2.0) if moving else (0.0 if idle else swing * 3.0)
-	# ★ 직원 개념 폐지(2026-08-26, 유저) — 승급하면 "같은 가게 너구리가 한
+	# ★ 일꾼 개념 폐지(2026-08-26, 유저) — 승급하면 "같은 가게 너구리가 한
 	#   마리 더 온다". 전원이 그 가게의 완성형 그림을 쓴다(쌍둥이 형제들).
-	#   경제(손 셈)는 그대로고 화면과 말만 통일했다. 두건 직원 그림은 은퇴.
+	#   경제(손 셈)는 그대로고 화면과 말만 통일했다. 두건 일꾼 그림은 은퇴.
 	var sid6: String = String(Content.SHOPS[i].id)
 	var skey6: String = "%d:%d" % [i, k]
 	var job5: int = int(_staffJob.get(skey6, -1))
@@ -1661,7 +1674,7 @@ func _draw() -> void:
 			seq += 1
 			continue
 		# 마당 바닥은 맨 뒤로, 가구는 하나하나 자기 발끝 z로 따로 세운다 —
-		# 한 덩어리로 그리면 가구가 마당 안에 선 손님·점장을 덮는다.
+		# 한 덩어리로 그리면 가구가 마당 안에 선 손님·일꾼을 덮는다.
 		layer.append({"z": Iso.w(o.x, o.y).y + 2.0, "i": seq, "f": _plot_base.bind(i, n)})
 		seq += 1
 		var y: Dictionary = Iso.yard(Iso.YARD_KIND[i], n)
@@ -1686,9 +1699,11 @@ func _draw() -> void:
 			seq += 1
 	layer.append({"z": Iso.w(Iso.DOG_T.x + 1, Iso.DOG_T.y + 1).y, "i": seq, "f": _dog})
 	seq += 1
-	if not mayor.is_empty():
-		layer.append({"z": mayor.pos.y, "i": seq, "f": _mayor})
+	if not sweeper.is_empty() and sim.sweepers > 0.0:
+		layer.append({"z": sweeper.pos.y, "i": seq, "f": _sweeper})
 		seq += 1
+	layer.append({"z": Iso.w(Iso.BOARD_T.x + 0.5, Iso.BOARD_T.y + 0.5).y, "i": seq, "f": _board})
+	seq += 1
 	for dg in dogs:
 		layer.append({"z": dg.pos.y, "i": seq, "f": _dog_walker.bind(dg)})
 		seq += 1

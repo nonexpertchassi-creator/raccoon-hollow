@@ -88,7 +88,7 @@ var stats: Dictionary = {}
 ## 프로필 — 별명·얼굴(뽑은 손님 얼굴만)·띠(단골 칭호). 머리띠(HUD)가 읽는다.
 ## face가 ""이면 기본 너구리, band가 -1이면 지금 딴 제일 높은 칭호를 쓴다.
 var profile: Dictionary = {"name": "너구리", "face": "", "band": -1}
-## 점장 무늬 — 가게마다 벌거벗은 본체 무늬(a~d)를 **저장본마다 한 번** 배정한다.
+## 일꾼 무늬 — 가게마다 벌거벗은 본체 무늬(a~d)를 **저장본마다 한 번** 배정한다.
 ## 재실행·승급에 다시 추첨하지 않는다(유저 규칙). 화면과 카드가 같이 읽는다.
 const FURS := ["a", "b", "c", "d"]
 var furs: Dictionary = {}
@@ -110,6 +110,13 @@ var guards: float = 0.0
 ## 옛 저장본 호환용. 참이면 한 마리로 친다(load_from에서 옮긴다).
 var guard: bool = false
 var staff: Dictionary = {}
+## 길에 떨어져 있는 쓰레기 **개수**. 자리는 화면이 정하고, 개수는 여기가 정한다 —
+## 그래야 게임을 껐다 켜도 쌓인 만큼 그대로 있다.
+var trash: float = 0.0
+var _trashAcc: float = 0.0
+## 장터 청소부 **사람 수**. 있으면 자리를 비워도 대신 줍는다.
+var sweepers: float = 0.0
+var _sweepAcc: float = 0.0
 var fair: float = 0.0
 var busy: int = -1
 var _busyT: float = 0.0
@@ -295,6 +302,61 @@ func buy_guard() -> bool:
 	guard = true
 	_ev("%s을 들였다 — 자리를 비워도 지켜준다" % Content.GUARD.name, "shop")
 	return true
+
+# ── 쓰레기와 장터 청소부 ──
+## ★ 여기에는 **주사위가 한 번도 안 나온다.** 그래서 청소부를 안 산 판은
+##   난수 순서가 한 칸도 안 밀린다 — 옛 저장본이 그대로 돈다.
+##
+## ★ 나오는 것은 **엽전이 아니라 나뭇잎**이다(2026-08-28, 유저).
+##   엽전이면 매출 곡선에 곱셈으로 얹혀서 밸런스가 통째로 흔들린다.
+##   나뭇잎은 뽑기 쪽으로만 흘러서 **잰 것을 다시 안 재도 된다.**
+##   이게 새 것을 붙일 때 제일 싼 자리다.
+
+## 손으로 줍는다. 청소부가 줍는 것보다 더 준다 — 직접 하는 보람.
+func tap_trash() -> bool:
+	if trash < 1.0:
+		return false
+	trash -= 1.0
+	bump("tap.trash")
+	var leaf: float = float(Content.TRASH.handLeaf)
+	gems += leaf
+	_ev("길에 떨어진 것을 주웠다 — 🍃%d" % int(leaf), "shop")
+	return true
+
+func sweeper_cost() -> float:
+	return floor(Content.SWEEPER.cost)
+
+func sweeper_max() -> int:
+	return int(Content.SWEEPER.max)
+
+func can_buy_sweeper() -> bool:
+	return sweepers < float(sweeper_max()) and money >= sweeper_cost()
+
+func buy_sweeper() -> bool:
+	if not can_buy_sweeper():
+		return false
+	money -= sweeper_cost()
+	bump("open.sweeper")
+	sweepers += 1.0
+	_ev("%s를 들였다 — 자리를 비워도 길을 쓴다" % Content.SWEEPER.name, "shop")
+	return true
+
+## 한 틱치 쓰레기 — 떨어지고, 청소부가 줍는다.
+func _trash_tick(dt: float) -> void:
+	_trashAcc += dt
+	while _trashAcc >= float(Content.TRASH.every):
+		_trashAcc -= float(Content.TRASH.every)
+		trash = min(float(Content.TRASH.max), trash + 1.0)
+	if sweepers <= 0.0:
+		return
+	_sweepAcc += dt * sweepers
+	while _sweepAcc >= float(Content.SWEEPER.picks):
+		_sweepAcc -= float(Content.SWEEPER.picks)
+		if trash < 1.0:
+			_sweepAcc = 0.0
+			break
+		trash -= 1.0
+		gems += float(Content.TRASH.sweepLeaf)
 
 func _pest_escape(rng: Rng) -> void:
 	var tt: Dictionary = pest
@@ -1225,6 +1287,7 @@ func tick(dt: float, rng: Rng) -> Dictionary:
 	t += dt
 	wall += dt
 	_events(dt)
+	_trash_tick(dt)
 
 	# 0) 장
 	if fair > 0.0:
@@ -1255,8 +1318,10 @@ func tick(dt: float, rng: Rng) -> Dictionary:
 	var speed: float = Content.GEM.rush.mult if rush > 0.0 else 1.0
 	# ★ 2026-08-25 생산 개편 — **손 하나가 물건 하나를 만든다.**
 	#   예전에는 열린 물건 전부가 동시에 만들어졌다(일꾼 수 무관). 이제
-	#   가게의 손 수 = 점장 1 + 직원 수. 점장이 계산 중이면(_hold) 손이
-	#   하나 빠진다 — 직원은 만들기만 하고 점장은 만들다 계산도 한다.
+	#   가게의 손 수 = 첫 일꾼 1 + 더 온 일꾼 수. 첫 일꾼이 계산 중이면(_hold)
+	#   손이 하나 빠진다 — 더 온 일꾼은 만들기만 하고, 첫 일꾼은 만들다 계산도 한다.
+	#   ★ 게임 안에서는 **전부 그냥 일꾼**이다(2026-08-28, 유저). '첫'과 '더 온'은
+	#     코드가 자리를 구별하려고 쓰는 말일 뿐, 화면에는 안 나온다.
 	#   매대 순서대로 앞에서부터 손을 배정한다. 다 찬 물건은 손을 안 쓴다.
 	# 0) 하늘 — 다음 날씨까지의 시계. 바뀌면 소식 한 줄.
 	_wxT -= dt
@@ -1838,6 +1903,7 @@ const SAVE_KEYS: Array[String] = [
 	"stats", "zones",
 	"profile", "furs", "_crafting", "_switch", "_recent", "weather", "_wxT",
 	"building",
+	"trash", "_trashAcc", "sweepers", "_sweepAcc",
 ]
 ## 글자로 저장했다 되돌리면 정수가 소수가 된다(-1 → -1.0). 자리를 세는 데
 ## 쓰는 것들은 도로 정수로 되돌린다 — 아니면 배열 자리를 못 찾는다.
@@ -1864,7 +1930,7 @@ const INT_KEYS: Array[String] = ["busy", "_qid", "_evIdx", "_oid"]
 ## 5판: 프로필(profile)이 들어왔다. 4판 저장본은 그 칸이 없고, load_from이
 ## 없는 칸을 건너뛰므로 기본값(너구리·기본 얼굴·자동 띠)으로 시작한다 —
 ## 따로 옮길 것이 없다.
-## 6판: 점장 무늬(furs). 옛 저장본은 **연 순서대로 주머니를 돌려** 배정한다 —
+## 6판: 일꾼 무늬(furs). 옛 저장본은 **연 순서대로 주머니를 돌려** 배정한다 —
 ## 약속은 "한 번 정하면 안 바뀐다"이지 "무작위"가 아니라서, 옛 판은
 ## 규칙적이어도 된다. 이후 새로 여는 가게부터 주머니 뽑기를 탄다.
 ## 7판: 손의 이동(_crafting·_switch). 옛 저장본은 칸이 없어 빈 값으로
@@ -1882,7 +1948,10 @@ const INT_KEYS: Array[String] = ["busy", "_qid", "_evIdx", "_oid"]
 ## 가게 하나(푸줏간 → 과일전)와 물건 열아홉의 id가 바뀌었다 — **담는 칸은
 ## 그대로고 칸에 든 이름표만 달라졌다.** 그냥 두면 열어 둔 가게와 물건,
 ## 올려 둔 등급이 통째로 사라진다. 이름표를 갈아 끼워 준다.
-const SAVE_VER: int = 11
+## 12판: 쓰레기가 화면 장식에서 **경제 규칙**이 됐고, 장터 청소부가 생겼다.
+## 옛 저장본에는 trash·sweepers 칸이 아예 없다 — 없으면 0이고, 그게 맞다
+## (길이 깨끗한 채로 다시 시작하고, 청소부는 아직 안 뽑은 것이다).
+const SAVE_VER: int = 12
 
 ## 11판에서 바뀐 이름표. 옛 id → 새 id.
 const RENAMED_V11: Dictionary = {

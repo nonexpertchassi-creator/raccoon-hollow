@@ -34,11 +34,11 @@ shot 04-가게-제품     SHOT_PANEL=smith SHOT_TAB=items
 shot 05-가게-일손     SHOT_PANEL=smith SHOT_TAB=work
 shot 06-가게-승급     SHOT_PANEL=smith SHOT_TAB=rank
 shot 07-도감-손님     SHOT_PANEL=guests SHOT_TAB=items
-shot 08-도감-점장카드 SHOT_PANEL=guests SHOT_TAB=work
+shot 08-도감-일꾼카드 SHOT_PANEL=guests SHOT_TAB=work
 shot 09-뽑기          SHOT_PANEL=gacha SHOT_TAB=items
 shot 10-룰렛          SHOT_PANEL=gacha SHOT_TAB=work
 shot 11-의뢰          SHOT_PANEL=quests
 shot 12-장날소식      SHOT_PANEL=ledger
-shot 13-점장카드열림  SHOT_CARD=smith
+shot 13-일꾼카드열림  SHOT_CARD=smith
 shot 14-처음켰을때    SHOT_MINUTES=0
 echo "shots/ 에 다 넣었다."

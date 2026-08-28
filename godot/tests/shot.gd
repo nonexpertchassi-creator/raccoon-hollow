@@ -7,7 +7,7 @@ extends Node
 ##   SHOT_ZOOM=1.0             그 크기로 찍는다(기본은 게임이 정한 값)
 ##   SHOT_PANEL=quests|guests|ledger|gacha|<가게id>   창을 열어 놓고 찍는다
 ##   SHOT_TAB=items|work|rank  가게 창의 갈피를 골라서 찍는다
-##   SHOT_CARD=<가게id>        점장 카드가 열린 순간을 띄워서 찍는다
+##   SHOT_CARD=<가게id>        일꾼 카드가 열린 순간을 띄워서 찍는다
 var _done: bool = false
 
 func _ready() -> void:
@@ -94,7 +94,7 @@ func _ready() -> void:
 		else:
 			main.panel.open_for(k)
 		# 갈피는 어느 창이든 고를 수 있어야 한다 — 가게 창에만 걸어 뒀더니
-		# 도감의 '점장 카드' 갈피를 도구가 영영 못 봤다.
+		# 도감의 '일꾼 카드' 갈피를 도구가 영영 못 봤다.
 		if OS.has_environment("SHOT_TAB"):
 			main.panel.tab = OS.get_environment("SHOT_TAB")
 			main.panel.rebuild()
@@ -103,7 +103,7 @@ func _ready() -> void:
 	var staff: int = 0
 	for sh in main.sim.shops:
 		staff += int(main.sim.staff_of(sh))
-	print("SHOT 손님 %d · 직원 %d · 빈손💢 %d · 말풍선 %s · 소리 %s" % [main.village.walkers.size(), staff,
+	print("SHOT 손님 %d · 일꾼 %d · 빈손💢 %d · 말풍선 %s · 소리 %s" % [main.village.walkers.size(), staff,
 		_grumpy(main), ("없음" if main.village.bubble.is_empty() else String(main.village.bubble.text)),
 		main.sfx.summary()])
 

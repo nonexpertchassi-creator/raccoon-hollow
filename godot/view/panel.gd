@@ -1,6 +1,6 @@
 extends PanelContainer
 class_name ShopPanel
-## 아래에서 올라오는 창. 가게를 누르면 여기서 강화·칸 열기·직원·승급을 한다.
+## 아래에서 올라오는 창. 가게를 누르면 여기서 강화·칸 열기·일꾼·승급을 한다.
 ##
 ## 지도에서 바로 되는 일(매대 눌러 강화)은 여기 없어도 된다. 이 창은
 ## **지도에서 못 하는 것**만 맡는다 — 자세한 숫자와 승급.
@@ -316,6 +316,22 @@ func _quests_body() -> void:
 	if sim.quests.size() < sim.quest_slots():
 		_box.add_child(_label("다음 의뢰가 오는 중… (%d초)" % int(ceil(max(0.0, sim._qCool))), 12, Color("8a7a63")))
 
+	# 사람 구하기 — 게시판은 의뢰만 붙는 곳이 아니다. 사람 구하는 방도 여기다.
+	_box.add_child(_label("사람 구하기 — 엽전으로", 15, Color("5a4e3d")))
+	var sc: Variant = sim.sweeper_cost()
+	_box.add_child(_label("%s %s  %d/%d — %s" % [
+		Content.SWEEPER.face, Content.SWEEPER.name,
+		int(sim.sweepers), sim.sweeper_max(), Content.SWEEPER.desc], 13))
+	_box.add_child(_label("길에 떨어진 것은 **눌러서도** 주울 수 있다 — 손으로 주우면 🍃%d, 청소부가 주우면 🍃%d"
+		% [int(Content.TRASH.handLeaf), int(Content.TRASH.sweepLeaf)]
+		+ (" · 지금 %d개 떨어져 있다" % int(sim.trash) if sim.trash > 0.0 else ""),
+		11, Color("8a7a63")))
+	if sim.sweepers >= float(sim.sweeper_max()):
+		_box.add_child(_label("한 명이면 충분하다 — 둘째는 할 일이 없다", 11, Color("4a7c59")))
+	else:
+		_box.add_child(_btn("들이기 🪙" + Num.fmt(sc), sim.can_buy_sweeper(),
+			func(): sim.buy_sweeper(); rebuild()))
+
 	_box.add_child(_label("패시브 스킬 — 나뭇잎으로 영영 세지는 것들", 15, Color("5a4e3d")))
 	_box.add_child(_label("👷 부스터 — %s" % ("빨라지는 중… %d초" % int(ceil(sim.rush))
 		if sim.rush > 0.0 else "%d초 동안 만드는 속도가 %d배"
@@ -343,13 +359,13 @@ func _hhmm(sec: float) -> String:
 ## ── 손님 도감 ──
 ## 아직 안 온 손님도 자리를 비워 보여준다 — 몇이 더 남았는지, 무엇을 하면
 ## 오는지가 보여야 모으는 재미가 생긴다.
-## 도감 — **한 창에 갈피 둘**(손님 · 점장 카드).
+## 도감 — **한 창에 갈피 둘**(손님 · 일꾼 카드).
 ## 창을 따로 만들면 아래 단추가 넷이 되고, 폰에서 넷은 누르다 틀린다.
 ## 가게 창에서 쓴 수법을 그대로 쓴다.
 func _guests_body() -> void:
 	_head("도감")
 	var bar := HBoxContainer.new()
-	for t in [["items", "손님"], ["work", "점장 카드"]]:
+	for t in [["items", "손님"], ["work", "일꾼 카드"]]:
 		var key: String = String(t[0])
 		var b := _btn(String(t[1]), true, func(): tab = key; rebuild())
 		b.disabled = tab == key
@@ -360,7 +376,7 @@ func _guests_body() -> void:
 		return
 	_guest_list()
 
-## 점장 카드 — **가진 것에서 계산한다.** 따로 담아 두지 않는다.
+## 일꾼 카드 — **가진 것에서 계산한다.** 따로 담아 두지 않는다.
 ## 가게가 열렸으면 그 가게 0등급 카드가 있는 것이고, 승급했으면 그만큼 더 있다.
 func _cards_body() -> void:
 	var have: int = 0
@@ -639,7 +655,7 @@ func _ledger_body() -> void:
 
 ## ── 가게 ──
 ##
-## 갈피(탭) 셋으로 가른다. 예전엔 제품·직원·강화·승급을 한 줄로 다 쏟았는데,
+## 갈피(탭) 셋으로 가른다. 예전엔 제품·일꾼·강화·승급을 한 줄로 다 쏟았는데,
 ## 매대가 여덟 칸까지 늘면 승급 조건은 스크롤 저 아래라 아무도 안 봤다.
 ## 자주 만지는 것(제품)과 가끔 보는 것(승급)은 같은 화면에 있을 이유가 없다.
 func _shop_body() -> void:

@@ -2644,6 +2644,23 @@ const STAR_CARDS := [
 
 const STOCK_CAP := 5.0
 
+const SWEEPER := {
+	"id": "sweeper",
+	"name": "장터 청소부",
+	"face": "🧹",
+	"cost": 60000.0,
+	"picks": 20.0,
+	"max": 1.0,
+	"desc": "길에 떨어진 것을 대신 줍는다 — 자리를 비워도 돈다"
+}
+
+const TRASH := {
+	"every": 40.0,
+	"max": 5.0,
+	"handLeaf": 2.0,
+	"sweepLeaf": 1.0
+}
+
 const WEATHER := {
 	"every": [
 		300.0,
@@ -2688,3 +2705,4 @@ const WEATHER := {
 		}
 	]
 }
+

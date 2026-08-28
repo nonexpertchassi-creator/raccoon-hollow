@@ -165,7 +165,7 @@ for (let t = 0; t < HOURS * 3600; t += DT) {
     for (const id of Object.keys(s.items)) {
       const p = seen(id);
       p.live++;
-      if (s.items[id].stock >= s.capOf(id)) p.stall++;   // 상한은 직원 수에 따라 다르다
+      if (s.items[id].stock >= s.capOf(id)) p.stall++;   // 상한은 일꾼 수에 따라 다르다
     }
     if (Math.floor(t) % 600 === 0) {
       timeline.push({ min: Math.round(t / 60), rev: s.revenue, ips: s.incomePerSec(),

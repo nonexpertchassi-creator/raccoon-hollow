@@ -58,6 +58,12 @@ static func act(s: Sim, rng: Rng, use_shop_up: bool) -> void:
 	if s.can_buy_guard():
 		s.buy_guard()
 		return
+	# 길에 떨어진 것 — 손이 비면 줍는다. 도구가 안 써 보는 기능은 도구에게 없는 것이다.
+	if s.trash >= 1.0 and s.tap_trash():
+		return
+	if s.can_buy_sweeper():
+		s.buy_sweeper()
+		return
 	# 가게 고유 강화 — 제일 싼 것부터.
 	# BAL_ONLY=smith 처럼 주면 그 가게 것만 산다(하나씩 재려고).
 	if use_shop_up:

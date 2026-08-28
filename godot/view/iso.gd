@@ -78,7 +78,13 @@ const SMALL_T := [Vector2i(14, 2), Vector2i(14, 8), Vector2i(14, 14), Vector2i(1
 ## 딸려 오는 덤이 하나 있는 것도 나쁘지 않다.
 const DOG_T := Vector2i(14, 4)
 
-## 손님이 서는 쪽(길)과 그 반대쪽(점장이 서는 마당 안). 한 칸 어치다.
+## 의뢰 게시판 — 촌장이 하던 일을 물려받은 **붙박이 판때기**다(2026-08-28, 유저:
+## "촌장 시스템 없애자, 의뢰 게시판 하나 만들고"). 걸어 다니는 사람이 알려주면
+## 알림을 보려고 그 사람을 **찾아다녀야 한다** — 붙박이면 늘 그 자리에 있다.
+## 첫 화면 안(위쪽 길가)에 두어 처음 켠 사람도 그냥 보인다.
+const BOARD_T := Vector2i(14, 1)
+
+## 손님이 서는 쪽(길)과 그 반대쪽(일꾼이 서는 마당 안). 한 칸 어치다.
 const GATE_OFF := {"x": Vector2(44, 22), "y": Vector2(-44, 22)}
 ## 줄이 뻗는 방향 — **가게 앞면을 따라** 선다(2026-08-25, 유저가 잡았다).
 ## 예전엔 길을 따라 가게 반대쪽으로 뻗어서, 둘째 사람부터 가게를 등지고
@@ -158,13 +164,13 @@ static func yard(kind: String, n: int) -> Dictionary:
 		"counter": cts[0], "counters": cts, "serve": svs[0], "serves": svs,
 		"stalls": stalls}
 
-## 작업대 — 가마 바로 안쪽 칸. 점장이 여기서 만든다.
+## 작업대 — 가마 바로 안쪽 칸. 일꾼이 여기서 만든다.
 static func work_spot(y: Dictionary, n: int) -> Vector2i:
 	return Vector2i(clampi(y.kiln.x, 1, n - 2), clampi(y.kiln.y, 1, n - 2))
 
-## 직원 자리 — 안쪽 빈칸을 먼저, 모자라면 담벼락 빈칸까지.
+## 일꾼 자리 — 안쪽 빈칸을 먼저, 모자라면 담벼락 빈칸까지.
 ## 3×3 마당은 안쪽 칸이 딱 하나뿐이고 그걸 작업대가 쓴다. 담벼락까지 안 내주면
-## 무쇠급 가게는 직원을 뽑아도 한 마리도 안 보인다.
+## 무쇠급 가게는 일꾼을 뽑아도 한 마리도 안 보인다.
 static func staff_spots(y: Dictionary, n: int) -> Array:
 	var wk: Vector2i = work_spot(y, n)
 	# 가구가 놓인 칸은 사람이 못 선다. 계산 자리도 뺀다 — 거기 서 있으면

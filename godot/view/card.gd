@@ -99,8 +99,8 @@ func _ready() -> void:
 	_art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	box.add_child(_art)
-	# 겹그림 점장용 겹 — 꼬리는 본체 뒤(형제 순서상 앞이 뒤에 깔린다), 장비는 앞.
-	# 카드와 마을 점장이 **같은 재료**를 겹쳐 같은 모습이 되게 한다(유저 규칙).
+	# 겹그림 일꾼용 겹 — 꼬리는 본체 뒤(형제 순서상 앞이 뒤에 깔린다), 장비는 앞.
+	# 카드와 마을 일꾼이 **같은 재료**를 겹쳐 같은 모습이 되게 한다(유저 규칙).
 	_art_tail = TextureRect.new()
 	_art_tail.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_art_tail.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -178,7 +178,7 @@ func _on_input(e: InputEvent) -> void:
 	elif _phase != "":
 		_finish_flip()
 	elif not _action.visible:
-		# 단순 알림 카드(룰렛 보상·새 점장 카드)는 아무 데나 눌러도 닫힌다 —
+		# 단순 알림 카드(룰렛 보상·새 일꾼 카드)는 아무 데나 눌러도 닫힌다 —
 		# "받는다"를 조준해 누르는 것도 백 번째에는 수고다(유저).
 		_ok_pressed()
 
@@ -189,11 +189,11 @@ func show_card(shop_id: String, rank: int) -> void:
 	_gridbox.visible = false
 	_cardbox.visible = true
 	var shop: Dictionary = Sim.shop_by_id(shop_id)
-	# 카드 초상 → 완성형 옆모습 → 옛 make → **겹그림(꼬리+몸+차림)** → 공통 점장.
+	# 카드 초상 → 완성형 옆모습 → 옛 make → **겹그림(꼬리+몸+차림)** → 공통 일꾼.
 	#
 	# ★ 겹그림 칸을 예전부터 만들어 두고 늘 비워 뒀다(2026-08-27에 발견).
 	#   마을 화면이 겹치기로 바뀌었으니 카드도 **같은 재료로 같은 모습**이어야 한다 —
-	#   여기만 통짜 그림을 쓰면 뽑은 카드와 마당의 점장이 다르게 생긴다.
+	#   여기만 통짜 그림을 쓰면 뽑은 카드와 마당의 일꾼이 다르게 생긴다.
 	_art_tail.texture = null
 	_art_gear.texture = null
 	var t: Texture2D = Art.tex("cards", "%s-%d" % [shop_id, rank + 1])
@@ -202,7 +202,7 @@ func show_card(shop_id: String, rank: int) -> void:
 	if t == null:
 		t = Art.ranked("clerks", "%s-make" % shop_id, rank)
 	if t == null:
-		# 무늬 A로 겹친다 — 카드는 "이 가게의 점장"을 보여주는 자리라 대표 무늬 하나면 된다.
+		# 무늬 A로 겹친다 — 카드는 "이 가게의 일꾼"을 보여주는 자리라 대표 무늬 하나면 된다.
 		t = Art.ranked("hero-body", "a-side", rank)
 		if t != null:
 			_art_tail.texture = Art.ranked("hero-tail", "a-side", rank)
@@ -213,7 +213,7 @@ func show_card(shop_id: String, rank: int) -> void:
 	_art.visible = t != null
 	_sign.visible = t == null            # 그림이 없으면 현판 글자로 대신한다
 	_sign.text = String(shop.sign)
-	_head_label.text = "새 점장 카드!"
+	_head_label.text = "새 일꾼 카드!"
 	_title.text = "%s %s" % [shop.ranks[rank], shop.name]
 	_title.add_theme_color_override("font_color", Color("2b241b"))
 	_sub.text = "%s · %d번째 등급" % [shop.desc, rank + 1]

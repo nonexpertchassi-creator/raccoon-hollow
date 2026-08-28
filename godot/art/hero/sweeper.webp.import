@@ -2,22 +2,22 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bx2wb3phreent"
-path="res://.godot/imported/mayor.webp-07f4f8a7297be56ac9f253610de28f4a.ctex"
+uid="uid://bke0jidf7oj8i"
+path="res://.godot/imported/sweeper.webp-e69aa187271c143576a37e7cad4ff7b1.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://art/hero/mayor.webp"
-dest_files=["res://.godot/imported/mayor.webp-07f4f8a7297be56ac9f253610de28f4a.ctex"]
+source_file="res://art/hero/sweeper.webp"
+dest_files=["res://.godot/imported/sweeper.webp-e69aa187271c143576a37e7cad4ff7b1.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=1
 compress/high_quality=false
-compress/lossy_quality=0.7
+compress/lossy_quality=0.9
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1

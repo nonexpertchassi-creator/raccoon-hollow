@@ -106,15 +106,15 @@ function yard(kind, n) {
     stalls: [...TR.slice(1), ...TL.slice(1)].slice(0, need) };
 }
 
-/** 작업대 — 가마 바로 안쪽 칸. 점장이 여기서 만든다. */
+/** 작업대 — 가마 바로 안쪽 칸. 일꾼이 여기서 만든다. */
 function workSpot(y, n) {
   const c = (v) => Math.max(1, Math.min(n - 2, v));
   return [c(y.kiln[0]), c(y.kiln[1])];
 }
-/** 직원 자리 — 안쪽 빈칸을 먼저, 모자라면 담벼락 빈칸까지.
+/** 일꾼 자리 — 안쪽 빈칸을 먼저, 모자라면 담벼락 빈칸까지.
  *
  *  ★ 3×3 마당은 안쪽 칸이 딱 하나뿐이고 그걸 작업대가 쓴다. 그래서
- *    무쇠급 가게는 **직원을 뽑아도 한 마리도 안 보였다** — 돈만 나가고
+ *    무쇠급 가게는 **일꾼을 뽑아도 한 마리도 안 보였다** — 돈만 나가고
  *    화면에는 아무 일도 안 일어나는, 제일 나쁜 종류의 고장이다.
  *    매대·계산대·가마가 안 쓰는 담벼락 칸을 뒷자리로 내준다. */
 function staffSpots(y, n) {
@@ -131,10 +131,10 @@ function staffSpots(y, n) {
   return out;
 }
 
-/** 점장이 물건을 집을 때 서는 칸 — 매대 **옆 칸**(마당 안쪽).
+/** 일꾼이 물건을 집을 때 서는 칸 — 매대 **옆 칸**(마당 안쪽).
  *
- *  예전엔 매대 칸 안에 서게 해서(+26,+14) 매대 상자가 점장을 통째로 덮었다.
- *  상자는 낮지만(14px) 점장이 그 칸 **뒤쪽**에 서는 셈이라 머리끝까지 가려졌다.
+ *  예전엔 매대 칸 안에 서게 해서(+26,+14) 매대 상자가 일꾼을 통째로 덮었다.
+ *  상자는 낮지만(14px) 일꾼이 그 칸 **뒤쪽**에 서는 셈이라 머리끝까지 가려졌다.
  *  옆 칸으로 물러서면 깊이가 같거나 한 칸 뒤라, 가려도 발끝뿐이다.
  */
 function fetchSpot(y, n, stall) {
@@ -150,7 +150,7 @@ function fetchSpot(y, n, stall) {
       || cand.find(inside) || [lx, ly];
 }
 
-/* 손님이 서는 쪽(길)과, 그 반대쪽(점장이 서는 마당 안). 한 칸 어치다. */
+/* 손님이 서는 쪽(길)과, 그 반대쪽(일꾼이 서는 마당 안). 한 칸 어치다. */
 const GATE_OFF  = { x: { gx: 44, gy: 22 }, y: { gx: -44, gy: 22 } };
 const SERVE_OFF = { x: { gx: -32, gy: -16 }, y: { gx: 32, gy: -16 } };
 /* 줄은 길을 따라 늘어선다 — 큰길(세로)이면 아래왼쪽으로, 골목(가로)이면 아래오른쪽으로 */
@@ -205,7 +205,7 @@ export class Village {
     this.pending = {};
     this.flash = {};
     this.bubble = null;
-    this.busyShop = {};                    // 가게별 '방금 팔렸다' 여운(점장이 쫓는다)
+    this.busyShop = {};                    // 가게별 '방금 팔렸다' 여운(일꾼이 쫓는다)
     /* 가게 앞 줄 — 손님이 겹쳐 서면 주문 말풍선이 서로를 덮는다.
      * 먼저 온 손님이 0번(계산대 앞), 나머지는 길을 따라 뒤로 선다. */
     this.line = SHOPS.map(() => []);
@@ -253,7 +253,7 @@ export class Village {
       n, S, yard: y,
       stand: { x: cc.x + g.gx, y: cc.y + g.gy },        // 손님 — 계산대 앞(길 위)
       work: iso(tx + wk[0] + 0.5, ty + wk[1] + 0.5),    // 작업대 — 가마에 붙은 안쪽 칸
-      serve: { x: cc.x + v.gx, y: cc.y + v.gy },        // 점장 — 계산대 뒤(마당 안)
+      serve: { x: cc.x + v.gx, y: cc.y + v.gy },        // 일꾼 — 계산대 뒤(마당 안)
     };
   }
 
@@ -418,7 +418,7 @@ export class Village {
       const g = byShop.get(idx);
       g.sold.push({ id: ln.item.id, n: ln.n });
       g.gain += ln.gain;
-      /* 즉시 판매만 도로 더한다. 주문은 점장이 손에 들고 만드는 중이라
+      /* 즉시 판매만 도로 더한다. 주문은 일꾼이 손에 들고 만드는 중이라
        * 진열대가 파인 게 오히려 맞는 그림이다. */
       if (!sale.waiting) this.pending[ln.item.id] = (this.pending[ln.item.id] || 0) + ln.n;
     }
@@ -592,7 +592,7 @@ export class Village {
           w.state = 'buy'; w.wait = BUY_TIME * w.rush; w.paid = false; w.served = false;
         }
       } else if (w.state === 'buy') {
-        /* 주문한 물건이 아직 안 나왔다 — 점장은 만드는 중, 손님은 서서 기다린다.
+        /* 주문한 물건이 아직 안 나왔다 — 일꾼은 만드는 중, 손님은 서서 기다린다.
          * 계산 연출은 sim이 onOrderDone으로 깨워줄 때 시작한다.
          *
          * ★ 안전 빗장: 그 신호를 어떤 이유로든 놓치면 이 손님이 계산대를
@@ -606,7 +606,7 @@ export class Village {
         if (!w.served) {
           w.served = true; w.wait = BUY_TIME * (w.rush || 1);
           this.busyShop[stop.idx] = w.wait + 1.2;
-          /* 점장이 이 매대에 들러 물건을 집어 온다 — '주문 받고 내온다'가
+          /* 일꾼이 이 매대에 들러 물건을 집어 온다 — '주문 받고 내온다'가
            * 눈에 보이는 지점. 경제는 그대로다(재고에서 파는 것). */
           if (stop.sold.length) this.fetch[stop.idx] = stop.sold[0].id;
         }
@@ -659,7 +659,7 @@ export class Village {
       for (let k = q.length - 1; k >= 0; k--) if (q[k].gone) q.splice(k, 1);
     }
 
-    // 점장 — 주문이 오면 매대에서 집어서 계산대로, 아니면 작업대로
+    // 일꾼 — 주문이 오면 매대에서 집어서 계산대로, 아니면 작업대로
     for (let i = 0; i < SHOPS.length; i++) {
       const m = this.mgr[i];
       const f = this._foot(i);
@@ -872,7 +872,7 @@ export class Village {
         continue;
       }
       /* 마당을 한 덩어리로 그리면 마당의 z(아래 꼭짓점)가 마당 **안에 서 있는**
-       * 손님·점장보다 커서 가구가 동물을 덮었다. 바닥은 맨 뒤로 보내고,
+       * 손님·일꾼보다 커서 가구가 동물을 덮었다. 바닥은 맨 뒤로 보내고,
        * 가구 하나하나를 자기 발끝 z로 따로 세운다 — 그래야 손님이 계산대
        * 뒤에 서면 가려지고 앞에 서면 가리는, 당연한 일이 당연하게 된다. */
       layer.push({ z: iso(tx, ty).y + 2, d: () => this._plotBase(c, i, n) });
@@ -886,11 +886,11 @@ export class Village {
         layer.push({ z: iso(tx + lx + 1, ty + ly + 1).y, d: () => this._stall(c, i, kk, spots[kk]) });
       }
       /* 계산대도 자기 발끝으로 선다. 마당 끝(S.y)에 세워 두면 마당 **안**에 있는
-       * 점장·손님보다 항상 앞이 되어 너구리를 덮었다 — 가구를 따로 세운 이유가
+       * 일꾼·손님보다 항상 앞이 되어 너구리를 덮었다 — 가구를 따로 세운 이유가
        * 바로 이건데 계산대만 옛 z가 남아 있었다. */
       const ct = this._yard(i).counter;
       layer.push({ z: iso(tx + ct[0] + 0.84, ty + ct[1] + 0.7).y, d: () => this._counter(c, i) });
-      /* 직원 — 늘 작업대 줄에 붙어 만든다. 점장이 계산대로 불려가도
+      /* 일꾼 — 늘 작업대 줄에 붙어 만든다. 일꾼이 계산대로 불려가도
        * 이쪽은 계속 만든다. '한 마리는 생산, 한 마리는 판매'가 이 그림이다. */
       const nst = this.sim.staffOf(SHOPS[i].id);
       const ss = staffSpots(this._yard(i), n);
@@ -1235,7 +1235,7 @@ export class Village {
     }
   }
 
-  /* ── 점장 ── */
+  /* ── 일꾼 ── */
   _clerk(i) {
     const shop = SHOPS[i];
     if (!this.sim.shops.includes(shop.id)) return null;
@@ -1296,7 +1296,7 @@ export class Village {
     }
   }
 
-  /** 직원 너구리 — 자리를 안 옮긴다. 자기 작업대만 지킨다. */
+  /** 일꾼 너구리 — 자리를 안 옮긴다. 자기 작업대만 지킨다. */
   _staff(c, i, k, sp) {
     const shop = SHOPS[i];
     const full = shop.items.filter((it) => this.sim.isOpen(it.id))

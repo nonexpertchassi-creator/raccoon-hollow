@@ -50,7 +50,7 @@ export class Sim {
     this.auto = false;                    // 자동 강화를 샀는가
     this.smalls = [];                     // 세워 둔 작은 건물의 번호
     this.guard = false;                   // 삽살개를 들였는가
-    this.staff = {};                      // 가게별 직원 수 (점장은 안 센다)
+    this.staff = {};                      // 가게별 일꾼 수 (일꾼은 안 센다)
     this.fair = 0;                        // 장이 서 있는 남은 시간(초)
     this.busy = -1;                       // 지금 북적이는 작은 건물 (없으면 -1)
     this._busyT = 0;
@@ -83,7 +83,7 @@ export class Sim {
      * { id, gid, lines:[{id,n,rem,unit}], want, grumbles, t } */
     this.orders = [];
     this._oid = 0;
-    this._hold = {};                     // 계산 중이라 생산이 멈춘 가게 (점장 혼자일 때만)
+    this._hold = {};                     // 계산 중이라 생산이 멈춘 가게 (일꾼 혼자일 때만)
     this._pestEvents = [];               // 이번 틱에 도둑이 벌인 일 (화면 표시용)
 
     this._guestAcc = {};
@@ -326,8 +326,8 @@ export class Sim {
     return n;
   }
 
-  /* ── 직원 ──
-   * 점장 혼자 만들고 팔다가, 직원을 들이면 그 가게 생산이 빨라진다.
+  /* ── 일꾼 ──
+   * 일꾼 혼자 만들고 팔다가, 일꾼을 들이면 그 가게 생산이 빨라진다.
    * 한 명당 +22%. 자리 수는 등급이 정한다(무쇠 1 · 참쇠 2 · 강철 3). */
   staffOf(shopId) { return this.staff[shopId] || 0; }
   /* 고용은 **승급을 안 기다린다.** 예전엔 참쇠급부터 열었는데, 승급 조건이
@@ -402,9 +402,9 @@ export class Sim {
     return it.time * f * this.forgeMul();
   }
 
-  /** 이 품목의 진열대 상한. 직원 한 명이 진열대 10칸을 더 본다.
+  /** 이 품목의 진열대 상한. 일꾼 한 명이 진열대 10칸을 더 본다.
    *
-   *  처음엔 직원을 '생산 +22%'로 만들었다 — 진열대의 25%가 꽉 찬 채
+   *  처음엔 일꾼을 '생산 +22%'로 만들었다 — 진열대의 25%가 꽉 찬 채
    *  생산이 멈췄다. 공급·수요를 몇 시간 재서 맞춰 놨는데 공급만 22%씩
    *  올리면 그 균형이 통째로 무너진다. 진열대 확장은 초반을 안 건드리고,
    *  쌓아둔 것이 후반 큰손(곰·호랑이)의 싹쓸이를 받아내게 한다. */
@@ -667,7 +667,7 @@ export class Sim {
   haggle() { return 1 + GU.haggle.step * this.upLv('haggle'); }
   /** 만드는 시간을 줄인다. 곱으로만 줄이므로 0에 못 닿는다. */
   forgeMul() { return 1 - GU.forge.step * this.upLv('forge'); }
-  /** 점장 혼자인 가게가 계산하느라 망치를 놓는 시간.
+  /** 일꾼 혼자인 가게가 계산하느라 망치를 놓는 시간.
    *
    *  여기 붙인 이유: 장을 자주 열어 손님을 두 배로 부르면 매출이 오히려
    *  **떨어졌다.** 계산 횟수가 두 배가 되면서 이 멈춤도 두 배가 됐기
@@ -858,8 +858,8 @@ export class Sim {
     }
 
     // 1) 생산 — 열린 품목이 각자 자기 타이머로 돈다. 손 댈 필요 없음.
-    //    단, 점장 혼자인 가게는 계산하는 동안(_hold) 망치를 놓는다.
-    //    직원이 있으면 계산 중에도 직원이 계속 만든다 — 고용의 이유 하나 추가.
+    //    단, 일꾼 혼자인 가게는 계산하는 동안(_hold) 망치를 놓는다.
+    //    일꾼이 있으면 계산 중에도 일꾼이 계속 만든다 — 고용의 이유 하나 추가.
     for (const k of Object.keys(this._hold)) {
       this._hold[k] -= dt;
       if (this._hold[k] <= 0) delete this._hold[k];
@@ -1096,7 +1096,7 @@ export class Sim {
     this.revenue += gain;
     if (this.auto) this._purse += gain * AUTO_SHARE;
 
-    // 점장 혼자인 가게는 계산하는 동안 생산을 멈춘다
+    // 일꾼 혼자인 가게는 계산하는 동안 생산을 멈춘다
     for (const ln of out) {
       if (this.staffOf(ln.item.shop) === 0) this._hold[ln.item.shop] = this.servePause();
     }
