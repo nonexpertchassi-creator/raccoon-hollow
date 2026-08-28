@@ -58,4 +58,6 @@ shot 11-의뢰          SHOT_PANEL=quests
 shot 12-장날소식      SHOT_PANEL=ledger
 shot 13-일꾼카드열림  SHOT_CARD=smith
 shot 14-처음켰을때    SHOT_MINUTES=0
+shot 15-첫만화        SHOT_MINUTES=0 SHOT_STORY=intro
+shot 16-게시판쪽지    SHOT_MINUTES=0 SHOT_STORY=start
 echo "shots/ 에 다 넣었다."

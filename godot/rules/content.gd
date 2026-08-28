@@ -26,6 +26,45 @@ const AUTO_SHARE := 0.6
 
 const BASKET_SPREAD := 3.0
 
+const BEATS := [
+	{
+		"id": "start",
+		"text": "왔구나. 곳간에 남은 건 이 세 장뿐일세 — 불씨는 하나면 되네."
+	},
+	{
+		"id": "firstShop",
+		"text": "저 무너진 대장간부터일세. 눌러서 다시 세워 보게."
+	},
+	{
+		"id": "firstMake",
+		"text": "호미 한 자루면 밭을 맬 수 있지. 그거면 첫 손님이 온다네."
+	},
+	{
+		"id": "firstGuest",
+		"text": "첫 손님이군! 주문을 받으면 우리가 만들어 건넨다네. 장사는 그게 전부야."
+	},
+	{
+		"id": "firstStaff",
+		"text": "손이 하나면 물건도 하나지. 일손을 들이게."
+	},
+	{
+		"id": "firstRank",
+		"text": "가게가 크는구먼. 담도 바닥도 앞치마도 — 다 따라 큰다네."
+	},
+	{
+		"id": "zone2",
+		"text": "안개가 걷히는군. 저잣거리에 다시 등이 켜질 걸세."
+	},
+	{
+		"id": "zone3",
+		"text": "여기가 마지막일세 — 팔도 장사꾼이 모이던 큰장마당. 장날을 되찾아 보세."
+	},
+	{
+		"id": "ending",
+		"text": "보게. 너구리 골 장날이… 돌아왔네."
+	}
+]
+
 const BUILD_RUSH_PER := 1800.0
 
 const CARD_GRADES := [
@@ -931,6 +970,25 @@ const GUESTS := [
 ]
 
 const GUEST_WALK := 0.45
+
+const INTRO := [
+	{
+		"art": "intro1",
+		"text": "한때 너구리 골 장날은 팔도에서 제일 붐볐다."
+	},
+	{
+		"art": "intro2",
+		"text": "큰 장마가 모든 것을 쓸어 갔다."
+	},
+	{
+		"art": "intro3",
+		"text": "떠내려간 자리에 게시판 하나가 남았다."
+	},
+	{
+		"art": "intro4",
+		"text": "그런데 대장간 화덕에 — 불씨가 아직 살아 있었다."
+	}
+]
 
 const LEDGER := {
 	"dayMinutes": 8.0,

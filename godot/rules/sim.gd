@@ -110,6 +110,22 @@ var guards: float = 0.0
 ## 옛 저장본 호환용. 참이면 한 마리로 친다(load_from에서 옮긴다).
 var guard: bool = false
 var staff: Dictionary = {}
+## 이야기에서 **이미 지나간 마디**들. 한 마디는 한 번만 나온다.
+##
+## ★ 왜 화면이 아니라 여기 있나. 저장본에 남아야 하기 때문이다 — 껐다 켤 때마다
+##   "왔구나"가 다시 뜨면 그건 이야기가 아니라 잔소리다. sim은 이 게임에서
+##   유일하게 **기억하는 곳**이라 여기 둔다. 돈은 한 푼도 안 건드린다.
+var story: Dictionary = {}
+
+## 그 마디가 **처음인가.** 처음이면 참을 돌려주고 그 자리에서 지나간 것으로 적는다.
+## 화면은 이 값만 보고 쪽지를 붙일지 정한다.
+func story_fire(id: String) -> bool:
+	if story.has(id):
+		return false
+	story[id] = true
+	bump("story." + id)
+	return true
+
 ## 길에 떨어져 있는 쓰레기 **개수**. 자리는 화면이 정하고, 개수는 여기가 정한다 —
 ## 그래야 게임을 껐다 켜도 쌓인 만큼 그대로 있다.
 var trash: float = 0.0
@@ -1904,6 +1920,7 @@ const SAVE_KEYS: Array[String] = [
 	"profile", "furs", "_crafting", "_switch", "_recent", "weather", "_wxT",
 	"building",
 	"trash", "_trashAcc", "sweepers", "_sweepAcc",
+	"story",
 ]
 ## 글자로 저장했다 되돌리면 정수가 소수가 된다(-1 → -1.0). 자리를 세는 데
 ## 쓰는 것들은 도로 정수로 되돌린다 — 아니면 배열 자리를 못 찾는다.
@@ -1951,7 +1968,10 @@ const INT_KEYS: Array[String] = ["busy", "_qid", "_evIdx", "_oid"]
 ## 12판: 쓰레기가 화면 장식에서 **경제 규칙**이 됐고, 장터 청소부가 생겼다.
 ## 옛 저장본에는 trash·sweepers 칸이 아예 없다 — 없으면 0이고, 그게 맞다
 ## (길이 깨끗한 채로 다시 시작하고, 청소부는 아직 안 뽑은 것이다).
-const SAVE_VER: int = 12
+## 13판: 이야기 마디(story). 옛 저장본에는 없다 — 그러면 빈 칸이고, 이미
+## 한참 논 사람에게 "왔구나"부터 다시 뜬다. 그건 안 된다. 그래서 옛 판을
+## 받을 때 **가진 것을 보고 지나간 마디를 되짚어** 채운다(load_from 아래).
+const SAVE_VER: int = 13
 
 ## 11판에서 바뀐 이름표. 옛 id → 새 id.
 const RENAMED_V11: Dictionary = {
@@ -2009,6 +2029,23 @@ func load_from(d: Dictionary, ver: int = SAVE_VER) -> void:
 	for i in smalls:
 		fixed.append(int(i))
 	smalls = fixed
+	# ★ 12판 이전 저장본에는 이야기 마디가 없다. 그냥 두면 이미 가게 열 채를
+	#   가진 사람에게 "저 무너진 대장간부터일세"가 뜬다. 그래서 **가진 것을 보고
+	#   지나간 마디를 되짚어** 준다 — 이야기는 못 돌려줘도 잔소리는 막는다.
+	if ver < 13:
+		for k in ["start", "firstShop", "firstMake", "firstGuest"]:
+			story[k] = true
+		if not shops.is_empty():
+			story["firstShop"] = true
+		for sh in shops:
+			if staff_of(String(sh)) > 0.0:
+				story["firstStaff"] = true
+			if rank_of(String(sh)) > 0:
+				story["firstRank"] = true
+		if zones.has("jeoja"):
+			story["zone2"] = true
+		if zones.has("keunjang"):
+			story["zone3"] = true
 	# 저장한 뒤에 손님이 늘어났으면 그 칸이 없다. 없는 칸에 dt를 더하면
 	# 값이 망가져서 **그 손님은 영영 안 온다** — 찾기 아주 나쁜 종류의 고장이다.
 	for g in Content.GUESTS:

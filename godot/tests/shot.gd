@@ -8,6 +8,7 @@ extends Node
 ##   SHOT_PANEL=quests|guests|ledger|gacha|<가게id>   창을 열어 놓고 찍는다
 ##   SHOT_TAB=items|work|rank  가게 창의 갈피를 골라서 찍는다
 ##   SHOT_CARD=<가게id>        일꾼 카드가 열린 순간을 띄워서 찍는다
+##   SHOT_STORY=intro|<마디id>  첫 만화나 게시판 쪽지를 띄워서 찍는다
 var _done: bool = false
 
 func _ready() -> void:
@@ -98,6 +99,18 @@ func _ready() -> void:
 		if OS.has_environment("SHOT_TAB"):
 			main.panel.tab = OS.get_environment("SHOT_TAB")
 			main.panel.rebuild()
+	# 이야기 — 도구가 안 보면 도구에게 없는 기능이다. 넉 장 만화도 쪽지도 찍는다.
+	if OS.has_environment("SHOT_STORY"):
+		var w: String = OS.get_environment("SHOT_STORY")
+		if w == "intro":
+			main.story.show_intro()
+		else:
+			for b in Content.BEATS:
+				if String(b.id) == w:
+					main.story.show_note(String(b.text))
+			if not main.story.visible:
+				push_error("모르는 이야기 마디: " + w)
+
 	# 찍은 화면에 무엇이 들어 있는지 말해 준다 — 그림만 보면 "말풍선이 원래
 	# 안 뜨는 건지, 이번에만 없는 건지"를 못 가른다.
 	var staff: int = 0

@@ -21,6 +21,7 @@ var _sub: Label
 var _acc: float = 0.0
 var panel: ShopPanel
 var card: CardPopup
+var story: StoryPopup
 var sfx: Sfx
 var _layer: CanvasLayer
 var _guestbtn: Button
@@ -219,13 +220,32 @@ func _ready() -> void:
 	profile_modal.setup(sim, BAND_COLORS)
 	_layer.add_child(profile_modal)
 
+	# 이야기 — 넉 장 만화와 게시판 쪽지. 카드보다 **위**에 얹는다:
+	# 첫 가게를 열면 카드와 쪽지가 같이 뜨는데, 쪽지가 뒤에 깔리면 안 읽힌다.
+	story = StoryPopup.new()
+
 	card = CardPopup.new()
 	card.sim = sim
 	_layer.add_child(card)
+	_layer.add_child(story)
 
-	if _away != null:
+	# 처음 켠 사람에게 넉 장 만화. 저장본이 있으면 안 뜬다(sim.story가 기억한다).
+	# ★ '다녀오신 동안'보다 **먼저** 본다 — 처음 켠 사람에게는 다녀온 시간이 없다.
+	if _standalone and sim.story_fire("start"):
+		story.show_intro()
+		story.finished.connect(func(): _story_after_intro(), CONNECT_ONE_SHOT)
+	elif _away != null:
 		_show_away(_away)
 	_paint()
+
+## 만화가 끝나면 첫 쪽지를 붙이고, 그다음에 '다녀오신 동안'을 보여준다.
+func _story_after_intro() -> void:
+	for b in Content.BEATS:
+		if String(b.id) == "start":
+			story.show_note(String(b.text))
+			break
+	if _away != null:
+		story.finished.connect(func(): _show_away(_away), CONNECT_ONE_SHOT)
 
 ## "다녀오신 동안" — 방치형에서 다시 켤 이유는 이 창 하나에 걸려 있다.
 ## 자리 비운 벌이 — **그냥 받기**와 **주사위 수령** 둘 중에 고른다(2026-08-27).
@@ -353,11 +373,45 @@ func _process(delta: float) -> void:
 		_save_acc = 0.0
 		_save()
 
+	_story_check()
+
 	_acc += delta
 	if _acc < 0.12:
 		return
 	_acc = 0.0
 	_paint()
+
+## 이야기 마디 — **지금 벌어진 일이 처음인가**를 보고 쪽지를 붙인다.
+##
+## ★ 여기서 조건을 **하나만** 본다. 여러 개가 한꺼번에 참이 되어도 쪽지는
+##   한 장씩 뜬다 — 두 장이 겹치면 둘 다 안 읽힌다(카드에서 겪었다).
+## ★ 순서가 곧 이야기다. 위에 있는 것이 먼저다.
+func _story_check() -> void:
+	if story.visible or card.visible:
+		return
+	var got: Variant = null
+	if sim.shops.is_empty():
+		got = "firstShop"
+	elif not sim.guests.is_empty():
+		got = "firstGuest"
+	if got == null:
+		for sh in sim.shops:
+			if sim.staff_of(String(sh)) > 0.0:
+				got = "firstStaff"
+				break
+			if sim.rank_of(String(sh)) > 0:
+				got = "firstRank"
+				break
+	if got == null and sim.zones.has("keunjang"):
+		got = "zone3"
+	elif got == null and sim.zones.has("jeoja"):
+		got = "zone2"
+	if got == null or not sim.story_fire(String(got)):
+		return
+	for b in Content.BEATS:
+		if String(b.id) == String(got):
+			story.show_note(String(b.text))
+			return
 
 ## 지갑 알약 하나 — 짙은 갈색 캡슐에 흰 글자. 값 라벨을 돌려준다.
 func _pill(into: Node) -> Label:
