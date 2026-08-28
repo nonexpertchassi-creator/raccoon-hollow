@@ -2,7 +2,8 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
   <title>너구리 만물상 · 그림 라이브러리</title>
   <meta name="description" content="너구리 만물상에 실제로 필요한 게임 이미지와 제작 상태를 보는 라이브러리">
   <style>
@@ -1597,6 +1598,208 @@
       .asset-grid { grid-template-columns: repeat(5, 1fr); }
     }
   </style>
+
+  <style id="mobile-chrome-support">
+    html {
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+
+    body { overflow-x: hidden; }
+
+    @media (max-width: 680px) {
+      .library-head {
+        padding: 16px max(14px, env(safe-area-inset-right)) 14px max(14px, env(safe-area-inset-left));
+      }
+
+      .brand { gap: 10px; }
+      .library-head h1 { font-size: 22px; }
+      .library-head p { max-width: 26em; font-size: 12px; }
+
+      .head-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        width: 100%;
+      }
+
+      .head-action {
+        justify-content: center;
+        min-height: 44px;
+        padding-inline: 8px;
+        text-align: center;
+      }
+
+      .status-item { padding: 14px; }
+      .status-item strong { font-size: 20px; }
+
+      .guide,
+      .blueprint-section,
+      .story-section,
+      .catalog-section {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+
+      .catalog-section { padding-bottom: 42px; }
+
+      .catalog-tools {
+        top: 0;
+        margin-right: -14px;
+        margin-left: -14px;
+        padding: 8px max(14px, env(safe-area-inset-right)) 8px max(14px, env(safe-area-inset-left));
+      }
+
+      .search {
+        min-height: 44px;
+        font-size: 16px;
+      }
+
+      .filter-tools {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px;
+      }
+
+      .filters {
+        padding-bottom: 2px;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .filters::-webkit-scrollbar,
+      .shop-tabs::-webkit-scrollbar { display: none; }
+
+      .filter,
+      .category-picker,
+      .category-picker select,
+      .shop-tab {
+        min-height: 44px;
+      }
+
+      .shop-tabs {
+        margin-right: -14px;
+        margin-left: -14px;
+        padding-right: 14px;
+        padding-left: 14px;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .shop-section-head {
+        min-height: 58px;
+        padding: 12px;
+      }
+
+      .shop-section-title { font-size: 16px; }
+      .shop-section-count { max-width: 48%; font-size: 9px; }
+      .shop-section-body { padding: 8px; }
+
+      .asset-grid,
+      .asset-family-grid,
+      .asset-family[data-category="clerks"] .asset-family-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .asset-family { padding: 8px; }
+      .asset-preview { height: 128px; }
+      .asset-preview img { max-height: 112px; }
+      .asset-card h3 { font-size: 12px; }
+      .asset-body { padding: 10px; }
+      .file { font-size: 8.5px; }
+
+      .asset-viewer {
+        width: 100vw;
+        height: 100vh;
+        max-height: none;
+        margin: 0;
+        border: 0;
+        border-radius: 0;
+      }
+
+      .viewer-shell {
+        position: relative;
+        display: block;
+        width: 100%;
+        height: 100vh;
+        min-height: 0;
+      }
+
+      .viewer-figure {
+        display: grid;
+        grid-template-rows: minmax(0, 1fr) auto;
+        width: 100%;
+        height: 100%;
+      }
+
+      .viewer-stage {
+        min-height: 0;
+        padding: max(54px, env(safe-area-inset-top)) 52px 14px;
+        touch-action: pan-y;
+      }
+
+      .viewer-stage img {
+        width: 100%;
+        height: 100%;
+        max-height: none;
+      }
+
+      .viewer-nav {
+        position: absolute;
+        z-index: 5;
+        top: 46%;
+        width: 44px;
+        height: 68px;
+        border-radius: 12px;
+        background: rgba(36, 43, 49, .82);
+        transform: translateY(-50%);
+      }
+
+      .viewer-prev { left: 6px; }
+      .viewer-next { right: 6px; }
+
+      .viewer-close {
+        top: max(10px, env(safe-area-inset-top));
+        right: max(10px, env(safe-area-inset-right));
+        width: 44px;
+        height: 44px;
+      }
+
+      .viewer-info {
+        gap: 12px;
+        padding: 13px max(14px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+      }
+
+      .viewer-info h2 { font-size: 17px; }
+
+      .viewer-actions {
+        display: grid;
+        grid-template-columns: auto 1fr 1fr;
+        width: 100%;
+      }
+
+      .viewer-actions a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+      }
+    }
+
+    @supports (height: 100dvh) {
+      @media (max-width: 680px) {
+        .asset-viewer,
+        .viewer-shell { height: 100dvh; }
+      }
+    }
+
+    @media (max-width: 380px) {
+      .library-head h1 { font-size: 20px; }
+      .asset-preview { height: 116px; }
+      .asset-preview img { max-height: 100px; }
+    }
+  </style>
 </head>
 <body>
   <main class="shell">
@@ -2567,7 +2770,9 @@
       grid.innerHTML = visibleAssets.length
         ? groups.map((groupId) => {
           const list = visibleAssets.filter((asset) => shopIdOf(asset) === groupId);
-          const open = filteredView || groupId === 'smith';
+          const compactView = window.matchMedia('(max-width: 680px)').matches;
+          const focusedMobileView = Boolean(query || activeShop !== 'all' || activeCategory !== 'all' || !['all', 'present'].includes(activeFilter));
+          const open = groupId === 'smith' || (!compactView && filteredView) || (compactView && focusedMobileView);
           const openLegacy = filteredView && list.every(isLegacy);
           return section(groupId, list, open, openLegacy);
         }).join('')
