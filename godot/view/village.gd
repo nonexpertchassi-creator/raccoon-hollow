@@ -1089,16 +1089,18 @@ func _clerk_layers(shop_id: String, slot: int, pose: String) -> Array:
 		body = Art.tex("hero", "raccoon-" + pose)
 	if body == null:
 		return []
-	# 꼬리는 몸 뒤, 차림(가게 앞치마)은 몸 앞. 둘 다 없으면 그 층만 빠진다 —
-	# 차림은 **주문서가 안 시킨다**(선택). 넣으면 저절로 얹힌다.
-	return [Art.ranked("hero-tail", "%s-%s" % [fur, pose], rk), body,
-		Art.ranked("gear", "%s-%s" % [shop_id, pose], rk)]
+	# ★ **꼬리 층은 없앴다**(2026-08-28, 유저: "너구리 꼬리 안 하기로 했어").
+	#   2026-08-26에 꼬리 흔들기를 접기로 했는데, 그때 **시키는 것만 멈추고
+	#   층은 그대로 뒀다.** 그래서 아무도 안 쓰는 자리가 주문서에 2/8로 남아
+	#   계속 "덜 된 것"처럼 보였다. 꼬리는 이제 **몸에 같이 그린다.**
+	#
+	#   차림(가게 앞치마)은 몸 앞에 얹는다. 없으면 그 층만 빠진다 —
+	#   주문서가 안 시킨다(선택). 넣으면 저절로 얹힌다.
+	return [body, Art.ranked("gear", "%s-%s" % [shop_id, pose], rk)]
 
-## 자리를 정하는 그림 한 장 — 겹그림이라도 **몸**이 자리를 정한다.
+## 자리를 정하는 그림 한 장 — 겹그림이라도 **몸**이 자리를 정하고, 몸은 늘 첫 층이다.
 func _worker_base(layers: Array) -> Texture2D:
-	if layers.size() == 1:
-		return layers[0]
-	return layers[1] if layers.size() > 1 else null
+	return layers[0] if not layers.is_empty() else null
 
 ## 완성된 주문 상자 — 물건 모양이 아니라 **그냥 상자**다(2026-08-26, 유저).
 ## 나르는 동안 너구리 손께에 얹는다. 전부 코드 그림.
