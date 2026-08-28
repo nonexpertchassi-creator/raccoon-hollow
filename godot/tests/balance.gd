@@ -148,6 +148,7 @@ func _init() -> void:
 	var last_new: float = 0.0            # 마지막으로 뭔가 새로 열린 시각
 	var seen_items: Dictionary = {}
 	var seen_ranks: Dictionary = {}
+	var shop_at: Dictionary = {}
 	var curve: Array = []
 	var next_hour: float = 3600.0
 
@@ -163,6 +164,12 @@ func _init() -> void:
 				seen_items[id] = true
 				last_new = s.t
 		for sh in s.shops:
+			# ★ 가게가 **언제** 열렸는지 하나하나 찍는다(2026-08-28).
+			#   여태 "마지막으로 새것이 열린 시각" 하나만 찍었더니, 뒤쪽 가게가
+			#   전부 안 열려도 그 한 줄은 멀쩡해 보였다. 사다리를 재려면
+			#   "몇 번째 가게가 몇 시에 열리나"가 있어야 한다.
+			if not shop_at.has(sh):
+				shop_at[sh] = s.t
 			var k: String = "%s:%d" % [sh, s.rank_of(sh)]
 			if s.rank_of(sh) > 0 and not seen_ranks.has(k):
 				seen_ranks[k] = true
@@ -191,6 +198,11 @@ func _init() -> void:
 	print("   손님 열둘이 다 온 시각: %s" % (
 		_mm(guest_at.values().max()) if guest_at.size() >= Content.GUESTS.size() else "아직 다 안 옴"))
 	print("   마지막으로 새것이 열린 시각: %s  (그 뒤는 레벨업뿐)" % _mm(last_new))
+	var sl: String = "   가게 열린 시각:"
+	for k5 in range(Content.SHOPS.size()):
+		var sid5: String = String(Content.SHOPS[k5].id)
+		sl += " %s=%s" % [Content.SHOPS[k5].name, _mm(shop_at[sid5]) if shop_at.has(sid5) else "—"]
+	print(sl)
 	# ★ 뽑기가 들어온 뒤로 **여기가 병목인지 아닌지**를 매번 봐야 한다.
 	#   손님이 안 늘면 경제가 안 자라는데, 손님은 나뭇잎이 있어야 는다.
 	var stars_sum: int = 0

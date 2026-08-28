@@ -1436,7 +1436,7 @@ const SHOPS := [
 		"id": "paper",
 		"name": "지물포",
 		"sign": "紙",
-		"cost": 20000.0,
+		"cost": 100000.0,
 		"desc": "닥나무를 떠서 종이를 만든다",
 		"color": "#8a7440",
 		"ranks": [
@@ -1519,7 +1519,7 @@ const SHOPS := [
 		"id": "pot",
 		"name": "옹기점",
 		"sign": "甕",
-		"cost": 1000000.0,
+		"cost": 2000000.0,
 		"desc": "흙을 빚어 항아리를 굽는다",
 		"color": "#6b4a3a",
 		"ranks": [
@@ -1602,7 +1602,7 @@ const SHOPS := [
 		"id": "herb",
 		"name": "약재상",
 		"sign": "藥",
-		"cost": 45000000.0,
+		"cost": 8000000.0,
 		"desc": "산에서 캔 것을 말리고 썬다",
 		"color": "#4a5f7a",
 		"ranks": [
@@ -1685,7 +1685,7 @@ const SHOPS := [
 		"id": "soup",
 		"name": "국밥집",
 		"sign": "湯",
-		"cost": 990000000.0,
+		"cost": 30000000.0,
 		"desc": "뜨끈한 국밥 한 그릇을 만다",
 		"color": "#8a6a45",
 		"ranks": [
@@ -1768,7 +1768,7 @@ const SHOPS := [
 		"id": "gaekju",
 		"name": "객주",
 		"sign": "客",
-		"cost": 22000000000.0,
+		"cost": 45000000.0,
 		"desc": "길손을 재우고 술과 안주를 낸다",
 		"color": "#8a6a45",
 		"ranks": [
@@ -1851,7 +1851,7 @@ const SHOPS := [
 		"id": "skewer",
 		"name": "꼬치집",
 		"sign": "串",
-		"cost": 480000000000.0,
+		"cost": 130000000.0,
 		"desc": "숯불에 꿰어 굽는다",
 		"color": "#8a6a45",
 		"ranks": [
@@ -1934,7 +1934,7 @@ const SHOPS := [
 		"id": "ricecake",
 		"name": "떡집",
 		"sign": "餠",
-		"cost": 11000000000000.0,
+		"cost": 450000000.0,
 		"desc": "쌀을 쳐서 떡을 빚는다",
 		"color": "#8a6a45",
 		"ranks": [
@@ -2017,7 +2017,7 @@ const SHOPS := [
 		"id": "fruit",
 		"name": "과일전",
 		"sign": "果",
-		"cost": 230000000000000.0,
+		"cost": 1200000000.0,
 		"desc": "철 따라 나는 과일을 골라 판다",
 		"color": "#8a6a45",
 		"ranks": [
@@ -2100,7 +2100,7 @@ const SHOPS := [
 		"id": "fish",
 		"name": "어물전",
 		"sign": "魚",
-		"cost": 5100000000000000.0,
+		"cost": 7000000000.0,
 		"desc": "바닷것을 절이고 말려 판다",
 		"color": "#8a6a45",
 		"ranks": [
@@ -2183,7 +2183,7 @@ const SHOPS := [
 		"id": "cloth",
 		"name": "포목전",
 		"sign": "布",
-		"cost": 110000000000000000.0,
+		"cost": 30000000000.0,
 		"desc": "베를 짜고 물들여 판다",
 		"color": "#8a6a45",
 		"ranks": [
@@ -2266,7 +2266,7 @@ const SHOPS := [
 		"id": "hat",
 		"name": "갓방",
 		"sign": "笠",
-		"cost": 2400000000000000000.0,
+		"cost": 60000000000.0,
 		"desc": "갓을 겯고 다듬어 판다",
 		"color": "#8a6a45",
 		"ranks": [
@@ -2349,7 +2349,7 @@ const SHOPS := [
 		"id": "brass",
 		"name": "유기전",
 		"sign": "鍮",
-		"cost": 54000000000000000000.0,
+		"cost": 500000000000.0,
 		"desc": "놋쇠를 두드려 그릇을 만든다",
 		"color": "#8a6a45",
 		"ranks": [
@@ -2432,7 +2432,7 @@ const SHOPS := [
 		"id": "lacquer",
 		"name": "나전방",
 		"sign": "螺",
-		"cost": 1.2e+21,
+		"cost": 2500000000000.0,
 		"desc": "자개를 박아 세간을 꾸민다",
 		"color": "#8a6a45",
 		"ranks": [
