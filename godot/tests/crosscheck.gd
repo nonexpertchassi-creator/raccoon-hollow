@@ -15,7 +15,7 @@ func _init() -> void:
 		"content":
 			out = _content_dump()
 		"sim":
-			# 문제 파일 첫 줄이 "씨앗 초 틱"
+			# 문제 파일 첫 줄이 "운 번호 초 틱"
 			var a: PackedStringArray = _lines()[0].split(" ")
 			out = RunSim.run(a[0].to_int(), a[1].to_float(), a[2].to_float())
 		"save":
@@ -45,7 +45,7 @@ func _fmt_cases() -> String:
 			out += Num.fmt(s.to_float()) + "\n"
 	return out
 
-## 씨앗마다 앞의 여러 개를 뽑아 적는다. 한 개만 맞아도 통과해 버리면
+## 운 번호마다 앞의 여러 개를 뽑아 적는다. 한 개만 맞아도 통과해 버리면
 ## 수열이 어긋나는 걸 못 잡는다 — 난수는 흐름 전체가 같아야 한다.
 func _rng_cases() -> String:
 	var out: String = ""

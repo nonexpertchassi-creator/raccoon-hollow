@@ -196,7 +196,7 @@ func _init() -> void:
 	if OS.has_environment("BAL_TERSE"):
 		print(line)
 		quit()
-	print("═══ %d시간 · 씨앗 %d · 가게 강화 %s ═══" % [int(hours), seed_value, tag])
+	print("═══ %d시간 · 운 번호 %d · 가게 강화 %s ═══" % [int(hours), seed_value, tag])
 	for c in curve:
 		print("   %2d시간   누적매출 %-9s 초당 %-8s 성 %-4d 가진 돈 %s" % [
 			int(c[0] / 3600.0), Num.fmt(c[1]), Num.fmt(c[2]), int(c[3]), Num.fmt(c[4])])

@@ -1,5 +1,5 @@
 /* balance.mjs — 그리기 전에 곡선부터 확인한다.
- * 실행: node tools/balance.mjs [시간] [씨앗]
+ * 실행: node tools/balance.mjs [시간] [운 번호]
  *
  * 이 도구의 임무는 하나다: **게임이 망가졌으면 망가졌다고 말하는 것.**
  * 예전 판은 재고 정지를 `every`로 판정해서(= 품목이 전부 꽉 차야 셈)
@@ -13,11 +13,11 @@ const SEED = Number(process.argv[3] || 1);
 const DT = 0.25;
 const s = new Sim();
 
-/* 씨앗 고정 난수.
+/* 운 번호 고정 난수.
  * 손님이 무작위로 물건을 집으면서 매 실행마다 결과가 달라졌다. 그러면
  * 수치를 바꿨을 때 그게 개선인지 그냥 운인지 구분할 수 없다.
- * 씨앗을 고정하면 같은 코드는 항상 같은 숫자를 낸다.
- * 운에 안 흔들리는지 보려면 씨앗을 바꿔 돌린다: node tools/balance.mjs 6 2 */
+ * 운 번호를 고정하면 같은 코드는 항상 같은 숫자를 낸다.
+ * 운에 안 흔들리는지 보려면 운 번호를 바꿔 돌린다: node tools/balance.mjs 6 2 */
 const rng = ((a) => () => {
   a = a + 0x6D2B79F5 | 0;
   let x = Math.imul(a ^ a >>> 15, a | 1);
@@ -178,7 +178,7 @@ const mm = (x) => { const m = Math.floor(x / 60); const ss = Math.floor(x % 60);
   return m >= 60 ? `${Math.floor(m / 60)}시간${m % 60}분` : `${m}분${String(ss).padStart(2, '0')}초`; };
 const pct = (a, b) => (b ? (a / b) * 100 : 0);
 
-console.log(`\n═══ 너구리 만물상 — ${HOURS}시간 플레이 (씨앗 ${SEED}) ═══\n`);
+console.log(`\n═══ 너구리 만물상 — ${HOURS}시간 플레이 (운 번호 ${SEED}) ═══\n`);
 
 console.log('■ 가게가 살아난 시점  (= 마을이 구제되는 속도)');
 for (const sh of SHOPS) {

@@ -1,5 +1,5 @@
 class_name Rng
-## 씨앗을 고정한 난수. balance.mjs가 쓰는 mulberry32를 그대로 옮긴 것.
+## 운 번호를 고정한 난수. balance.mjs가 쓰는 mulberry32를 그대로 옮긴 것.
 ##
 ## ★ 이게 왜 이관에서 제일 먼저인가.
 ##

@@ -66,7 +66,7 @@ function run(seed) {
   return { curve, seen };
 }
 
-/** 여러 씨앗의 중앙값 — 한 판만 보면 운을 실력으로 착각한다 */
+/** 여러 운 번호의 중앙값 — 한 판만 보면 운을 실력으로 착각한다 */
 const med = (a) => { const b = [...a].sort((x, y) => x - y); return b[b.length >> 1]; };
 const revAt = (curve, min) => curve[Math.min(min, curve.length - 1)] ?? curve[curve.length - 1];
 const mm = (sec) => sec == null ? '—' : `${Math.floor(sec / 60)}분`;

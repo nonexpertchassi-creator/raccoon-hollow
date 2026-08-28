@@ -93,7 +93,7 @@ footer{margin:64px 0 0;padding-top:20px;border-top:1px solid var(--rule);color:v
 code{font-family:"IBM Plex Mono",monospace;font-size:.9em;background:var(--sunk);padding:1px 5px;border-radius:2px}
 </style>
 <div class="wrap">
-<p class="eyebrow">가상 플레이어 · 씨앗 ${meta('seed')} · ${meta('hours')}시간</p>
+<p class="eyebrow">가상 플레이어 · 운 번호 ${meta('seed')} · ${meta('hours')}시간</p>
 <h1>봇이 남긴 자국</h1>
 <p class="lede">사람은 아직 없다. 이 판은 <b>가상 플레이어</b>가 ${meta('hours')}시간을 놀고 남긴 것이다 —
 계측이 제대로 도는지, 안 들어오는 칸이 어디인지를 보려고 만들었다.</p>

@@ -696,7 +696,7 @@ func _prop(p: Dictionary) -> void:
 	var at: Vector2 = Iso.w(p.t.x + 0.5, p.t.y + 0.5)
 	match p.k:
 		"tree":
-			# 나무 세 종 — 같은 씨앗값(o)으로 종이 갈려서 심을 때 정해진다.
+			# 나무 세 종 — 같은 운 번호값(o)으로 종이 갈려서 심을 때 정해진다.
 			# 사계절이 들어오면 색만 계절표로 갈아 끼운다(모양은 그대로).
 			draw_rect(Rect2(at + Vector2(-3, -10), Vector2(6, 12)), C.wood2)
 			if p.o < 0.5:

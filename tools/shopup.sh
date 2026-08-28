@@ -1,13 +1,13 @@
 #!/bin/sh
-# 가게 강화가 정말 이득인지 잰다 — **씨앗 여러 개로.**
+# 가게 강화가 정말 이득인지 잰다 — **운 번호 여러 개로.**
 #
 # ★ 왜 이 도구가 따로 있나.
-#   씨앗 하나로 재면 판마다의 운(±46%)이 재려는 효과(±30%)보다 커서
+#   운 번호 하나로 재면 판마다의 운(±46%)이 재려는 효과(±30%)보다 커서
 #   손해인 강화가 이득으로 보인다. 실제로 한 번 속았다(PLAN.md 2026-08-21).
-#   그래서 이 도구는 **씨앗을 여러 개 돌려 가운뎃값**을 내놓는다.
+#   그래서 이 도구는 **운 번호를 여러 개 돌려 가운뎃값**을 내놓는다.
 #
 # 쓰기:
-#   tools/shopup.sh              # 씨앗 1~5, 8시간
+#   tools/shopup.sh              # 운 번호 1~5, 8시간
 #   SEEDS="1 2 3" HOURS=4 tools/shopup.sh
 set -e
 cd "$(dirname "$0")/.."
@@ -16,7 +16,7 @@ HOURS="${HOURS:-8}"
 JOBS="${JOBS:-3}"
 OUT="$(mktemp)"
 
-# 한 판 = 씨앗 하나 × 설정 하나. 여럿을 동시에 돌린다(느려서).
+# 한 판 = 운 번호 하나 × 설정 하나. 여럿을 동시에 돌린다(느려서).
 RUN='
   s=$0; a=$1
   if [ "$a" = off ]; then e="BAL_SHOPUP=0"; else e="BAL_ONLY=$a"; fi
@@ -54,8 +54,8 @@ seeds = sorted({k[0] for k in data})
 names = {'smith':'풀무','brush':'먹 갈기','paper':'의뢰방',
          'pot':'질그릇 한 벌','herb':'약재 말리기'}
 
-print("씨앗별 %d시간 누적매출" % H)
-print("            " + "".join("씨앗%-6d" % s for s in seeds))
+print("운 번호별 %d시간 누적매출" % H)
+print("            " + "".join("운%-8d" % s for s in seeds))
 for a in ['off'] + list(names):
     row = "%-12s" % names.get(a, '끔')
     for s in seeds:
