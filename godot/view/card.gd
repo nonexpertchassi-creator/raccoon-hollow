@@ -10,6 +10,7 @@ class_name CardPopup
 ##
 ## 그림은 나중에 온다. `clerks/<가게>-make-<등급>` → `clerks/<가게>-make`
 ## → `hero/raccoon-make` 순으로 찾고, 하나도 없으면 현판 글자를 크게 띄운다.
+## (`hero/`는 등장인물이 아니라 **빈자리에 대신 나오는 그림**이다 — RACCOON.md §6)
 
 var sim: Sim
 var _t: float = 0.0
@@ -39,7 +40,6 @@ var _after_new: Array = []           ## 판이 끝난 뒤 크게 띄울 '처음 
 var _action: Button                  ## 성 올리기 단추 — 도감에서 볼 때만
 var _cardbox: PanelContainer
 var _art: TextureRect
-var _art_tail: TextureRect
 var _art_gear: TextureRect
 var _title: Label
 var _sub: Label
@@ -99,14 +99,9 @@ func _ready() -> void:
 	_art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	box.add_child(_art)
-	# 겹그림 일꾼용 겹 — 꼬리는 본체 뒤(형제 순서상 앞이 뒤에 깔린다), 장비는 앞.
+	# 겹그림 일꾼용 겹 — 차림(앞치마)을 몸 위에 얹는다.
+	# (꼬리 층은 2026-08-28에 없앴다 — 꼬리는 몸에 같이 그린다.)
 	# 카드와 마을 일꾼이 **같은 재료**를 겹쳐 같은 모습이 되게 한다(유저 규칙).
-	_art_tail = TextureRect.new()
-	_art_tail.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	_art_tail.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	_art_tail.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_art_tail.show_behind_parent = true
-	_art.add_child(_art_tail)
 	_art_gear = TextureRect.new()
 	_art_gear.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_art_gear.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -189,13 +184,16 @@ func show_card(shop_id: String, rank: int) -> void:
 	_gridbox.visible = false
 	_cardbox.visible = true
 	var shop: Dictionary = Sim.shop_by_id(shop_id)
-	# 카드 초상 → 완성형 옆모습 → 옛 make → **겹그림(꼬리+몸+차림)** → 공통 일꾼.
+	# 카드 초상 → 완성형 옆모습 → 옛 make → **겹그림(몸+차림)** → 대신 나오는 그림.
 	#
 	# ★ 겹그림 칸을 예전부터 만들어 두고 늘 비워 뒀다(2026-08-27에 발견).
 	#   마을 화면이 겹치기로 바뀌었으니 카드도 **같은 재료로 같은 모습**이어야 한다 —
 	#   여기만 통짜 그림을 쓰면 뽑은 카드와 마당의 일꾼이 다르게 생긴다.
-	_art_tail.texture = null
 	_art_gear.texture = null
+	# ★ art/cards/는 **일부러 비어 있다**(2026-08-27, 유저가 뺐다 — 게임에 실리는
+	#   그림이 15MB에서 2.4MB가 됐다). 이 줄은 늘 null이 나오고 아래로 떨어진다.
+	#   지운 게 아니라 남겨 둔 이유: 나중에 카드 그림을 되살릴 때 이 자리 하나만
+	#   채우면 된다. **없는 폴더를 찾는 게 아니라, 비워 둔 자리를 찾는 것이다.**
 	var t: Texture2D = Art.tex("cards", "%s-%d" % [shop_id, rank + 1])
 	if t == null:
 		t = Art.ranked("clerks", "%s-side" % shop_id, rank)
@@ -205,7 +203,6 @@ func show_card(shop_id: String, rank: int) -> void:
 		# 무늬 A로 겹친다 — 카드는 "이 가게의 일꾼"을 보여주는 자리라 대표 무늬 하나면 된다.
 		t = Art.ranked("hero-body", "a-side", rank)
 		if t != null:
-			_art_tail.texture = Art.ranked("hero-tail", "a-side", rank)
 			_art_gear.texture = Art.ranked("gear", "%s-side" % shop_id, rank)
 	if t == null:
 		t = Art.tex("hero", "raccoon-make")
@@ -278,7 +275,6 @@ func show_guest(gid: String) -> void:
 	_cardbox.visible = true
 	var g: Dictionary = Sim.guest_by_id(gid)
 	var gr: Dictionary = Content.CARD_GRADES[int(g.grade) - 1]
-	_art_tail.texture = null
 	_art_gear.texture = null
 	_art.texture = _pull_art(gid)
 	_art.visible = _art.texture != null

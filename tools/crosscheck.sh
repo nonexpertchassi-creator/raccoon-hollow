@@ -58,6 +58,17 @@ case "$OUT" in
   *) fail tap "" ; echo "$OUT" | grep "TAPTEST FAIL" | sed 's/^/     /' ;;
 esac
 
+# 주문서와 코드를 서로 댄다 — **시키는데 아무도 안 여는 그림**을 잡는다.
+# 이게 없어서 꼬리 여덟 장이 접힌 뒤에도 목록에 남아 두 장이 그려졌다.
+# 그림값이 이 프로젝트에서 제일 비싸다 — 안 쓸 것을 시키면 안 된다.
+OUT=$(node tools/art.mjs --wired 2>&1 || true)
+case "$OUT" in
+  *"코드가 다 연다"*) pass art "주문서와 코드가 서로 맞는다" ;;
+  *) fail art "" ;;
+esac
+# 경고(⚠️)와 그 아래 줄들 — 막지는 않지만 알고는 있어야 하는 것들
+echo "$OUT" | grep -E "⚠️|←" | sed 's/^/     /' || true
+
 # 규칙만 시험하면 "저장은 되는데 파일이 안 써진다"를 놓친다
 OUT=$(gd godot --headless --path godot --script tests/yard.gd 2>&1 || true)
 case "$OUT" in

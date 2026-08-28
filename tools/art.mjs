@@ -24,18 +24,28 @@ const has = (dir, id) =>
 
 /* 일꾼 포즈. work·sell만 있으면 나머지는 코드가 돌려 쓴다 — 그래서 순서가 이렇다. */
 const HERO = [
-  ['raccoon-make',  '만드는 중 — 망치를 내려친다'],
+  ['raccoon-make',  '만드는 중 — 연장을 든 손을 내려친다 (가게 열다섯이 다 쓰므로 대장간 망치처럼 특정 연장은 피할 것)'],
   ['raccoon-sell',  '파는 중 — 오른팔을 뻗어 건넨다 (★손바닥은 비워 둘 것)'],
   ['raccoon-walk1', '걷기 1 — 왼발 앞'],
   ['raccoon-walk2', '걷기 2 — 오른발 앞'],
-  ['raccoon-sleep', '조는 중 — 진열대가 다 차서 할 일이 없다'],
+  ['raccoon-sleep', '조는 중 — 그 가게에 만들 주문이 하나도 없을 때'],
   ['sweeper',       '장터 청소부 — 빗자루를 들고 길을 돈다. **마당 밖으로 나오는 유일한 너구리**\n(옛 촌장 그림을 물려받았다 — 지팡이를 빗자루로 바꿔 다시 그려야 한다)'],
 ];
 
 const GROUPS = [
-  /* 무늬 없는 기본 일꾼(걷기·자세들)과 장터 청소부 — 겹그림 본체가 오기 전의
-   * 폴백이고, 청소부는 계속 이 그림을 쓴다. */
-  { dir: 'hero', size: '144×144', title: '기본 일꾼 (폴백) · 장터 청소부',
+  /* ★ **여기 있는 너구리는 등장인물이 아니다.**
+   *   '기본 일꾼' 같은 건 게임에 없다 — 일꾼은 무늬 a·b·c·d 넷뿐이다.
+   *   이 여섯 장은 **무늬 그림이 아직 없는 자리에 대신 나오는 그림**이다.
+   *   무늬 넷이 다 차면 raccoon-*는 화면에서 영영 안 나온다.
+   *   (2026-08-28에 이름을 고쳤다 — 유저: "기본 일꾼이라는 개념 자체가
+   *   없는 거 아냐?" 맞다. 없는 것을 목록이 있는 것처럼 부르고 있었다.)
+   *
+   *   청소부만은 예외다 — 청소부는 겹그림이 없고 계속 이 한 장을 쓴다. */
+  { dir: 'hero', size: '144×144',
+    title: '대신 나오는 너구리 (무늬 그림이 없을 때) · 장터 청소부',
+    note: '**여섯 장 다 이미 들어와 있다. 새로 그릴 것 없다.**\n' +
+          'raccoon-*는 무늬 그림이 빈 자리를 메우는 임시다 — 무늬 a~d가 다 차면\n' +
+          '화면에서 영영 안 나온다. sweeper만 계속 쓰인다(빗자루로 다시 그릴 것).',
     rows: HERO.map(([id, why]) => ({ id, why })) },
   /* 붙박이 소품 — 걸어 다니는 사람이 아니라 **늘 그 자리에 있는 것**들. */
   { dir: 'props', size: '160×176', title: '마을 소품',
@@ -76,7 +86,7 @@ const GROUPS = [
     })) },
   /* ★ 일꾼 개념 폐지(2026-08-26, 유저) — 승급하면 같은 가게 너구리가 한
    * 마리 더 온다(전원 완성형 일꾼 그림). 두건 일꾼 그림은 은퇴 — 이미 온
-   * 20장은 폴백으로만 남고, **추가 제작 금지.** */
+   * 20장은 빈자리를 메우는 데만 남고, **추가 제작 금지.** */
   /* ★ 걷는 모습이 목록에 아예 없었다(2026-08-27에 잡았다) — 손님 그림의
    * **기본**인데 주문서가 한 번도 달라고 하지 않았다. 도감을 갈아 새 짐승이
    * 아홉 들어왔을 때 그들만 조용히 빠져 있었다. 주문서에 없는 그림은
@@ -129,10 +139,12 @@ const GROUPS = [
           '· `needle.webp` 64×96 — 룰렛 바늘. 위에서 아래를 가리킨다',
     rows: [
       { id: 'back', why: '카드 뒷면 512×768 — 뒤집기 전에 보이는 면' },
-      { id: 'wheel', why: '룰렛 원판 512×512 — 칸 열둘이 나뉜 바퀴' },
-      { id: 'needle', why: '룰렛 바늘 64×96 — 위에서 아래를 가리킨다' },
       { id: 'coin', why: '엽전 64×64 — 계산대 위·팔린 표에 쓴다 (상평통보처럼 가운데 네모 구멍)' },
-      { id: 'gem', why: '젬 64×64 — 💎 이모지 자리를 물려받는다' },
+      /* ★ 이 둘은 **이미 들어와 있는데 코드가 아직 안 붙였다.** 룰렛은 지금
+       *   코드가 직접 원을 그린다. 그림 쪽 할 일은 없다 — 붙이는 것은 코드 몫.
+       *   (2026-08-28에 --wired 검사가 잡아냈다. 그 전에는 아무도 몰랐다.) */
+      { id: 'wheel', why: '룰렛 원판 512×512 — **들어와 있다.** 코드가 붙이는 일만 남았다' },
+      { id: 'needle', why: '룰렛 바늘 64×96 — **들어와 있다.** 코드가 붙이는 일만 남았다' },
     ] },
   /* 선택 — 프로필 초상. 없으면 이모지 얼굴로 돈다. */
   { dir: 'portraits', size: '256×256', title: '프로필 초상', optional: true,
@@ -226,6 +238,78 @@ const GROUPS = [
  * 손님이 바뀌거나(박쥐→매) 물건이 갈리면 옛 그림이 폴더에 남는다. 그건
  * 화면에 안 나오면서 저장소만 불린다 — 그런데 눈으로는 절대 안 보인다.
  * 여기서 세면 다음에 또 셀 일이 없다. */
+/* --wired — **주문서와 코드를 서로 대 본다.** 2026-08-28에 만들었다.
+ *
+ * ★ 왜 이게 없어서 꼬였나.
+ *   --audit은 "폴더에 있는데 주문서에 없는 그림"만 봤다. 반대쪽은 아무도
+ *   안 봤다 — **주문서가 시키는데 코드는 한 번도 안 여는 그림.** 그런 줄은
+ *   조용히 남아서 누군가 실제로 그린다. 실제로 그렇게 됐다:
+ *     · hero-tail 8장 — 꼬리 흔들기를 접고도 목록에 남아 두 장이 그려졌다
+ *     · ui/wheel · ui/needle — 룰렛은 코드가 직접 그리는데 그림을 시켰다
+ *   그림값은 이 프로젝트에서 제일 비싼 값이다. 안 쓸 것을 시키면 안 된다.
+ *
+ * 코드에서 `Art.tex("<폴더>"` · `Art.ranked("<폴더>"`를 훑어 **폴더 단위**로 댄다.
+ * 파일 하나까지는 못 본다(이름을 코드가 조립해서 만든다) — 폴더만으로도
+ * 위의 둘은 다 잡힌다.
+ */
+if (process.argv.includes('--wired')) {
+  const gd = [];
+  const walk = (d) => {
+    for (const f of readdirSync(d, { withFileTypes: true })) {
+      if (f.name.startsWith('.')) continue;
+      const full = `${d}/${f.name}`;
+      if (f.isDirectory()) walk(full);
+      else if (f.name.endsWith('.gd')) gd.push(readFileSync(full, 'utf8'));
+    }
+  };
+  walk(`${ROOT}godot`);
+  const opened = new Set();
+  for (const src of gd)
+    for (const m of src.matchAll(/Art\.(?:tex|ranked)\(\s*"([a-z-]+)"/g)) opened.add(m[1]);
+
+  const asked = new Set(GROUPS.map((g) => g.dir));
+  const onlyAsked = [...asked].filter((d) => !opened.has(d));   // 시키는데 안 연다
+  const onlyOpened = [...opened].filter((d) => !asked.has(d));  // 여는데 안 시킨다
+
+  /* 파일 이름까지 보는 곳 — 코드가 `Art.tex("ui", "back")`처럼 **이름을 그대로**
+   * 적은 자리만 본다. 이름을 조립하는 곳(가게id·손님id)은 못 보고, 안 봐도 된다.
+   * 이게 없어서 ui/wheel·ui/needle이 아무도 안 쓰는 채로 그려졌다. */
+  const literal = new Set();   // Art.tex("ui", "back") — 이름을 그대로 적은 것
+  const composed = new Set();  // Art.ranked("hero-body", "%s-%s" % [...]) — 만들어 쓰는 것
+  for (const src of gd)
+    for (const m of src.matchAll(/Art\.(?:tex|ranked)\(\s*"([a-z-]+)"\s*,\s*([^,)]+)/g)) {
+      const arg = m[2].trim();
+      if (/^"[a-z0-9-]+"$/.test(arg)) literal.add(`${m[1]}/${arg.slice(1, -1)}`);
+      else composed.add(m[1]);
+    }
+  /* ★ 이름을 만들어 쓰는 폴더는 **건너뛴다.** hero-body는
+   *   `Art.ranked("hero-body", "%s-%s" % [fur, pose])`처럼 부르므로 코드 안에
+   *   'b-make'라는 글자가 없다 — 그걸 "안 쓴다"고 하면 백 줄이 헛으로 뜬다.
+   *   (첫 판이 그랬다. 경고가 백 줄이면 아무도 안 읽는다.) */
+  const dead = [];
+  for (const g of GROUPS) {
+    if (!opened.has(g.dir) || composed.has(g.dir)) continue;
+    for (const r of g.rows) if (!literal.has(`${g.dir}/${r.id}`)) dead.push(`${g.dir}/${r.id}`);
+  }
+
+  let bad = 0;
+  if (dead.length) {
+    console.log('⚠️  주문서에 있는데 코드가 이름으로 안 여는 그림:');
+    for (const k of dead) console.log(`     godot/art/${k}  ← 지금은 코드가 직접 그린다`);
+  }
+  if (onlyAsked.length) {
+    bad += onlyAsked.length;
+    console.log('❌ 주문서가 시키는데 **코드가 한 번도 안 여는** 폴더:');
+    for (const d of onlyAsked) console.log(`     godot/art/${d}/  ← 그리면 버려진다`);
+  }
+  if (onlyOpened.length) {
+    console.log('⚠️  코드는 여는데 주문서에 없는 폴더:');
+    for (const d of onlyOpened) console.log(`     godot/art/${d}/  ← 일부러 비워 둔 것인지 확인할 것`);
+  }
+  if (!bad) console.log('✅ art      주문서가 시키는 폴더를 코드가 다 연다');
+  process.exit(bad ? 1 : 0);
+}
+
 /* --json — 주문서를 **기계가 읽을 수 있게** 뱉는다.
  * 장부의 체크 목록을 손으로 옮겨 적으면 반드시 어긋난다(이번 주에 겪었다).
  * 여기서 뽑아 쓴다. */
@@ -277,7 +361,7 @@ if (process.argv.includes('--audit')) {
    *
    *   빼도 뽑기 연출은 안 죽는다. 틀·이름·설명·그림자·등급 색 물듦·뒤집기는
    *   **전부 코드가 그린다**(card.gd). 초상 자리에는 걷는 모습이 들어간다 —
-   *   card.gd의 폴백이 이미 그렇게 되어 있어서 코드는 한 줄도 안 고쳤다.
+   *   card.gd가 그림 없을 때 그리는 그림이 이미 그렇게 되어 있어서 코드는 한 줄도 안 고쳤다.
    *
    *   그래서 손님 한 마리에 드는 그림이 **7장 → 3장**(걷기·정면·뒤)이 됐다. */
 
