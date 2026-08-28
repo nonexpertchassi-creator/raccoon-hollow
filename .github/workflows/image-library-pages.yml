@@ -1,0 +1,86 @@
+name: Deploy image library
+
+on:
+  push:
+    branches:
+      - codex/art-production-20260822
+    paths:
+      - "docs/art/image-archive.html"
+      - "docs/art/blueprints/**"
+      - "docs/art/generated/**"
+      - "godot/art/**"
+      - ".github/workflows/image-library-pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: image-library-pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout art branch
+        uses: actions/checkout@v4
+        with:
+          ref: codex/art-production-20260822
+
+      - name: Enable GitHub Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Build lightweight image library
+        shell: bash
+        run: |
+          mkdir -p _site/docs/art _site/godot
+          cp docs/art/image-archive.html _site/docs/art/image-archive.html
+          cp -R godot/art _site/godot/art
+          touch _site/.nojekyll
+          node <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+
+          const root = process.cwd();
+          const htmlPath = path.join(root, 'docs/art/image-archive.html');
+          const outRoot = path.join(root, '_site');
+          const html = fs.readFileSync(htmlPath, 'utf8');
+          const imagePattern = /['"`]([^'"`]+?\.(?:png|webp|jpe?g|gif))(?:\?[^'"`]*)?['"`]/gi;
+          const copied = new Set();
+
+          for (const match of html.matchAll(imagePattern)) {
+            const reference = match[1];
+            if (/^(?:https?:)?\/\//.test(reference) || reference.includes('${')) continue;
+
+            const source = path.resolve(path.dirname(htmlPath), reference);
+            const relative = path.relative(root, source);
+            if (relative.startsWith('..') || path.isAbsolute(relative)) continue;
+            if (!fs.existsSync(source) || !fs.statSync(source).isFile()) continue;
+            if (copied.has(relative)) continue;
+
+            const target = path.join(outRoot, relative);
+            fs.mkdirSync(path.dirname(target), { recursive: true });
+            fs.copyFileSync(source, target);
+            copied.add(relative);
+          }
+
+          console.log(`Copied ${copied.size} directly referenced images.`);
+          NODE
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
