@@ -35,18 +35,7 @@ static func act(s: Sim, rng: Rng) -> void:
 	if ns != null and s.money >= ns.cost:
 		s.open_shop(ns.id)
 		return
-	# ★ BAL_BENCH=hands — **작업대를 손 수만큼만 세운다.**
-	#   유저가 설계할 때 바로 짚은 것: "이러면 일꾼 하나당 작업대 하나네."
-	#   손이 하나인데 작업대가 넷이면 만드는 물건이 흩어져 걷는 값만 낸다 —
-	#   그러면 사면 손해인 물건을 파는 셈이고, 그건 규칙 4에 걸린다.
-	#   짐작하지 말고 끄고 켜서 잰다.
-	for sh0 in s.shops:
-		if not s.can_bench_up(String(sh0)):
-			continue
-		if OS.get_environment("BAL_BENCH") == "hands" \
-				and s.bench_lv(String(sh0)) >= 1 + int(s.staff_of(String(sh0))):
-			continue
-		s.bench_up(String(sh0))
+	if _bench(s, "early"):
 		return
 	for sh in s.shops:
 		if s.can_promote(sh):
@@ -119,6 +108,33 @@ static func act(s: Sim, rng: Rng) -> void:
 			cheap = id
 	if cheap != "" and s.money >= cheap_c:
 		s.level_up_many(cheap, 10)
+		return
+	# 맨 끝자리 — BAL_BENCH=late 일 때만 여기서 산다("다 하고 남으면").
+	_bench(s, "late")
+
+## 작업대 한 단 더 — **끄고 켜서 재려고** 따로 뺐다(2026-08-29).
+##
+## 유저가 설계할 때 바로 짚었다: *"이러면 일꾼 하나당 작업대 하나네."*
+## 손이 하나인데 작업대가 넷이면 만들 물건이 흩어져 걷는 값만 내는 것 아니냐 —
+## 그러면 사면 손해인 물건을 파는 셈이고, 규칙 4에 걸린다. 그래서 잰다.
+##
+##   BAL_BENCH 없음   가게를 연 다음 바로 산다(지금 게임 그대로)
+##   BAL_BENCH=hands  **손 수만큼만** 세운다
+##   BAL_BENCH=late   레벨업까지 다 하고 남는 돈으로만 산다
+static func _bench(s: Sim, slot: String) -> bool:
+	var mode: String = OS.get_environment("BAL_BENCH")
+	if mode == "late" and slot != "late":
+		return false
+	if mode != "late" and slot == "late":
+		return false
+	for sh0 in s.shops:
+		if not s.can_bench_up(String(sh0)):
+			continue
+		if mode == "hands" and s.bench_lv(String(sh0)) >= 1 + int(s.staff_of(String(sh0))):
+			continue
+		s.bench_up(String(sh0))
+		return true
+	return false
 
 static func _env(k: String, d: float) -> float:
 	return float(OS.get_environment(k)) if OS.has_environment(k) else d
