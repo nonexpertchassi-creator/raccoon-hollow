@@ -1,8 +1,8 @@
 extends PanelContainer
 class_name ShopPanel
-## 아래에서 올라오는 창. 가게를 누르면 여기서 강화·칸 열기·일꾼·승급을 한다.
+## 아래에서 올라오는 창. 가게를 누르면 여기서 강화·작업대·일꾼·승급을 한다.
 ##
-## 지도에서 바로 되는 일(매대 눌러 강화)은 여기 없어도 된다. 이 창은
+## 지도에서 바로 되는 일(작업대 눌러 강화)은 여기 없어도 된다. 이 창은
 ## **지도에서 못 하는 것**만 맡는다 — 자세한 숫자와 승급.
 
 var sim: Sim
@@ -595,7 +595,7 @@ func _ledger_body() -> void:
 ## ── 가게 ──
 ##
 ## 갈피(탭) 셋으로 가른다. 예전엔 제품·일꾼·강화·승급을 한 줄로 다 쏟았는데,
-## 매대가 여덟 칸까지 늘면 승급 조건은 스크롤 저 아래라 아무도 안 봤다.
+## 작업대가 여덟 칸까지 늘면 승급 조건은 스크롤 저 아래라 아무도 안 봤다.
 ## 자주 만지는 것(제품)과 가끔 보는 것(승급)은 같은 화면에 있을 이유가 없다.
 func _shop_body() -> void:
 	if shop_id == "":
@@ -654,9 +654,16 @@ func _item_row(icon: String, id: String) -> HBoxContainer:
 	row.add_child(col)
 	return row
 
+## 가게 창의 '제품' 갈피 — 이제 **작업대 목록**이다(2026-08-29).
+##
+## ★ 예전엔 칸마다 [칸 열기] 단추가 따로 있었고, 손님이 물어봐야 그 단추가
+##   켜졌다. 그래서 "왜 못 사지?"의 답이 화면 어디에도 없었다.
+##   이제 단추는 **맨 아래 하나**다 — 작업대를 한 단 올리면 다음 물건을
+##   만들 줄 알게 된다. 살 수 있는 것이 하나뿐이면 고민할 것도 하나뿐이다.
 func _tab_items(shop: Dictionary) -> void:
-	var cap: int = sim.stall_cap(shop_id)
-	for k in range(min(cap, shop.items.size())):
+	var cap: int = sim.bench_cap(shop_id)
+	var lv: int = sim.bench_lv(shop_id)
+	for k in range(cap):
 		var it: Dictionary = shop.items[k]
 		var row: HBoxContainer = _item_row(String(it.icon), String(it.id))
 		var col: VBoxContainer = row.get_child(1)
@@ -674,16 +681,17 @@ func _tab_items(shop: Dictionary) -> void:
 				col.add_child(_label("더 올릴 수 없다 — 승급해야 한다", 12, Color("8a7a63")))
 			else:
 				col.add_child(_level_btn(String(it.id), line))
-		elif sim.asked.has(it.id):
-			col.add_child(_label("%s — 손님이 찾던 물건" % it.name, 14))
-			col.add_child(_btn("칸 열기 🪙" + Num.fmt(it.cost), sim.can_open_item(it.id),
-				func(): sim.open_item(it.id); rebuild()))
+		elif k == lv:
+			col.add_child(_label("%s — 다음 작업대" % it.name, 14))
+			col.add_child(_btn("작업대 %d단 🪙%s" % [lv + 1, Num.fmt(it.cost)],
+				sim.can_bench_up(shop_id), func(): sim.bench_up(shop_id); rebuild()))
 		else:
-			col.add_child(_label("? ? ?   아직 아무도 찾지 않았다", 13, Color("8a7a63")))
+			col.add_child(_label("? ? ?   작업대가 여기까지 못 온다", 13, Color("8a7a63")))
 		_box.add_child(row)
 
 	if shop.items.size() > cap:
-		_box.add_child(_label("승급하면 매대 %d칸이 더 생긴다" % (shop.items.size() - cap), 12, Color("8a7a63")))
+		_box.add_child(_label("승급하면 작업대를 %d단까지 올릴 수 있다"
+			% min(shop.items.size(), cap + 2), 12, Color("8a7a63")))
 
 ## 강화 단추 하나.
 ##
@@ -774,7 +782,7 @@ func _tab_rank(shop: Dictionary) -> void:
 		_box.add_child(_label("· 값이 ×%d — 물건 이름도 '%s'로 바뀐다" % [
 			int(g.priceMul), shop.ranks[g.rank]], 13))
 		_box.add_child(_label("· 레벨 상한 %d → %d" % [int(g.maxLv[0]), int(g.maxLv[1])], 13))
-		_box.add_child(_label("· 매대 %d칸 → %d칸" % [int(g.stalls[0]), int(g.stalls[1])], 13))
+		_box.add_child(_label("· 작업대 %d단까지 → %d단까지" % [int(g.bench[0]), int(g.bench[1])], 13))
 		# ★ 나쁜 소식도 같은 크기로 적는다. 승급은 레벨을 1로 되돌리기 때문에
 		#   누르고 나면 벌이가 잠깐 떨어진다. 이걸 안 적으면 누른 사람이
 		#   "고장 났나" 하고, 그게 이 게임을 끄는 이유가 된다.

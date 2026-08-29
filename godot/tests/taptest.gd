@@ -2,7 +2,7 @@ extends Node
 ## 누르기가 실제로 먹는지 확인한다.
 ##
 ## 눈으로 보면 "눌리는 것 같다"까지밖에 못 간다. 좌표를 계산해 두드려 보고
-## sim이 실제로 변했는지를 본다 — 매대를 눌렀는데 옆 매대가 오르거나,
+## sim이 실제로 변했는지를 본다 — 작업대를 눌렀는데 옆 작업대가 오르거나,
 ## 끌었는데 눌린 걸로 처리되는 종류의 고장은 그림으로는 안 보인다.
 var _done := false
 
@@ -27,32 +27,32 @@ func _process(_d: float) -> void:
 	for i in range(60 * 4):
 		s.tick(0.25, rng)
 	# ★ 나쁜 놈을 치운다. 누르기는 나쁜 놈이 제일 먼저다(몇 초 안에 사라지니까).
-	#   그래서 쥐가 마침 매대 앞에 서 있으면 매대 누르기가 그리로 먹힌다.
+	#   그래서 쥐가 마침 작업대 앞에 서 있으면 작업대 누르기가 그리로 먹힌다.
 	#   실제로 이 시험이 그것 때문에 **어떤 날은 통과하고 어떤 날은 실패했다** —
 	#   고장이 아니라 시험이 운에 걸려 있었던 것이다. 나쁜 놈은 5번에서 따로 본다.
 	s.pest = null
 
-	# 1) 매대를 누르면 **그 가게 창이 열린다** (2026-08-25부터 — 지도는 보는 곳,
+	# 1) 작업대를 누르면 **그 가게 창이 열린다** (2026-08-25부터 — 지도는 보는 곳,
 	#    창이 만지는 곳이다. 예전엔 그 자리에서 바로 강화했다.)
 	var y: Dictionary = Iso.yard(Iso.YARD_KIND[0], Iso.plot_dim(s, 0))
 	var o: Vector2i = Iso.org(s, 0)
-	for k in range(min(s.stall_cap("smith"), Content.SHOPS[0].items.size())):
+	for k in range(min(s.bench_cap("smith"), Content.SHOPS[0].items.size())):
 		var it: Dictionary = Content.SHOPS[0].items[k]
 		if not s.is_open(it.id):
 			continue
 		var before: float = s.lv(it.id)
-		var sp: Vector2i = y.stalls[k]
+		var sp: Vector2i = y.benches[k]
 		main._tap(Iso.w(o.x + sp.x + 0.5, o.y + sp.y + 0.5) + Vector2(0, -18))
 		if not main.panel.visible or main.panel.shop_id != "smith":
-			fails.append("매대 %d(%s)를 눌렀는데 가게 창이 안 열렸다" % [k, it.name])
+			fails.append("작업대 %d(%s)를 눌렀는데 가게 창이 안 열렸다" % [k, it.name])
 		if s.lv(it.id) != before:
-			fails.append("매대 %d를 눌렀는데 바로 강화됐다(창만 열려야 한다)" % k)
+			fails.append("작업대 %d를 눌렀는데 바로 강화됐다(창만 열려야 한다)" % k)
 		main.panel.close()
 
 	# 2) 현판을 누르면 창이 열린다.
 	#
-	#    ★ 예전 주석: "마당 한가운데는 매대 판정에 먹히니 현판으로만 연다."
-	#      그건 매대 판정이 제 칸의 두 배였기 때문이고, 유저가 **그걸 그대로
+	#    ★ 예전 주석: "마당 한가운데는 작업대 판정에 먹히니 현판으로만 연다."
+	#      그건 작업대 판정이 제 칸의 두 배였기 때문이고, 유저가 **그걸 그대로
 	#      느꼈다**("계산대를 눌러야만 열리는 것 같다"). 판정을 제 칸으로
 	#      좁혔으니 이제 마당 아무 데나 눌러도 열려야 한다 — 아래 2-3이 그 시험이다.
 	var N: Vector2 = Iso.w(o.x, o.y)
@@ -68,12 +68,12 @@ func _process(_d: float) -> void:
 		fails.append("마당 앞쪽을 눌렀는데 가게 창이 안 열렸다")
 	main.panel.close()
 
-	# 2-3) 마당 안쪽 — 매대가 안 놓인 칸을 누르면 창이 열린다.
-	#      매대·가마·계산대가 쓰는 칸을 빼고 남은 칸으로 시험한다.
+	# 2-3) 마당 안쪽 — 작업대가 안 놓인 칸을 누르면 창이 열린다.
+	#      작업대·가마·계산대가 쓰는 칸을 빼고 남은 칸으로 시험한다.
 	var yd: Dictionary = Iso.yard(Iso.YARD_KIND[0], n)
 	var taken: Array = [yd.kiln, yd.counter]
-	for k in range(min(s.stall_cap("smith"), Content.SHOPS[0].items.size())):
-		taken.append(yd.stalls[k])
+	for k in range(min(s.bench_cap("smith"), Content.SHOPS[0].items.size())):
+		taken.append(yd.benches[k])
 	var free: Variant = null
 	for ty in range(n):
 		for tx in range(n):
@@ -336,7 +336,7 @@ func _process(_d: float) -> void:
 	# 지금은 더미라 **아예 안 들린다** — 셈으로 볼 수밖에 없다.
 	# 위(7번)에서 창의 레벨업 단추를 눌렀으니 강화 소리가 한 번은 울렸어야 한다.
 	if int(main.sfx.counts.get("tap", 0)) == 0:
-		fails.append("매대를 눌렀는데 강화 소리를 안 울렸다")
+		fails.append("작업대를 눌렀는데 강화 소리를 안 울렸다")
 
 	# 9) 승급 공사(2026-08-27) — 누르면 바로 오르는 게 아니라 시계가 돈다.
 	#    ★ 4시간짜리라 밸런스 도구는 이 뒤를 못 본다(4시간 재기에서 한 번도
@@ -344,11 +344,12 @@ func _process(_d: float) -> void:
 	var s9: Sim = Sim.new()
 	var r9: Rng = Rng.new(11)
 	s9.money = 1.0e18
-	# 승급 조건 다섯을 채운다: 매대 만렙 · 다음 가게 · 성 합계 · 초당 수입 · 값.
+	# 승급 조건 다섯을 채운다: 작업대 만렙 · 다음 가게 · 성 합계 · 초당 수입 · 값.
 	# 초당 수입은 **가게 전체**를 합쳐 세므로 한 채만으로는 못 넘는다.
 	for sh9 in Content.SHOPS:
 		if not s9.shops.has(String(sh9.id)):
 			s9.shops.append(String(sh9.id))
+		s9.bench[String(sh9.id)] = 4.0        # 작업대 4단 — 무쇠급 상한
 		for k9 in range(4):
 			var iid9: String = String(sh9.items[k9].id)
 			if not s9.items.has(iid9):

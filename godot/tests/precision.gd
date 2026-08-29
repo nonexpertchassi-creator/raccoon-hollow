@@ -19,7 +19,7 @@ func _init() -> void:
 			if x != y:
 				bad += 1
 				print("값이 다르다 %s.%s : %.20f vs %.20f" % [id, f, x, y])
-	for f in ["money", "revenue", "t", "wall", "_purse", "_askAcc", "_fairAcc", "fair", "rush", "gems", "sold"]:
+	for f in ["money", "revenue", "t", "wall", "_purse", "_fairAcc", "fair", "rush", "gems", "sold"]:
 		checked += 1
 		if float(a.get(f)) != float(b.get(f)):
 			bad += 1

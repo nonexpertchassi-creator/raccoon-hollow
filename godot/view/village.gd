@@ -63,12 +63,6 @@ func _gate() -> Vector2i:
 	return ok[int(_grng.next() * ok.size()) % ok.size()]
 const LINE_MAX := 4          # 한 가게 앞에 세우는 손님 수
 
-## 손님이 물어본 것 — "무쇠도끼?" 한 마디가 그 가게 지붕 위에 뜬다.
-## 이게 없으면 아직 안 연 품목을 **왜** 여는지가 화면에 안 보인다.
-## 한 번에 하나만 띄운다 — 두 개가 겹치면 둘 다 못 읽는다.
-var bubble: Dictionary = {}
-const BUBBLE_LIFE := 4.5
-
 ## 가게 앞 줄. 손님이 겹쳐 서면 서로를 덮어서 몇 마리인지도 안 보인다.
 ## 먼저 온 손님이 0번(계산대 앞), 나머지는 길을 따라 뒤로 선다.
 var line: Array = []
@@ -90,14 +84,14 @@ const DOG_SPEED := 88.0
 ## (2026-08-28에 화면 장식에서 경제 규칙이 됐다 — 주우면 엽전이 나온다.)
 var trash: Array = []
 
-## 가게별 일꾼 — 평소엔 작업대, 팔릴 땐 계산대 뒤로 간다
+## 가게별 일꾼 — 평소엔 가마 앞자리, 팔릴 땐 계산대 뒤로 간다
 var clerks: Array = []
-## 일꾼의 현재 자리("가게:번호" → 좌표). 만드는 매대가 바뀌면 걸어서 옮긴다.
+## 일꾼의 현재 자리("가게:번호" → 좌표). 만드는 작업대가 바뀌면 걸어서 옮긴다.
 var _staffAt: Dictionary = {}
 ## 줄 도착 순번표 — 늘어나기만 하는 번호. 도착한 차례가 곧 줄 차례다.
 var _lineSeq: int = 0
-## 일감표 — 누가 어느 매대를 잡았나(첫 일꾼: 가게번호→매대번호, 더 온 일꾼: "가게:번호"→매대번호).
-## ★ 한 번 잡은 매대는 그 물건이 다 만들어질 때까지 안 놓는다(2026-08-25, 유저 —
+## 일감표 — 누가 어느 작업대를 잡았나(첫 일꾼: 가게번호→작업대번호, 더 온 일꾼: "가게:번호"→작업대번호).
+## ★ 한 번 잡은 작업대는 그 물건이 다 만들어질 때까지 안 놓는다(2026-08-25, 유저 —
 ##   "5번 자리에서 탭 댄스"). 만드는 목록이 출렁일 때마다 목표를 갈아타면
 ##   일꾼이 마당 가운데서 발만 동동 구른다.
 var _heroJob: Dictionary = {}
@@ -109,7 +103,7 @@ var _pending: Dictionary = {}
 ## 일꾼이 든 상자("가게:번호" → 주문 번호)와 계산 자세 시계.
 var _staffCarry: Dictionary = {}
 var _staffBusy: Dictionary = {}
-## 마당 칸 번호(1~n²)를 바닥에 깐다 — "6번 매대" 같은 말이 통하게 하는
+## 마당 칸 번호(1~n²)를 바닥에 깐다 — "6번 작업대" 같은 말이 통하게 하는
 ## **대화용 자**다(유저). G 키로 껐다 켠다. 내보내기 전에 기본값을 끈다.
 ## 바닥 칸 번호(G키) — **기본은 꺼짐**이다. 마당 배치를 번호로 정하던 동안
 ## 켜 둔 채로 굳어 있었다(2026-08-27에 잡았다) — 게임을 켜면 손님 발밑에
@@ -139,17 +133,6 @@ func setup(s: Sim) -> void:
 	var start: Vector2i = Iso.GATES[0]
 	sweeper = {"pos": Iso.w(start.x + 0.5, start.y + 0.5), "at": start,
 		"path": [], "step": 1, "rest": 1.0}
-
-## sim이 "손님이 물어봤다"고 알려오면 그 가게 위에 말풍선을 띄운다.
-func on_ask(ask: Dictionary) -> void:
-	var idx: int = -1
-	for i in range(Content.SHOPS.size()):
-		if Content.SHOPS[i].id == ask.item.shop:
-			idx = i
-	if idx < 0:
-		return
-	bubble = {"idx": idx, "text": "%s?" % String(ask.item.name),
-		"face": String(ask.guest.face), "t": BUBBLE_LIFE}
 
 ## sim이 판 것을 화면에 들여보낸다. **sim을 고치지 않는다** — 읽고 흉내만 낸다.
 func on_sale(sale: Dictionary) -> void:
@@ -290,7 +273,7 @@ func _assign_crates(i: int) -> void:
 	var ns: int = int(sim.staff_of(String(Content.SHOPS[i].id)))
 	while not q.is_empty():
 		var picked: String = ""
-		for k in range(ns):                       # 1순위 — 맡은 매대가 없는 일꾼
+		for k in range(ns):                       # 1순위 — 맡은 작업대가 없는 일꾼
 			var kk: String = "%d:%d" % [i, k]
 			if int(_staffCarry.get(kk, 0)) == 0 and int(_staffJob.get(kk, -1)) < 0:
 				picked = kk
@@ -320,7 +303,7 @@ func _walk(wk: Dictionary, delta: float) -> bool:
 		# 길을 걸을 때만 좌우로 조금 흩뜨린다. 다들 한 줄로 겹쳐 걸으면
 		# 열 마리가 한 마리처럼 보인다. 줄에 설 때는 안 흩뜨린다(줄이 흐트러진다).
 		# 흩뜨림은 **가로로만**. 위아래로도 흩뜨렸더니 발끝(앞뒤 판정)이
-		# 길가 매대와 어긋나서, 웃돈(+7)으로 때우는 악순환이 됐다.
+		# 길가 작업대와 어긋나서, 웃돈(+7)으로 때우는 악순환이 됐다.
 		target = Iso.w(t.x + 0.5, t.y + 0.5) + Vector2(wk.off, 0)
 	else:
 		return true
@@ -350,10 +333,6 @@ func _walk(wk: Dictionary, delta: float) -> bool:
 func _advance(delta: float) -> void:
 	# 말풍선 시계도 여기서 돈다. _process에 두면 빨리 감기(shot·taptest)가
 	# 이 줄을 건너뛰어서, 도구에게는 말풍선이 **영원히 안 사라지는 것**이 된다.
-	if not bubble.is_empty():
-		bubble.t -= delta
-		if bubble.t <= 0.0:
-			bubble = {}
 	var live: Array = []
 	for f in floats:
 		f.t -= delta
@@ -373,7 +352,7 @@ func _advance(delta: float) -> void:
 	while trash.size() > int(sim.trash) and not trash.is_empty():
 		floats.append({"pos": (trash[0].pos as Vector2) + Vector2(0, -24), "text": "🧹", "t": 1.0})
 		trash.remove_at(0)
-	# 일감 배정 — 잡은 매대가 아직 만드는 중이면 **그대로 유지**한다.
+	# 일감 배정 — 잡은 작업대가 아직 만드는 중이면 **그대로 유지**한다.
 	# 목록 순서가 출렁여도 목표는 안 바뀐다 — 탭 댄스 방지의 핵심이다.
 	for i in range(Content.SHOPS.size()):
 		var sid5: String = String(Content.SHOPS[i].id)
@@ -402,7 +381,7 @@ func _advance(delta: float) -> void:
 			if sj >= 0:
 				claimed[sj] = true
 
-	# 일꾼 — 만드는 매대 곁으로 걸어간다. 순간이동하면 "일하러 갔다"가 안 보인다.
+	# 일꾼 — 만드는 작업대 곁으로 걸어간다. 순간이동하면 "일하러 갔다"가 안 보인다.
 	# 상자를 들었으면 그 손님이 선 계산대의 안쪽 자리로 간다(2026-08-27).
 	for i in range(Content.SHOPS.size()):
 		if not sim.shops.has(String(Content.SHOPS[i].id)):
@@ -485,9 +464,9 @@ func _advance(delta: float) -> void:
 		c.busy = max(0.0, c.busy - delta)
 		c.carry = max(0.0, float(c.get("carry", 0.0)) - delta)
 		var f: Dictionary = Iso.foot(sim, i)
-		# 일꾼도 일꾼처럼 **만드는 매대 앞**으로 간다. 작업대에 서 있는데
-		# 저쪽 매대가 만들어지면 오류로 보인다(유저). 만들 게 없으면 작업대.
-		# 줄에 손님이 남아 있으면 계산대를 안 떠난다 — 손님 사이마다 매대로
+		# 일꾼도 일꾼처럼 **만드는 작업대 앞**으로 간다. 가마 앞자리에 서 있는데
+		# 저쪽 작업대가 돌아가면 오류로 보인다(유저). 만들 게 없으면 가마 앞자리.
+		# 줄에 손님이 남아 있으면 계산대를 안 떠난다 — 손님 사이마다 작업대로
 		# 갔다 오며 몸이 좌우로 홱홱 뒤집혔다(유저: "자세를 한가지로").
 		var carry_o: int = int(c.get("carry_oid", 0))
 		# 계산대가 여럿이면 **그 손님이 선 계산대**의 안쪽 자리로 간다(2026-08-27).
@@ -498,7 +477,7 @@ func _advance(delta: float) -> void:
 			goal = sv_p                           # 상자를 들었다 — 계산대로
 		elif c.busy <= 0.0:
 			# 할 일이 없으면 **그 자리에서** 쉰다(유저: "마지막 지점에서
-			# 머무는 게 자연스럽다"). 작업대로 돌아가 서 있으면 그것도
+			# 머무는 게 자연스럽다"). 가마 앞자리로 돌아가 서 있으면 그것도
 			# 손님을 기다리는 예지력처럼 보인다.
 			goal = _stall_front(i, hjob) if hjob >= 0 else (c.pos if _idle(i) else f.work)
 		# 계산 자리가 마당 안 칸(계산대의 안쪽 이웃)이 되면서 팔꿈치 경유는
@@ -514,7 +493,7 @@ func _advance(delta: float) -> void:
 		var near_ct: bool = c.pos.distance_to(sv_p) < 30.0
 		if c.walking and absf(d.x) > 0.5 and not near_ct:
 			c.flip = d.x < 0.0
-		# ★ 길 쪽 보기 잠금은 **계산하러 왔을 때만**. 계산 자리(8번)는 매대
+		# ★ 길 쪽 보기 잠금은 **계산하러 왔을 때만**. 계산 자리(8번)는 작업대
 		#   7번의 작업 자리이기도 한데, 잠금이 만들 때도 길을 보게 해서
 		#   "만드는 방향이 반대"가 됐다(유저).
 		if near_ct and (carry_o != 0 or c.busy > 0.0):
@@ -522,7 +501,7 @@ func _advance(delta: float) -> void:
 			c.dir = "sw" if String(f.yard.gate) == "y" else "se"
 			c.flip = String(f.yard.gate) == "y"
 		elif not c.walking and hjob >= 0:
-			c.dir = Iso.dir4(_stall_at(i, hjob) - c.pos)    # 매대 앞에선 매대를 본다
+			c.dir = Iso.dir4(_stall_at(i, hjob) - c.pos)    # 작업대 앞에선 작업대를 본다
 			c.flip = _stall_at(i, hjob).x < c.pos.x
 		c.pos = tgt if d.length() <= step else c.pos + d.normalized() * step
 		# 상자가 계산대에 닿았다 — 이제야 손님이 받는다
@@ -737,7 +716,7 @@ func _prop(p: Dictionary) -> void:
 func _ruin(i: int) -> void:
 	# ★ '무너진 집'과 가게 이름은 지웠다(2026-08-25, 유저) — **무슨 가게가
 	#   열릴지 미리 알리지 않는다.** 궁금함이 여는 이유가 된다.
-	#   자리는 매대 빈 칸과 같은 말(9칸 빈 터 + 누운 십자)로 그린다.
+	#   자리는 작업대 빈 칸과 같은 말(9칸 빈 터 + 누운 십자)로 그린다.
 	var shop: Dictionary = Content.SHOPS[i]
 	var o: Vector2i = Iso.org(sim, i)
 	var next: Variant = sim.next_shop()
@@ -837,7 +816,7 @@ func _plot_base(i: int, n: int) -> void:
 					var q2: Vector2 = A.lerp(B, (t2 + 0.5) / 7.0)
 					draw_line(q2 + Vector2(0, -18), q2 + Vector2(0, -24), Color("4a4139"), 1.5)
 
-	# ★ 현판(가게 이름)과 "승급하면 매대 +2" 문구는 지웠다(2026-08-25, 유저).
+	# ★ 현판(가게 이름)과 "승급하면 작업대 +2" 문구는 지웠다(2026-08-25, 유저).
 	#   '가득!'·'새 칸!' 같은 알림 표는 여기(바닥 층)가 아니라 **맨 위 층**에서
 	#   그린다(_yard_signs) — 알림이 가구에 반쯤 가려지면 알림이 아니다.
 
@@ -878,7 +857,7 @@ func _kiln(i: int) -> void:
 	draw_circle(p + Vector2(0, -30 - 6 * rk2), 5.0 * fl * fs, Color("f0a24b"))
 	draw_circle(p + Vector2(0, -36 - 6 * rk2), 3.0 * fl * fs, Color("f6d27a"))
 
-## 매대 한 칸 = 좌대 + 재고·진행 계기 + 이름패
+## 작업대 한 칸 = 좌대 + 재고·진행 계기 + 이름패
 func _stall(i: int, k: int, spot: Vector2i) -> void:
 	var shop: Dictionary = Content.SHOPS[i]
 	var o: Vector2i = Iso.org(sim, i)
@@ -888,9 +867,11 @@ func _stall(i: int, k: int, spot: Vector2i) -> void:
 	if not sim.is_open(it.id):
 		# 안 연 칸은 **바닥과 같은 1×1 마름모**에 + 하나다(유저 결정).
 		# 처음엔 화면에 똑바로 선 네모로 그렸는데, 세상 속 빈 자리가 아니라
-		# 공중에 뜬 딱지처럼 보였다 — 빈 매대 자리는 땅바닥이지 창(UI)이 아니다.
+		# 공중에 뜬 딱지처럼 보였다 — 빈 작업대 자리는 땅바닥이지 창(UI)이 아니다.
 		# 살 수 있으면 초록으로 바뀐다. 값은 눌러서 창에서 본다.
-		var can: bool = sim.can_open_item(it.id)
+		# 초록으로 켜지는 것은 **바로 다음 한 자리**뿐이다 — 작업대는 앞에서부터
+		# 차례로 선다. 뒤 자리까지 초록이면 "아무거나 살 수 있다"로 잘못 읽힌다.
+		var can: bool = sim.can_bench_up(String(shop.id)) and k == sim.bench_lv(String(shop.id))
 		var tN: Vector2 = Iso.w(o.x + spot.x, o.y + spot.y)
 		var tE: Vector2 = Iso.w(o.x + spot.x + 1, o.y + spot.y)
 		var tS: Vector2 = Iso.w(o.x + spot.x + 1, o.y + spot.y + 1)
@@ -902,19 +883,19 @@ func _stall(i: int, k: int, spot: Vector2i) -> void:
 
 
 
-	# 매대(좌판) — 가게마다 다르게 생겼다. 대장간은 모루 받침, 필방은 낮은 서안…
+	# 작업대(좌판) — 가게마다 다르게 생겼다. 대장간은 모루 받침, 필방은 낮은 서안…
 	# 그림이 없으면 여태처럼 나무 상자를 그린다.
 	var table: Texture2D = Art.ranked("stalls", String(shop.id), sim.rank_of(String(shop.id)))
 	if table != null:
-		# 매대 그림은 ↙를 보는 한 장이다. 세로 변(왼담 x=0, 길가 x=n-1)에 선
-		# 매대는 보여줄 쪽이 ↘라서 뒤집는다 — 필방·옹기점·약재상의 길가 매대가
+		# 작업대 그림은 ↙를 보는 한 장이다. 세로 변(왼담 x=0, 길가 x=n-1)에 선
+		# 작업대는 보여줄 쪽이 ↘라서 뒤집는다 — 필방·옹기점·약재상의 길가 작업대가
 		# 등을 보이고 있었다(유저가 두 번 잡았다).
 		var n4: int = Iso.plot_dim(sim, i)
 		# 윗줄(y=0)은 모서리라도 ↙다 — 3번 칸(윗줄의 오른끝)이 세로줄로
 		# 잘못 분류돼 ↘로 뒤집혔고, 마당 밖으로 빠져나간 것처럼 보였다(유저).
 		var flip4: bool = (spot.x == n4 - 1 or spot.x == 0) and spot.y > 0
 		# ↘판 그림(<가게>-r)이 있으면 뒤집는 대신 그걸 쓴다 — 거울은 빛 방향
-		# (왼쪽 위 광원)까지 뒤집어서, 비대칭 매대는 어색할 수 있다(유저 물음).
+		# (왼쪽 위 광원)까지 뒤집어서, 비대칭 작업대는 어색할 수 있다(유저 물음).
 		# 기본은 뒤집기, 어색한 가게만 ↘판을 따로 받는 중간 길이다.
 		if flip4:
 			var tr4: Texture2D = Art.ranked("stalls", String(shop.id) + "-r", sim.rank_of(String(shop.id)))
@@ -963,7 +944,7 @@ func _stall(i: int, k: int, spot: Vector2i) -> void:
 	else:
 		_text(bc + Vector2(0, 7), String(it.icon), 18, Color.WHITE)
 	if here:
-		# 만드는 기척 — 대장간은 불티, 나머지는 먼지구름(매대 위 효과 원칙)
+		# 만드는 기척 — 대장간은 불티, 나머지는 먼지구름(작업대 위 효과 원칙)
 		if String(shop.id) == "smith":
 			for s2 in range(3):
 				var ph: float = fmod(_t * 1.6 + s2 * 0.37 + spot.x * 0.21, 1.0)
@@ -980,8 +961,8 @@ func _stall(i: int, k: int, spot: Vector2i) -> void:
 
 	# ★ 재고 숫자·진행 고리는 지웠다(2026-08-25, 유저 지적). 그림이 오기 전엔
 	#   그 숫자가 화면의 전부였는데, 이제는 물건 그림을 동그라미로 가리는
-	#   소음이었다. '가득' 신호는 매대가 아니라 **현판에 하나만** 띄운다 —
-	#   처음엔 매대마다 붙였더니 넷이 한꺼번에 깜빡여서 소음을 소음으로 바꾼
+	#   소음이었다. '가득' 신호는 작업대가 아니라 **현판에 하나만** 띄운다 —
+	#   처음엔 작업대마다 붙였더니 넷이 한꺼번에 깜빡여서 소음을 소음으로 바꾼
 	#   꼴이 됐다. 자세한 숫자는 가게 창에 있다.
 
 
@@ -1003,7 +984,7 @@ func _counter_one(i: int, k: int) -> void:
 	var bx: float = float(o.x + ct.x)
 	var by: float = float(o.y + ct.y)
 	var p: Vector2 = Iso.w(bx + 0.5, by + 0.5)
-	# 계산대도 매대와 같은 규칙이다 — **정면치기 한 장 + 코드 뒤집기.**
+	# 계산대도 작업대와 같은 규칙이다 — **정면치기 한 장 + 코드 뒤집기.**
 	var pic3: Texture2D = Art.ranked("counters", String(Content.SHOPS[i].id), sim.rank_of(String(Content.SHOPS[i].id)))
 	if pic3 != null:
 		_sprite(pic3, p + Vector2(0, 14), "counters", String(yd.gate) == "y")
@@ -1219,7 +1200,7 @@ func _sprite_rect(t: Texture2D, foot: Vector2, kind: String, flip: bool = false,
 	# 그림은 오른쪽 보는 것 한 장만 받는다. 왼쪽은 _blit이 뒤집는다 —
 	# 두 장씩 그리게 하면 장수가 두 배가 되고, 둘이 미묘하게 달라진다.
 	# ★ 뒤집기 삽질의 역사(둘 다 유저가 잡았다): 목적지 네모를 음수로 —
-	#   한 칸 옆으로 밀려 그려짐(4·7 매대가 5·8로). 원본 네모를 음수로 —
+	#   한 칸 옆으로 밀려 그려짐(4·7 작업대가 5·8로). 원본 네모를 음수로 —
 	#   아예 안 그려짐. **좌표계를 거울로 걸고 정상으로 그리는 것**만 확실하다.
 	return r
 
@@ -1360,39 +1341,39 @@ func _clerk(i: int) -> void:
 ##   그때 자리 규칙은 고쳤는데 **그리는 쪽을 안 옮겼다.**)
 ## 일꾼이 실제로 설 자리. **칸 한가운데가 아니라 마당 안쪽으로 당긴다.**
 ##
-## ★ 3×3 마당에서 일꾼 자리는 담벼락 칸밖에 안 남는데, 그 앞에는 매대가 선다.
-##   칸 한가운데에 세웠더니 매대 뒤에 가려서 **머리만 보였다.** 480K를 주고
-##   머리 하나를 사는 셈이다. 안쪽으로 26px 당기면 매대 앞으로 나온다.
+## ★ 3×3 마당에서 일꾼 자리는 담벼락 칸밖에 안 남는데, 그 앞에는 작업대가 선다.
+##   칸 한가운데에 세웠더니 작업대 뒤에 가려서 **머리만 보였다.** 480K를 주고
+##   머리 하나를 사는 셈이다. 안쪽으로 26px 당기면 작업대 앞으로 나온다.
 ##   앞뒤 순서도 이 자리로 정해야 한다 — 안 그러면 그림과 순서가 따로 논다.
-## 지금 만드는 중인 매대 번호들(매대 순서). 손 배정을 화면이 따라가는 눈이다.
+## 지금 만드는 중인 작업대 번호들(작업대 순서). 손 배정을 화면이 따라가는 눈이다.
 func _craft_idx(i: int) -> Array:
 	var y: Dictionary = Iso.yard(Iso.YARD_KIND[i], Iso.plot_dim(sim, i))
 	var out: Array = []
-	for k2 in range(min(Content.SHOPS[i].items.size(), y.stalls.size())):
+	for k2 in range(min(Content.SHOPS[i].items.size(), y.benches.size())):
 		if sim._crafting.has(String(Content.SHOPS[i].items[k2].id)):
 			out.append(k2)
 	return out
 
-## k번 매대의 앞자리 — 안쪽 칸에 서서 매대 쪽으로 살짝 붙은 자리.
+## k번 작업대의 앞자리 — 안쪽 칸에 서서 작업대 쪽으로 살짝 붙은 자리.
 func _stall_front(i: int, k: int) -> Vector2:
 	var n: int = Iso.plot_dim(sim, i)
 	var y: Dictionary = Iso.yard(Iso.YARD_KIND[i], n)
 	var o: Vector2i = Iso.org(sim, i)
-	var sp: Vector2i = y.stalls[k]
-	# 매대의 이웃 칸 중 **가구가 없는 빈 칸**에서 마당 중심에 제일 가까운
+	var sp: Vector2i = y.benches[k]
+	# 작업대의 이웃 칸 중 **가구가 없는 빈 칸**에서 마당 중심에 제일 가까운
 	# 곳에 선다(대각선 포함). 처음엔 "수직 안쪽 한 칸"으로 못 박았는데,
-	# 모서리 매대는 그 칸이 하필 다른 매대였다 — 필방 7번, 지물포 3·9번은
+	# 모서리 작업대는 그 칸이 하필 다른 작업대였다 — 필방 7번, 지물포 3·9번은
 	# 일하러 갈 자리가 아예 없었다(유저가 잡았다). 자리는 정하는 게 아니라
 	# **찾는** 것이다.
 	var taken: Dictionary = {}
-	for t5 in y.stalls:
+	for t5 in y.benches:
 		taken[t5] = true
 	for c8 in y.counters:
 		taken[c8] = true
 	for s8 in y.serves:
 		taken[s8] = true
 	taken[y.kiln] = true
-	# 1순위: **수직 안쪽 이웃**(7번 매대면 8번 자리 — 유저 설계). 그 칸에
+	# 1순위: **수직 안쪽 이웃**(7번 작업대면 8번 자리 — 유저 설계). 그 칸에
 	# 가구가 있을 때만 2순위로 넘어간다. 처음부터 "중심에 가까운 빈 칸"으로
 	# 골랐더니 8번이 비어 있는데도 5번으로 갔다(유저가 잡았다).
 	var perp: Array = []
@@ -1407,7 +1388,7 @@ func _stall_front(i: int, k: int) -> Vector2:
 	for cnd in perp:
 		if cnd.x >= 0 and cnd.y >= 0 and cnd.x < n and cnd.y < n and not taken.has(cnd):
 			return Iso.w(o.x + cnd.x + 0.5, o.y + cnd.y + 0.5)
-	# 2순위: 이웃 여덟 칸의 빈 곳 중 마당 중심에 가까운 곳(모서리 매대용)
+	# 2순위: 이웃 여덟 칸의 빈 곳 중 마당 중심에 가까운 곳(모서리 작업대용)
 	var best: Vector2i = Vector2i(clampi(sp.x, 1, n - 2), clampi(sp.y, 1, n - 2))
 	var best_d: float = INF
 	var mid: Vector2 = Vector2(float(n) * 0.5, float(n) * 0.5)
@@ -1424,9 +1405,9 @@ func _stall_front(i: int, k: int) -> Vector2:
 				best = cnd2
 	return Iso.w(o.x + best.x + 0.5, o.y + best.y + 0.5)
 
-## 이 매대를 맡은 일꾼이 **지금 어디 있나**. 매대 앞에 닿기 전엔 만드는
+## 이 작업대를 맡은 일꾼이 **지금 어디 있나**. 작업대 앞에 닿기 전엔 만드는
 ## 효과(파이·먼지)를 안 띄우려고 본다 — 가지도 않았는데 만들어지면 오류로
-## 보인다(2026-08-25, 유저). 일꾼이 계산 중이면 첫 매대부터 일꾼 몫이다.
+## 보인다(2026-08-25, 유저). 일꾼이 계산 중이면 첫 작업대부터 일꾼 몫이다.
 func _worker_of(i: int, k: int) -> Vector2:
 	if int(_heroJob.get(i, -1)) == k:
 		return clerks[i].pos
@@ -1435,22 +1416,22 @@ func _worker_of(i: int, k: int) -> Vector2:
 			return _staffAt.get("%d:%d" % [i, s2], Vector2.INF)
 	return Vector2.INF
 
-## 일꾼이 지금 있어야 할 자리 — **만드는 매대 곁**이다(2026-08-25, 유저).
+## 일꾼이 지금 있어야 할 자리 — **만드는 작업대 곁**이다(2026-08-25, 유저).
 ## 제작을 짐승의 동작으로 보여주면 등급×자세만큼 그림이 는다. 대신 일꾼이
-## 그 매대로 걸어가 서고, "만들고 있다"는 매대 위 효과(먼지구름·불티)가 말한다.
-## 일꾼이 계산 중이면 첫 매대부터 일꾼 몫이고, 아니면 일꾼이 첫 매대를 맡는다.
+## 그 작업대로 걸어가 서고, "만들고 있다"는 작업대 위 효과(먼지구름·불티)가 말한다.
+## 일꾼이 계산 중이면 첫 작업대부터 일꾼 몫이고, 아니면 일꾼이 첫 작업대를 맡는다.
 func _staff_goal(i: int, k: int) -> Vector2:
 	var job: int = int(_staffJob.get("%d:%d" % [i, k], -1))
 	if job < 0:
-		# 맡을 매대가 없으면 **작업대 곁에 모인다 — 겹쳐도 된다**(유저).
+		# 맡을 작업대가 없으면 **가마 앞자리 곁에 모인다 — 겹쳐도 된다**(유저).
 		return (Iso.foot(sim, i).work as Vector2) + Vector2(12.0 * float((k % 3) - 1), 7.0 * float(k / 3))
 	return _stall_front(i, job)
 
-## k번 매대 칸의 화면 중심 — 일꾼이 어느 쪽을 바라볼지 정할 때 쓴다.
+## k번 작업대 칸의 화면 중심 — 일꾼이 어느 쪽을 바라볼지 정할 때 쓴다.
 func _stall_at(i: int, k: int) -> Vector2:
 	var y: Dictionary = Iso.yard(Iso.YARD_KIND[i], Iso.plot_dim(sim, i))
 	var o: Vector2i = Iso.org(sim, i)
-	var sp: Vector2i = y.stalls[k]
+	var sp: Vector2i = y.benches[k]
 	return Iso.w(o.x + sp.x + 0.5, o.y + sp.y + 0.5)
 
 ## 일꾼의 현재 자리(걸어가는 중일 수 있다). 그리기와 앞뒤 순서가 같이 쓴다.
@@ -1496,7 +1477,7 @@ func _staff(i: int, k: int) -> void:
 	if carry6 != 0 or busy6:
 		idle = false
 		bob = 0.0
-	# 어디를 보나 — 맡은 매대 쪽. 상자를 들었거나 계산 중이면 길 쪽.
+	# 어디를 보나 — 맡은 작업대 쪽. 상자를 들었거나 계산 중이면 길 쪽.
 	var sdir: String = Iso.dir4(_stall_at(i, job5) - p) if job5 >= 0 else "se"
 	var sflip: bool = job5 >= 0 and _stall_at(i, job5).x < p.x
 	if carry6 != 0 or busy6:
@@ -1602,25 +1583,6 @@ func _order(wk: Dictionary) -> void:
 	draw_circle(c0 + Vector2(14, 12), 9.0, Color(1, 1, 1, 0.9), false, 1.5)
 	_text(c0 + Vector2(14, 17), "%d" % int(first.n), 11, Color.WHITE)
 
-## 물어보는 말풍선 — 현판 바로 위. 깊이 정렬 밖에 그린다(지붕에 가리면 못 읽는다).
-func _bubble() -> void:
-	var o: Vector2i = Iso.org(sim, int(bubble.idx))
-	# 현판(N.y−72 ~ −40)보다 위에. 처음에 −86으로 뒀더니 말풍선이 현판을 덮어
-	# 가게 이름이 안 보였다 — 꼬리 끝까지 재서 띄운다.
-	var n: Vector2 = Iso.w(o.x, o.y) + Vector2(0, -116)
-	var txt: String = "%s %s" % [bubble.face, bubble.text]
-	var a: float = minf(1.0, float(bubble.t))       # 사라질 땐 옅어진다
-	_chip(n, 28.0 + txt.length() * 12.0, 28, Color(1.0, 0.965, 0.847, a))
-	draw_colored_polygon(PackedVector2Array([n + Vector2(-6, 27), n + Vector2(6, 27),
-		n + Vector2(0, 36)]), Color(1.0, 0.965, 0.847, a))
-	_text(n + Vector2(0, 19), txt, 13, Color(C.ink, a))
-
-## 나쁜 놈이 지금 어디 있나. 없으면 빈 딕셔너리.
-##
-## 까마귀는 **카메라 한가운데를 기준으로** 가로지른다. 마을 어디를 보고 있든
-## 눈에 들어와야 누를 수 있기 때문이다 — 화면 밖에서 훔쳐 가면 장치를 넣은
-## 이유가 사라진다. 쥐는 반대로 **훔치는 가게 앞**에 나온다. 어느 가게가
-## 털리는지가 보여야 한다.
 func pest_at(cam_center: Vector2) -> Dictionary:
 	if sim == null or sim.pest == null:
 		return {}
@@ -1689,11 +1651,11 @@ func _draw() -> void:
 		var y: Dictionary = Iso.yard(Iso.YARD_KIND[i], n)
 		layer.append({"z": Iso.w(o.x + y.kiln.x + 1, o.y + y.kiln.y + 1).y, "i": seq, "f": _kiln.bind(i)})
 		seq += 1
-		var cap: int = min(sim.stall_cap(String(Content.SHOPS[i].id)), Content.SHOPS[i].items.size())
+		var cap: int = sim.bench_cap(String(Content.SHOPS[i].id))
 		for k in range(cap):
-			var sp: Vector2i = y.stalls[k]
+			var sp: Vector2i = y.benches[k]
 			# ★ 안 연 칸(+ 마름모)은 **바닥 표시**라 마당 바닥 바로 위에 깔린다.
-			#   발끝 z로 세웠더니 앞 칸의 마름모가 뒤 칸의 매대 그림을 덮었다.
+			#   발끝 z로 세웠더니 앞 칸의 마름모가 뒤 칸의 작업대 그림을 덮었다.
 			var zz: float = Iso.w(o.x + sp.x + 1, o.y + sp.y + 1).y
 			if not sim.is_open(String(Content.SHOPS[i].items[k].id)):
 				zz = Iso.w(o.x, o.y).y + 2.5
@@ -1731,7 +1693,7 @@ func _draw() -> void:
 			seq += 1
 	for wk in walkers:
 		# 웃돈 없음 — 흩뜨림을 가로로만 하니(위 _walk) 발끝 그대로가 정답이다.
-		# 같은 줄이면 나중에 넣은 손님이 매대 위에 그려진다(넣는 차례 규칙).
+		# 같은 줄이면 나중에 넣은 손님이 작업대 위에 그려진다(넣는 차례 규칙).
 		layer.append({"z": wk.pos.y, "i": seq, "f": _walker.bind(wk)})
 		seq += 1
 
@@ -1848,8 +1810,6 @@ func _draw() -> void:
 		var a: float = clampf(f.t, 0.0, 1.0)
 		_chip(f.pos, 22.0 + String(f.text).length() * 11.0, 21, Color(0.17, 0.14, 0.11, 0.82 * a))
 		_text(f.pos + Vector2(0, 15), String(f.text), 12, Color(0.99, 0.91, 0.66, a))
-	if not bubble.is_empty():
-		_bubble()
 	# 나쁜 놈은 **늘 맨 앞**에 그린다. 지붕 뒤에 숨으면 누를 수가 없다.
 	var th: Dictionary = pest_at(cam_center)
 	if not th.is_empty():

@@ -125,7 +125,7 @@ static func dir4_tile(from_t: Vector2i, to_t: Vector2i) -> String:
 const GATE_OFF := {"x": Vector2(44, 22), "y": Vector2(-44, 22)}
 ## 줄이 뻗는 방향 — **가게 앞면을 따라** 선다(2026-08-25, 유저가 잡았다).
 ## 예전엔 길을 따라 가게 반대쪽으로 뻗어서, 둘째 사람부터 가게를 등지고
-## 골목 너머까지 밀려났다. 계산대가 어디 있든 줄은 매대 진열이 보이는
+## 골목 너머까지 밀려났다. 계산대가 어디 있든 줄은 작업대 진열이 보이는
 ## 쪽으로 서는 게 장터의 상식이다 — 세로 길(gate x)은 위로, 가로 골목
 ## (gate y)은 왼쪽으로, 마당 변을 끼고 뻗는다.
 const LINE_OFF := {"x": Vector2(42, -21), "y": Vector2(-42, -21)}
@@ -153,7 +153,7 @@ static func org(sim: Sim, i: int) -> Vector2i:
 static func yard(kind: String, n: int) -> Dictionary:
 	var nct: int = n - 2                    # 계산대 수 = 등급 + 1
 	var cts: Array = []
-	var stalls: Array = []
+	var benches: Array = []
 	var kiln: Vector2i
 	var gate: String
 	if kind == "을":
@@ -163,9 +163,9 @@ static func yard(kind: String, n: int) -> Dictionary:
 		for k in range(nct):
 			cts.append(Vector2i(n - 1, k))
 		for x in range(1, n):
-			stalls.append(Vector2i(x, n - 1))
+			benches.append(Vector2i(x, n - 1))
 		for y in range(0, n - 1):
-			stalls.append(Vector2i(0, y))
+			benches.append(Vector2i(0, y))
 	elif kind == "병":
 		# 옆문 — 계산대가 **앞 꼭짓점**에서 아래 골목 변을 따라 왼쪽으로.
 		kiln = Vector2i(0, 0)
@@ -173,9 +173,9 @@ static func yard(kind: String, n: int) -> Dictionary:
 		for k in range(nct):
 			cts.append(Vector2i(n - 1 - k, n - 1))
 		for x in range(1, n):
-			stalls.append(Vector2i(x, 0))
+			benches.append(Vector2i(x, 0))
 		for y in range(1, n):
-			stalls.append(Vector2i(0, y))
+			benches.append(Vector2i(0, y))
 	else:
 		# 갑 앞마당 — 계산대가 **앞 꼭짓점**에서 길가 변을 따라 위로.
 		kiln = Vector2i(0, 0)
@@ -183,10 +183,10 @@ static func yard(kind: String, n: int) -> Dictionary:
 		for k in range(nct):
 			cts.append(Vector2i(n - 1, n - 1 - k))
 		for x in range(1, n):
-			stalls.append(Vector2i(x, 0))
+			benches.append(Vector2i(x, 0))
 		for y in range(1, n):
-			stalls.append(Vector2i(0, y))
-	stalls = stalls.slice(0, 2 * (n - 1))
+			benches.append(Vector2i(0, y))
+	benches = benches.slice(0, 2 * (n - 1))
 	var svs: Array = []
 	for c in cts:
 		svs.append(Vector2i(c.x - 1, c.y) if gate == "x" else Vector2i(c.x, c.y - 1))
@@ -199,21 +199,24 @@ static func yard(kind: String, n: int) -> Dictionary:
 		loff = LINE_OFF.y
 	return {"kind": kind, "gate": gate, "kiln": kiln, "lineOff": loff,
 		"counter": cts[0], "counters": cts, "serve": svs[0], "serves": svs,
-		"stalls": stalls}
+		"benches": benches}
 
-## 작업대 — 가마 바로 안쪽 칸. 일꾼이 여기서 만든다.
-static func work_spot(y: Dictionary, n: int) -> Vector2i:
+## 가마 앞자리 — 가마 바로 안쪽 칸. **만들 게 없을 때 일꾼이 서 있는 자리**다.
+##
+## ★ 여기를 예전엔 '작업대'라고 불렀다. 2026-08-29에 작업대가 진짜 작업대가
+##   되면서 같은 말이 두 가지를 가리키게 됐다 — 그래서 이름을 갈았다.
+static func idle_spot(y: Dictionary, n: int) -> Vector2i:
 	return Vector2i(clampi(y.kiln.x, 1, n - 2), clampi(y.kiln.y, 1, n - 2))
 
 ## 일꾼 자리 — 안쪽 빈칸을 먼저, 모자라면 담벼락 빈칸까지.
-## 3×3 마당은 안쪽 칸이 딱 하나뿐이고 그걸 작업대가 쓴다. 담벼락까지 안 내주면
+## 3×3 마당은 안쪽 칸이 딱 하나뿐이고 그걸 가마 앞자리가 쓴다. 담벼락까지 안 내주면
 ## 무쇠급 가게는 일꾼을 뽑아도 한 마리도 안 보인다.
 static func staff_spots(y: Dictionary, n: int) -> Array:
-	var wk: Vector2i = work_spot(y, n)
+	var wk: Vector2i = idle_spot(y, n)
 	# 가구가 놓인 칸은 사람이 못 선다. 계산 자리도 뺀다 — 거기 서 있으면
 	# 상자를 건네러 온 일꾼과 겹친다(계산대가 여럿이 되면서 더 자주 겹친다).
 	var taken: Dictionary = {}
-	for t in y.stalls:
+	for t in y.benches:
 		taken[t] = true
 	for c in y.counters:
 		taken[c] = true
@@ -247,7 +250,7 @@ static func foot(sim: Sim, i: int) -> Dictionary:
 	var n: int = plot_dim(sim, i)
 	var y: Dictionary = yard(YARD_KIND[i], n)
 	var cc: Vector2 = w(o.x + y.counter.x + 0.5, o.y + y.counter.y + 0.5)
-	var wk: Vector2i = work_spot(y, n)
+	var wk: Vector2i = idle_spot(y, n)
 	# 계산대가 여럿이면 **자리도 여럿이다**(2026-08-27). 손님은 계산대마다
 	# 하나씩 서고, 상자를 든 일꾼은 그 손님이 선 계산대의 안쪽 칸으로 간다.
 	var stands: Array = []

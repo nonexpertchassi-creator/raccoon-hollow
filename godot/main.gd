@@ -40,7 +40,7 @@ var _dragged: bool = false
 ## 손님이 화면을 다 덮는다. 둘 다 놀 수 없는 화면이다.
 ##   1.00 — 처음 보는 크기. 가게 하나(3×3 마당 288px)가 폭 430 안에 꽉 찬다
 ##   0.45 — 마을 전체를 훑는다
-##   1.80 — 매대 하나를 정확히 누를 만큼
+##   1.80 — 작업대 하나를 정확히 누를 만큼
 const ZOOM_DEF := 1.0
 const ZOOM_MIN := 0.45
 const ZOOM_MAX := 1.8
@@ -57,7 +57,7 @@ var _save_acc: float = 0.0
 ##
 ## ★ 이걸 안 가르면 **시험이 남의 저장본을 물려받는다.** 실제로 그랬다 —
 ##   30분짜리 스크린샷을 몇 번 찍었더니 저장본이 쌓였고, 그다음부터 누르기
-##   시험이 "매대를 눌렀는데 안 오른다"로 실패했다. 고장이 아니라 이미
+##   시험이 "작업대를 눌렀는데 안 오른다"로 실패했다. 고장이 아니라 이미
 ##   만렙이었던 것이다. 시험은 늘 **빈손으로 시작**해야 한다.
 var _standalone: bool = false
 var _away: Variant = null       # 다녀온 동안 번 것 (있으면 창을 띄운다)
@@ -345,8 +345,6 @@ func step(delta: float) -> void:
 		_show_card(String(bs), sim.rank_of(String(bs)))
 	for po in r.get("passed", []):
 		village.on_pass(int(po))   # 도착했더니 자리가 차 있었다 — 빈손으로 지나간다
-	if r.ask != null:
-		village.on_ask(r.ask)
 	# 소리는 **드물게 일어나는 일**에만 준다. 파는 순간은 일부러 뺐다 —
 	# 후반에는 초당 수십 번이라 소리가 아니라 소음이 된다.
 	if r.newGuest != null:
@@ -625,25 +623,25 @@ func _tap(p: Vector2) -> void:
 			sfx.play("open")
 		return
 
-	# 5) 가게 — 매대는 그 자리에서 강화, 나머지는 창
+	# 5) 가게 — 작업대는 그 자리에서 강화, 나머지는 창
 	for i in range(Content.SHOPS.size()):
 		var shop: Dictionary = Content.SHOPS[i]
 		var o: Vector2i = Iso.org(sim, i)
 		var open: bool = sim.shops.has(String(shop.id))
 		if open:
 			# 이웃 칸은 화면에서 48px밖에 안 떨어진다. '먼저 맞은 것'을 고르면
-			# 뒤 매대가 앞 매대의 몫을 삼킨다 — **제일 가까운 매대**를 고른다.
+			# 뒤 작업대가 앞 작업대의 몫을 삼킨다 — **제일 가까운 작업대**를 고른다.
 			var best: int = -1
 			var best_d: float = INF
 			var y: Dictionary = Iso.yard(Iso.YARD_KIND[i], Iso.plot_dim(sim, i))
-			var cap: int = min(sim.stall_cap(String(shop.id)), shop.items.size())
+			var cap: int = sim.bench_cap(String(shop.id))
 			for k in range(cap):
-				var sp2: Vector2i = y.stalls[k]
+				var sp2: Vector2i = y.benches[k]
 				var q: Vector2 = Iso.w(o.x + sp2.x + 0.5, o.y + sp2.y + 0.5)
-				# ★ 매대 판정은 **제 칸 위**로만. 예전엔 104×92짜리 네모라
+				# ★ 작업대 판정은 **제 칸 위**로만. 예전엔 104×92짜리 네모라
 				#   칸(96×48) 두 개 몫을 먹었고, 그래서 마당 어디를 눌러도
-				#   매대가 먼저 잡혔다 — 가게 창은 현판으로만 열리는 셈이었다.
-				#   칸 모양 그대로(마름모) 재고, 매대 몸통 높이만큼만 위로 올린다.
+				#   작업대가 먼저 잡혔다 — 가게 창은 현판으로만 열리는 셈이었다.
+				#   칸 모양 그대로(마름모) 재고, 작업대 몸통 높이만큼만 위로 올린다.
 				var dy: float = p.y - (q.y - 14.0)
 				if absf(p.x - q.x) / (Iso.TW * 0.5) + absf(dy) / (Iso.TH * 0.5) > 1.0:
 					continue
@@ -652,7 +650,7 @@ func _tap(p: Vector2) -> void:
 					best_d = d
 					best = k
 			if best >= 0:
-				# ★ 매대를 눌러도 **창이 열린다**(2026-08-25, 유저 결정).
+				# ★ 작업대를 눌러도 **창이 열린다**(2026-08-25, 유저 결정).
 				#   예전엔 그 자리에서 바로 강화했는데, 지도가 '보는 곳'이고
 				#   창이 '만지는 곳'으로 갈리는 편이 눌림 실수도 없고 깔끔하다.
 				#   지도에는 ▲(초록=레벨업 가능, 빨강=만렙 가능)만 띄운다.

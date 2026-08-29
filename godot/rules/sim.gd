@@ -64,7 +64,18 @@ var rank: Dictionary = {}
 ## 예전엔 곡괭이가 열린 채로 시작했는데, 대장간을 잠그고 나니
 ## '가게는 없는데 곡괭이는 팔린다'가 됐다. 가게를 열면 그때 들어온다.
 var items: Dictionary = {}
-var asked: Array = []
+## 가게마다의 **작업대 단수**(1~8). 가게id → 몇 단까지 세웠나.
+##
+## ★ 2026-08-29에 '매대 칸'을 여기로 갈아 끼웠다(유저). 왜:
+##   - 이름이 틀렸었다. 물건은 매대에서 팔린 적이 없다 — **파는 곳은 계산대**고,
+##     매대에서 하는 일은 만드는 것뿐이었다. 그러니 작업대가 맞는 이름이다.
+##   - 열리는 방식이 어긋나 있었다. 예전엔 **손님이 물어봐야** 그 물건 칸을
+##     살 수 있었다. 손님이 오는 것은 이야기가 할 일이지 물건 잠금이 할 일이
+##     아니다(STORY.md의 축). 이제 작업대는 **돈만 내면** 한 단 오른다.
+##   - 두 축이 갈린다: **작업대 단 = 무엇을 만들 줄 아나**,
+##     **일꾼 수 = 한 번에 몇 개를 만드나.** 서로 다른 것을 사게 된다.
+##   물건 값·차례·등급 상한(4·6·8)은 하나도 안 건드렸다 — 이름과 여는 방법만 바뀐다.
+var bench: Dictionary = {}
 ## 마을에 온 손님. **이제 뽑기로만 늘어난다** — 카드를 처음 뽑으면 그때 온다.
 ## 토끼 하나로 시작한다(첫 카드를 뽑기 전에도 장사는 돼야 하니까).
 var guests: Array = ["rabbit"]
@@ -162,7 +173,7 @@ var _hold: Dictionary = {}
 ## 이번 틱에 실제로 만들어지고 있는 물건들 — 화면이 로딩 파이를 그리는 데 쓴다.
 ## 저장 안 한다(매 틱 다시 채워진다).
 var _crafting: Dictionary = {}
-## 손이 매대로 걸어가는 중인 물건(id → 남은 초). CRAFT.walk 참고.
+## 손이 작업대로 걸어가는 중인 물건(id → 남은 초). CRAFT.walk 참고.
 var _switch: Dictionary = {}
 ## 마지막으로 손을 댄 지 얼마나 됐나(id → 초). regrip 유예 판정용.
 var _recent: Dictionary = {}
@@ -183,7 +194,6 @@ var _guestGap: Dictionary = {}
 var pest: Variant = null
 var _pestAcc: Dictionary = {}
 var _pestGap: Dictionary = {}
-var _askAcc: float = 0.0
 ## 이번 틱의 주사위. _settle은 rng를 안 받는데 '약재 말리기'가 필요해서
 ## 여기 담아 둔다. _settle은 언제나 틱 안에서만 불리므로 늘 이번 것이 맞다.
 var _rng: Rng = null
@@ -505,9 +515,8 @@ func shop_todo(shop_id: String) -> int:
 	if not _shop_by_id.has(shop_id) or not shops.has(shop_id):
 		return 0
 	var n: int = 0
-	for it in shop_by_id(shop_id).items:
-		if can_open_item(it.id):
-			n += 1
+	if can_bench_up(shop_id):
+		n += 1
 	if can_promote(shop_id):
 		n += 1
 	if can_hire_staff(shop_id):
@@ -540,17 +549,42 @@ func hire_staff(shop_id: String) -> bool:
 	_ev("%s에 너구리가 왔다 (%s마리)" % [shop_by_id(shop_id).name, str(int(staff[shop_id]) + 1)], "shop")
 	return true
 
-## 매대 칸 수 — 마당 크기가 정한다. 무쇠 4 · 참쇠 6 · 강철 8
-func stall_cap(shop_id: String) -> int: return 4 + 2 * min(2, rank_of(shop_id))
+## 작업대를 몇 단까지 세울 수 있나 — 마당 크기가 정한다. 무쇠 4 · 참쇠 6 · 강철 8
+## (예전 '매대 칸 수'와 같은 식이다. 승급이 상한을 올려 준다.)
+func bench_cap(shop_id: String) -> int:
+	return min(4 + 2 * min(2, rank_of(shop_id)), shop_by_id(shop_id).items.size())
 
-func _no_stall(item: Dictionary) -> bool:
-	var shop: Dictionary = shop_by_id(item.shop)
-	var idx: int = -1
-	for k in range(shop.items.size()):
-		if shop.items[k].id == item.id:
-			idx = k
-			break
-	return idx >= stall_cap(item.shop)
+## 지금 몇 단인가. 가게를 열면 1단(첫 물건)부터다.
+func bench_lv(shop_id: String) -> int:
+	return int(bench.get(shop_id, 1.0)) if shops.has(shop_id) else 0
+
+## 다음 단에서 만들 줄 알게 되는 물건. 더 못 올리면 null.
+func bench_next(shop_id: String) -> Variant:
+	var n: int = bench_lv(shop_id)
+	if n <= 0 or n >= bench_cap(shop_id):
+		return null
+	return shop_by_id(shop_id).items[n]
+
+## 다음 단 값 — **예전 '칸 여는 값' 그대로**다. 값 곡선을 안 건드렸다.
+func bench_cost(shop_id: String) -> float:
+	var nx: Variant = bench_next(shop_id)
+	return float(nx.cost) if nx != null else 0.0
+
+func can_bench_up(shop_id: String) -> bool:
+	var nx: Variant = bench_next(shop_id)
+	return nx != null and money >= float(nx.cost)
+
+func bench_up(shop_id: String) -> bool:
+	if not can_bench_up(shop_id):
+		return false
+	var nx: Dictionary = bench_next(shop_id)
+	money -= float(nx.cost)
+	bench[shop_id] = float(bench_lv(shop_id) + 1)
+	items[nx.id] = {"lv": 1.0, "stock": 0.0, "prog": 0.0}
+	bump("open.item")
+	_ev("%s 작업대 %d단 — %s를 만들 줄 알게 됐다"
+		% [shop_by_id(shop_id).name, bench_lv(shop_id), nx.name], "open")
+	return true
 
 # ── 가게마다의 고유 강화 ──
 #
@@ -702,19 +736,6 @@ func level_up_many(id: String, want: int) -> int:
 	_check_max(id)
 	return n
 
-func can_open_item(id: String) -> bool:
-	return not is_open(id) and asked.has(id) and shops.has(item_by_id(id).shop) \
-		and money >= item_by_id(id).cost and not _no_stall(item_by_id(id))
-
-func open_item(id: String) -> bool:
-	if not can_open_item(id):
-		return false
-	money -= item_by_id(id).cost
-	bump("open.item")
-	items[id] = {"lv": 1.0, "stock": 0.0, "prog": 0.0}
-	_ev("%s 칸을 열었다" % item_by_id(id).name, "open")
-	return true
-
 # ── 자동 강화 ──
 func can_buy_auto() -> bool: return not auto and money >= Content.AUTO_COST
 func buy_auto() -> bool:
@@ -763,7 +784,7 @@ func promote_reqs(shop_id: String) -> Variant:
 	if r + 1 >= Content.RANKS.size():
 		return null
 	var next: Dictionary = Content.RANKS[r + 1]
-	var have: Array = (shop.items as Array).slice(0, stall_cap(shop_id))
+	var have: Array = (shop.items as Array).slice(0, bench_cap(shop_id))
 	var all_open: bool = true
 	for it in have:
 		if not is_open(it.id):
@@ -781,7 +802,7 @@ func promote_reqs(shop_id: String) -> Variant:
 	var ips: float = income_per_sec()
 	var cost: float = shop.promote[r]
 	var list: Array = []
-	list.append({"ok": all_max, "text": "지금 있는 매대 %s칸을 전부 %s레벨까지" % [str(have.size()), str(int(Content.RANKS[r].maxLv))]})
+	list.append({"ok": all_max, "text": "작업대 %s단을 다 세우고 전부 %s레벨까지" % [str(have.size()), str(int(Content.RANKS[r].maxLv))]})
 	if after != null:
 		list.append({"ok": shops.has(after.id), "text": "%s 열기" % after.name})
 	list.append({"ok": regular_sum() >= next.guests, "text": "손님 단골 등급 합계 %s (지금 %s)" % [str(int(next.guests)), str(regular_sum())]})
@@ -809,7 +830,7 @@ func promote_gain(shop_id: String) -> Variant:
 		"rank": r + 1,
 		"priceMul": Content.RANKS[r + 1].priceMul / Content.RANKS[r].priceMul,
 		"maxLv": [Content.RANKS[r].maxLv, Content.RANKS[r + 1].maxLv],
-		"stalls": [stall_cap(shop_id), 4 + 2 * min(2, r + 1)],
+		"bench": [bench_cap(shop_id), min(4 + 2 * min(2, r + 1), shop.items.size())],
 		"staff": [staff_of(shop_id), min(staff_of(shop_id) + 1.0, Content.STAFF.max)],
 		"dip": 1.0, "even": 1, "top": 1.0,
 	}
@@ -989,8 +1010,7 @@ func open_shop(id: String) -> bool:
 	bump("open.shop")
 	var first: Dictionary = s.items[0]
 	items[first.id] = {"lv": 1.0, "stock": 0.0, "prog": 0.0}
-	if not asked.has(first.id):
-		asked.append(first.id)
+	bench[id] = 1.0                     # 작업대 1단 — 첫 물건은 문 여는 값에 딸려 온다
 	_ev("%s 다시 문을 열었다" % Num.josa(s.name, "이", "가"), "shop")
 	return true
 
@@ -1289,7 +1309,7 @@ func tick(dt: float, rng: Rng) -> Dictionary:
 	#   손이 하나 빠진다 — 더 온 일꾼은 만들기만 하고, 첫 일꾼은 만들다 계산도 한다.
 	#   ★ 게임 안에서는 **전부 그냥 일꾼**이다(2026-08-28, 유저). '첫'과 '더 온'은
 	#     코드가 자리를 구별하려고 쓰는 말일 뿐, 화면에는 안 나온다.
-	#   매대 순서대로 앞에서부터 손을 배정한다. 다 찬 물건은 손을 안 쓴다.
+	#   작업대 순서대로 앞에서부터 손을 배정한다. 다 찬 물건은 손을 안 쓴다.
 	# 0) 하늘 — 다음 날씨까지의 시계. 바뀌면 소식 한 줄.
 	_wxT -= dt
 	if _wxT <= 0.0:
@@ -1317,7 +1337,7 @@ func tick(dt: float, rng: Rng) -> Dictionary:
 				_:
 					_ev("☀️ 볕이 났다", "weather")
 
-	# 손이 매대를 옮겨 잡으면 **걸어가는 시간**(CRAFT.walk)이 든다 — 일꾼이
+	# 손이 작업대를 옮겨 잡으면 **걸어가는 시간**(CRAFT.walk)이 든다 — 일꾼이
 	# 도착하기 전에 물건이 자라는 걸 규칙으로 막는다(2026-08-26, 유저).
 	# sim은 화면을 모르지만, "이동"이라는 사실은 안다.
 	var _prevCraft: Dictionary = _crafting
@@ -1344,7 +1364,7 @@ func tick(dt: float, rng: Rng) -> Dictionary:
 				#   이 줄 덕에 "노는 너구리"에게 할 일이 생긴다(지표 hand.idle).
 				second.append(cid)
 		# ★ 손도 끈끈하다 — 잡은 물건을 다 채울 때까지 안 놓는다. 매 틱
-		#   우선순위대로 다시 잡게 했더니 손이 매대 사이를 쉴 새 없이 갈아타며
+		#   우선순위대로 다시 잡게 했더니 손이 작업대 사이를 쉴 새 없이 갈아타며
 		#   걷는 값(walk)만 내다 4시간 매출이 반토막 났다(319M — 재서 잡았다).
 		var pool: Array = first + second
 		var line2: Array = []
@@ -1375,7 +1395,7 @@ func tick(dt: float, rng: Rng) -> Dictionary:
 				st.prog -= need
 				if not _give_to_order(id):
 					_quest_put(id)
-		# 지표(2026-08-27) — **손이 논 시간.** 한 매대엔 한 손이라, 같은 물건
+		# 지표(2026-08-27) — **손이 논 시간.** 한 작업대엔 한 손이라, 같은 물건
 		# 주문이 겹치면 남는 너구리가 갈 곳이 없다. 얼마나 잦은지는 짐작이
 		# 아니라 이 숫자로 판단한다(의뢰를 생산으로 채우면 줄어야 한다).
 		bump("hand.work", dt * float(used))
@@ -1450,13 +1470,6 @@ func tick(dt: float, rng: Rng) -> Dictionary:
 	# 3) 자동 강화
 	var auto_lv: int = _auto_level()
 
-	# 4) 손님이 없는 물건을 물어본다
-	var ask: Variant = null
-	_askAcc += dt
-	if _askAcc >= Content.ASK_EVERY:
-		_askAcc = 0.0
-		ask = _ask(rng)
-
 	# 4.5) 마을 의뢰
 	for q in quests:
 		q.t += dt
@@ -1473,7 +1486,7 @@ func tick(dt: float, rng: Rng) -> Dictionary:
 	#   이제 손님은 **뽑기로만** 온다(pull·spin 안에서 들어온다).
 	var new_guest: Variant = null
 
-	var out: Dictionary = {"passed": _passed.duplicate(), "built": _built.duplicate(), "sales": sales, "done": done, "ask": ask, "newGuest": new_guest,
+	var out: Dictionary = {"passed": _passed.duplicate(), "built": _built.duplicate(), "sales": sales, "done": done, "newGuest": new_guest,
 		"autoLv": auto_lv, "pests": _pestEvents, "quests": _questDone, "event": _evDone}
 	_built = []
 	if not _passed.is_empty():
@@ -1620,24 +1633,6 @@ func _settle(g: Dictionary, lines: Array, want: float, grumbles: Array, waited: 
 				Num.josa(Content.REGULARS[after].name, "이", "가")], "guest")
 	return {"guest": g, "lines": out, "gain": gain, "n": n, "want": want,
 			"grumbles": grumbles, "waited": waited, "orderId": order_id}
-
-## 아직 안 열린 품목 하나를 물어본다. 이게 다음 목표를 지정한다.
-func _ask(rng: Rng) -> Variant:
-	for id in asked:
-		if not is_open(id):
-			return null
-	var item: Variant = null
-	for i in _all_items:
-		if not is_open(i.id) and not asked.has(i.id) and shops.has(i.shop) and not _no_stall(i):
-			item = i
-			break
-	if item == null:
-		return null
-	var guest: Dictionary = _guest_by_id.get(guests[guests.size() - 1], Content.GUESTS[0])
-	asked.append(item.id)
-	var line: String = String(Content.ASK_LINES[int(floor(rng.next() * Content.ASK_LINES.size()))]).replace("{item}", item.name)
-	_ev("%s: \"%s\"" % [guest.name, line], "ask")
-	return {"guest": guest, "item": item, "line": line}
 
 # ── 뽑기 ──
 ##
@@ -1794,11 +1789,11 @@ func roll_offline_dice(rng: Rng) -> int:
 ## 켤 때마다 그것만 조용히 0으로 돌아간다. tools/crosscheck.sh의 save 시험이
 ## 저장했다 불러온 판과 안 껐던 판을 끝까지 대조해 그걸 잡는다.
 const SAVE_KEYS: Array[String] = [
-	"money", "revenue", "t", "shops", "rank", "items", "asked", "guests", "bought", "visits",
+	"money", "revenue", "t", "shops", "rank", "items", "bench", "guests", "bought", "visits",
 	"sold", "auto", "smalls", "guard", "staff", "fair", "busy", "_busyT", "_fairAcc", "_purse",
 	"quests", "gems", "gemUp", "maxGem", "_qid", "_qCool", "rush",
 	"wall", "event", "skins", "cleared", "_evAt", "_evIdx",
-	"orders", "_oid", "_hold", "_guestAcc", "_guestGap", "pest", "_pestAcc", "_pestGap", "_askAcc",
+	"orders", "_oid", "_hold", "_guestAcc", "_guestGap", "pest", "_pestAcc", "_pestGap",
 	"ledger",
 	"cards", "stars", "pulls", "guards",
 	"stats", "zones",
@@ -1860,7 +1855,15 @@ const INT_KEYS: Array[String] = ["busy", "_qid", "_evIdx", "_oid"]
 ## 14판: 대장간이 농기구 가게가 됐다 — 물건 여덟의 이름표가 갈렸다.
 ## 담는 칸은 그대로고 칸에 든 이름만 달라졌다. 안 갈아 주면 열어 둔 물건과
 ## 올려 둔 레벨이 통째로 사라진다.
-const SAVE_VER: int = 14
+## 15판: 매대 칸이 **작업대 단수**로 바뀌었다(2026-08-29, 유저).
+## 담는 방법이 달라졌다 — 예전엔 "어떤 물건이 열렸나"를 물건마다 따로 적었고
+## (items의 열쇠), 여는 자격은 asked에 적혀 있었다. 이제는 가게마다 **숫자
+## 하나**(bench)다. 옛 저장본에는 그 숫자가 없다 — 그냥 두면 모든 가게가
+## 1단으로 되돌아가고, 사서 올려 둔 물건이 화면에서 사라진다.
+## 그래서 옛 판을 읽을 때 **열려 있는 물건을 앞에서부터 세어** 단수를 매긴다.
+## asked는 이제 쓰지 않으므로 그냥 안 읽는다(잃을 것이 없다 — 물건은 이미
+## items에 열려 있고, 안 열린 것은 어차피 돈으로 사는 것이 됐다).
+const SAVE_VER: int = 15
 
 ## 11판에서 바뀐 이름표. 옛 id → 새 id.
 const RENAMED_V11: Dictionary = {
@@ -1890,12 +1893,6 @@ const RENAMED_V14: Dictionary = {
 ## 옛 이름과 새 이름이 겹칠 때 덮어쓰기 때문이다.
 func _rename_v14() -> void:
 	var m: Dictionary = RENAMED_V14
-	for name in ["asked"]:
-		var arr: Array = get(name)
-		var out: Array = []
-		for v in arr:
-			out.append(m.get(String(v), v))
-		set(name, out)
 	for name in ["items", "bought", "cleared"]:
 		var d: Dictionary = get(name)
 		var nd: Dictionary = {}
@@ -1962,6 +1959,18 @@ func load_from(d: Dictionary, ver: int = SAVE_VER) -> void:
 	#   지나간 마디를 되짚어** 준다 — 이야기는 못 돌려줘도 잔소리는 막는다.
 	if ver < 14:
 		_rename_v14()
+	# ★ 15판 — 매대 칸이 작업대 단수가 됐다. 옛 저장본에는 bench 칸이 없다.
+	#   열려 있는 물건을 **가게 목록 차례대로 앞에서부터** 세면 그게 곧 단수다
+	#   (옛 판도 앞에서부터 순서대로만 열 수 있었으므로 빈틈이 생기지 않는다).
+	if ver < 15:
+		bench = {}
+		for sh9 in shops:
+			var n9: int = 0
+			for it9 in shop_by_id(String(sh9)).items:
+				if not is_open(String(it9.id)):
+					break
+				n9 += 1
+			bench[String(sh9)] = float(max(1, n9))
 	if ver < 13:
 		for k in ["start", "firstShop", "firstMake", "firstGuest"]:
 			story[k] = true
@@ -1998,7 +2007,7 @@ func load_from(d: Dictionary, ver: int = SAVE_VER) -> void:
 	# 배열 칸(값이 id)과 사전 칸(열쇠가 id)을 나눠서 갈아 끼운다.
 	# 열쇠가 "가게:번호" 꼴인 것(furs)은 앞부분만 바꾼다.
 	if ver < 11:
-		for arr in [shops, zones, asked, guests, skins]:
+		for arr in [shops, zones, guests, skins]:
 			for i2 in range(arr.size()):
 				if RENAMED_V11.has(arr[i2]):
 					arr[i2] = RENAMED_V11[arr[i2]]

@@ -23,9 +23,11 @@ static func act(s: Sim, rng: Rng) -> void:
 	if ns != null and s.money >= ns.cost:
 		s.open_shop(ns.id)
 		return
-	for id in s.asked:
-		if s.can_open_item(id):
-			s.open_item(id)
+	# 작업대 한 단 더 — 만들 줄 아는 물건이 하나 늘어난다(2026-08-29).
+	# 예전엔 "손님이 물어본 물건의 매대 칸 열기"였다.
+	for sh0 in s.shops:
+		if s.can_bench_up(String(sh0)):
+			s.bench_up(String(sh0))
 			return
 	for sh in s.shops:
 		if s.can_promote(sh):
@@ -100,6 +102,9 @@ static func snapshot(s: Sim) -> String:
 	var ranksum: int = 0
 	for sh in s.shops:
 		ranksum += s.rank_of(sh)
+	var benchsum: int = 0
+	for sh in s.shops:
+		benchsum += s.bench_lv(String(sh))
 	var staffsum: float = 0.0
 	for sh in s.shops:
 		staffsum += s.staff_of(sh)
@@ -118,9 +123,9 @@ static func snapshot(s: Sim) -> String:
 	var f: Array[String] = [
 		str(int(round(s.t))), str(int(s.money)), str(int(s.revenue)), str(int(s.gems)),
 		str(int(s.sold)), str(s.items.size()), str(s.shops.size()), str(s.guests.size()),
-		str(s.asked.size()), str(s.quests.size()), str(s.orders.size()),
+		str(benchsum), str(s.quests.size()), str(s.orders.size()),
 		str(int(stock)), _k(prog), str(int(lvsum)), str(ranksum), str(int(staffsum)),
-		str(s.smalls.size()), _k(s.fair), _k(s.rush), _k(s._fairAcc), _k(s._askAcc),
+		str(s.smalls.size()), _k(s.fair), _k(s.rush), _k(s._fairAcc),
 		_k(gacc), str(int(floor(s._purse))), str(int(visitsum)),
 		str(s._evIdx), str(s.skins.size()), str(int(s.event.got)) if s.event != null else "-",
 		"1" if s.auto else "0", "1" if s.guard else "0", "1" if s.pest != null else "0",

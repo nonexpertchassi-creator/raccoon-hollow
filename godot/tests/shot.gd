@@ -3,7 +3,7 @@ extends Node
 ## main.tscn에는 안 넣는다 — 넣으면 게임을 켤 때마다 몇 초 뒤에 꺼진다.
 ##
 ##   SHOT_MINUTES=30           얼마나 감을지
-##   SHOT_UNTIL=bubble|grumpy|coin  그 장면이 나올 때까지 더 감는다
+##   SHOT_UNTIL=grumpy|coin|order   그 장면이 나올 때까지 더 감는다
 ##   SHOT_ZOOM=1.0             그 크기로 찍는다(기본은 게임이 정한 값)
 ##   SHOT_PANEL=quests|guests|ledger|gacha|<가게id>   창을 열어 놓고 찍는다
 ##   SHOT_TAB=items|work|rank  가게 창의 갈피를 골라서 찍는다
@@ -19,8 +19,8 @@ func _ready() -> void:
 	var mins: int = int(OS.get_environment("SHOT_MINUTES")) if OS.has_environment("SHOT_MINUTES") else 30
 	for i in range(mins * 60 * 4):
 		_step(main, s, rng)
-	# 드물게 나오는 장면은 그냥 찍으면 거의 안 걸린다 — 물어보는 말풍선은
-	# 여덟 시간에 네 번쯤이라, 아무 때나 찍으면 열 번에 아홉 번은 빈 화면이다.
+	# 드물게 나오는 장면은 그냥 찍으면 거의 안 걸린다 — 빈손으로 돌아가는
+	# 손님은 아무 때나 찍으면 열 번에 아홉 번은 빈 화면이다.
 	# "나올 때까지 감아라"가 없으면 도구는 그 기능을 영영 안 보는 셈이 된다.
 	if OS.has_environment("SHOT_UNTIL"):
 		var want: String = OS.get_environment("SHOT_UNTIL")
@@ -50,6 +50,7 @@ func _ready() -> void:
 				main.sim.shops.append(String(sh1.id))
 				main.sim._deal_fur(String(sh1.id))
 				main.sim.items[String(sh1.items[0].id)] = {"lv": 1.0, "stock": 0.0, "prog": 0.0}
+				main.sim.bench[String(sh1.id)] = 1.0
 	# SHOT_RANK=0~2 — 모든 가게를 그 등급으로 못 박고 찍는다(2026-08-27).
 	# 2단·3단 마당은 실제로 승급할 때까지 몇 시간이 걸려서, 도구가 영영
 	# 못 보던 화면이었다 — 계산대가 둘·셋 선 마당이 딱 그것이다.
@@ -57,9 +58,10 @@ func _ready() -> void:
 		var rk0: int = int(OS.get_environment("SHOT_RANK"))
 		for sh0 in main.sim.shops:
 			main.sim.rank[String(sh0)] = rk0
-			# 그 등급에서 열리는 매대 칸은 전부 열어 둔다 — 빈 칸만 보이면
+			# 그 등급에서 열리는 작업대 칸은 전부 열어 둔다 — 빈 칸만 보이면
 			# 마당이 커진 게 화면에서 안 보인다.
-			var cap0: int = main.sim.stall_cap(String(sh0))
+			var cap0: int = main.sim.bench_cap(String(sh0))
+			main.sim.bench[String(sh0)] = float(cap0)   # 작업대도 그 등급 상한까지 세운다
 			var seen0: int = 0
 			for it0 in Sim.shop_by_id(String(sh0)).items:
 				seen0 += 1
@@ -131,8 +133,7 @@ func _ready() -> void:
 	for sh in main.sim.shops:
 		staff += int(main.sim.staff_of(sh))
 	print("SHOT 손님 %d · 일꾼 %d · 빈손💢 %d · 말풍선 %s · 소리 %s" % [main.village.walkers.size(), staff,
-		_grumpy(main), ("없음" if main.village.bubble.is_empty() else String(main.village.bubble.text)),
-		main.sfx.summary()])
+		_grumpy(main), _order_bubble(main), main.sfx.summary()])
 
 ## ★ 게임 한 걸음을 **베껴 적지 않는다** — main.step을 그대로 부른다.
 ##   예전에 여기서 sim.tick만 돌렸을 때는 판매가 화면으로 안 넘어가
@@ -144,6 +145,15 @@ func _step(main: Node, s: Sim, rng: Rng) -> void:
 	RunSim.act(s, rng)
 	main.village._advance(0.25)
 
+## 주문 풍선을 띄운 손님 하나를 찾아 그 물건 이름을 돌려준다.
+## (예전엔 "손님이 물어보는 말풍선"을 봤는데, 물건 잠금이 작업대로 바뀌면서
+##  그 말풍선 자체가 없어졌다 — 도구가 없는 것을 찾고 있으면 안 된다.)
+func _order_bubble(main: Node) -> String:
+	for wk in main.village.walkers:
+		if wk.state == "buy" and not (wk.sold as Array).is_empty():
+			return String(wk.sold[0].item.name)
+	return "없음"
+
 func _grumpy(main: Node) -> int:
 	var n: int = 0
 	for wk in main.village.walkers:
@@ -152,8 +162,6 @@ func _grumpy(main: Node) -> int:
 	return n
 
 func _scene_has(main: Node, want: String) -> bool:
-	if want == "bubble":
-		return not main.village.bubble.is_empty()
 	if want == "grumpy":
 		return _grumpy(main) > 0
 	if want == "coin":

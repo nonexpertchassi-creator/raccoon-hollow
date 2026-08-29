@@ -35,9 +35,9 @@ static func act(s: Sim, rng: Rng) -> void:
 	if ns != null and s.money >= ns.cost:
 		s.open_shop(ns.id)
 		return
-	for id in s.asked:
-		if s.can_open_item(id):
-			s.open_item(id)
+	for sh0 in s.shops:
+		if s.can_bench_up(String(sh0)):
+			s.bench_up(String(sh0))
 			return
 	for sh in s.shops:
 		if s.can_promote(sh):
@@ -70,12 +70,6 @@ static func act(s: Sim, rng: Rng) -> void:
 	#   손님이 이제 뽑기로만 오는데 도구가 뽑기를 안 하니, 토끼 한 마리로
 	#   여덟 시간을 장사한 셈이다. 두 시간 만에 새로 열리는 것이 끊겼다.
 	#   *도구가 안 써 보는 기능은 도구에게 없는 것이다* — 다섯 번째다.
-	if s.can_spin(false):
-		s.spin(false, rng)
-		return
-	if s.can_spin(true):
-		s.spin(true, rng)
-		return
 	# 모은 카드는 바로 성으로 바꾼다. 공짜로 세지는 것을 안 쓸 이유가 없다.
 	for gid in s.guests:
 		if s.can_star_up(String(gid)):
@@ -177,14 +171,13 @@ func _init() -> void:
 				st += s.regular_lv(String(gid2))
 			curve.append([s.t, s.revenue, s.income_per_sec(), float(st), s.money])
 
-	var tag: String = "판"
-	var line: String = "%-10s" % tag
+	var line: String = "%-10s" % "판"
 	for c in curve:
 		line += "  %8s" % Num.fmt(c[1])
 	if OS.has_environment("BAL_TERSE"):
 		print(line)
 		quit()
-	print("═══ %d시간 · 운 번호 %d · 가게 강화 %s ═══" % [int(hours), seed_value, tag])
+	print("═══ %d시간 · 운 번호 %d ═══" % [int(hours), seed_value])
 	for c in curve:
 		print("   %2d시간   누적매출 %-9s 초당 %-8s 성 %-4d 가진 돈 %s" % [
 			int(c[0] / 3600.0), Num.fmt(c[1]), Num.fmt(c[2]), int(c[3]), Num.fmt(c[4])])
