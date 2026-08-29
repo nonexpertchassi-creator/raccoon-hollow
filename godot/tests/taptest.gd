@@ -180,7 +180,7 @@ func _process(_d: float) -> void:
 		main.panel._pressing = false
 	main.panel.close()
 
-	# 8) 뽑기와 룰렛을 **단추로 눌러 본다.**
+	# 8) 뽑기를 **단추로 눌러 본다.**
 	#
 	#    ★ 규칙 시험(tests/gacha.gd)은 확률이 표대로인지만 본다. 그건
 	#      "단추를 눌렀을 때 그 규칙이 불리는가"는 안 본다 — 창을 새로

@@ -172,7 +172,7 @@ func _on_input(e: InputEvent) -> void:
 	elif _phase != "":
 		_finish_flip()
 	elif not _action.visible:
-		# 단순 알림 카드(룰렛 보상·새 일꾼 카드)는 아무 데나 눌러도 닫힌다 —
+		# 단순 알림 카드(새 일꾼 카드)는 아무 데나 눌러도 닫힌다 —
 		# "받는다"를 조준해 누르는 것도 백 번째에는 수고다(유저).
 		_ok_pressed()
 

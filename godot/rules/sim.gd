@@ -95,7 +95,6 @@ var furs: Dictionary = {}
 
 func bump(key: String, by: float = 1.0) -> void:
 	stats[key] = float(stats.get(key, 0.0)) + by
-## 룰렛 — 오늘 남은 무료/광고 횟수와, 마지막으로 채운 날.
 var bought: Dictionary = {}
 var visits: Dictionary = {}
 var sold: float = 0.0
@@ -1784,7 +1783,6 @@ func pull(n: int, rng: Rng) -> Array:
 	pulls += float(n)
 	return out
 
-# ── 룰렛 ──
 
 ## 하루가 바뀌었으면 횟수를 채운다. **실제 시간**으로 센다(wall).
 func offline(seconds: float) -> Variant:
@@ -1876,6 +1874,7 @@ const INT_KEYS: Array[String] = ["busy", "_qid", "_evIdx", "_oid"]
 ## 2판 저장본은 아무 손질 없이 그대로 읽힌다.
 ##
 ## 2판: 뽑기·룰렛·카드가 들어오고 삽살개가 여러 마리가 됐다.
+##      (룰렛은 2026-08-28에 다시 뺐다 — 옛 저장본의 그 칸은 그냥 안 읽는다.)
 ## 1판 저장본은 아래 load_from이 받아준다(개 한 마리, 카드 없음, 성은 방문 수로).
 ## 4판: 구역(zones)이 들어왔다. 3판 저장본은 zones 칸이 없어 기본값으로
 ## 시작하는데, 아래 load_from이 **열린 가게에서 구역을 되짚는다** —

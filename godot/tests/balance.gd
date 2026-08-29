@@ -80,7 +80,7 @@ static func act(s: Sim, rng: Rng, use_shop_up: bool) -> void:
 		if best != "":
 			s.buy_shop_up(best)
 			return
-	# ── 뽑기·룰렛·성 올리기 ──
+	# ── 뽑기·성 올리기 ──
 	#
 	# ★ 이걸 안 넣었더니 **8시간 매출이 1.47T에서 3.28B로 주저앉았다.**
 	#   손님이 이제 뽑기로만 오는데 도구가 뽑기를 안 하니, 토끼 한 마리로

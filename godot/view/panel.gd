@@ -22,7 +22,6 @@ var on_focus: Callable = Callable()
 var on_card: Callable = Callable()
 ## 뽑은 결과를 화면에 넘긴다(카드가 넘어가는 연출은 main이 맡는다)
 var on_pull: Callable = Callable()
-## 룰렛을 돌려 달라고 부탁한다. 광고 기다리기가 있어서 main이 맡는다.
 ## 바퀴가 멈췄다고 알리는 줄 — 그때 결과 창을 띄운다
 ## 뽑기용 주사위. sim의 주사위는 tick이 쓰고 있으니 여기서 따로 굴린다.
 var _rng: Rng = Rng.new(20260822)
@@ -135,7 +134,6 @@ func _input(e: InputEvent) -> void:
 		down = (e as InputEventScreenTouch).pressed
 	if down == null:
 		return
-	# 룰렛이 도는 중에 누르면 즉시 끝으로 — 연출은 건너뛸 수 있어야 한다
 	_pressing = bool(down)
 	# 어디서 뗐든 꾹 누르기는 끝난다. 단추가 다시 그려지며 사라져도 안전하다.
 	if not _pressing:
@@ -466,7 +464,6 @@ func _guest_list() -> void:
 ## ★ 확률표를 **접어 두지 않고 그대로 보여준다.** 확률을 숨기는 뽑기는
 ##   만들지 않는다 — 나라마다 법으로 정해 놓은 곳도 있고, 무엇보다
 ##   숨기면 "속았다"가 남는다.
-## 뽑기와 룰렛은 **한 창에 갈피 둘**로 넣는다.
 ## ★ 룰렛을 뺐다(2026-08-28, 유저). 갈피 둘이던 것이 하나가 됐다.
 ##   축("손님이 돌아온다")과 아무 상관없이 하루 네 번 돌리는 딴 게임이었다.
 func _fair_body() -> void:
