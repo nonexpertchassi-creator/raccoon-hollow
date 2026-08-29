@@ -194,10 +194,7 @@ func show_card(shop_id: String, rank: int) -> void:
 	#   지운 게 아니라 남겨 둔 이유: 나중에 카드 그림을 되살릴 때 이 자리 하나만
 	#   채우면 된다. **없는 폴더를 찾는 게 아니라, 비워 둔 자리를 찾는 것이다.**
 	var t: Texture2D = Art.tex("cards", "%s-%d" % [shop_id, rank + 1])
-	if t == null:
-		t = Art.ranked("clerks", "%s-side" % shop_id, rank)
-	if t == null:
-		t = Art.ranked("clerks", "%s-make" % shop_id, rank)
+	# ★ 여기 clerks/를 보던 두 줄이 있었다. 그 18장을 지우면서 같이 뺐다(2026-08-28).
 	if t == null:
 		# 무늬 A로 겹친다 — 카드는 "이 가게의 일꾼"을 보여주는 자리라 대표 무늬 하나면 된다.
 		t = Art.ranked("hero-body", "a-side", rank)

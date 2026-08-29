@@ -1075,10 +1075,9 @@ func _dog() -> void:
 ##   망치가 반대 손으로 간다. 한 장 아끼려다 "왜 어색하지"를 되풀이했다.
 ##
 ## ★ 그림이 아직 다 안 왔으니 **못 찾으면 내려간다.** 순서는 이게 전부다:
-##     ① 그 가게 전용 (clerks/<가게>-<자세>) — 이미 그린 스무 장. 새로 안 시킨다
-##     ② 그 무늬의 그 자세·그 방향
-##     ③ 같은 무늬·같은 자세의 **다른 방향** (방향만 아직 없을 때)
-##     ④ 무늬 A의 그 자세·그 방향
+##     ① 그 무늬의 그 자세·그 방향
+##     ② 같은 무늬·같은 자세의 **다른 방향** (방향만 아직 없을 때)
+##     ③ 무늬 A의 그 자세·그 방향
 ##   여기까지 없으면 **도형으로 그린다.** 2026-08-28에 옛 그림 그물을 전부
 ##   걷어냈다(유저: "제발 옛 그림 지우자"). 어중간한 옛 그림이 나오면
 ##   "다 된 것 같은데 어딘가 어색하다"가 되지만, 도형이 나오면
@@ -1088,11 +1087,10 @@ func _dog() -> void:
 func _clerk_layers(shop_id: String, slot: int, pose: String, dir4: String = "se") -> Array:
 	var fur: String = sim.fur_of(shop_id, slot)
 	var rk: int = sim.rank_of(shop_id)
-	var whole: Texture2D = Art.ranked("clerks", "%s-%s" % [shop_id, pose], rk)
-	if whole == null and pose != "make":
-		whole = Art.ranked("clerks", "%s-make" % shop_id, rk)
-	if whole != null:
-		return [whole]
+	# ★ 여기 **가게 전용 그림(clerks/)을 먼저 보는 줄**이 있었다. 2026-08-28에 뺐다.
+	#   그 18장은 옛 계약(옆모습 한 장 + 거울 뒤집기)이었는데, **먼저 걸리니까
+	#   새 무늬 그림을 아무리 그려 넣어도 아홉 가게는 영영 옛 그림으로 나왔다.**
+	#   꼬리·폴백과 똑같은 종류다 — 옛것을 그물로 남기면 새것을 가린다.
 	var body: Texture2D = _body_tex(fur, pose, dir4, rk)
 	if body == null and fur != "a":
 		body = _body_tex("a", pose, dir4, rk)
@@ -1260,16 +1258,6 @@ func _idle(i: int) -> bool:
 ## 대장간 너구리는 망치를 들고, 필방 너구리는 앞치마를 두르는 식이다.
 ## 한 장도 없으면 도형으로 그린다. 어디서 멈춰도 게임은 돈다.
 ## 가게 등급도 본다 — `smith-make-1.png`가 있으면 참쇠 대장간 일꾼은 그걸 쓴다.
-## 없으면 그 가게 일꾼. **둘 다 없으면 도형이다**(옛 그림 그물은 2026-08-28에 걷었다).
-func _hero_tex(shop_id: String, pose: String) -> Texture2D:
-	var t: Texture2D = Art.ranked("clerks", "%s-%s" % [shop_id, pose], sim.rank_of(shop_id))
-	if t != null:
-		return t
-	# ★ 전용 그림이 있는 가게는 없는 자세도 **전용 만들기 그림**으로 때운다.
-	#   걷기만 공통 너구리로 갈아입으니 "일꾼이 두 모습"이 됐다(유저).
-	#   움직임(걷기 두 장 번갈아)보다 **같은 얼굴**이 먼저다.
-	return Art.ranked("clerks", "%s-make" % shop_id, sim.rank_of(shop_id))
-
 func _trash_draw(tr: Dictionary) -> void:
 	var p2: Vector2 = tr.pos
 	_text(p2 + Vector2(0, 6), "🍂", 15, Color.WHITE)
@@ -1356,17 +1344,6 @@ func _clerk(i: int) -> void:
 			_crate(c.pos, bool(c.get("flip", false)))
 		if pose == "sleep":
 			_text(c.pos + Vector2(14, -70 + sin(_t * 2.0) * 3.0), "💤", 14, Color.WHITE)
-		return
-	var t: Texture2D = _hero_tex(id, pose)
-	if t == null:                       # 그 자세가 아직 없으면 만드는 자세로
-		t = _hero_tex(id, "make")
-	if t != null:
-		var breath2: float = 0.0 if c.walking else (0.5 + 0.5 * sin(_t * 2.4 + c.pos.x * 0.03)) * 0.03
-		_shadow(c.pos, 14.0)
-		_sprite(t, c.pos, "clerks" if Art.tex("clerks", "%s-%s" % [id, pose]) != null else "hero",
-			bool(c.get("flip", false)), breath2)
-		if int(c.get("carry_oid", 0)) != 0 or float(c.get("carry", 0.0)) > 0.0:
-			_crate(c.pos, bool(c.get("flip", false)))
 		return
 	_raccoon(c.pos, SHAPE, Color("a8815a"))
 

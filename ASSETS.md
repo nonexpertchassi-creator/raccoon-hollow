@@ -1049,25 +1049,6 @@ se·sw는 얼굴이 보이는 쪽, ne·nw는 등이 보이는 쪽이다.
 - [ ] `lacquer-make.webp` — 나전방 · 차림 (만드는 중)
 - [ ] `lacquer-side.webp` — 나전방 · 차림 (옆)
 
-### 가게 전용 일꾼 (선택 — 겹치기를 통째로 덮는다) (선택) — `godot/art/clerks/` · 144×144 · **12장 남음**
-
-파일명: `<가게>-<자세>.webp` — 이미 스무 장이 들어와 있고 그대로 쓰인다.
-**새로 안 시킨다.** 공통 너구리로 안 나오는 특별한 가게가 생겼을 때만.
-있으면 그 가게는 겹치기를 건너뛰고 이 한 장으로 그려진다.
-
-- [ ] `fruit-make.webp` — 과일전 · 만드는 중
-- [ ] `fruit-sell.webp` — 과일전 · 파는 중
-- [ ] `fish-make.webp` — 어물전 · 만드는 중
-- [ ] `fish-sell.webp` — 어물전 · 파는 중
-- [ ] `cloth-make.webp` — 포목전 · 만드는 중
-- [ ] `cloth-sell.webp` — 포목전 · 파는 중
-- [ ] `hat-make.webp` — 갓방 · 만드는 중
-- [ ] `hat-sell.webp` — 갓방 · 파는 중
-- [ ] `brass-make.webp` — 유기전 · 만드는 중
-- [ ] `brass-sell.webp` — 유기전 · 파는 중
-- [ ] `lacquer-make.webp` — 나전방 · 만드는 중
-- [ ] `lacquer-sell.webp` — 나전방 · 파는 중
-
 <!-- 목록끝 -->
 
 ## 넣는 법

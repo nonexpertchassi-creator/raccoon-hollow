@@ -31,10 +31,15 @@ else
   exit 1
 fi
 
+# ★ **낮으로 못 박고 찍는다**(2026-08-28). 게임 시계가 40분에 한 바퀴라
+#   몇 분 감았느냐에 따라 밤에 걸려서, 찍은 게 어두워 안 보였다(유저).
+#   밤 화면이 보고 싶으면 SHOT_CLOCK=0.8을 따로 준다.
+: "${CLOCK:=0.3}"          # 0.3 = 한낮
+
 shot() {   # shot <파일이름> <환경변수들…>
   name=$1; shift
   rm -f godot/shot.png
-  run_shot "$@" SHOT_MINUTES=$M >/dev/null 2>&1 || true
+  run_shot "$@" SHOT_MINUTES=$M SHOT_CLOCK=$CLOCK >/dev/null 2>&1 || true
   if [ -f godot/shot.png ]; then
     cp godot/shot.png "$OUT/$name.png"
     printf "  %s\n" "$name"
