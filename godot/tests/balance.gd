@@ -13,12 +13,12 @@ extends SceneTree
 ##
 ## 실행:
 ##   godot --headless --path godot --script tests/balance.gd
-##   BAL_HOURS=8 BAL_SEED=2 BAL_SHOPUP=0 godot … (강화를 끄고 재기)
+##   BAL_HOURS=8 BAL_SEED=2 godot …
 
 ## 구역이 열린 시각 — 문턱(성·엽전)을 재서 잡으려면 이게 보여야 한다
 static var unlocked_at: Dictionary = {}
 
-static func act(s: Sim, rng: Rng, use_shop_up: bool) -> void:
+static func act(s: Sim, rng: Rng) -> void:
 	if s.busy >= 0 and s.tap_small(s.busy):
 		return
 	if s.pest != null:
@@ -64,22 +64,6 @@ static func act(s: Sim, rng: Rng, use_shop_up: bool) -> void:
 	if s.can_buy_sweeper():
 		s.buy_sweeper()
 		return
-	# 가게 고유 강화 — 제일 싼 것부터.
-	# BAL_ONLY=smith 처럼 주면 그 가게 것만 산다(하나씩 재려고).
-	if use_shop_up:
-		var only: String = OS.get_environment("BAL_ONLY") if OS.has_environment("BAL_ONLY") else ""
-		var best: String = ""
-		var best_c: float = INF
-		for sh in s.shops:
-			if only != "" and sh != only:
-				continue
-			var c: Variant = s.shop_up_cost(sh)
-			if c != null and s.money >= float(c) and float(c) < best_c:
-				best_c = float(c)
-				best = sh
-		if best != "":
-			s.buy_shop_up(best)
-			return
 	# ── 뽑기·성 올리기 ──
 	#
 	# ★ 이걸 안 넣었더니 **8시간 매출이 1.47T에서 3.28B로 주저앉았다.**
@@ -143,7 +127,6 @@ func _mm(sec: float) -> String:
 func _init() -> void:
 	var hours: float = _env("BAL_HOURS", 8.0)
 	var seed_value: int = int(_env("BAL_SEED", 1.0))
-	var use_up: bool = _env("BAL_SHOPUP", 1.0) > 0.5
 	unlocked_at = {}
 	var s := Sim.new()
 	var rng := Rng.new(seed_value)
@@ -164,7 +147,7 @@ func _init() -> void:
 
 	while s.t < hours * 3600.0:
 		s.tick(dt, rng)
-		act(s, rng, use_up)
+		act(s, rng)
 		for g in s.guests:
 			if not guest_at.has(g):
 				guest_at[g] = s.t
@@ -194,7 +177,7 @@ func _init() -> void:
 				st += s.regular_lv(String(gid2))
 			curve.append([s.t, s.revenue, s.income_per_sec(), float(st), s.money])
 
-	var tag: String = OS.get_environment("BAL_ONLY") if OS.has_environment("BAL_ONLY") else ("전부" if use_up else "끔")
+	var tag: String = "판"
 	var line: String = "%-10s" % tag
 	for c in curve:
 		line += "  %8s" % Num.fmt(c[1])
@@ -241,15 +224,6 @@ func _init() -> void:
 	print("   뽑기 %d회(%d단계) · 손님 %d/%d · 성 합계 %d · 남은 나뭇잎 %d · 가게 %d/%d" % [
 		int(s.pulls), s.gacha_lv(), s.guests.size(), Content.GUESTS.size(),
 		stars_sum, int(s.gems), s.shops.size(), Content.SHOPS.size()])
-	if use_up:
-		var got: Array[String] = []
-		for sh in s.shops:
-			# ★ 가게 고유 강화는 **다섯 채에만** 있다(smith·brush·paper·pot·herb).
-			#   없는 가게를 그냥 찾다가 24시간 측정이 끝에서 죽었다(2026-08-27,
-			#   여섯째 가게가 열리는 순간). 긴 판을 못 재면 뒷구역을 영영 못 본다.
-			if Content.SHOP_UP.has(sh):
-				got.append("%s %d/%d" % [Content.SHOP_UP[sh].name, s.shop_up_lv(sh), int(Content.SHOP_UP[sh].max)])
-		print("   산 강화: " + " · ".join(got))
 	# 패시브 스킬(2026-08-27) — 배우가 나뭇잎을 어디에 썼나. 안 적으면 도구가
 	# 스킬을 산 것도, 안 산 것도 말해 주지 않는다(도구 규칙 3).
 	var sk: Array[String] = []

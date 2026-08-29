@@ -194,9 +194,6 @@ var _rng: Rng = null
 ## 기간으로 세야 매번 새 소식이 된다(content.gd의 LEDGER 참고).
 var ledger: Array = []
 
-## 가게마다의 고유 강화 (가게id → 단계). 엽전으로 산다.
-var shopUp: Dictionary = {}
-
 func _init() -> void:
 	_tables()
 	_qCool = Content.QUEST.first
@@ -557,55 +554,13 @@ func _no_stall(item: Dictionary) -> bool:
 
 # ── 가게마다의 고유 강화 ──
 #
-# ★ 확률을 쓰는 강화(약재 말리기)는 **안 샀으면 주사위를 굴리지 않는다.**
-#   0% 확률이라도 굴리면 난수 순서가 밀려서, 이 기능을 넣기만 해도 옛 판과
-#   다른 게임이 된다 — 대조 시험이 그 자리에서 빨간불이 난다.
+# ★ **가게 고유 강화를 뺐다**(2026-08-28, 유저).
+#   축("이게 손님이 돌아오는 걸 느끼게 하나?")으로 재니 ✕였다 — 숫자만 올렸다.
+#   게다가 다섯 중 셋은 운 번호 다섯으로 재 보니 **사면 손해**였다
+#   (의뢰방 0.99배 · 약재 말리기 0.88배 · 질그릇 한 벌 0.82배).
+#   "파는 물건이 사는 사람을 손해 보게 만들면 안 된다"는 넷째 규칙에 걸렸는데,
+#   고쳐서 살리는 것보다 **없는 게 나았다.** 되살리려면 이 커밋을 되돌린다.
 
-func shop_up_lv(shop_id: String) -> int: return int(shopUp.get(shop_id, 0))
-
-func shop_up_def(shop_id: String) -> Variant:
-	return Content.SHOP_UP.get(shop_id, null)
-
-## 다음 한 단계 값. 다 올렸으면 null
-func shop_up_cost(shop_id: String) -> Variant:
-	var d: Variant = shop_up_def(shop_id)
-	var lv: int = shop_up_lv(shop_id)
-	if d == null or lv >= int(d.max):
-		return null
-	return floor(shop_by_id(shop_id).promote[0] * Content.SHOP_UP_COST[lv])
-
-func can_buy_shop_up(shop_id: String) -> bool:
-	var c: Variant = shop_up_cost(shop_id)
-	return shops.has(shop_id) and c != null and money >= float(c)
-
-func buy_shop_up(shop_id: String) -> bool:
-	if not can_buy_shop_up(shop_id):
-		return false
-	money -= float(shop_up_cost(shop_id))
-	shopUp[shop_id] = shop_up_lv(shop_id) + 1
-	_ev("%s에 %s %d단계" % [shop_by_id(shop_id).name,
-		Content.SHOP_UP[shop_id].name, shop_up_lv(shop_id)], "shop")
-	return true
-
-## 이 가게가 만드는 시간 배수 (풀무)
-func _forge_of(shop_id: String) -> float:
-	if shop_id != "smith":
-		return 1.0
-	return 1.0 - Content.SHOP_UP.smith.step * shop_up_lv("smith")
-
-## 이 가게 물건값 배수 (먹 갈기)
-func _price_of(shop_id: String) -> float:
-	if shop_id != "brush":
-		return 1.0
-	return 1.0 + Content.SHOP_UP.brush.step * shop_up_lv("brush")
-
-## 이 가게 물건을 한 번에 몇 배로 사가나 (질그릇 한 벌)
-func _basket_of(shop_id: String) -> float:
-	if shop_id != "pot":
-		return 1.0
-	return 1.0 + Content.SHOP_UP.pot.step * shop_up_lv("pot")
-
-## 동시에 걸리는 의뢰 자리 (의뢰방)
 ## 계산대 수 — 등급이 정한다(무쇠 1 · 참쇠 2 · 강철 3). 승급 보상 하나 더(2026-08-26).
 func counters_of(shop_id: String) -> int:
 	return rank_of(shop_id) + 1
@@ -640,9 +595,9 @@ func weather_come() -> float:
 	var c: float = float(weather_def().come)
 	return minf(1.0, c + skill("rainy")) if String(weather_def().id) == "rain" else c
 
+## 동시에 걸리는 의뢰 자리 — 기본값 + 나뭇잎 스킬로 늘린 만큼.
 func quest_slots() -> int:
-	return int(Content.QUEST.slots) + int(Content.SHOP_UP.paper.step) * shop_up_lv("paper") \
-		+ int(up_lv("questslot"))
+	return int(Content.QUEST.slots) + int(up_lv("questslot"))
 
 # ── 가게 등급 ──
 func rank_of(shop_id: String) -> int: return int(rank.get(shop_id, 0))
@@ -659,7 +614,7 @@ func price(id: String) -> float:
 	var it: Dictionary = item_by_id(id)
 	return floor(it.price * Content.RANKS[rank_of_item(id)].priceMul
 		* (1.0 + Content.LEVEL.priceStep * (lv(id) - 1.0)) * milestone(id) * haggle()
-		* _price_of(it.shop))
+		)
 
 ## 하루 어디쯤인가(0~1). 화면의 어둠과 경제의 밤 규칙이 **같은 시계**를 본다.
 func day_phase() -> float:
@@ -680,7 +635,7 @@ func craft_time(id: String) -> float:
 	var f: float = max(Content.LEVEL.timeFloor, pow(Content.LEVEL.timeReduce, lv(id) - 1.0))
 	# handSpeed — 손 하나의 손놀림 배수(생산 개편 보정, content.js의 CRAFT 참고)
 	# 밤엔 손이 느리다(DAY.nightCraft) — 밤 규칙은 화면이 아니라 여기(sim)의 것이다
-	return it.time * f * forge_mul() * _forge_of(it.shop) / Content.CRAFT.handSpeed 		* (night_craft() if is_night() else 1.0) * float(weather_def().craft)
+	return it.time * f * forge_mul() / Content.CRAFT.handSpeed 		* (night_craft() if is_night() else 1.0) * float(weather_def().craft)
 
 func cap_of(id: String) -> float:
 	return Content.STOCK_CAP + Content.STAFF.capAdd * staff_of(item_by_id(id).shop)
@@ -1611,7 +1566,7 @@ func _buy(g: Dictionary, rng: Rng) -> Variant:
 	#   되면서 은퇴했다.
 	var lim: float = max(1.0, round(qty))
 	var roll: float = 1.0 + floor(rng.next() * lim)
-	var want_n: float = max(1.0, ceil(roll * _basket_of(item_by_id(one).shop)))
+	var want_n: float = max(1.0, ceil(roll))
 	var lines: Array = [{"id": one, "n": want_n, "rem": want_n, "unit": price(one) * pay}]
 
 	_oid += 1
@@ -1636,10 +1591,6 @@ func _settle(g: Dictionary, lines: Array, want: float, grumbles: Array, waited: 
 		if got <= 0.0:
 			continue
 		var m: float = floor(l.unit * got)
-		# 약재 말리기 — 안 샀으면 주사위를 굴리지 않는다
-		var dry_lv: int = shop_up_lv("herb") if item_by_id(l.id).shop == "herb" else 0
-		if dry_lv > 0 and _rng != null and _rng.next() < Content.SHOP_UP.herb.step * dry_lv:
-			m *= 2.0
 		gain += m
 		n += got
 		sold += got
@@ -1848,7 +1799,7 @@ const SAVE_KEYS: Array[String] = [
 	"quests", "gems", "gemUp", "maxGem", "_qid", "_qCool", "rush",
 	"wall", "event", "skins", "cleared", "_evAt", "_evIdx",
 	"orders", "_oid", "_hold", "_guestAcc", "_guestGap", "pest", "_pestAcc", "_pestGap", "_askAcc",
-	"ledger", "shopUp",
+	"ledger",
 	"cards", "stars", "pulls", "guards",
 	"stats", "zones",
 	"profile", "furs", "_crafting", "_switch", "_recent", "weather", "_wxT",
@@ -2045,15 +1996,15 @@ func load_from(d: Dictionary, ver: int = SAVE_VER) -> void:
 			stars[gid] = float(regular_lv_old(String(gid)))
 	# 11판 전 저장본 — 가게 하나와 물건 열아홉의 이름표가 바뀌었다.
 	# 배열 칸(값이 id)과 사전 칸(열쇠가 id)을 나눠서 갈아 끼운다.
-	# 열쇠가 "가게:번호" 꼴인 것(furs·shopUp)은 앞부분만 바꾼다.
+	# 열쇠가 "가게:번호" 꼴인 것(furs)은 앞부분만 바꾼다.
 	if ver < 11:
 		for arr in [shops, zones, asked, guests, skins]:
 			for i2 in range(arr.size()):
 				if RENAMED_V11.has(arr[i2]):
 					arr[i2] = RENAMED_V11[arr[i2]]
-		for d3 in [rank, items, bought, cleared, furs, shopUp]:
+		for d3 in [rank, items, bought, cleared, furs]:
 			for k3 in d3.keys():
-				# 열쇠가 "가게:번호" 꼴인 것이 있다(furs·shopUp) — **앞부분만** 간다.
+				# 열쇠가 "가게:번호" 꼴인 것이 있다(furs) — **앞부분만** 간다.
 				# 통째로 바꾸려다 replace()에 인자를 셋 줬는데, Godot의 replace는
 				# 둘까지다. 조각으로 나눠 첫 조각만 바꾸는 편이 뜻도 분명하다.
 				var parts: PackedStringArray = String(k3).split(":")

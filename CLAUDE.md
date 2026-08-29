@@ -48,7 +48,6 @@
 이 게임은 운 번호만 바꿔도 8시간 매출이 0.85T ~ 1.25T로 흔들린다 —
 **재려는 효과보다 판마다의 운이 더 크다.** 운 번호 하나로 재면 손해인 강화가
 +32% 이득으로 보인다. 실제로 그렇게 속았다(PLAN.md 2026-08-21).
-가게 강화는 `tools/shopup.sh`가 다섯 판을 돌려 가운뎃값을 내놓는다.
 
 **2. 고친 것은 대조한다.** `tools/crosscheck.sh` — **열한 가지**를 본다.
 규칙을 고쳤으면 **반드시 돌리고 초록불을 확인**한다.
@@ -89,7 +88,6 @@ SIM_HOURS=4 tools/crosscheck.sh sim   # 길게 돌려 어긋남이 쌓이는지
 BAL_HOURS=8 BAL_SEED=1 godot --headless --path godot --script tests/balance.gd
                                  # 8시간 밸런스 — **이제 이쪽이 본판이다**
 node tools/balance.mjs 8 1       # 옛 자바스크립트판 측정(답안지 쪽, 참고용)
-tools/shopup.sh                  # 가게 강화가 이득인지 — **운 번호 다섯으로** 잰다
 node tools/gen-content.mjs       # content.js → godot/rules/content.gd 다시 뽑기
 node tools/guests.mjs 6          # 손님 등장 문턱을 목표 시각에 수렴시킨다
 tools/shots.sh                   # **게임의 모든 화면을 한 번에 찍는다** → shots/

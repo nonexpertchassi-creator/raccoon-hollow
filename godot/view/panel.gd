@@ -732,20 +732,6 @@ func _tab_work(_shop: Dictionary) -> void:
 	else:
 		_box.add_child(_label("자리가 다 찼다 — 승급하면 채용 자리가 하나 늘어난다", 12, Color("4a7c59"), true))
 
-	var ud: Variant = sim.shop_up_def(shop_id)
-	if ud == null:
-		return
-	var ulv: int = sim.shop_up_lv(shop_id)
-	_box.add_child(_label("%s %s  %d/%d" % [ud.face, ud.name, ulv, int(ud.max)], 15))
-	_box.add_child(_label(String(ud.desc), 11, Color("8a7a63"), true))
-	_bar(float(ulv) / float(ud.max), Color("a8763e"))
-	var uc: Variant = sim.shop_up_cost(shop_id)
-	if uc == null:
-		_box.add_child(_label("끝까지 올렸다", 12, Color("4a7c59")))
-	else:
-		_box.add_child(_btn("올리기 🪙" + Num.fmt(uc), sim.can_buy_shop_up(shop_id),
-			func(): sim.buy_shop_up(shop_id); rebuild()))
-
 ## 승급 — 못 하는 이유가 보여야 목표가 된다. 체크리스트로 세운다.
 func _tab_rank(shop: Dictionary) -> void:
 	# 공사 중이면 조건표 대신 **시계**를 보여준다(2026-08-27). 승급값은 이미
