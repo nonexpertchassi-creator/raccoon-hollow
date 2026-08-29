@@ -138,8 +138,6 @@ ${rows([
   ['서른 장씩 뽑기', fmt(g('gacha.pull30')), ''],
   ['처음 만난 손님', fmt(g('gacha.newGuest')), ''],
   ['성을 올린 횟수', fmt(g('star.up')), '카드를 쓰나, 쌓아만 두나'],
-  ['룰렛 — 무료', fmt(g('roul.free')), ''],
-  ['룰렛 — <b>광고 보고</b>', fmt(g('roul.ad')), `광고 몫 ${pct(g('roul.ad'), g('roul.ad') + g('roul.free'))}`],
 ])}
 </tbody></table></div>
 
@@ -170,7 +168,6 @@ ${rows([
   ['의뢰 받기', fmt(g('quest.take')), '<span class="zero">기능 없음</span> — 의뢰는 아직 저절로 걸린다'],
   ['의뢰 놓침', fmt(g('quest.drop')), '<span class="zero">기능 없음</span>'],
   ['이벤트에 발 뗌', fmt(g('event.join')), '<span class="zero">계측 없음</span> — 참여율의 밑변이라 꼭 필요하다'],
-  ['광고 중간이탈', fmt(g('roul.adSkip')), '<span class="zero">기능 없음</span> — 광고가 더미다'],
   ['튜토리얼 단계별', '—', '<span class="zero">기능 없음</span> — 튜토리얼이 한 칸뿐이다'],
   ['결제', '—', '<span class="zero">기능 없음</span>'],
   ['의견 보내기', '—', '<span class="zero">창구 없음</span> — 지금 내면 불만을 말할 데가 없다'],

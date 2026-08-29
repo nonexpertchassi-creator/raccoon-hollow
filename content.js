@@ -511,37 +511,10 @@ export const STAR_CARDS = [
   145, 180, 220, 270, 330, 400, 480, 580, 700,
 ];
 
-/* ───────────── 룰렛 ─────────────
- * 하루 네 번 돌리는 작은 잔치. 무료 한 번, 광고 세 번.
- *
- * ★ 광고는 아직 **더미**다. 누르면 잠깐 기다렸다 보상이 나온다.
- *   진짜 광고를 붙일 자리만 만들어 둔 것이다.
- *
- * ★ 칸 열둘, 무게는 아래가 전부다. 합이 100이라 그대로 퍼센트다.
- *   게임 안 '확률 보기'가 이 표를 그대로 읽어서 보여준다.
- */
-export const ROULETTE = {
-  freePerDay: 1,
-  adPerDay: 3,
-  adSeconds: 2,          // 더미 광고가 도는 시간
+/* ★ **룰렛을 뺐다**(2026-08-28, 유저). 축("손님이 돌아온다")과 아무 상관없이
+ * 하루 네 번 돌리는 딴 게임이었다. 원판·바늘 그림도 주문서에서 뺐다.
+ * 되살리려면 이 커밋을 되돌리면 된다 — 코드도 그림도 깃에 그대로 있다. */
 
-  /* kind: coin(초 단위 수입) · gem(개수) · card(장수)
-   * weight의 합 = 100 */
-  wedges: [
-    { kind: 'coin', amount: 30,   weight: 18, label: '엽전 한 줌' },
-    { kind: 'gem',  amount: 3,    weight: 14, label: '🍃 3' },
-    { kind: 'coin', amount: 180,  weight: 12, label: '엽전 한 꾸러미' },
-    { kind: 'card', amount: 1,    weight: 10, label: '손님 카드 1장' },
-    { kind: 'coin', amount: 30,   weight: 12, label: '엽전 한 줌' },
-    { kind: 'gem',  amount: 5,    weight:  9, label: '🍃 5' },
-    { kind: 'coin', amount: 600,  weight:  6, label: '엽전 한 자루' },
-    { kind: 'card', amount: 2,    weight:  5, label: '손님 카드 2장' },
-    { kind: 'gem',  amount: 10,   weight:  5, label: '🍃 10' },
-    { kind: 'coin', amount: 1800, weight:  4, label: '엽전 한 궤' },
-    { kind: 'card', amount: 5,    weight:  3, label: '손님 카드 5장' },
-    { kind: 'gem',  amount: 30,   weight:  2, label: '🍃 30' },
-  ],
-};
 
 /* ───────────── 단골 20성 ─────────────
  * 자주 오는 손님은 단골이 된다. 많이 사가고 값도 후하게 쳐준다.

@@ -86,7 +86,6 @@ static func act(s: Sim, rng: Rng, use_shop_up: bool) -> void:
 	#   손님이 이제 뽑기로만 오는데 도구가 뽑기를 안 하니, 토끼 한 마리로
 	#   여덟 시간을 장사한 셈이다. 두 시간 만에 새로 열리는 것이 끊겼다.
 	#   *도구가 안 써 보는 기능은 도구에게 없는 것이다* — 다섯 번째다.
-	s.roul_refill()
 	if s.can_spin(false):
 		s.spin(false, rng)
 		return

@@ -415,31 +415,6 @@ func _finish_flip() -> void:
 	_phase = ""
 	_front = {}
 
-## 룰렛 결과.
-func show_spin(got: Dictionary) -> void:
-	_t = 0.0
-	_action.visible = false
-	_mode = ""
-	_gridbox.visible = false
-	_cardbox.visible = true
-	var w: Dictionary = Content.ROULETTE.wedges[int(got.wedge)]
-	_art.visible = false
-	_sign.visible = true
-	_sign.text = "🎡"
-	_head_label.text = "룰렛"
-	_title.text = String(w.label)
-	_title.add_theme_color_override("font_color", Color("2b241b"))
-	match String(got.kind):
-		"coin": _sub.text = "🪙 %s" % Num.fmt(float(got.amount))
-		"gem": _sub.text = "🍃 %d" % int(got.amount)
-		_:
-			var names: Array[String] = []
-			for c in got.cards:
-				names.append(String(Sim.guest_by_id(String(c.id)).name))
-			_sub.text = "손님 카드 %d장 — %s" % [int(got.amount), ", ".join(names)]
-	visible = true
-
-## 구역이 열렸다 — 동네째 하나가 드러나는 순간이라 카드로 축하한다.
 func show_zone(dz: Dictionary) -> void:
 	_t = 0.0
 	_action.visible = false

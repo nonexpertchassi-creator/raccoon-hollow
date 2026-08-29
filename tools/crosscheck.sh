@@ -90,11 +90,11 @@ case "$OUT" in
   *) fail bits "" ; echo "$OUT" | grep "값이 다르다" | head -3 | sed 's/^/     /' ;;
 esac
 
-# 뽑기·룰렛은 자바스크립트에 짝이 없다(Godot에만 있는 규칙이다).
+# 뽑기는 자바스크립트에 짝이 없다(Godot에만 있는 규칙이다).
 # 확률은 눈으로 못 보므로 십만 번씩 굴려 표와 견준다.
 OUT=$(gd godot --headless --path godot --script tests/gacha.gd 2>&1 || true)
 case "$OUT" in
-  *"GACHA OK"*) pass gacha "뽑기·룰렛·주사위 확률이 표대로다" ;;
+  *"GACHA OK"*) pass gacha "뽑기·주사위 확률이 표대로다" ;;
   *) fail gacha "" ; echo "$OUT" | grep "GACHA FAIL" | head -4 | sed 's/^/     /' ;;
 esac
 

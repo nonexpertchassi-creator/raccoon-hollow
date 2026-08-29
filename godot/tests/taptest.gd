@@ -280,30 +280,6 @@ func _process(_d: float) -> void:
 		s.money += 1e12
 		if s.hire_staff("smith"):
 			fails.append("자리가 다 찼는데 채용이 됐다")
-
-	# 룰렛 — 무료 한 번
-	main.panel.tab = "work"
-	main.panel.rebuild()
-	var spin: Button = _find_btn(main.panel, "무료로")
-	if spin == null:
-		fails.append("룰렛 창에 무료 돌리기 단추가 없다")
-	else:
-		s.roul_refill()
-		var free0: float = s.roulFree
-		spin.emit_signal("pressed")
-		if s.roulFree >= free0:
-			fails.append("룰렛을 돌렸는데 횟수가 안 줄었다")
-		# ★ 결과는 **바퀴가 멈춘 뒤에** 떠야 한다. 먼저 뜨면 바퀴를 볼 이유가 없다.
-		if main.card.visible:
-			fails.append("바퀴가 아직 도는데 결과가 먼저 떴다")
-		if main.panel.wheel == null:
-			fails.append("룰렛 창에 바퀴가 없다")
-		else:
-			for i in range(240):                 # 12초어치 — 도는 시간은 2.36초다
-				main.panel.wheel._process(0.05)
-			if not main.card.visible:
-				fails.append("바퀴가 멈췄는데 결과가 안 떴다")
-		main.card.close()
 	main.panel.close()
 
 	# 9) 도감에서 **카드로 성을 올린다**

@@ -96,9 +96,6 @@ var furs: Dictionary = {}
 func bump(key: String, by: float = 1.0) -> void:
 	stats[key] = float(stats.get(key, 0.0)) + by
 ## 룰렛 — 오늘 남은 무료/광고 횟수와, 마지막으로 채운 날.
-var roulFree: float = 1.0
-var roulAd: float = 3.0
-var roulDay: float = -1.0
 var bought: Dictionary = {}
 var visits: Dictionary = {}
 var sold: float = 0.0
@@ -1790,67 +1787,6 @@ func pull(n: int, rng: Rng) -> Array:
 # ── 룰렛 ──
 
 ## 하루가 바뀌었으면 횟수를 채운다. **실제 시간**으로 센다(wall).
-func roul_refill() -> void:
-	var today: float = floor(wall / 86400.0)
-	if roulDay == today:
-		return
-	roulDay = today
-	roulFree = float(Content.ROULETTE.freePerDay)
-	roulAd = float(Content.ROULETTE.adPerDay)
-
-func can_spin(by_ad: bool) -> bool:
-	roul_refill()
-	return roulAd > 0.0 if by_ad else roulFree > 0.0
-
-## 한 번 돌린다. 어느 칸에 섰는지와 받은 것을 돌려준다.
-func spin(by_ad: bool, rng: Rng) -> Variant:
-	if not can_spin(by_ad):
-		return null
-	if by_ad:
-		roulAd -= 1.0
-		bump("roul.ad")
-	else:
-		roulFree -= 1.0
-		bump("roul.free")
-	var total: float = 0.0
-	for w in Content.ROULETTE.wedges:
-		total += float(w.weight)
-	var x: float = rng.next() * total
-	var idx: int = Content.ROULETTE.wedges.size() - 1
-	for i in range(Content.ROULETTE.wedges.size()):
-		x -= float(Content.ROULETTE.wedges[i].weight)
-		if x <= 0.0:
-			idx = i
-			break
-	var w2: Dictionary = Content.ROULETTE.wedges[idx]
-	var got: Dictionary = {"wedge": idx, "kind": String(w2.kind), "amount": 0.0, "cards": []}
-	match String(w2.kind):
-		"coin":
-			# 엽전은 **지금 수입의 몇 초치**다. 고정 금액이면 초반엔 후하고
-			# 후반엔 먼지가 된다 — 언제 돌려도 값이 비슷해야 매일 돌린다.
-			var coin: float = floor(max(10.0, income_per_sec() * float(w2.amount)))
-			money += coin
-			revenue += coin
-			got.amount = coin
-		"gem":
-			gems += float(w2.amount)
-			got.amount = float(w2.amount)
-		"card":
-			for i in range(int(w2.amount)):
-				var grade: int = _roll_grade(rng)
-				var gid: String = _roll_guest(grade, rng)
-				if gid == "":
-					continue
-				if not guests.has(gid):
-					guests.append(gid)
-					_guestAcc[gid] = 0.0
-				cards[gid] = cards.get(gid, 0.0) + 1.0
-				got.cards.append({"id": gid, "grade": grade})
-			got.amount = float(w2.amount)
-	_ev("룰렛 — %s" % String(w2.label), "quest")
-	return got
-
-## 오프라인 수익. 껐다 켰을 때 쌓여 있어야 다시 켠다.
 func offline(seconds: float) -> Variant:
 	# 수익은 상한까지만 쌓이지만 **이벤트 마감은 그대로 흐른다**
 	wall += seconds
@@ -1915,7 +1851,7 @@ const SAVE_KEYS: Array[String] = [
 	"wall", "event", "skins", "cleared", "_evAt", "_evIdx",
 	"orders", "_oid", "_hold", "_guestAcc", "_guestGap", "pest", "_pestAcc", "_pestGap", "_askAcc",
 	"ledger", "shopUp",
-	"cards", "stars", "pulls", "guards", "roulFree", "roulAd", "roulDay",
+	"cards", "stars", "pulls", "guards",
 	"stats", "zones",
 	"profile", "furs", "_crafting", "_switch", "_recent", "weather", "_wxT",
 	"building",

@@ -1,5 +1,5 @@
 extends SceneTree
-## 뽑기와 룰렛이 **표대로 나오는지** 잰다.
+## 뽑기가 **표대로 나오는지** 잰다.
 ##
 ## ★ 확률은 눈으로 못 본다. 열 번 뽑아 다 흔함이 나와도 그게 고장인지
 ##   운인지 알 수가 없다. 그래서 **십만 번** 뽑아 표와 견준다.
@@ -12,7 +12,6 @@ const N := 100000
 func _init() -> void:
 	var fails: Array[String] = []
 	fails.append_array(_rates())
-	fails.append_array(_wheel())
 	fails.append_array(_stars())
 	fails.append_array(_dogs())
 	fails.append_array(_dice())
@@ -46,30 +45,6 @@ func _rates() -> Array[String]:
 				out.append("%d단계 %s: 표 %.1f%% 인데 실제 %.2f%%"
 					% [lv, Content.CARD_GRADES[g].name, float(want[g]), got])
 		print("  뽑기 %2d단계  %s" % [lv, " · ".join(line)])
-	return out
-
-## 룰렛 칸 — 십만 번
-func _wheel() -> Array[String]:
-	var out: Array[String] = []
-	var s := Sim.new()
-	var rng := Rng.new(77)
-	var hit: Array = []
-	for i in range(Content.ROULETTE.wedges.size()):
-		hit.append(0)
-	# 돌릴 수 있게 횟수를 넉넉히 준다(여기서 보는 건 확률이지 횟수 제한이 아니다)
-	for i in range(N):
-		s.roulFree = 1.0
-		var got: Variant = s.spin(false, rng)
-		if got == null:
-			out.append("룰렛이 안 돌았다")
-			break
-		hit[int(got.wedge)] += 1
-	for i in range(hit.size()):
-		var w: Dictionary = Content.ROULETTE.wedges[i]
-		var got2: float = 100.0 * float(hit[i]) / float(N)
-		if absf(got2 - float(w.weight)) > 0.5:
-			out.append("룰렛 '%s': 표 %d%% 인데 실제 %.2f%%" % [String(w.label), int(w.weight), got2])
-	print("  룰렛 열두 칸 — 표와 실제가 0.5%p 안쪽")
 	return out
 
 ## 카드로 성 올리기 — 표에 적힌 장수만큼만 든다
@@ -116,7 +91,7 @@ func _dogs() -> Array[String]:
 	return out
 
 ## 자리 비운 벌이의 주사위(2026-08-27) — 고지한 확률대로 나오나.
-## 확률은 눈으로 못 본다. 십만 번 굴려 표와 견준다(룰렛과 같은 방법).
+## 확률은 눈으로 못 본다. 십만 번 굴려 표와 견준다(뽑기와 같은 방법).
 func _dice() -> Array[String]:
 	var out: Array[String] = []
 	var s := Sim.new()

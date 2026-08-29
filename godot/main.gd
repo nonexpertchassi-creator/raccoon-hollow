@@ -28,7 +28,6 @@ var _guestbtn: Button
 var _questbtn: Button
 var _fairbtn: Button
 ## 더미 광고가 도는 동안 잠깐 막아 둔다
-var _adWait: float = 0.0
 var _newsbtn: Button
 
 ## 끌기와 누르기를 가른다. 이걸 안 하면 마을을 둘러보려고 끌 때마다
@@ -209,12 +208,7 @@ func _ready() -> void:
 	panel.on_focus = _focus_shop
 	panel.on_card = _show_card
 	panel.on_pull = _show_pull
-	panel.on_spin = _spin
 	panel.on_guest = func(gid: String): card.show_guest(gid)
-	panel.on_landed = func():
-		if _spinResult != null:
-			_reveal_spin(_spinResult)
-			_spinResult = null
 	_layer.add_child(panel)
 	profile_modal = ProfileModal.new()
 	profile_modal.setup(sim, BAND_COLORS)
@@ -361,11 +355,6 @@ func step(delta: float) -> void:
 		sfx.play("quest")
 
 func _process(delta: float) -> void:
-	if _adWait > 0.0:
-		_adWait -= delta
-		if _adWait <= 0.0:
-			_adWait = 0.0
-			_finish_spin(true)
 	step(delta)
 	village.cam_center = cam.position
 	_save_acc += delta
@@ -472,10 +461,7 @@ func _paint() -> void:
 	_avatar.text = "" if ft != null else ("🦝" if face == "" else String(Sim.guest_by_id(face).face))
 	_guestbtn.text = "손님 %d/%d" % [sim.guests.size(), Content.GUESTS.size()]
 	_questbtn.text = "의뢰 %d" % sim.quests.size()
-	sim.roul_refill()
-	# 남은 횟수를 단추에 적는다 — 안 적으면 매일 열어 보고 확인해야 한다
-	var left: int = int(sim.roulFree) + int(sim.roulAd)
-	_fairbtn.text = "뽑기" if left == 0 else "뽑기 ●%d" % left
+	_fairbtn.text = "뽑기"
 
 
 ## 화면을 끌어서 마을을 둘러보고, 눌러서 논다.
@@ -541,36 +527,6 @@ func _unhandled_input(e: InputEvent) -> void:
 func _show_pull(got: Array) -> void:
 	sfx.play("quest")
 	card.show_pull(got)
-
-## 룰렛을 돌린다. 광고면 **잠깐 기다린다** — 더미지만 기다리는 시간까지가
-## 그 기능이다. 없으면 나중에 진짜 광고를 붙일 때 감이 안 맞는다.
-func _spin(by_ad: bool) -> void:
-	if _adWait > 0.0:
-		return
-	if by_ad:
-		_adWait = float(Content.ROULETTE.adSeconds)
-		return
-	_finish_spin(false)
-
-func _finish_spin(by_ad: bool) -> void:
-	var got: Variant = sim.spin(by_ad, rng)
-	if got == null:
-		return
-	# ★ 상은 여기서 이미 정해졌다. 바퀴는 **그 칸에 맞춰** 돌 뿐이다.
-	#   순서를 뒤집으면 화면의 오차가 확률이 되어 고지한 표가 거짓말이 된다.
-	if panel.wheel != null and panel.wheel.is_inside_tree():
-		_spinResult = got
-		panel.wheel.spin_to(int(got.wedge))
-		return
-	_reveal_spin(got)
-
-var _spinResult: Variant = null
-
-## 바퀴가 멈춘 뒤에 결과 창을 띄운다. 먼저 띄우면 바퀴를 볼 이유가 없어진다.
-func _reveal_spin(got: Dictionary) -> void:
-	sfx.play("quest")
-	card.show_spin(got)
-	panel.rebuild()
 
 ## 카드 한 장이 열린다 — 가게를 되살렸거나, 승급했거나.
 func _show_card(shop_id: String, rank: int) -> void:

@@ -23,9 +23,7 @@ var on_card: Callable = Callable()
 ## 뽑은 결과를 화면에 넘긴다(카드가 넘어가는 연출은 main이 맡는다)
 var on_pull: Callable = Callable()
 ## 룰렛을 돌려 달라고 부탁한다. 광고 기다리기가 있어서 main이 맡는다.
-var on_spin: Callable = Callable()
 ## 바퀴가 멈췄다고 알리는 줄 — 그때 결과 창을 띄운다
-var on_landed: Callable = Callable()
 ## 뽑기용 주사위. sim의 주사위는 tick이 쓰고 있으니 여기서 따로 굴린다.
 var _rng: Rng = Rng.new(20260822)
 ## 꾹 누르고 있는 품목. 누르는 동안 계속 오른다.
@@ -138,8 +136,6 @@ func _input(e: InputEvent) -> void:
 	if down == null:
 		return
 	# 룰렛이 도는 중에 누르면 즉시 끝으로 — 연출은 건너뛸 수 있어야 한다
-	if bool(down) and wheel != null and is_instance_valid(wheel) and wheel.visible:
-		wheel.skip()
 	_pressing = bool(down)
 	# 어디서 뗐든 꾹 누르기는 끝난다. 단추가 다시 그려지며 사라져도 안전하다.
 	if not _pressing:
@@ -257,8 +253,6 @@ func _bar(ratio: float, col: Color) -> void:
 func rebuild() -> void:
 	# ★ 바퀴부터 빼낸다. queue_free는 자리를 옮겨도 프레임 끝에 **반드시 죽인다** —
 	#   바퀴가 매 갈이마다 죽고 다시 태어나며 깜박였다(유저가 두 번 잡았다).
-	if wheel != null and is_instance_valid(wheel) and wheel.get_parent() == _box:
-		_box.remove_child(wheel)
 	for c in _box.get_children():
 		c.visible = false       # queue_free는 프레임 끝에 지워진다 — 그동안 겹쳐 보이면 깜박인다
 		c.queue_free()
@@ -473,21 +467,11 @@ func _guest_list() -> void:
 ##   만들지 않는다 — 나라마다 법으로 정해 놓은 곳도 있고, 무엇보다
 ##   숨기면 "속았다"가 남는다.
 ## 뽑기와 룰렛은 **한 창에 갈피 둘**로 넣는다.
-## 아래 단추가 다섯이 되면 폰에서 누르다 틀린다 — FLOW.md에 적어 둔 그 이유다.
-## 둘 다 "운으로 얻는 것"이라 한자리에 있는 게 뜻도 맞는다.
+## ★ 룰렛을 뺐다(2026-08-28, 유저). 갈피 둘이던 것이 하나가 됐다.
+##   축("손님이 돌아온다")과 아무 상관없이 하루 네 번 돌리는 딴 게임이었다.
 func _fair_body() -> void:
-	_head("뽑기와 룰렛")
-	var bar := HBoxContainer.new()
-	for t in [["items", "뽑기"], ["work", "룰렛"]]:
-		var key: String = String(t[0])
-		var b := _btn(String(t[1]), true, func(): tab = key; rebuild())
-		b.disabled = tab == key
-		bar.add_child(b)
-	_box.add_child(bar)
-	if tab == "work":
-		_roulette_body()
-	else:
-		_gacha_body()
+	_head("뽑기")
+	_gacha_body()
 
 func _gacha_body() -> void:
 	var lv: int = sim.gacha_lv()
@@ -547,50 +531,8 @@ func _do_pull(n: int) -> void:
 		on_pull.call(got)
 	rebuild()
 
-## ── 룰렛 ──
-## 창을 다시 그려도 바퀴는 **살려 둔다.** 돌고 있는 중에 새로 만들면
-## 그 순간 각도가 0으로 돌아가 바퀴가 튄다.
-var wheel: Wheel = null
 ## 뽑기 확률표를 펴 놨나 — 물음표(?)로 접었다 편다
 var show_rates: bool = false
-
-func _roulette_body() -> void:
-	sim.roul_refill()
-	if wheel == null or not is_instance_valid(wheel):
-		wheel = Wheel.new()
-		wheel.sim = sim
-		if on_landed.is_valid():
-			wheel.landed.connect(func(_w: int): on_landed.call())
-	if wheel.get_parent() != null:
-		wheel.get_parent().remove_child(wheel)
-	wheel.visible = true        # 갈이 때 숨긴 채 빼돌린 것을 다시 켠다
-	_box.add_child(wheel)
-	_box.add_child(_label("오늘 남은 횟수 — 무료 %d · 광고 %d" % [
-		int(sim.roulFree), int(sim.roulAd)], 15, Color("a8763e")))
-	_box.add_child(_label("매일 자정에 다시 찬다", 11, Color("8a7a63")))
-	var row := HBoxContainer.new()
-	row.add_child(_btn("무료로 돌리기", sim.can_spin(false), func(): _do_spin(false)))
-	row.add_child(_btn("광고 보고 돌리기", sim.can_spin(true), func(): _do_spin(true)))
-	_box.add_child(row)
-	_box.add_child(_label("※ 광고는 아직 **더미**다 — 누르면 잠깐 기다렸다 보상이 나온다.",
-		11, Color("8a7a63"), true))
-
-	_box.add_child(_label("칸과 확률", 15, Color("5a4e3d")))
-	_box.add_child(_label("바퀴가 멈추는 칸은 **돌리기 전에 이미 정해진다.** 바퀴는 그 칸에 맞춰 도는 것이다.",
-		11, Color("8a7a63"), true))
-	for w in Content.ROULETTE.wedges:
-		var line := HBoxContainer.new()
-		var nm: Label = _label(String(w.label), 13)
-		nm.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		line.add_child(nm)
-		line.add_child(_label("%d%%" % int(w.weight), 13, Color("5a4e3d"), false))
-		_box.add_child(line)
-	_box.add_child(_label("엽전은 **지금 초당 수입의 몇 초치**다 — 언제 돌려도 값이 비슷하도록.",
-		11, Color("8a7a63"), true))
-
-func _do_spin(by_ad: bool) -> void:
-	if on_spin.is_valid():
-		on_spin.call(by_ad)
 
 ## ── 장날 소식 ──
 ##
