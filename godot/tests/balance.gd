@@ -35,10 +35,19 @@ static func act(s: Sim, rng: Rng) -> void:
 	if ns != null and s.money >= ns.cost:
 		s.open_shop(ns.id)
 		return
+	# ★ BAL_BENCH=hands — **작업대를 손 수만큼만 세운다.**
+	#   유저가 설계할 때 바로 짚은 것: "이러면 일꾼 하나당 작업대 하나네."
+	#   손이 하나인데 작업대가 넷이면 만드는 물건이 흩어져 걷는 값만 낸다 —
+	#   그러면 사면 손해인 물건을 파는 셈이고, 그건 규칙 4에 걸린다.
+	#   짐작하지 말고 끄고 켜서 잰다.
 	for sh0 in s.shops:
-		if s.can_bench_up(String(sh0)):
-			s.bench_up(String(sh0))
-			return
+		if not s.can_bench_up(String(sh0)):
+			continue
+		if OS.get_environment("BAL_BENCH") == "hands" \
+				and s.bench_lv(String(sh0)) >= 1 + int(s.staff_of(String(sh0))):
+			continue
+		s.bench_up(String(sh0))
+		return
 	for sh in s.shops:
 		if s.can_promote(sh):
 			s.promote(sh)
