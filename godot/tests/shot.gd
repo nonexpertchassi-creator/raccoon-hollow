@@ -83,6 +83,20 @@ func _ready() -> void:
 		var sid: String = OS.get_environment("SHOT_CARD")
 		main.card.show_card(sid, main.sim.rank_of(sid))
 		main.card._process(1.0)
+	# ★ 이야기 쪽지는 **감는 동안 저절로 뜬다**. 첫 손님·첫 물건 같은 마디가
+	#   지나가면 창이 뜨고, 사람이 누를 때까지 안 닫힌다. 그래서 찍은 열다섯
+	#   장이 전부 한가운데를 가린 채 나왔다(2026-08-29, 유저: "안 보임").
+	#   이야기를 일부러 찍는 판(SHOT_STORY)이 아니면 사람이 눌러 넘긴 셈 친다.
+	if not OS.has_environment("SHOT_STORY"):
+		# 한 번만 닫으면 소용이 없다 — 닫는 순간 **다음 쪽지가 그 자리를 메운다**.
+		# 쪽지는 한 장씩 뜨게 돼 있어서, 감는 동안 밀린 것이 줄을 서 있다.
+		# 그래서 마디 수만큼 넘긴 뒤, 찍는 동안 새로 뜨지 못하게 게임을 멈춘다.
+		for i in range(Content.BEATS.size() + 2):
+			main.story._close()
+			main.step(0.0)
+		main.story._close()
+		main.set_process(false)
+
 	main._paint()
 	if OS.has_environment("SHOT_PANEL"):
 		var k: String = OS.get_environment("SHOT_PANEL")
@@ -99,7 +113,7 @@ func _ready() -> void:
 		if OS.has_environment("SHOT_TAB"):
 			main.panel.tab = OS.get_environment("SHOT_TAB")
 			main.panel.rebuild()
-	# 이야기 — 도구가 안 보면 도구에게 없는 기능이다. 넉 장 만화도 쪽지도 찍는다.
+	# 이야기 — 도구가 안 보면 도구에게 없는 기능이다. 4장 만화도 쪽지도 찍는다.
 	if OS.has_environment("SHOT_STORY"):
 		var w: String = OS.get_environment("SHOT_STORY")
 		if w == "intro":

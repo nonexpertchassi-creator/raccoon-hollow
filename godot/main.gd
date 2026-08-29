@@ -214,7 +214,7 @@ func _ready() -> void:
 	profile_modal.setup(sim, BAND_COLORS)
 	_layer.add_child(profile_modal)
 
-	# 이야기 — 넉 장 만화와 게시판 쪽지. 카드보다 **위**에 얹는다:
+	# 이야기 — 첫 만화와 게시판 쪽지. 카드보다 **위**에 얹는다:
 	# 첫 가게를 열면 카드와 쪽지가 같이 뜨는데, 쪽지가 뒤에 깔리면 안 읽힌다.
 	story = StoryPopup.new()
 
@@ -223,7 +223,7 @@ func _ready() -> void:
 	_layer.add_child(card)
 	_layer.add_child(story)
 
-	# 처음 켠 사람에게 넉 장 만화. 저장본이 있으면 안 뜬다(sim.story가 기억한다).
+	# 처음 켠 사람에게 첫 만화. 저장본이 있으면 안 뜬다(sim.story가 기억한다).
 	# ★ '다녀오신 동안'보다 **먼저** 본다 — 처음 켠 사람에게는 다녀온 시간이 없다.
 	if _standalone and sim.story_fire("start"):
 		story.show_intro()

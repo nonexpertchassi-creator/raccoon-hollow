@@ -1,6 +1,6 @@
 extends Control
 class_name StoryPopup
-## 이야기를 화면에 얹는다 — **넉 장짜리 첫 만화**와 **게시판에 붙는 쪽지**.
+## 이야기를 화면에 얹는다 — **첫 만화**와 **게시판에 붙는 쪽지**.
 ##
 ## ★ 왜 이걸 이제야 넣나. 톱니는 스물둘인데 **왜 돌리는지가 화면에 한 번도
 ##   안 나왔다**(2026-08-28에 확인). STORY.md에 시놉시스도 대사도 다 있었는데
@@ -86,7 +86,7 @@ func _on_input(e: InputEvent) -> void:
 	if e is InputEventMouseButton and (e as InputEventMouseButton).pressed:
 		_next()
 
-## 처음 켤 때의 넉 장.
+## 처음 켤 때의 4장.
 func show_intro() -> void:
 	_mode = "intro"
 	_cut = 0
