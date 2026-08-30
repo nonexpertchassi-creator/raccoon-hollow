@@ -36,6 +36,9 @@
   그림 그리는 쪽이 "이 자세가 왜 필요하냐"를 물으면 여기다.
 - `REFS.md` — **다른 게임에서 본 것.** 남이 어떻게 풀었는지와, 우리 자로 다시 잰 결과.
   *"저 게임이 하니까 우리도"는 여기서 금지한다.*
+- `PLANNING.md` — **기획서(자동 생성).** 시스템·밸런스·콘텐츠·시나리오·UX·사업
+  여섯 갈래로 갈라, 갈래마다 *정한 것*과 **아직 안 정한 것**을 나란히 놓는다.
+  *"기획이 지금 어디까지 됐지?"*는 여기부터. 고치려면 `tools/plandoc.mjs`의 `PARTS`.
 - `DECISIONS.md` — **누가 정했나.** 유저가 정한 것 · 내가 판단한 것 · 숫자가
   정한 것을 갈라 적는다. *"내 추론까지 같이 승인해 버린다"*를 막는 장치다.
 - `NAMES.md` — **이름과 뜻.** 같은 것을 다른 말로, 다른 것을 같은 말로 부르면
@@ -126,6 +129,7 @@ godot --headless --path godot --script tests/artfit.gd
 node tools/dash.mjs              # 봇이 남긴 자국(godot/stats.json) → dash.html
 node tools/art.mjs --write       # ASSETS.md 그림 목록 갱신
 node tools/bestiary.mjs          # BESTIARY.md 동물 도감 갱신
+node tools/plandoc.mjs           # PLANNING.md 기획서 갱신 (--html 은 장부용)
 node tools/bundle.mjs            # 자바스크립트판을 nogur.html 한 장으로
 ```
 
