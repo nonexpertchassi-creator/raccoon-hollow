@@ -135,6 +135,8 @@ node tools/guests.mjs 6          # 손님 등장 문턱을 목표 시각에 수�
 tools/shots.sh                   # **게임의 모든 화면을 한 번에 찍는다** → shots/
 godot --headless --path godot --script tests/artfit.gd
                                  # 그림 발끝·가운데 검사 — 새 그림이 오면 돌린다
+godot --headless --path godot --script tests/weigh.gd
+                                 # 마을이 커지면 무거워지나 — 그리는 개수·저장본·틱
 node tools/dash.mjs              # 봇이 남긴 자국(godot/stats.json) → dash.html
 node tools/art.mjs --write       # ASSETS.md 그림 목록 갱신
 node tools/bestiary.mjs          # BESTIARY.md 동물 도감 갱신
