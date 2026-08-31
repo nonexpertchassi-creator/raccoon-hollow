@@ -2,7 +2,8 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
   <title>너구리 만물상 · 그림 라이브러리</title>
   <meta name="description" content="너구리 만물상에 실제로 필요한 게임 이미지와 제작 상태를 보는 라이브러리">
   <style>
@@ -757,6 +758,104 @@
       font-size: 13px;
     }
 
+    .blueprint-section {
+      padding: 34px clamp(20px, 4vw, 54px) 42px;
+      border-bottom: 1px solid var(--line);
+      background: #f4f7f5;
+    }
+
+    .blueprint-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 20px;
+    }
+
+    .blueprint-head h2 {
+      margin: 0;
+      font-family: var(--rounded);
+      font-size: clamp(22px, 3vw, 30px);
+      letter-spacing: -.03em;
+    }
+
+    .blueprint-head p {
+      max-width: 590px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .blueprint-gallery {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .blueprint-card {
+      min-width: 0;
+      margin: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fff;
+    }
+
+    .blueprint-card a {
+      display: block;
+      padding: 12px;
+      background: #f9f5ea;
+    }
+
+    .blueprint-card img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 9px;
+    }
+
+    .blueprint-card figcaption { padding: 15px 17px 18px; }
+    .blueprint-card strong { display: block; font-family: var(--rounded); }
+    .blueprint-card p { margin: 5px 0 0; color: var(--muted); font-size: 12px; }
+
+    .blueprint-doc {
+      margin-top: 14px;
+      overflow: hidden;
+      border: 1px solid var(--line-strong);
+      border-radius: 16px;
+      background: #fff;
+    }
+
+    .blueprint-doc > summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 16px 18px;
+      cursor: pointer;
+      list-style: none;
+      font-weight: 800;
+    }
+
+    .blueprint-doc > summary::-webkit-details-marker { display: none; }
+    .blueprint-doc > summary small { color: var(--muted); font: 10px/1.3 var(--mono); }
+    .blueprint-doc[open] > summary { border-bottom: 1px solid var(--line); }
+
+    .blueprint-doc-body { padding: 22px clamp(18px, 4vw, 36px) 30px; }
+    .blueprint-doc-body h3 { margin: 28px 0 10px; font: 800 18px/1.3 var(--rounded); }
+    .blueprint-doc-body h3:first-child { margin-top: 0; }
+    .blueprint-doc-body h4 { margin: 20px 0 8px; }
+    .blueprint-doc-body p,
+    .blueprint-doc-body li { font-size: 13px; }
+    .blueprint-doc-body ul,
+    .blueprint-doc-body ol { padding-left: 22px; }
+    .blueprint-doc-body table { width: 100%; margin: 12px 0 18px; border-collapse: collapse; font-size: 12px; }
+    .blueprint-doc-body th,
+    .blueprint-doc-body td { padding: 9px 10px; border: 1px solid var(--line); text-align: left; vertical-align: top; }
+    .blueprint-doc-body th { background: #f4f1e9; }
+    .blueprint-doc-body code { font-family: var(--mono); }
+    .blueprint-doc-link { display: inline-flex; margin-top: 8px; color: var(--green); font-size: 12px; font-weight: 800; }
+
     .story-section {
       padding: 34px clamp(20px, 4vw, 54px) 42px;
       border-bottom: 1px solid var(--line);
@@ -927,7 +1026,17 @@
       grid-template-columns: minmax(240px, .8fr) minmax(0, 2fr);
       gap: 12px;
       align-items: start;
-      margin-bottom: 18px;
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      margin: 0 calc(clamp(20px, 4vw, 54px) * -1) 14px;
+      padding: 10px clamp(20px, 4vw, 54px);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line-strong);
+      background: rgba(255, 255, 255, .96);
+      box-shadow: 0 8px 18px rgba(32, 37, 43, .08);
+      -webkit-backdrop-filter: blur(10px);
+      backdrop-filter: blur(10px);
     }
 
     .search-wrap { position: relative; }
@@ -947,19 +1056,27 @@
 
     .filters {
       display: flex;
-      flex-wrap: wrap;
+      flex: 1 1 auto;
+      flex-wrap: nowrap;
       justify-content: flex-start;
       gap: 7px;
+      min-width: 0;
+      padding: 2px 2px 5px;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scrollbar-width: thin;
     }
 
     .filter-tools {
       display: flex;
-      align-items: flex-start;
+      align-items: center;
       justify-content: space-between;
       gap: 12px;
+      min-width: 0;
     }
 
     .filter {
+      flex: 0 0 auto;
       min-height: 38px;
       padding: 7px 12px;
       border: 1px solid var(--line-strong);
@@ -1037,11 +1154,20 @@
       font: 11px/1.4 var(--mono);
     }
 
-    .asset-groups { display: grid; gap: 34px; }
+    .asset-groups { display: grid; gap: 14px; }
 
     .shop-section {
       min-width: 0;
       scroll-margin-top: 18px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fff;
+    }
+
+    .shop-section[open] {
+      border-color: var(--line-strong);
+      box-shadow: 0 10px 28px rgba(25, 34, 43, .06);
     }
 
     .shop-section-head {
@@ -1049,10 +1175,44 @@
       align-items: center;
       justify-content: space-between;
       gap: 18px;
-      margin-bottom: 12px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid var(--line);
+      margin: 0;
+      padding: 14px 16px;
+      border: 0;
+      background: #f7f8f8;
+      cursor: pointer;
+      list-style: none;
     }
+
+    .shop-section-head::-webkit-details-marker,
+    .legacy-summary::-webkit-details-marker { display: none; }
+
+    .shop-section[open] > .shop-section-head {
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .shop-section-heading {
+      display: flex;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .shop-section-chevron {
+      display: inline-grid;
+      place-items: center;
+      width: 24px;
+      height: 24px;
+      margin-right: 8px;
+      border: 1px solid var(--line-strong);
+      border-radius: 50%;
+      color: var(--green);
+      background: #fff;
+      font: 900 18px/1 var(--body);
+      transform: rotate(0deg);
+      transition: transform .18s ease;
+    }
+
+    .shop-section[open] > .shop-section-head .shop-section-chevron { transform: rotate(90deg); }
 
     .shop-section-title {
       display: flex;
@@ -1067,11 +1227,83 @@
     .shop-section-count { color: var(--muted); font: 10px/1.3 var(--mono); text-align: right; }
     .shop-section-count b { color: var(--orange); }
 
+    .shop-section-body { padding: 11px; }
+
+    .legacy-section {
+      margin-top: 18px;
+      overflow: hidden;
+      border: 1px dashed #c7beb0;
+      border-radius: 12px;
+      background: #f7f4ef;
+    }
+
+    .legacy-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 11px 13px;
+      color: #625b52;
+      cursor: pointer;
+      list-style: none;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .legacy-summary small {
+      color: #8d8377;
+      font: 10px/1.3 var(--mono);
+    }
+
+    .legacy-section[open] > .legacy-summary { border-bottom: 1px dashed #c7beb0; }
+    .legacy-section > .asset-grid { padding: 12px; opacity: .88; }
+
     .asset-grid {
       display: grid;
-      grid-template-columns: repeat(6, minmax(0, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+      gap: 9px;
     }
+
+    .family-board {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .asset-family {
+      min-width: 0;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fafbfb;
+    }
+
+    .asset-family[data-category="clerks"] { grid-column: 1 / -1; }
+
+    .asset-family-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 0 8px;
+    }
+
+    .asset-family-head h4 {
+      margin: 0;
+      font: 800 13px/1.2 var(--rounded);
+      letter-spacing: -.01em;
+    }
+
+    .asset-family-head small { color: var(--muted); font: 9px/1.2 var(--mono); }
+
+    .asset-family-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 7px;
+    }
+
+    .asset-family[data-category="clerks"] .asset-family-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    .loose-assets:not(:first-child) { margin-top: 10px; }
 
     .asset-card,
     .asset-card.is-draft,
@@ -1080,7 +1312,7 @@
       min-width: 0;
       overflow: hidden;
       border: 1px solid var(--line);
-      border-radius: 13px;
+      border-radius: 10px;
       background: #fff;
     }
 
@@ -1090,8 +1322,8 @@
       display: grid;
       place-items: center;
       width: 100%;
-      height: 150px;
-      padding: 12px;
+      height: 108px;
+      padding: 8px;
       border: 0;
       border-bottom: 1px solid var(--line);
       background-color: #f8f9fa;
@@ -1109,13 +1341,13 @@
 
     .asset-preview img {
       max-width: 100%;
-      max-height: 126px;
+      max-height: 92px;
       object-fit: contain;
       filter: drop-shadow(0 4px 6px rgba(25, 34, 43, .1));
     }
 
-    .asset-preview.is-empty { color: #a7afb8; cursor: default; font-size: 40px; }
-    .asset-body { padding: 12px; }
+    .asset-preview.is-empty { color: #a7afb8; cursor: default; font-size: 30px; }
+    .asset-body { padding: 9px; }
 
     .asset-meta {
       display: flex;
@@ -1124,24 +1356,24 @@
       gap: 6px;
       margin-bottom: 6px;
       color: var(--muted);
-      font-size: 9px;
+      font-size: 8px;
       font-weight: 700;
     }
 
     .asset-card h3 {
-      min-height: 2.45em;
+      min-height: 2.35em;
       margin: 0;
       color: var(--text);
       font-family: var(--body);
-      font-size: 13px;
+      font-size: 11px;
       line-height: 1.25;
     }
 
     .file {
       display: block;
-      margin-top: 7px;
+      margin-top: 5px;
       color: #7b858f;
-      font: 9px/1.4 var(--mono);
+      font: 8px/1.35 var(--mono);
       overflow-wrap: anywhere;
     }
 
@@ -1159,7 +1391,7 @@
     }
 
     .is-approved .mini-state { color: var(--green); border-color: #bfd6c7; background: rgba(237,245,240,.95); }
-    .actual-spec { display: block; margin-top: 6px; color: #a44444; font: 9px/1.35 var(--mono); }
+    .actual-spec { display: block; margin-top: 5px; color: #a44444; font: 8px/1.3 var(--mono); }
     .empty-result { grid-column: 1 / -1; padding: 56px 20px; border: 1px dashed var(--line-strong); border-radius: 12px; color: var(--muted); text-align: center; }
 
     .asset-viewer {
@@ -1297,7 +1529,7 @@
     .foot code { font-family: var(--mono); }
 
     @media (max-width: 1160px) {
-      .asset-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+      .asset-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
       .guide-grid { grid-template-columns: 1fr 1fr; }
       .guide-card:first-child { grid-column: 1 / -1; }
     }
@@ -1309,21 +1541,26 @@
       .status-item:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
       .storyboard { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .catalog-tools { grid-template-columns: 1fr; }
-      .asset-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .asset-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+      .family-board { grid-template-columns: 1fr; }
+      .blueprint-gallery { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 680px) {
-      .library-head, .guide-head, .story-head, .catalog-head { display: block; }
+      .library-head, .guide-head, .blueprint-head, .story-head, .catalog-head { display: block; }
       .head-actions { justify-content: flex-start; margin-top: 16px; }
-      .guide-head p, .story-head p, .catalog-head p { margin-top: 8px; }
+      .guide-head p, .blueprint-head p, .story-head p, .catalog-head p { margin-top: 8px; }
       .synopsis-card { grid-template-columns: 1fr; gap: 8px; }
       .guide-grid { grid-template-columns: 1fr; }
       .guide-card:first-child { grid-column: auto; }
-      .filter-tools { align-items: stretch; flex-direction: column; }
-      .category-picker { justify-content: space-between; }
-      .category-picker select { flex: 1; }
+      .catalog-tools { padding-top: 8px; padding-bottom: 8px; }
+      .filter-tools { align-items: center; flex-direction: row; }
+      .category-picker span { display: none; }
       .shop-section-head { align-items: flex-start; }
-      .asset-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .shop-section-body { padding: 10px; }
+      .shop-section-count { max-width: 46%; }
+      .asset-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .asset-family[data-category="clerks"] .asset-family-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       .viewer-shell { grid-template-columns: 44px minmax(0, 1fr) 44px; }
       .viewer-info { align-items: flex-start; flex-direction: column; }
       .viewer-actions { justify-content: flex-start; }
@@ -1334,12 +1571,12 @@
       .brand { align-items: flex-start; }
       .brand-mark { width: 42px; height: 42px; border-radius: 13px; font-size: 22px; }
       .head-action { flex: 1 1 auto; justify-content: center; }
-      .asset-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .asset-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       .storyboard { grid-template-columns: 1fr 1fr; gap: 9px; }
       .story-frame-copy { padding: 11px; }
       .story-scene { min-height: 6em; }
       .story-line { min-height: 7em; font-size: 11px; }
-      .asset-preview { height: 132px; }
+      .asset-preview { height: 98px; }
       .asset-viewer { width: calc(100vw - 12px); max-height: calc(100vh - 12px); border-radius: 13px; }
       .viewer-shell { grid-template-columns: 38px minmax(0, 1fr) 38px; min-height: calc(100vh - 14px); }
       .viewer-stage { padding: 16px; }
@@ -1353,11 +1590,214 @@
     @media (prefers-reduced-motion: reduce) {
       html { scroll-behavior: auto; }
       .asset-card { transition: none; }
+      .shop-section-chevron { transition: none; }
     }
 
     @media print {
       .head-actions, .catalog-tools, .shop-tabs, .asset-viewer { display: none; }
       .asset-grid { grid-template-columns: repeat(5, 1fr); }
+    }
+  </style>
+
+  <style id="mobile-chrome-support">
+    html {
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+    }
+
+    body { overflow-x: hidden; }
+
+    @media (max-width: 680px) {
+      .library-head {
+        padding: 16px max(14px, env(safe-area-inset-right)) 14px max(14px, env(safe-area-inset-left));
+      }
+
+      .brand { gap: 10px; }
+      .library-head h1 { font-size: 22px; }
+      .library-head p { max-width: 26em; font-size: 12px; }
+
+      .head-actions {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        width: 100%;
+      }
+
+      .head-action {
+        justify-content: center;
+        min-height: 44px;
+        padding-inline: 8px;
+        text-align: center;
+      }
+
+      .status-item { padding: 14px; }
+      .status-item strong { font-size: 20px; }
+
+      .guide,
+      .blueprint-section,
+      .story-section,
+      .catalog-section {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+
+      .catalog-section { padding-bottom: 42px; }
+
+      .catalog-tools {
+        top: 0;
+        margin-right: -14px;
+        margin-left: -14px;
+        padding: 8px max(14px, env(safe-area-inset-right)) 8px max(14px, env(safe-area-inset-left));
+      }
+
+      .search {
+        min-height: 44px;
+        font-size: 16px;
+      }
+
+      .filter-tools {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px;
+      }
+
+      .filters {
+        padding-bottom: 2px;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .filters::-webkit-scrollbar,
+      .shop-tabs::-webkit-scrollbar { display: none; }
+
+      .filter,
+      .category-picker,
+      .category-picker select,
+      .shop-tab {
+        min-height: 44px;
+      }
+
+      .shop-tabs {
+        margin-right: -14px;
+        margin-left: -14px;
+        padding-right: 14px;
+        padding-left: 14px;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .shop-section-head {
+        min-height: 58px;
+        padding: 12px;
+      }
+
+      .shop-section-title { font-size: 16px; }
+      .shop-section-count { max-width: 48%; font-size: 9px; }
+      .shop-section-body { padding: 8px; }
+
+      .asset-grid,
+      .asset-family-grid,
+      .asset-family[data-category="clerks"] .asset-family-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .asset-family { padding: 8px; }
+      .asset-preview { height: 128px; }
+      .asset-preview img { max-height: 112px; }
+      .asset-card h3 { font-size: 12px; }
+      .asset-body { padding: 10px; }
+      .file { font-size: 8.5px; }
+
+      .asset-viewer {
+        width: 100vw;
+        height: 100vh;
+        max-height: none;
+        margin: 0;
+        border: 0;
+        border-radius: 0;
+      }
+
+      .viewer-shell {
+        position: relative;
+        display: block;
+        width: 100%;
+        height: 100vh;
+        min-height: 0;
+      }
+
+      .viewer-figure {
+        display: grid;
+        grid-template-rows: minmax(0, 1fr) auto;
+        width: 100%;
+        height: 100%;
+      }
+
+      .viewer-stage {
+        min-height: 0;
+        padding: max(54px, env(safe-area-inset-top)) 52px 14px;
+        touch-action: pan-y;
+      }
+
+      .viewer-stage img {
+        width: 100%;
+        height: 100%;
+        max-height: none;
+      }
+
+      .viewer-nav {
+        position: absolute;
+        z-index: 5;
+        top: 46%;
+        width: 44px;
+        height: 68px;
+        border-radius: 12px;
+        background: rgba(36, 43, 49, .82);
+        transform: translateY(-50%);
+      }
+
+      .viewer-prev { left: 6px; }
+      .viewer-next { right: 6px; }
+
+      .viewer-close {
+        top: max(10px, env(safe-area-inset-top));
+        right: max(10px, env(safe-area-inset-right));
+        width: 44px;
+        height: 44px;
+      }
+
+      .viewer-info {
+        gap: 12px;
+        padding: 13px max(14px, env(safe-area-inset-right)) max(14px, env(safe-area-inset-bottom)) max(14px, env(safe-area-inset-left));
+      }
+
+      .viewer-info h2 { font-size: 17px; }
+
+      .viewer-actions {
+        display: grid;
+        grid-template-columns: auto 1fr 1fr;
+        width: 100%;
+      }
+
+      .viewer-actions a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 44px;
+      }
+    }
+
+    @supports (height: 100dvh) {
+      @media (max-width: 680px) {
+        .asset-viewer,
+        .viewer-shell { height: 100dvh; }
+      }
+    }
+
+    @media (max-width: 380px) {
+      .library-head h1 { font-size: 20px; }
+      .asset-preview { height: 116px; }
+      .asset-preview img { max-height: 100px; }
     }
   </style>
 </head>
@@ -1372,6 +1812,8 @@
         </div>
       </div>
       <nav class="head-actions" aria-label="그림 다운로드">
+        <a class="head-action primary" href="#chapter-items">새 물건 8/400</a>
+        <a class="head-action" href="#blueprints">캐릭터 규격</a>
         <a class="head-action" href="#story">첫 진입 만화</a>
         <a class="head-action primary" href="https://github.com/nonexpertchassi-creator/raccoon-hollow/tree/codex/art-production-20260822/godot/art">게임용 PNG</a>
         <a class="head-action" href="https://github.com/nonexpertchassi-creator/raccoon-hollow/archive/refs/heads/codex/art-production-20260822.zip">전체 ZIP</a>
@@ -1397,10 +1839,10 @@
           <ul class="rule-list">
             <li>한국 너구리: 작은 둥근 귀, 통통한 몸, 고리무늬 없는 꼬리</li>
             <li>모든 동물은 아기 체형으로 단순화하고 두 발로 걷는다. 손님 30종에는 너구리가 없다</li>
-            <li>필드 너구리는 정면·오른팔을 뻗은 훼이크 측면·뒷모습 3장, 왼쪽은 코드로 뒤집는다</li>
-            <li>점장 본체는 벌거벗은 무늬 A·B·C·D 중 가게마다 하나를 저장해 쓰고, 승급해도 본체 무늬는 유지한다</li>
-            <li>점장 장비·도구만 가게와 1·2·3단에 맞춰 겹치며, 꼬리는 별도 조각으로 코드가 흔든다</li>
-            <li>점장 필드판은 중립 자세가 기본. 제작 효과와 먼지는 코드가 그린다</li>
+            <li>가게 일꾼은 오른팔을 뻗은 훼이크 측면(side)·뒷모습(back) 2장, 반대쪽은 코드로 뒤집는다</li>
+            <li>최초 배치와 추가 채용은 같은 일꾼 체계다. 채용 자리마다 A·B·C·D 무늬를 무작위로 배정하고 유지한다</li>
+            <li>복장은 가게별 완성형으로 만들고, 승급하면 그 가게 너구리 전원의 앞치마가 1·2·3단으로 바뀐다</li>
+            <li>꼬리는 몸에 포함하고 흔들지 않는다. 제작 효과·먼지·운반 상자는 코드가 그린다</li>
             <li>캐릭터 그림에 발밑 그림자를 넣지 않는다. 그림자는 코드가 땅에 붙여 그린다</li>
             <li>마당 담은 그리지 않는다. 초가·돌담·기와 승급은 코드가 처리한다</li>
             <li>볕 좋은 장날: 밝은 바닥이 중심이고 갈색 건물·소품은 화면의 30% 이하</li>
@@ -1422,7 +1864,7 @@
         <article class="guide-card">
           <h3>파일 규격</h3>
           <ul class="spec-list">
-            <li><span>점장·직원 (방향별)</span><code>144×144</code></li>
+            <li><span>가게 일꾼 (방향별)</span><code>144×144</code></li>
             <li><span>손님</span><code>128×128</code></li>
             <li><span>물건</span><code>128×224</code></li>
             <li><span>손님·점장 카드</span><code>512×768</code></li>
@@ -1433,6 +1875,150 @@
           </ul>
         </article>
       </div>
+    </section>
+
+    <section class="blueprint-section" id="blueprints">
+      <div class="blueprint-head">
+        <h2>A타입 캐릭터 블루프린트</h2>
+        <p>신체를 먼저 고정하고 의상·털색·무늬를 그 위에 얹는다. 귀와 발이 잘리거나 앞치마 때문에 몸이 변형되는 일을 막는 제작 기준이다.</p>
+      </div>
+
+      <div class="blueprint-gallery">
+        <figure class="blueprint-card">
+          <a href="blueprints/RACCOON-TYPE-A-BLUEPRINT-V0.1-P01.png" target="_blank" rel="noreferrer">
+            <img src="blueprints/RACCOON-TYPE-A-BLUEPRINT-V0.1-P01.png" width="1536" height="1024" alt="A타입 너구리 사선 네 방향과 실루엣, 얼굴, 발, 꼬리, 색상표 블루프린트">
+          </a>
+          <figcaption>
+            <strong>A타입 신체·외형 기준</strong>
+            <p>사선 4방향, 동일 기준선, 실루엣 비율, 얼굴·눌린 발·꼬리 확대와 기본 색상표.</p>
+          </figcaption>
+        </figure>
+        <figure class="blueprint-card">
+          <a href="blueprints/RACCOON-TYPE-A-CLOTHING-GUIDE-V0.1-P01.png" target="_blank" rel="noreferrer">
+            <img src="blueprints/RACCOON-TYPE-A-CLOTHING-GUIDE-V0.1-P01.png" width="1536" height="1024" alt="A타입 너구리 귀 얼굴 발 꼬리 보호선과 허리 앞치마 멜빵 배치선">
+          </a>
+          <figcaption>
+            <strong>A타입 의상 배치 기준</strong>
+            <p>빨강은 침범 금지, 파랑은 허리선, 황토색은 앞치마 안전영역, 갈색은 멜빵 경로다.</p>
+          </figcaption>
+        </figure>
+      </div>
+
+      <details class="blueprint-doc" open>
+        <summary>
+          <span>동물 캐릭터 신체·의상 배치 규격 V0.1</span>
+          <small>초기 기준값 · 눌러서 접기</small>
+        </summary>
+        <div class="blueprint-doc-body">
+          <p><strong>목적:</strong> 동물마다 종의 특징은 달라도 같은 게임 안에서 크기·무게중심·팔다리 단순화 정도가 흔들리지 않게 한다.</p>
+
+          <h3>1. 공통 캔버스</h3>
+          <table>
+            <thead><tr><th scope="col">항목</th><th scope="col">기준</th></tr></thead>
+            <tbody>
+              <tr><td>제작 파일</td><td><code>144×144 px, RGBA</code></td></tr>
+              <tr><td>게임 표시</td><td><code>72×72 px</code></td></tr>
+              <tr><td>가로 중심</td><td><code>x=72</code></td></tr>
+              <tr><td>접지선</td><td><code>y=143</code></td></tr>
+              <tr><td>기본 안전 여백</td><td>위 6~10px, 좌우 10~18px</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li>발끝의 가장 낮은 불투명 픽셀은 <code>y=143</code>에 닿게 한다.</li>
+            <li>몸은 캔버스 중심에 놓되 꼬리 때문에 몸통 자체가 밀려나지 않게 한다.</li>
+            <li>귀·발·꼬리·얼굴 외곽선은 의상 때문에 잘리거나 이동하지 않는다.</li>
+            <li>좌우 반전 방향도 몸통 중심과 발 접지점을 동일하게 유지한다.</li>
+          </ul>
+
+          <h3>2. A타입 너구리 기준 상자</h3>
+          <table>
+            <thead><tr><th scope="col">방향</th><th scope="col">보이는 영역</th><th scope="col">시작점</th><th scope="col">목표 범위</th></tr></thead>
+            <tbody>
+              <tr><td>가까운 3/4</td><td>111×136px</td><td>x=16, y=8</td><td>폭 108~112 / 높이 132~136</td></tr>
+              <tr><td>먼 3/4</td><td>96×130px</td><td>x=24, y=14</td><td>폭 94~100 / 높이 128~132</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li>귀 포함 전체 높이 100 기준: 귀 16~20, 머리·얼굴 46~50, 배·몸통·발 50~54.</li>
+            <li>발 높이 6~9, 각 발 폭은 전체 높이의 14~18.</li>
+            <li>팔 노출 길이는 16~22 이내이며 팔꿈치·무릎 관절은 그리지 않는다.</li>
+            <li>꼬리 지름은 전체 높이의 30~38이며 몸통보다 앞으로 나오지 않는다.</li>
+            <li>목선이나 완전한 분할선을 만들지 않고 얼굴·몸통·다리를 하나의 부드러운 덩어리로 읽히게 한다.</li>
+          </ul>
+
+          <h3>3. 의상 배치선</h3>
+          <table>
+            <thead><tr><th scope="col">요소</th><th scope="col">144px 기준</th><th scope="col">비율 기준</th></tr></thead>
+            <tbody>
+              <tr><td>허리선</td><td>y=86~92</td><td>전체 높이의 58~62%</td></tr>
+              <tr><td>앞치마 아래 끝</td><td>y=126~131</td><td>발 윗부분에서 종료</td></tr>
+              <tr><td>어깨끈 시작점</td><td>y=58~68</td><td>얼굴 아래·팔 위</td></tr>
+              <tr><td>발 보호 구역</td><td>y=132~143</td><td>의상 침범 금지</td></tr>
+            </tbody>
+          </table>
+          <ul>
+            <li>앞치마는 허리선 아래에 얹고 배 무늬 크기나 몸 형태를 바꾸지 않는다.</li>
+            <li>멜빵은 어깨끈 경로만 추가하며 귀·얼굴·팔 위치는 그대로 둔다.</li>
+            <li>뒷매듭은 꼬리 뿌리와 겹치지 않게 좌우로 비킨다.</li>
+            <li>손에 드는 도구 기준점은 만들지 않는다.</li>
+            <li>최종 그림은 일체형이어도 제작할 때는 신체 위에 의상 종이를 얹는 방식으로 생각한다.</li>
+          </ul>
+
+          <h3>4. 털색과 무늬</h3>
+          <ul>
+            <li><strong>신체 규격:</strong> 키, 폭, 귀·발·팔·꼬리 위치.</li>
+            <li><strong>외형 규격:</strong> 기본 털색, 눈가 무늬, 등 무늬, 꼬리 무늬.</li>
+            <li><strong>의상 규격:</strong> 허리선, 앞치마 면, 멜빵 경로.</li>
+            <li>무늬가 달라도 신체 외곽선과 발 위치는 바뀌지 않는다.</li>
+            <li>방향별 무늬는 같은 개체의 한 무늬가 몸을 돌아 이어진 것처럼 설계한다.</li>
+          </ul>
+
+          <h3>5. 다른 동물로 확장</h3>
+          <p>공통 기준은 귀·뿔·긴 꼬리를 제외한 <strong>몸 중심(core body)</strong>이다. 종 특징 때문에 전체 키만 키우지 않고 몸 중심을 먼저 맞춘다.</p>
+          <table>
+            <thead><tr><th scope="col">종</th><th scope="col">몸 중심 높이</th><th scope="col">종 특징 허용 범위</th><th scope="col">팔·앞다리 기준</th></tr></thead>
+            <tbody>
+              <tr><td>너구리</td><td>112~120px</td><td>귀 20~27px, 꼬리 41~52px</td><td>노출 22~30px, 관절 없음</td></tr>
+              <tr><td>토끼</td><td>100~112px</td><td>귀 30~40px, 전체 132~140px</td><td>너구리와 같거나 10% 가늘게</td></tr>
+              <tr><td>까치</td><td>88~100px</td><td>머리 26~34px, 꼬리는 뒤쪽 사용</td><td>접힌 날개 34~44px</td></tr>
+              <tr><td>소형 포유류</td><td>104~116px</td><td>귀 14~28px</td><td>노출 18~27px</td></tr>
+              <tr><td>대형 포유류</td><td>116~126px</td><td>뿔·갈기는 위쪽 여백 사용</td><td>길이보다 폭을 키움</td></tr>
+            </tbody>
+          </table>
+          <h4>토끼</h4>
+          <ul>
+            <li>긴 귀는 몸을 늘리는 요소가 아니라 머리 위에 붙는 종 식별자다.</li>
+            <li>몸 중심은 너구리의 약 90~95%를 유지한다.</li>
+            <li>귀 사이 간격은 얼굴 폭의 18~26%, 한쪽 귀 폭은 얼굴 폭의 16~22%로 시작한다.</li>
+          </ul>
+          <h4>까치</h4>
+          <ul>
+            <li>날개는 손이 달린 팔이 아니라 몸 옆에 붙은 하나의 접힌 색면이다.</li>
+            <li>접힌 날개 길이는 몸 중심 높이의 35~45%를 넘지 않는다.</li>
+            <li>다리와 발은 10~14px 안에서 단순화하고 긴 꼬리는 몸 중심과 접지점을 밀지 않게 뒤로 뺀다.</li>
+          </ul>
+
+          <h3>6. 공통 실패 조건</h3>
+          <ul>
+            <li>종 특징 때문에 몸 중심 크기가 캐릭터마다 제멋대로 변함.</li>
+            <li>옷을 입히면서 귀가 잘리거나 발 위치가 이동함.</li>
+            <li>앞치마가 가슴까지 올라와 상체 의상처럼 보임.</li>
+            <li>팔·다리에 관절이 생겨 사람처럼 접힐 것 같음.</li>
+            <li>꼬리 때문에 몸통이 캔버스 중심에서 벗어남.</li>
+            <li>무늬와 함께 배 무늬나 몸 외곽선까지 확대됨.</li>
+            <li>72×72에서 귀·몸·발보다 봉제선과 장식이 먼저 보임.</li>
+          </ul>
+
+          <h3>7. 다음 검증</h3>
+          <ol>
+            <li>A타입 신체 위에 대장간 1~3단 앞치마 배치.</li>
+            <li>같은 신체에 A~D 털색·무늬만 교체.</li>
+            <li>토끼와 까치를 같은 기준선에 세워 상대 크기 비교.</li>
+            <li>144px 원본과 72px 표시본을 나란히 확인한 뒤 수치 확정.</li>
+          </ol>
+          <a class="blueprint-doc-link" href="blueprints/CHARACTER-BODY-SCALE-SPEC-V0.1.md">원본 Markdown 열기</a>
+        </div>
+      </details>
     </section>
 
     <section class="story-section" id="story">
@@ -1487,16 +2073,17 @@
     <section class="catalog-section" id="catalog">
       <div class="catalog-head">
         <h2 id="catalogTitle">이미지 815장</h2>
-        <p>매장을 고르거나 그림을 눌러 크게 본다. 큰 화면에서는 좌우 버튼과 방향키로 다음 그림을 넘길 수 있다.</p>
+        <p>있는 그림만 먼저 본다. 너구리는 타입별, 물건은 품목별로 1→2→3단을 묶었고 원본·이전 자료는 맨 아래에 접었다.</p>
       </div>
       <div class="catalog-tools">
         <label class="search-wrap">
           <span class="sr-only" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">이미지 검색</span>
-          <input class="search" id="assetSearch" type="search" placeholder="곡괭이, rabbit, 점장…" autocomplete="off">
+          <input class="search" id="assetSearch" type="search" placeholder="곡괭이, rabbit, 일꾼…" autocomplete="off">
         </label>
         <div class="filter-tools">
           <div class="filters" role="group" aria-label="제작 상태 필터">
-          <button class="filter" type="button" data-filter="all" aria-pressed="true">전체 816</button>
+          <button class="filter" type="button" data-filter="present" aria-pressed="true">있는 그림 251</button>
+          <button class="filter" type="button" data-filter="all" aria-pressed="false">전체 816</button>
           <button class="filter" type="button" data-filter="approved" aria-pressed="false">확정 1</button>
           <button class="filter" type="button" data-filter="none" aria-pressed="false">없음 565</button>
           <button class="filter" type="button" data-filter="draft" aria-pressed="false">초안 250</button>
@@ -1509,7 +2096,7 @@
               <option value="all">모든 종류</option>
               <option value="story">첫 진입 만화</option>
               <option value="shopcards">점장 카드</option>
-              <option value="clerks">가게별 점장</option>
+              <option value="clerks">가게별 일꾼</option>
               <option value="items">물건</option>
               <option value="stalls">좌판</option>
               <option value="counters">계산대</option>
@@ -1529,9 +2116,23 @@
       <div class="asset-groups" id="assetGrid"></div>
     </section>
 
+    
+    <section class="section" id="chapter-items">
+      <div class="section-head"><div><p class="section-kicker">CHAPTER 1 · 8 / 400</p><h2>새 물건 제작</h2></div><p class="section-note">새 제작 계약으로 다시 그리는 1챕터 물건. 검수 통과 파일만 표시한다.</p></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:12px"><a href="../../art/ch1/01-떡집/01-보리떡.png" target="_blank" style="display:block;border:1px solid var(--line);border-radius:14px;padding:12px;text-decoration:none;background:#fff"><span style="display:grid;place-items:center;aspect-ratio:1;background:repeating-conic-gradient(#f4f4f4 0 25%,#fff 0 50%) 0/20px 20px;border-radius:10px"><img src="../../art/ch1/01-떡집/01-보리떡.png" alt="보리떡" style="width:100%;height:100%;object-fit:contain"></span><strong style="display:block;margin-top:9px">01-보리떡</strong><small style="color:var(--muted)">512×512 · 투명 PNG</small></a>
+<a href="../../art/ch1/01-떡집/02-콩떡.png" target="_blank" style="display:block;border:1px solid var(--line);border-radius:14px;padding:12px;text-decoration:none;background:#fff"><span style="display:grid;place-items:center;aspect-ratio:1;background:repeating-conic-gradient(#f4f4f4 0 25%,#fff 0 50%) 0/20px 20px;border-radius:10px"><img src="../../art/ch1/01-떡집/02-콩떡.png" alt="콩떡" style="width:100%;height:100%;object-fit:contain"></span><strong style="display:block;margin-top:9px">02-콩떡</strong><small style="color:var(--muted)">512×512 · 투명 PNG</small></a>
+<a href="../../art/ch1/01-떡집/03-쑥떡.png" target="_blank" style="display:block;border:1px solid var(--line);border-radius:14px;padding:12px;text-decoration:none;background:#fff"><span style="display:grid;place-items:center;aspect-ratio:1;background:repeating-conic-gradient(#f4f4f4 0 25%,#fff 0 50%) 0/20px 20px;border-radius:10px"><img src="../../art/ch1/01-떡집/03-쑥떡.png" alt="쑥떡" style="width:100%;height:100%;object-fit:contain"></span><strong style="display:block;margin-top:9px">03-쑥떡</strong><small style="color:var(--muted)">512×512 · 투명 PNG</small></a>
+<a href="../../art/ch1/01-떡집/04-절편.png" target="_blank" style="display:block;border:1px solid var(--line);border-radius:14px;padding:12px;text-decoration:none;background:#fff"><span style="display:grid;place-items:center;aspect-ratio:1;background:repeating-conic-gradient(#f4f4f4 0 25%,#fff 0 50%) 0/20px 20px;border-radius:10px"><img src="../../art/ch1/01-떡집/04-절편.png" alt="절편" style="width:100%;height:100%;object-fit:contain"></span><strong style="display:block;margin-top:9px">04-절편</strong><small style="color:var(--muted)">512×512 · 투명 PNG</small></a>
+<a href="../../art/ch1/01-떡집/05-가래떡.png" target="_blank" style="display:block;border:1px solid var(--line);border-radius:14px;padding:12px;text-decoration:none;background:#fff"><span style="display:grid;place-items:center;aspect-ratio:1;background:repeating-conic-gradient(#f4f4f4 0 25%,#fff 0 50%) 0/20px 20px;border-radius:10px"><img src="../../art/ch1/01-떡집/05-가래떡.png" alt="가래떡" style="width:100%;height:100%;object-fit:contain"></span><strong style="display:block;margin-top:9px">05-가래떡</strong><small style="color:var(--muted)">512×512 · 투명 PNG</small></a>
+<a href="../../art/ch1/01-떡집/06-인절미.png" target="_blank" style="display:block;border:1px solid var(--line);border-radius:14px;padding:12px;text-decoration:none;background:#fff"><span style="display:grid;place-items:center;aspect-ratio:1;background:repeating-conic-gradient(#f4f4f4 0 25%,#fff 0 50%) 0/20px 20px;border-radius:10px"><img src="../../art/ch1/01-떡집/06-인절미.png" alt="인절미" style="width:100%;height:100%;object-fit:contain"></span><strong style="display:block;margin-top:9px">06-인절미</strong><small style="color:var(--muted)">512×512 · 투명 PNG</small></a>
+<a href="../../art/ch1/01-떡집/07-시루떡.png" target="_blank" style="display:block;border:1px solid var(--line);border-radius:14px;padding:12px;text-decoration:none;background:#fff"><span style="display:grid;place-items:center;aspect-ratio:1;background:repeating-conic-gradient(#f4f4f4 0 25%,#fff 0 50%) 0/20px 20px;border-radius:10px"><img src="../../art/ch1/01-떡집/07-시루떡.png" alt="시루떡" style="width:100%;height:100%;object-fit:contain"></span><strong style="display:block;margin-top:9px">07-시루떡</strong><small style="color:var(--muted)">512×512 · 투명 PNG</small></a>
+<a href="../../art/ch1/01-떡집/08-백설기.png" target="_blank" style="display:block;border:1px solid var(--line);border-radius:14px;padding:12px;text-decoration:none;background:#fff"><span style="display:grid;place-items:center;aspect-ratio:1;background:repeating-conic-gradient(#f4f4f4 0 25%,#fff 0 50%) 0/20px 20px;border-radius:10px"><img src="../../art/ch1/01-떡집/08-백설기.png" alt="백설기" style="width:100%;height:100%;object-fit:contain"></span><strong style="display:block;margin-top:9px">08-백설기</strong><small style="color:var(--muted)">512×512 · 투명 PNG</small></a></div>
+      <p style="margin:18px 0 0"><a href="https://github.com/nonexpertchassi-creator/raccoon-hollow/tree/codex/ch1-item-production-20260831/art/ch1" target="_blank">GitHub에서 전체 폴더 열기</a></p>
+    </section>
+
     <footer class="foot">
       <span>너구리 만물상 · 그림 라이브러리</span>
-      <code id="footerCount">249 drafts · 565 needed · updated 2026-08-25</code>
+      <code id="footerCount">새 물건 8 / 400 · updated 2026-08-31</code>
     </footer>
   </main>
 
@@ -1639,10 +2240,10 @@
       { c: 'items', shop: '대장간', label: '낫', file: 'sickle.png', icon: '🌾', size: '128×224', status: 'draft', src: '../../godot/art/items/sickle.png' },
       { c: 'items', shop: '대장간', label: '호미', file: 'hoe.png', icon: '🪴', size: '128×224', status: 'draft', src: '../../godot/art/items/hoe.png' },
       { c: 'items', shop: '대장간', label: '도끼', file: 'axe.png', icon: '🪓', size: '128×224', status: 'draft', src: '../../godot/art/items/axe.png' },
-      { c: 'items', shop: '대장간', label: '가위', file: 'shears.png', icon: '✂️', size: '128×224', status: 'draft', src: '../../godot/art/items/shears.png' },
-      { c: 'items', shop: '대장간', label: '부엌칼', file: 'knife.png', icon: '🔪', size: '128×224', status: 'draft', src: '../../godot/art/items/knife.png' },
-      { c: 'items', shop: '대장간', label: '자물쇠', file: 'lock.png', icon: '🔒', size: '128×224', status: 'draft', src: '../../godot/art/items/lock.png' },
-      { c: 'items', shop: '대장간', label: '가마솥', file: 'cauldr.png', icon: '🍲', size: '128×224', status: 'draft', src: '../../godot/art/items/cauldr.png' },
+      { c: 'items', shop: '대장간', label: '가위', file: 'shears.png', icon: '✂️', size: '128×224', status: 'draft', src: '../../godot/art/items/shears.png', runtimeUnused: true },
+      { c: 'items', shop: '대장간', label: '부엌칼', file: 'knife.png', icon: '🔪', size: '128×224', status: 'draft', src: '../../godot/art/items/knife.png', runtimeUnused: true },
+      { c: 'items', shop: '대장간', label: '자물쇠', file: 'lock.png', icon: '🔒', size: '128×224', status: 'draft', src: '../../godot/art/items/lock.png', runtimeUnused: true },
+      { c: 'items', shop: '대장간', label: '가마솥', file: 'cauldr.png', icon: '🍲', size: '128×224', status: 'draft', src: '../../godot/art/items/cauldr.png', runtimeUnused: true },
 
       { c: 'items', shop: '필방', label: '붓', file: 'brush.png', icon: '🖌️', size: '128×224', status: 'draft', src: '../../godot/art/items/brush.png' },
       { c: 'items', shop: '필방', label: '먹', file: 'ink.png', icon: '🖋️', size: '128×224', status: 'draft', src: '../../godot/art/items/ink.png' },
@@ -1742,66 +2343,133 @@
       { c: 'ui', label: '룰렛 원판 · 12칸', file: 'wheel.png', icon: '🎡', size: '512×512', status: 'draft', src: '../../godot/art/ui/wheel.png' },
       { c: 'ui', label: '룰렛 바늘', file: 'needle.png', icon: '🔻', size: '64×96', status: 'draft', src: '../../godot/art/ui/needle.png' },
 
+      ...[1, 2, 3].flatMap((tier) => ['A', 'B', 'C', 'D'].flatMap((type) => [
+        ['side', '옆'], ['back', '뒤']
+      ].map(([direction, directionLabel]) => {
+        const suffix = tier === 1 ? '' : `-${tier - 1}`;
+        const file = `smith-${type.toLowerCase()}-${direction}${suffix}.png`;
+        return {
+          c: 'clerks', shop: '대장간',
+          label: `대장간 점장 · ${tier}단 · ${type}무늬 · ${directionLabel}`,
+          file, icon: '🦝', size: '144×144', priority: 0,
+          actual: `${tier}단 앞치마 · ${direction === 'side' ? '↘ 원화, 반대쪽은 코드 반전' : '↗ 원화, 위쪽 이동'} · A 기준 몸 중심 정규화 · 24장 자동 QA 통과${type === 'D' ? ' · 저채도 한지 베이지' : ''}`,
+          status: 'draft',
+          src: `../../godot/art/clerks/${file}`,
+          path: `godot/art/clerks/${file}`
+        };
+      }))),
+
+      ...[['A', 'P01'], ['B', 'P01'], ['C', 'P02'], ['D', 'P02']].map(([type, revision]) => {
+        return {
+          c: 'clerks', shop: '대장간', archive: true,
+          label: `대장간 점장 완성형 원화 · ${type}타입 · 1~3단 × 실사용 2방향`,
+          file: `CLERK-SMITH-TYPE-${type}-GROWTH-RUNTIME-DIRECTIONS-V0.1-${revision}.png`, icon: '🦝',
+          size: '승급·방향 원화',
+          actual: `1단 황토색 면 / 2단 갈색 가죽 / 3단 멜빵형 가죽 앞치마 · ↘ side / ↗ back · A 기준 몸 중심${type === 'D' ? ' · 저채도 한지 베이지' : ''}`,
+          status: 'draft', priority: 10,
+          src: `generated/CLERK-SMITH-TYPE-${type}-GROWTH-RUNTIME-DIRECTIONS-V0.1-${revision}.png`,
+          path: `docs/art/generated/CLERK-SMITH-TYPE-${type}-GROWTH-RUNTIME-DIRECTIONS-V0.1-${revision}.png`
+        };
+      }),
+
       {
-        c: 'clerks', label: '점장 벌거벗은 본체 · A타입 무늬 · 방향 시트 (확정 · 측면 얼굴 수정)',
+        c: 'clerks', shop: '대장간', archive: true,
+        label: '대장간 점장 A~D · 1~3단 · 실사용 24장 비교판',
+        file: 'SMITH-CLERK-RUNTIME-24-PREVIEW-V0.4.png', icon: '🦝', size: '144px 비교판',
+        actual: 'A~D 몸 중심 폭 차이 최대 1px · 높이 0px · 중심 최대 0.5px · 접지선 0px · 사용자 확인 대기',
+        status: 'draft', priority: 9,
+        src: 'generated/SMITH-CLERK-RUNTIME-24-PREVIEW-V0.4.png',
+        path: 'docs/art/generated/SMITH-CLERK-RUNTIME-24-PREVIEW-V0.4.png'
+      },
+
+      {
+        c: 'clerks', legacy: true, label: '이전 레이어형 점장 본체 · A타입 무늬 · 방향 시트',
         file: 'CLERK-BASE-TYPE-A-TURNAROUND-V0.2-P01.png', icon: '🦝',
-        size: '방향 원화', actual: '1774×887 RGB 검토 시트 · 정면 / 훼이크 측면 15–20° / 뒤 · 꼬리 파츠 분리 전', status: 'approved',
+        size: '방향 원화', actual: '1774×887 RGB 검토 시트 · 완성형 대각선 4방향 규칙 이전안', status: 'draft',
         src: 'generated/CLERK-BASE-TYPE-A-TURNAROUND-V0.2-P01.png',
         path: 'docs/art/generated/CLERK-BASE-TYPE-A-TURNAROUND-V0.2-P01.png'
       },
       {
-        c: 'clerks', label: '점장 본체 · A타입 · 정면 (게임용 테스트)',
+        c: 'clerks', legacy: true, label: '이전 레이어형 점장 본체 · A타입 · 정면 (게임용 테스트)',
         file: 'a-front.png', icon: '🦝', size: '144×144',
-        actual: '144×144 RGBA · 정면 · 꼬리 없음', status: 'approved',
+        actual: '144×144 RGBA · 완성형 점장 규칙 이전안', status: 'draft',
         src: '../../godot/art/hero-body/a-front.png', path: 'godot/art/hero-body/a-front.png'
       },
       {
-        c: 'clerks', label: '점장 본체 · A타입 · 오른쪽 훼이크 측면 (게임용 테스트)',
+        c: 'clerks', legacy: true, label: '이전 레이어형 점장 본체 · A타입 · 오른쪽 훼이크 측면 (게임용 테스트)',
         file: 'a-side.png', icon: '🦝', size: '144×144',
-        actual: '144×144 RGBA · 오른팔을 뻗은 측면 · 꼬리 없음', status: 'approved',
+        actual: '144×144 RGBA · 완성형 점장 규칙 이전안', status: 'draft',
         src: '../../godot/art/hero-body/a-side.png', path: 'godot/art/hero-body/a-side.png'
       },
       {
-        c: 'clerks', label: '점장 본체 · A타입 · 뒷모습 (게임용 테스트)',
+        c: 'clerks', legacy: true, label: '이전 레이어형 점장 본체 · A타입 · 뒷모습 (게임용 테스트)',
         file: 'a-back.png', icon: '🦝', size: '144×144',
-        actual: '144×144 RGBA · 뒷모습 · 꼬리 없음', status: 'approved',
+        actual: '144×144 RGBA · 완성형 점장 규칙 이전안', status: 'draft',
         src: '../../godot/art/hero-body/a-back.png', path: 'godot/art/hero-body/a-back.png'
       },
       {
-        c: 'clerks', label: '점장 꼬리 · A타입 · 오른쪽 측면 (게임용 테스트)',
+        c: 'clerks', legacy: true, label: '이전 레이어형 점장 꼬리 · A타입 · 오른쪽 측면 (게임용 테스트)',
         file: 'a-side.png', icon: '〰️', size: '144×144',
-        actual: '144×144 RGBA · 측면 본체 뒤 레이어 · 코드 회전축 정렬', status: 'approved',
+        actual: '144×144 RGBA · 완성형 점장 규칙 이전안', status: 'draft',
         src: '../../godot/art/hero-tail/a-side.png', path: 'godot/art/hero-tail/a-side.png'
       },
       {
-        c: 'clerks', label: '점장 꼬리 · A타입 · 뒷모습 (게임용 테스트)',
+        c: 'clerks', legacy: true, label: '이전 레이어형 점장 꼬리 · A타입 · 뒷모습 (게임용 테스트)',
         file: 'a-back.png', icon: '〰️', size: '144×144',
-        actual: '144×144 RGBA · 뒷본체 위 레이어 · 코드 회전축 정렬', status: 'approved',
+        actual: '144×144 RGBA · 완성형 점장 규칙 이전안', status: 'draft',
         src: '../../godot/art/hero-tail/a-back.png', path: 'godot/art/hero-tail/a-back.png'
       },
+      ...['b', 'c', 'd'].flatMap((type) => [
+        ['front', '정면'], ['side', '오른쪽 훼이크 측면'], ['back', '뒷모습']
+      ].map(([direction, label]) => ({
+        c: 'clerks', legacy: true, label: `이전 레이어형 점장 본체 · ${type.toUpperCase()}타입 · ${label} (게임용)`,
+        file: `${type}-${direction}.png`, icon: '🦝', size: '144×144',
+        actual: '144×144 RGBA · 장비와 꼬리 없는 본체 · 발끝 아래 변 정렬', status: 'draft',
+        src: `../../godot/art/hero-body/${type}-${direction}.png`,
+        path: `godot/art/hero-body/${type}-${direction}.png`
+      }))),
+      ...['b', 'c', 'd'].flatMap((type) => [
+        ['side', '오른쪽 측면'], ['back', '뒷모습']
+      ].map(([direction, label]) => ({
+        c: 'clerks', legacy: true, label: `이전 레이어형 점장 꼬리 · ${type.toUpperCase()}타입 · ${label} (게임용)`,
+        file: `${type}-${direction}.png`, icon: '〰️', size: '144×144',
+        actual: '144×144 RGBA · A타입과 같은 뿌리 핀 · 코드 흔들림용 단일 레이어', status: 'draft',
+        src: `../../godot/art/hero-tail/${type}-${direction}.png`,
+        path: `godot/art/hero-tail/${type}-${direction}.png`
+      }))),
+      ...[1, 2, 3].flatMap((tier) => [
+        ['front', '정면'], ['side', '오른쪽 훼이크 측면'], ['back', '뒷모습']
+      ].map(([direction, label]) => ({
+        c: 'clerks', dir: 'gear', shop: '대장간', legacy: true,
+        label: `이전 장비 스티커 · 대장간 ${tier}단 · ${label}`,
+        file: `smith-${tier}-${direction}.png`, icon: '⚒️', size: '144×144',
+        actual: '144×144 RGBA · 완성형·무도구 점장 규칙 이전안', status: 'draft',
+        src: `../../godot/art/gear/smith-${tier}-${direction}.png`,
+        path: `godot/art/gear/smith-${tier}-${direction}.png`
+      }))),
       {
-        c: 'clerks', label: '점장 벌거벗은 본체 · B타입 무늬 · 방향 시트 (확정)',
+        c: 'clerks', legacy: true, label: '이전 레이어형 점장 본체 · B타입 무늬 · 방향 시트',
         file: 'CLERK-BASE-TYPE-B-TURNAROUND-V0.1-P01.png', icon: '🦝',
-        size: '방향 원화', actual: '1774×887 RGB 검토 시트 · 정면 / 훼이크 측면 / 뒤 · 꼬리 파츠 분리 전', status: 'approved',
+        size: '방향 원화', actual: '1774×887 RGB 검토 시트 · 완성형 대각선 4방향 규칙 이전안', status: 'draft',
         src: 'generated/CLERK-BASE-TYPE-B-TURNAROUND-V0.1-P01.png',
         path: 'docs/art/generated/CLERK-BASE-TYPE-B-TURNAROUND-V0.1-P01.png'
       },
       {
-        c: 'clerks', label: '점장 벌거벗은 본체 · C타입 무늬 · 방향 시트 (확정)',
+        c: 'clerks', legacy: true, label: '이전 레이어형 점장 본체 · C타입 무늬 · 방향 시트',
         file: 'CLERK-BASE-TYPE-C-TURNAROUND-V0.1-P01.png', icon: '🦝',
-        size: '방향 원화', actual: '1774×887 RGB 검토 시트 · 정면 / 훼이크 측면 / 뒤 · 꼬리 파츠 분리 전', status: 'approved',
+        size: '방향 원화', actual: '1774×887 RGB 검토 시트 · 완성형 대각선 4방향 규칙 이전안', status: 'draft',
         src: 'generated/CLERK-BASE-TYPE-C-TURNAROUND-V0.1-P01.png',
         path: 'docs/art/generated/CLERK-BASE-TYPE-C-TURNAROUND-V0.1-P01.png'
       },
       {
-        c: 'clerks', label: '점장 벌거벗은 본체 · D타입 무늬 · 방향 시트 (확정)',
+        c: 'clerks', legacy: true, label: '이전 레이어형 점장 본체 · D타입 무늬 · 방향 시트',
         file: 'CLERK-BASE-TYPE-D-TURNAROUND-V0.1-P01.png', icon: '🦝',
-        size: '방향 원화', actual: '1774×887 RGB 검토 시트 · 정면 / 훼이크 측면 / 뒤 · 꼬리 파츠 분리 전', status: 'approved',
+        size: '방향 원화', actual: '1774×887 RGB 검토 시트 · 완성형 대각선 4방향 규칙 이전안', status: 'draft',
         src: 'generated/CLERK-BASE-TYPE-D-TURNAROUND-V0.1-P01.png',
         path: 'docs/art/generated/CLERK-BASE-TYPE-D-TURNAROUND-V0.1-P01.png'
       },
       {
-        c: 'clerks', shop: '대장간', label: '이전 대장간 점장 · 1단 무쇠 · 방향 시트',
+        c: 'clerks', shop: '대장간', legacy: true, label: '이전 대장간 점장 · 1단 무쇠 · 방향 시트',
         file: 'CLERK-SMITH-RANK1-TURNAROUND-V0.1-P02-SIMPLIFIED.png', icon: '⚒️',
         size: '방향 원화', actual: '1774×887 · 레이어형 점장 규칙 이전안', status: 'draft',
         src: 'generated/CLERK-SMITH-RANK1-TURNAROUND-V0.1-P02-SIMPLIFIED.png',
@@ -1821,24 +2489,62 @@
         c: 'shopcards', shop: name, label: `${name} 점장 카드 · ${tier}단`,
         file: `${id}-${tier}.png`, icon, size: '512×768', status: 'none', optional: tier > 1
       }))),
-      ...shopCatalog.map(({ id, name, icon }) => ({
-        c: 'counters', shop: name, label: `${name} 계산대`, file: `${id}.png`, icon,
-        size: '168×144', status: 'none', optional: true
-      })),
-      ...shopCatalog.map(({ id, name, icon }) => ({
-        c: 'kilns', shop: name, label: `${name} 가마·풀무`, file: `${id}.png`, icon,
-        size: '168×192', status: 'none'
-      }))
+      ...shopCatalog.map(({ id, name, icon }) => {
+        const made = ['smith', 'brush', 'paper', 'pot', 'herb'].includes(id);
+        const actualById = {
+          smith: '168×144 RGBA · 오른쪽 아래를 향한 넓은 판매면 · 중앙 철 보강띠',
+          brush: '168×144 RGBA · 오른쪽 아래를 향한 넓은 판매면 · 한지 상판과 얕은 서랍',
+          paper: '168×144 RGBA · 오른쪽 아래를 향한 넓은 판매면 · 한지 미닫이 전면',
+          pot: '168×144 RGBA · 오른쪽 아래를 향한 넓은 판매면 · 황토판과 낮은 벽돌띠',
+          herb: '168×144 RGBA · 오른쪽 아래를 향한 넓은 판매면 · 약장 서랍 3×2'
+        };
+        return {
+          c: 'counters', shop: name, label: `${name} 계산대`, file: `${id}.png`, icon,
+          size: '168×144', status: made ? 'draft' : 'none', optional: true,
+          actual: made ? actualById[id] : undefined,
+          src: made ? `../../godot/art/counters/${id}.png` : undefined,
+          path: made ? `godot/art/counters/${id}.png` : undefined
+        };
+      }),
+      ...shopCatalog.map(({ id, name, icon }) => {
+        const made = id === 'smith';
+        return {
+          c: 'kilns', shop: name, label: `${name} 가마·풀무`, file: `${id}.png`, icon,
+          size: '168×192', status: made ? 'draft' : 'none',
+          actual: made ? '168×192 RGBA · 짧은 숯 화덕 + 붙박이 나무 풀무 · 정면 3/4' : undefined,
+          src: made ? `../../godot/art/kilns/${id}.png` : undefined,
+          path: made ? `godot/art/kilns/${id}.png` : undefined
+        };
+      })
     ];
 
+    const smithUpgradeRanks = new Map([
+      ['pick', [2, 3]], ['sickle', [2, 3]], ['hoe', [2, 3]], ['axe', [2, 3]],
+      ['shears', [2, 3]], ['knife', [2, 3]], ['lock', [3]], ['cauldr', [3]]
+    ]);
     const itemUpgradeAssets = assets
       .filter((asset) => asset.c === 'items' && !/-[12]\.png$/.test(asset.file))
-      .flatMap((asset) => [2, 3].map((tier) => ({
-        c: 'items', shop: asset.shop, label: `${asset.label} · ${tier}단 승급판`,
-        file: asset.file.replace(/\.png$/, `-${tier - 1}.png`), icon: asset.icon,
-        size: asset.size, status: 'none'
-      })));
+      .flatMap((asset) => {
+        const itemId = asset.file.replace(/\.png$/, '');
+        const tiers = asset.shop === '대장간'
+          ? (smithUpgradeRanks.get(itemId) || [])
+          : [2, 3];
+        return tiers.map((tier) => {
+        const file = asset.file.replace(/\.png$/, `-${tier - 1}.png`);
+        const made = asset.shop === '대장간' && smithUpgradeRanks.get(itemId)?.includes(tier);
+        return {
+          c: 'items', shop: asset.shop, label: `${asset.label} · ${tier}단 승급판`,
+          file, icon: asset.icon, size: asset.size, status: made ? 'draft' : 'none',
+          src: made ? `../../godot/art/items/${file}` : undefined,
+          path: made ? `godot/art/items/${file}` : undefined
+        };
+        });
+      });
     assets.push(...itemUpgradeAssets);
+    for (let index = assets.length - 1; index >= 0; index -= 1) {
+      if (assets[index].runtimeUnused) assets.splice(index, 1);
+    }
+    assets.forEach((asset, index) => { asset.libraryIndex = index; });
 
     const categoryName = {
       story: '첫 진입 만화', hero: '촌장·공용 인물', staff: '직원', items: '물건', guests: '손님', cards: '손님 카드',
@@ -1850,10 +2556,15 @@
       shopcards: 'cards', pests: 'pests', stalls: 'stalls', counters: 'counters',
       kilns: 'kilns', ui: 'ui', clerks: 'clerks'
     };
-    const categoryOrder = {
-      story: 0, hero: 1, staff: 2, guests: 3, cards: 4, shopcards: 5, clerks: 6,
-      items: 7, stalls: 8, counters: 9, kilns: 10, pests: 11, ui: 12
+    const commonCategoryOrder = {
+      story: 0, hero: 1, staff: 2, guests: 3, cards: 4, pests: 5, ui: 6,
+      clerks: 7, shopcards: 8, items: 9, stalls: 10, counters: 11, kilns: 12
     };
+    const shopCategoryOrder = {
+      clerks: 0, shopcards: 1, items: 2, stalls: 3, counters: 4, kilns: 5,
+      guests: 6, cards: 7, pests: 8, ui: 9, hero: 10, staff: 11, story: 12
+    };
+    const statusOrder = { approved: 0, draft: 1, none: 2 };
     const stateName = { none: '없음', draft: '초안', approved: '확정' };
     const requiredAssets = assets.filter((asset) => !asset.optional);
     const grid = document.querySelector('#assetGrid');
@@ -1880,7 +2591,7 @@
     const shopByName = new Map(shopCatalog.map((shop) => [shop.name, shop]));
     const shopIdOf = (asset) => shopByName.get(asset.shop)?.id || 'common';
     const groupOrder = new Map([['common', 0], ...shopCatalog.map((shop, index) => [shop.id, index + 1])]);
-    let activeFilter = 'all';
+    let activeFilter = 'present';
     let activeCategory = 'all';
     let activeShop = 'all';
     let visibleAssets = [];
@@ -1896,6 +2607,7 @@
     document.querySelector('#footerCount').textContent = `${draftCount} drafts · ${noneCount} needed · updated 2026-08-25`;
 
     const filterCounts = {
+      present: draftCount + approvedCount,
       all: assets.length,
       approved: approvedCount,
       none: noneCount,
@@ -1903,7 +2615,7 @@
       required: requiredAssets.length,
       optional: optionalCount
     };
-    const filterLabels = { all: '전체', approved: '확정', none: '없음', draft: '초안', required: '필수', optional: '선택' };
+    const filterLabels = { present: '있는 그림', all: '전체', approved: '확정', none: '없음', draft: '초안', required: '필수', optional: '선택' };
     filters.forEach((button) => {
       const key = button.dataset.filter;
       if (key in filterCounts) button.textContent = `${filterLabels[key]} ${filterCounts[key]}`;
@@ -1928,6 +2640,7 @@
 
     function matches(asset, query) {
       const statusMatch = activeFilter === 'all'
+        || (activeFilter === 'present' && asset.status !== 'none')
         || activeFilter === asset.status
         || (activeFilter === 'required' && !asset.optional)
         || (activeFilter === 'optional' && asset.optional);
@@ -1943,6 +2656,69 @@
 
     function assetKey(asset) {
       return asset.path || `${asset.c}/${asset.file}`;
+    }
+
+    function isLegacy(asset) {
+      return Boolean(asset.archive || asset.legacy || asset.label.startsWith('이전'));
+    }
+
+    function tierOf(asset) {
+      const tier = asset.label.match(/(\d+)단/);
+      return tier ? Number(tier[1]) : 1;
+    }
+
+    function compareAssets(a, b) {
+      const aShop = shopIdOf(a);
+      const bShop = shopIdOf(b);
+      const categoryOrder = aShop === 'common' ? commonCategoryOrder : shopCategoryOrder;
+      return (groupOrder.get(aShop) - groupOrder.get(bShop))
+        || (Number(isLegacy(a)) - Number(isLegacy(b)))
+        || ((categoryOrder[a.c] ?? 99) - (categoryOrder[b.c] ?? 99))
+        || ((a.priority ?? 50) - (b.priority ?? 50))
+        || (tierOf(a) - tierOf(b))
+        || ((statusOrder[a.status] ?? 9) - (statusOrder[b.status] ?? 9))
+        || (a.libraryIndex - b.libraryIndex);
+    }
+
+    function familyInfo(asset) {
+      if (asset.c === 'clerks') {
+        const match = asset.file.match(/^smith-([a-d])-(side|back)(?:-[12])?\.png$/);
+        if (match) return {
+          key: `raccoon-${match[1]}`,
+          label: `${match[1].toUpperCase()}타입 너구리`,
+          category: 'clerks'
+        };
+      }
+      if (asset.c === 'items') {
+        const base = asset.file.replace(/-[12](?=\.png$)/, '');
+        return {
+          key: `item-${base}`,
+          label: asset.label.replace(/ · [23]단 승급판$/, ''),
+          category: 'items'
+        };
+      }
+      return null;
+    }
+
+    function groupedCards(list) {
+      const families = new Map();
+      const loose = [];
+      list.forEach((asset) => {
+        const info = familyInfo(asset);
+        if (!info) {
+          loose.push(asset);
+          return;
+        }
+        if (!families.has(info.key)) families.set(info.key, { ...info, assets: [] });
+        families.get(info.key).assets.push(asset);
+      });
+      const familyBoard = families.size ? `<div class="family-board">${[...families.values()].map((family) => `
+        <section class="asset-family" data-category="${family.category}">
+          <div class="asset-family-head"><h4>${family.label}</h4><small>${family.assets.length}장</small></div>
+          <div class="asset-family-grid">${family.assets.map(card).join('')}</div>
+        </section>`).join('')}</div>` : '';
+      const looseGrid = loose.length ? `<div class="asset-grid loose-assets">${loose.map(card).join('')}</div>` : '';
+      return familyBoard + looseGrid;
     }
 
     function card(asset) {
@@ -1962,20 +2738,29 @@
       </article>`;
     }
 
-    function section(groupId, list) {
+    function section(groupId, list, open = false, openLegacy = false) {
       const shop = groupId === 'common'
         ? { name: '공통 그림', icon: '🦝' }
         : shopCatalog.find((item) => item.id === groupId);
       const approved = list.filter((asset) => asset.status === 'approved').length;
       const drafts = list.filter((asset) => asset.status === 'draft').length;
       const missing = list.filter((asset) => asset.status === 'none').length;
-      return `<section class="shop-section" data-shop-section="${groupId}">
-        <header class="shop-section-head">
-          <h3 class="shop-section-title"><span aria-hidden="true">${shop.icon}</span>${shop.name}</h3>
+      const current = list.filter((asset) => !isLegacy(asset));
+      const legacy = list.filter(isLegacy);
+      const legacyShelf = legacy.length ? `<details class="legacy-section"${openLegacy ? ' open' : ''}>
+        <summary class="legacy-summary"><span>원본 시트 · 이전 자료</span><small>${legacy.length}장 · 눌러서 보기</small></summary>
+        <div class="asset-grid">${legacy.map(card).join('')}</div>
+      </details>` : '';
+      return `<details class="shop-section" data-shop-section="${groupId}"${open ? ' open' : ''}>
+        <summary class="shop-section-head">
+          <div class="shop-section-heading"><span class="shop-section-chevron" aria-hidden="true">›</span><h3 class="shop-section-title"><span aria-hidden="true">${shop.icon}</span>${shop.name}</h3></div>
           <div class="shop-section-count">${list.length}장${approved ? ` · 확정 ${approved}` : ''} · 초안 ${drafts}${missing ? ` · <b>없음 ${missing}</b>` : ''}</div>
-        </header>
-        <div class="asset-grid">${list.map(card).join('')}</div>
-      </section>`;
+        </summary>
+        <div class="shop-section-body">
+          ${current.length ? groupedCards(current) : ''}
+          ${legacyShelf}
+        </div>
+      </details>`;
     }
 
     function connectFallbacks() {
@@ -1993,13 +2778,19 @@
       const query = search.value.trim().toLowerCase();
       visibleAssets = assets
         .filter((asset) => matches(asset, query))
-        .sort((a, b) => (groupOrder.get(shopIdOf(a)) - groupOrder.get(shopIdOf(b)))
-          || (categoryOrder[a.c] - categoryOrder[b.c])
-          || a.label.localeCompare(b.label, 'ko'));
+        .sort(compareAssets);
       resultLine.textContent = `${visibleAssets.length}장 표시 · 확정 ${visibleAssets.filter((asset) => asset.status === 'approved').length} · 초안 ${visibleAssets.filter((asset) => asset.status === 'draft').length} · 없음 ${visibleAssets.filter((asset) => asset.status === 'none').length}`;
       const groups = [...new Set(visibleAssets.map(shopIdOf))];
+      const filteredView = Boolean(query || activeFilter !== 'all' || activeCategory !== 'all' || activeShop !== 'all');
       grid.innerHTML = visibleAssets.length
-        ? groups.map((groupId) => section(groupId, visibleAssets.filter((asset) => shopIdOf(asset) === groupId))).join('')
+        ? groups.map((groupId) => {
+          const list = visibleAssets.filter((asset) => shopIdOf(asset) === groupId);
+          const compactView = window.matchMedia('(max-width: 680px)').matches;
+          const focusedMobileView = Boolean(query || activeShop !== 'all' || activeCategory !== 'all' || !['all', 'present'].includes(activeFilter));
+          const open = groupId === 'smith' || (!compactView && filteredView) || (compactView && focusedMobileView);
+          const openLegacy = filteredView && list.every(isLegacy);
+          return section(groupId, list, open, openLegacy);
+        }).join('')
         : '<div class="empty-result">맞는 그림이 없다. 다른 이름이나 파일명으로 찾아보세요.</div>';
       connectFallbacks();
     }
