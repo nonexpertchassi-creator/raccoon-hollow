@@ -455,23 +455,9 @@ func star_up(gid: String) -> bool:
 	stars[gid] = float(regular_lv(gid) + 1)
 	_ev("%s %d성이 되었다" % [_guest_by_id[gid].name, regular_star(gid)], "guest")
 	return true
-
-func regular_need_old(gid: String, i: int) -> float:
-	if not _guest_by_id.has(gid):
-		return Content.REGULARS[i].at
-	return max(1.0, round(Content.REGULARS[i].at / _guest_by_id[gid].every))
-
 ## 지금 몇 성인가(0 = 1성). 카드로 올린 값만 본다.
 func regular_lv(gid: String) -> int:
 	return int(stars.get(gid, 0.0))
-
-func regular_lv_old(gid: String) -> int:
-	var n: float = visits.get(gid, 0.0)
-	var out: int = 0
-	for i in range(1, Content.REGULARS.size()):
-		if n >= regular_need_old(gid, i):
-			out = i
-	return out
 
 ## 딸 수 있는 제일 높은 띠(칭호) — 손님들 중 제일 높은 성이 곧 자격이다.
 func band_max() -> int:
@@ -1806,108 +1792,25 @@ const SAVE_KEYS: Array[String] = [
 ## 쓰는 것들은 도로 정수로 되돌린다 — 아니면 배열 자리를 못 찾는다.
 const INT_KEYS: Array[String] = ["busy", "_qid", "_evIdx", "_oid"]
 
-## ★ 저장본 판 번호.
+## ★ 저장본 판 번호 — **v2에서 1로 되돌렸다**(2026-08-29, 유저).
 ##
-## 이게 왜 필요한가: 게임을 낸 뒤에도 규칙은 계속 고친다. 그런데 **이미 놀고
-## 있는 사람의 저장본**은 옛 모양이다. 판 번호가 없으면 옛 저장본을 새 규칙에
-## 그냥 밀어 넣게 되고, 그러면 조용히 망가진다 — 몇 시간치 진행이 사라지는데
-## 왜 그런지는 아무도 모른다.
+## 원래 이 자리에는 2판부터 15판까지의 **옛 저장본 받아주는 코드 136줄**이
+## 있었다. 규칙 5가 그러라고 했기 때문이다. 그런데 규칙 5를 다시 읽으니
+## 이렇게 적혀 있다:
 ##
-## 규칙: **저장본 모양을 바꾸면 이 번호를 올리고, 옛 판을 받아주는 코드를 남긴다.**
-## 그리고 새 판 저장본을 옛 게임에 넣지 않는다(아래 _load에서 막는다) —
-## 모르는 칸을 만나면 게임이 죽는 대신 그냥 안 읽는 게 낫다.
-## 3판: 세는 칸(stats)이 들어왔다. 없으면 빈 사전으로 시작하므로
-## 2판 저장본은 아무 손질 없이 그대로 읽힌다.
+##   "게임을 **낸 뒤에도** 규칙은 계속 고친다. 그런데 **이미 놀고 있는 사람**의
+##    저장본은 옛 모양이다. (…) 지켜야 할 것은 **남의 저장본**뿐이다."
 ##
-## 2판: 뽑기·룰렛·카드가 들어오고 삽살개가 여러 마리가 됐다.
-##      (룰렛은 2026-08-28에 다시 뺐다 — 옛 저장본의 그 칸은 그냥 안 읽는다.)
-## 1판 저장본은 아래 load_from이 받아준다(개 한 마리, 카드 없음, 성은 방문 수로).
-## 4판: 구역(zones)이 들어왔다. 3판 저장본은 zones 칸이 없어 기본값으로
-## 시작하는데, 아래 load_from이 **열린 가게에서 구역을 되짚는다** —
-## 저잣거리 가게를 이미 연 판이면 그 구역도 열린 것으로 친다.
-## 5판: 프로필(profile)이 들어왔다. 4판 저장본은 그 칸이 없고, load_from이
-## 없는 칸을 건너뛰므로 기본값(너구리·기본 얼굴·자동 띠)으로 시작한다 —
-## 따로 옮길 것이 없다.
-## 6판: 일꾼 무늬(furs). 옛 저장본은 **연 순서대로 주머니를 돌려** 배정한다 —
-## 약속은 "한 번 정하면 안 바뀐다"이지 "무작위"가 아니라서, 옛 판은
-## 규칙적이어도 된다. 이후 새로 여는 가게부터 주머니 뽑기를 탄다.
-## 7판: 손의 이동(_crafting·_switch). 옛 저장본은 칸이 없어 빈 값으로
-## 시작한다 — 첫 틱에 모든 손이 이동 시간을 한 번 내는 것뿐, 옮길 것 없다.
-## 8판: 날씨(weather·_wxT). 옛 저장본은 맑음으로 시작하면 된다.
-## 9판: 승급 공사(building). 옛 저장본은 그 칸이 없다 — 공사 중인 가게가
-## 없다는 뜻이고, 그게 맞다(옛 판에서는 누르는 즉시 승급했다). 이미 오른
-## 등급은 rank에 그대로 남아 있으니 잃는 것이 없다.
-## 10판: 박쥐가 매로 바뀌었다(손님 id bat → falcon). 담는 칸은 그대로지만
-## **칸 안에 든 이름이 달라졌다** — 그냥 두면 이미 박쥐를 뽑은 사람의
-## 레전드가 목록에서 사라지고, 쌓아 둔 성과 카드도 주인을 잃는다.
-## 옛 저장본을 읽을 때 bat을 falcon으로 옮겨 준다.
-## 11판: 손님으로 만들던 물건의 이름을 갈았다(2026-08-27, 유저).
-## 사슴이 줄을 서는데 녹용을 팔고, 닭 손님 옆에서 닭꼬치를 굽고 있었다.
-## 가게 하나(푸줏간 → 과일전)와 물건 열아홉의 id가 바뀌었다 — **담는 칸은
-## 그대로고 칸에 든 이름표만 달라졌다.** 그냥 두면 열어 둔 가게와 물건,
-## 올려 둔 등급이 통째로 사라진다. 이름표를 갈아 끼워 준다.
-## 12판: 쓰레기가 화면 장식에서 **경제 규칙**이 됐고, 장터 청소부가 생겼다.
-## 옛 저장본에는 trash·sweepers 칸이 아예 없다 — 없으면 0이고, 그게 맞다
-## (길이 깨끗한 채로 다시 시작하고, 청소부는 아직 안 뽑은 것이다).
-## 13판: 이야기 마디(story). 옛 저장본에는 없다 — 그러면 빈 칸이고, 이미
-## 한참 논 사람에게 "왔구나"부터 다시 뜬다. 그건 안 된다. 그래서 옛 판을
-## 받을 때 **가진 것을 보고 지나간 마디를 되짚어** 채운다(load_from 아래).
-## 14판: 대장간이 농기구 가게가 됐다 — 물건 여덟의 이름표가 갈렸다.
-## 담는 칸은 그대로고 칸에 든 이름만 달라졌다. 안 갈아 주면 열어 둔 물건과
-## 올려 둔 레벨이 통째로 사라진다.
-## 15판: 매대 칸이 **작업대 단수**로 바뀌었다(2026-08-29, 유저).
-## 담는 방법이 달라졌다 — 예전엔 "어떤 물건이 열렸나"를 물건마다 따로 적었고
-## (items의 열쇠), 여는 자격은 asked에 적혀 있었다. 이제는 가게마다 **숫자
-## 하나**(bench)다. 옛 저장본에는 그 숫자가 없다 — 그냥 두면 모든 가게가
-## 1단으로 되돌아가고, 사서 올려 둔 물건이 화면에서 사라진다.
-## 그래서 옛 판을 읽을 때 **열려 있는 물건을 앞에서부터 세어** 단수를 매긴다.
-## asked는 이제 쓰지 않으므로 그냥 안 읽는다(잃을 것이 없다 — 물건은 이미
-## items에 열려 있고, 안 열린 것은 어차피 돈으로 사는 것이 됐다).
-const SAVE_VER: int = 15
-
-## 11판에서 바뀐 이름표. 옛 id → 새 id.
-const RENAMED_V11: Dictionary = {
-	"butcher": "fruit",
-	"dwaeji": "chamoe", "dak": "salgu", "sogogi": "jadu", "galbi": "boksung",
-	"ugeoji": "subak", "gopchang": "hongsi", "ansim": "yuja", "hanwoo": "seokryu",
-	"antler": "hasuo", "bezoar": "gamcho",
-	"gomtang": "kongguk", "samgye": "deulkkae", "chueo": "jeongol", "yongbong": "yeonip",
-	"bossam": "modeum",
-	"dakggo": "gamja", "sanjeok": "eunhaeng", "neobiani": "deodeok", "yukhoe": "songi",
-}
-
-## 14판 — 대장간이 **농기구 가게**가 됐다(2026-08-28, 유저).
-## 자리 순서대로 이름표만 갈아 끼운다. n번째 물건은 그대로 n번째다 —
-## 값·시간·여는 값을 하나도 안 바꿨으니 올려 둔 레벨이 그대로 산다.
+## **그 '남'이 아직 없다.** 스토어에 낸 적이 없고(PROCESS.md), 저장본은
+## user://save.dat 하나뿐이다. 열넷 어치를 짊어지고 있었는데 쓸 사람이
+## 세상에 없었고, 규칙을 고칠 때마다 이 코드도 같이 손봐야 했다 —
+## 오늘 작업대로 갈 때도 _rename_v14의 덫에 걸릴 뻔했다.
 ##
-## ★ 여기 **덫이 하나** 있다. hoe와 sickle은 옛 목록에도 새 목록에도 있는데
-##   자리가 다르다(hoe 3→1, sickle 2→4). 하나씩 제자리에서 바꾸면
-##   먼저 옮긴 것을 나중 것이 덮어쓴다. 그래서 **새 사전을 따로 만들어**
-##   통째로 갈아 끼운다(아래 _rename_v14).
-const RENAMED_V14: Dictionary = {
-	"pick": "hoe", "sickle": "trowel", "hoe": "rake", "axe": "sickle",
-	"shears": "spade", "knife": "fork", "lock": "chaff", "cauldr": "plow",
-}
-
-## 배열·사전을 통째로 새로 만들어 이름표를 간다. 제자리 수정은 안 한다 —
-## 옛 이름과 새 이름이 겹칠 때 덮어쓰기 때문이다.
-func _rename_v14() -> void:
-	var m: Dictionary = RENAMED_V14
-	for name in ["items", "bought", "cleared"]:
-		var d: Dictionary = get(name)
-		var nd: Dictionary = {}
-		for k in d.keys():
-			nd[m.get(String(k), k)] = d[k]
-		set(name, nd)
-	for q in quests:
-		if q is Dictionary and m.has(String(q.get("item", ""))):
-			q["item"] = m[String(q["item"])]
-	for o in orders:
-		if not (o is Dictionary):
-			continue
-		for ln in (o.get("lines", []) as Array):
-			if ln is Dictionary and m.has(String(ln.get("id", ""))):
-				ln["id"] = m[String(ln["id"])]
+## 유저 말: *"현재 운영 중인 부분도 아니니 v2로 바뀔 수도 있다 봐."*
+##
+## 그래서 **호환을 끊었다.** 모르는 판(1이 아닌 것)을 만나면 그냥 안 읽고
+## 새로 시작한다. **낼 때가 되면 그날부터 다시 규칙 5를 지킨다.**
+const SAVE_VER: int = 1
 
 func save() -> Dictionary:
 	var d: Dictionary = {}
@@ -1939,10 +1842,12 @@ func to_blob() -> PackedByteArray:
 static func from_blob(b: PackedByteArray) -> Variant:
 	return bytes_to_var(b)
 
-## ver는 저장본의 판 번호. **옛 판을 옮기는 코드가 새 판에도 돌면 안 된다** —
-## 실제로 그랬다. 성(星)을 방문 횟수에서 옮기는 줄이 2판 저장본에도 돌아서,
-## 껐다 켜면 성이 제멋대로 올라갔다. 저장 시험이 그걸 잡았다.
+## ver는 저장본의 판 번호. **v2에서 호환을 끊었다** — 판이 다르면 안 읽는다.
+## 예전에는 여기에 옛 판을 옮기는 코드가 붙어 있었는데, 그게 새 판에도 돌아서
+## 껐다 켜면 성(星)이 제멋대로 올라간 적이 있다. 이제 그 위험 자체가 없다.
 func load_from(d: Dictionary, ver: int = SAVE_VER) -> void:
+	if ver != SAVE_VER:
+		return                              # v2에서 호환을 끊었다(위 SAVE_VER 설명)
 	for k in SAVE_KEYS:
 		if not d.has(k):
 			continue
@@ -1954,100 +1859,15 @@ func load_from(d: Dictionary, ver: int = SAVE_VER) -> void:
 	for i in smalls:
 		fixed.append(int(i))
 	smalls = fixed
-	# ★ 12판 이전 저장본에는 이야기 마디가 없다. 그냥 두면 이미 가게 열 채를
-	#   가진 사람에게 "저 무너진 대장간부터일세"가 뜬다. 그래서 **가진 것을 보고
-	#   지나간 마디를 되짚어** 준다 — 이야기는 못 돌려줘도 잔소리는 막는다.
-	if ver < 14:
-		_rename_v14()
-	# ★ 15판 — 매대 칸이 작업대 단수가 됐다. 옛 저장본에는 bench 칸이 없다.
-	#   열려 있는 물건을 **가게 목록 차례대로 앞에서부터** 세면 그게 곧 단수다
-	#   (옛 판도 앞에서부터 순서대로만 열 수 있었으므로 빈틈이 생기지 않는다).
-	if ver < 15:
-		bench = {}
-		for sh9 in shops:
-			var n9: int = 0
-			for it9 in shop_by_id(String(sh9)).items:
-				if not is_open(String(it9.id)):
-					break
-				n9 += 1
-			bench[String(sh9)] = float(max(1, n9))
-	if ver < 13:
-		for k in ["start", "firstShop", "firstMake", "firstGuest"]:
-			story[k] = true
-		if not shops.is_empty():
-			story["firstShop"] = true
-		for sh in shops:
-			if staff_of(String(sh)) > 0.0:
-				story["firstStaff"] = true
-			if rank_of(String(sh)) > 0:
-				story["firstRank"] = true
-		if zones.has("jeoja"):
-			story["zone2"] = true
-		if zones.has("keunjang"):
-			story["zone3"] = true
 	# 저장한 뒤에 손님이 늘어났으면 그 칸이 없다. 없는 칸에 dt를 더하면
 	# 값이 망가져서 **그 손님은 영영 안 온다** — 찾기 아주 나쁜 종류의 고장이다.
+	# (판이 같아도 콘텐츠는 늘어나므로 이건 남긴다.)
 	for g in Content.GUESTS:
 		if not _guestAcc.has(g.id):
 			_guestAcc[g.id] = 0.0
-	# 6판 전 저장본 — 무늬 칸이 없다. 연 순서대로 배정한다(위 SAVE_VER 참고).
-	if ver < 6 and furs.is_empty():
-		for k in range(shops.size()):
-			furs[String(shops[k])] = FURS[k % FURS.size()]
-	# ── 옛 저장본(1판) 받아주기 ──
-	# 개: 있다/없다 → 마리 수
-	if ver < 2 and guards <= 0.0 and guard:
-		guards = 1.0
-	# 성: 방문 횟수로 매기던 것을 그대로 옮겨 온다. 안 옮기면 몇 시간 쌓은
-	# 단골이 전부 1성으로 되돌아간다 — 그건 저장본을 깨뜨린 것과 같다.
-	if ver < 2 and stars.is_empty() and not visits.is_empty():
-		for gid in visits.keys():
-			stars[gid] = float(regular_lv_old(String(gid)))
-	# 11판 전 저장본 — 가게 하나와 물건 열아홉의 이름표가 바뀌었다.
-	# 배열 칸(값이 id)과 사전 칸(열쇠가 id)을 나눠서 갈아 끼운다.
-	# 열쇠가 "가게:번호" 꼴인 것(furs)은 앞부분만 바꾼다.
-	if ver < 11:
-		for arr in [shops, zones, guests, skins]:
-			for i2 in range(arr.size()):
-				if RENAMED_V11.has(arr[i2]):
-					arr[i2] = RENAMED_V11[arr[i2]]
-		for d3 in [rank, items, bought, cleared, furs]:
-			for k3 in d3.keys():
-				# 열쇠가 "가게:번호" 꼴인 것이 있다(furs) — **앞부분만** 간다.
-				# 통째로 바꾸려다 replace()에 인자를 셋 줬는데, Godot의 replace는
-				# 둘까지다. 조각으로 나눠 첫 조각만 바꾸는 편이 뜻도 분명하다.
-				var parts: PackedStringArray = String(k3).split(":")
-				var head: String = parts[0]
-				if not RENAMED_V11.has(head):
-					continue
-				parts[0] = String(RENAMED_V11[head])
-				var nk: String = ":".join(parts)
-				d3[nk] = d3[k3]
-				d3.erase(k3)
-		# 진행 중인 의뢰도 물건 이름을 들고 있다 — 안 갈면 못 채우는 의뢰가 된다.
-		for q in quests:
-			if q is Dictionary and RENAMED_V11.has(q.get("item", "")):
-				q["item"] = RENAMED_V11[q["item"]]
-	# 10판 전 저장본 — 박쥐(bat)가 매(falcon)로 바뀌었다. 이름만 갈아 끼운다.
-	# 성·카드·등장 간격까지 통째로 옮겨야 뽑아 둔 레전드를 안 잃는다.
-	if ver < 10 and guests.has("bat"):
-		guests[guests.find("bat")] = "falcon"
-		for d2 in [stars, cards, visits, _guestAcc, _guestGap]:
-			if d2.has("bat"):
-				d2["falcon"] = d2["bat"]
-				d2.erase("bat")
 	for gid in guests:
 		if not cards.has(gid):
 			cards[gid] = 0.0
-	# 구역보다 가게가 먼저 저장된 판 — 열린 가게가 있는 구역은 열린 것으로 친다.
-	# 몇 번을 돌려도 같은 결과라 판 번호를 안 가린다(가리면 조건이 하나 더 늘 뿐이다).
-	for dz in Content.DISTRICTS:
-		if zones.has(String(dz.id)):
-			continue
-		for sid in dz.shops:
-			if shops.has(String(sid)):
-				zones.append(String(dz.id))
-				break
 
 # ── 장날 소식 ──
 

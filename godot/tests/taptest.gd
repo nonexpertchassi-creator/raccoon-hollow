@@ -260,12 +260,15 @@ func _process(_d: float) -> void:
 	s2.load_from(Sim.from_blob(s.to_blob()))
 	if s2.fur_of("smith") != fur0:
 		fails.append("저장을 오가니 일꾼 무늬가 바뀌었다")
+	# ★ v2에서 호환을 끊었다 — **모르는 판은 아예 안 읽는다**(2026-08-29).
+	#   예전엔 여기서 "6판 전 저장본을 받아주나"를 봤다. 이제 볼 것은 반대다:
+	#   옛 판을 넣으면 **아무것도 안 바뀌어야** 한다. 반쯤 읽으면 그게 제일 나쁘다.
 	var oldsave: Dictionary = Sim.from_blob(s.to_blob())
-	oldsave.erase("furs")                    # 6판 전 저장본 흉내
 	var s3 := Sim.new()
-	s3.load_from(oldsave, 5)
-	if not s3.furs.has("smith"):
-		fails.append("옛 저장본(5판)에 무늬가 배정 안 됐다")
+	var money0: float = s3.money
+	s3.load_from(oldsave, Sim.SAVE_VER - 1)
+	if not s3.shops.is_empty() or s3.money != money0:
+		fails.append("모르는 판 저장본을 반쯤 읽었다 — 통째로 무시해야 한다")
 
 	# 채용 — 등급이 자리를 연다(무쇠 1자리), 채용하면 자리별 무늬가 배정된다
 	if int(s.staff_max("smith")) != s.rank_of("smith") + 1:

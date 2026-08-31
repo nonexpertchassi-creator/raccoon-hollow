@@ -29,29 +29,13 @@ func _init() -> void:
 		" · 받으면 돈이 늘었나: ", "예" if b.money > before else "아니오")
 	DirAccess.remove_absolute(ProjectSettings.globalize_path(P))
 
-	# ── 옛 저장본 받아주기: 11판에서 갈린 이름표가 실제로 옮겨지는가.
-	#   이건 눈으로 못 보는 고장이다 — 옛 판을 켠 사람만 겪고, 그 사람은
-	#   "가게가 사라졌다"고만 말할 수 있다. 그래서 여기서 흉내 내 본다.
-	var old_save: Dictionary = a.save()
-	# 새 이름을 옛 이름으로 되돌려 **10판 저장본을 만든다**
-	var back: Dictionary = {}
-	for k in Sim.RENAMED_V11:
-		back[Sim.RENAMED_V11[k]] = k
-	var arr2: Array = (old_save["shops"] as Array).duplicate()
-	for i2 in range(arr2.size()):
-		if back.has(arr2[i2]):
-			arr2[i2] = back[arr2[i2]]
-	old_save["shops"] = arr2
-	var rk2: Dictionary = {}
-	for k2 in (old_save["rank"] as Dictionary):
-		rk2[back.get(k2, k2)] = old_save["rank"][k2]
-	old_save["rank"] = rk2
+	# ── ★ v2에서 저장본 호환을 끊었다(2026-08-29). 그래서 여기서 볼 것이 뒤집혔다.
+	#   예전엔 "10판 저장본의 이름표가 옮겨지나"를 봤다. 이제 볼 것은
+	#   **"모르는 판을 만나면 통째로 무시하나"**다 — 반쯤 읽는 것이 제일 나쁘다.
+	#   (낼 때가 되면 규칙 5를 다시 켜고 이 시험도 되돌린다.)
 	var c := Sim.new()
-	c.load_from(old_save, 10)
-	var kept: bool = c.shops == (a.save()["shops"] as Array) and c.rank.keys().size() == a.rank.keys().size()
-	var stale: bool = false
-	for k4 in c.rank:
-		if back.has(k4) or Sim.RENAMED_V11.has(k4):
-			stale = true
-	print("10판 저장본을 열면 이름표가 갈아 끼워지나: ", "예" if (kept and not stale) else "아니오")
-	quit(0 if (ok and kept and not stale) else 1)
+	var clean: Dictionary = c.save()
+	c.load_from(a.save(), Sim.SAVE_VER - 1)
+	var ignored: bool = c.save() == clean
+	print("모르는 판 저장본을 통째로 무시하나: ", "예" if ignored else "아니오")
+	quit(0 if (ok and ignored) else 1)

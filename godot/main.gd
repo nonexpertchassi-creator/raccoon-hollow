@@ -75,10 +75,13 @@ func _load() -> Variant:
 	# 새 판에서 만든 저장본을 옛 게임이 읽으면 모르는 칸을 만난다.
 	# 억지로 읽어 망가뜨리느니 **안 읽고 그대로 두는** 쪽이 낫다 —
 	# 그 사람이 게임을 최신으로 올리면 저장본이 그대로 살아난다.
-	if int(box.get("ver", 0)) > Sim.SAVE_VER:
-		push_warning("더 새 판에서 만든 저장본이다 — 건드리지 않는다")
+	# ★ v2에서 저장본 호환을 끊었다 — **판 번호가 딱 맞지 않으면 안 읽는다.**
+	#   낸 적이 없는 게임이라 지켜야 할 남의 저장본이 없다(CLAUDE.md 규칙 5).
+	#   판 번호가 아예 없는 것도 옛 저장본이니 안 읽는다(기본값 0).
+	if int(box.get("ver", 0)) != Sim.SAVE_VER:
+		push_warning("판이 다른 저장본이다 — 새로 시작한다")
 		return null
-	sim.load_from(box.state, int(box.get("ver", 1)))
+	sim.load_from(box.state, int(box.get("ver", 0)))
 	# 껐던 시간만큼 벌어 둔다. 실제 시계로 잰다 — 게임을 켜 둔 시간이 아니라.
 	var away: float = Time.get_unix_time_from_system() - float(box.get("at", 0.0))
 	if away > 0.0:
