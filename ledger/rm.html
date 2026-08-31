@@ -1,0 +1,716 @@
+<title>라쿤 마켓 장부</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@500;700;900&family=Noto+Sans+KR:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* ── 라쿤 마켓 ──
+   너구리 얼굴에서 팔레트를 가져왔다: 재빛 바탕 · 눈가리개 먹빛 · 그리고
+   장터에서 온 감빛 하나. 감빛은 아주 아껴 쓴다 — "아직 안 정한 것"과 링크에만. */
+:root{
+  color-scheme:light;
+  --paper:#f6f6f4; --card:#ffffff; --sunk:#eeeeeb; --rail:#f0f0ed;
+  --ink:#1c1d1b; --mid:#5e6260; --faint:#969996;
+  --line:#e0e0dc;
+  --persim:#b84f26;   --persim-bg:#fbeee7;
+  --leaf:#3d6b58;     --leaf-bg:#e5efea;
+  --shadow:0 1px 1px rgba(28,29,27,.03), 0 6px 18px -14px rgba(28,29,27,.35);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"Noto Sans KR",system-ui,-apple-system,sans-serif;
+  font-size:15px; line-height:1.75; -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{margin:0; font-family:"Gothic A1",sans-serif; letter-spacing:-.02em; text-wrap:balance}
+p{margin:0}
+code,.mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+.num{font-variant-numeric:tabular-nums}
+a{color:var(--persim)}
+:focus-visible{outline:2px solid var(--persim); outline-offset:2px; border-radius:5px}
+
+/* ── 뼈대: 사이드바 + 본문 ── */
+.shell{display:flex; min-height:100vh; align-items:flex-start}
+aside{
+  flex:0 0 214px; position:sticky; top:0; align-self:flex-start;
+  height:100vh; overflow-y:auto; background:var(--rail);
+  border-right:1px solid var(--line); padding:22px 14px 30px;
+}
+.brand{padding:0 8px 16px; border-bottom:1px solid var(--line); margin-bottom:12px}
+.brand h1{font-size:19px; font-weight:900; line-height:1.3}
+.brand em{
+  display:block; font-style:normal; font-size:11px; color:var(--faint);
+  letter-spacing:.06em; margin-top:3px;
+}
+nav{display:flex; flex-direction:column; gap:1px}
+nav a{
+  display:flex; justify-content:space-between; align-items:center; gap:8px;
+  padding:7px 9px; border-radius:7px; text-decoration:none;
+  color:var(--mid); font-size:13.5px; font-weight:500;
+}
+nav a:hover{background:var(--card); color:var(--ink)}
+nav a .c{font-size:11px; font-weight:700; color:var(--faint)}
+nav a .c.zero{color:var(--persim)}
+nav a .c.done{color:var(--leaf)}
+nav .grp{
+  font-size:10.5px; font-weight:700; letter-spacing:.12em; color:var(--faint);
+  padding:16px 9px 5px; text-transform:uppercase;
+}
+main{flex:1 1 auto; min-width:0; padding:30px 26px 100px; max-width:880px}
+
+@media (max-width:820px){
+  .shell{display:block}
+  aside{
+    position:sticky; top:0; z-index:20; height:auto; width:auto;
+    border-right:0; border-bottom:1px solid var(--line); padding:12px 14px 10px;
+  }
+  .brand{padding:0 2px 9px; margin-bottom:9px}
+  nav{flex-direction:row; overflow-x:auto; gap:5px; padding-bottom:2px}
+  nav a{flex:0 0 auto; background:var(--card); border:1px solid var(--line); font-size:12.5px; padding:5px 10px}
+  nav .grp{display:none}
+  main{padding:22px 16px 80px}
+}
+
+/* ── 본문 ── */
+section{margin-bottom:46px; scroll-margin-top:74px}
+h2{font-size:20px; font-weight:900; margin-bottom:5px}
+.sub{font-size:13.5px; color:var(--mid); margin-bottom:16px; max-width:64ch}
+h3{font-size:15.5px; font-weight:700; margin:24px 0 7px}
+.hero{
+  border:1px solid var(--line); background:var(--card); border-radius:12px;
+  padding:18px 20px; box-shadow:var(--shadow); margin-bottom:30px;
+}
+.hero .one{font-family:"Gothic A1",sans-serif; font-size:20px; font-weight:900; line-height:1.45}
+.hero .why{font-size:13.5px; color:var(--mid); margin-top:9px}
+
+.tw{overflow-x:auto; border:1px solid var(--line); border-radius:11px; background:var(--card)}
+table{border-collapse:collapse; width:100%; min-width:480px; font-size:13.5px}
+th,td{text-align:left; padding:10px 13px; border-bottom:1px solid var(--line); vertical-align:top}
+th{font-size:11px; font-weight:700; letter-spacing:.08em; color:var(--faint); text-transform:uppercase; background:var(--sunk)}
+tr:last-child td{border-bottom:0}
+
+.zero{
+  display:flex; align-items:center; gap:9px; padding:11px 14px; border-radius:10px;
+  background:var(--persim-bg); border:1px solid color-mix(in srgb,var(--persim) 22%,transparent);
+  font-size:13.5px; margin-bottom:12px;
+}
+.zero b{color:var(--persim); font-family:"IBM Plex Mono",monospace; font-size:15px}
+.zero.done{background:var(--leaf-bg); border-color:color-mix(in srgb,var(--leaf) 26%,transparent)}
+.zero.done b{color:var(--leaf)}
+.q{
+  padding:12px 15px; border-left:3px solid var(--persim); background:var(--persim-bg);
+  border-radius:0 9px 9px 0; font-size:13.5px; line-height:1.75; margin-top:14px;
+}
+.q b{color:var(--persim)}
+.tag{
+  display:inline-block; font-size:11px; font-weight:700; padding:2px 7px;
+  border-radius:5px; margin-right:6px; vertical-align:1px;
+}
+ul{margin:0; padding-left:19px; font-size:13.5px; line-height:1.85}
+li{margin-bottom:3px}
+li::marker{color:var(--faint)}
+
+pre{
+  background:var(--sunk); border:1px solid var(--line); border-radius:9px;
+  padding:13px 15px; overflow-x:auto; font-family:"IBM Plex Mono",monospace;
+  font-size:12.5px; line-height:1.7; margin:0;
+}
+.note{
+  padding:12px 15px; border-left:3px solid var(--leaf); background:var(--leaf-bg);
+  border-radius:0 9px 9px 0; font-size:13.5px; line-height:1.75; margin-top:14px;
+}
+.warn{border-left-color:var(--persim); background:var(--persim-bg)}
+details{
+  border:1px solid var(--line); border-radius:10px; background:var(--card);
+  margin-top:10px; overflow:hidden;
+}
+details summary{
+  cursor:pointer; padding:11px 14px; font-size:13.5px; font-weight:700;
+  list-style:none; display:flex; justify-content:space-between; gap:10px; align-items:center;
+}
+details summary::-webkit-details-marker{display:none}
+details summary::after{content:"펴기"; font-size:11px; font-weight:500; color:var(--faint)}
+details[open] summary::after{content:"접기"}
+details summary:hover{background:var(--sunk)}
+details .body{padding:2px 14px 15px; border-top:1px solid var(--line)}
+details .body > *:first-child{margin-top:12px}
+.fx td:first-child{white-space:nowrap; text-align:center; width:1%}
+.fx .who{font-size:11px; color:var(--faint); white-space:nowrap}
+.kv{display:flex; flex-wrap:wrap; gap:7px; margin-top:10px}
+.kv span{
+  font-size:11.5px; padding:3px 9px; border-radius:6px;
+  border:1px solid var(--line); background:var(--sunk); color:var(--mid);
+}
+footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; color:var(--faint)}
+</style>
+
+<div class="shell">
+<aside>
+  <div class="brand">
+    <h1>라쿤 마켓</h1>
+    <em>장부 · 2026-08-31 새로 시작</em>
+  </div>
+  <nav>
+    <a href="#now"><span>지금 어디</span></a>
+    <a href="#keep"><span>남긴 것</span></a>
+    <div class="grp">기획 일곱 갈래</div>
+    <a href="#story"><span>시나리오</span><span class="c done">20</span></a>
+    <a href="#system"><span>시스템</span><span class="c zero">0</span></a>
+    <a href="#level"><span>레벨</span><span class="c zero">0</span></a>
+    <a href="#ux"><span>UX · UI</span><span class="c zero">0</span></a>
+    <a href="#content"><span>콘텐츠</span><span class="c zero">0</span></a>
+    <a href="#balance"><span>밸런스</span><span class="c zero">0</span></a>
+    <a href="#biz"><span>사업</span><span class="c zero">0</span></a>
+    <div class="grp">가진 것</div>
+    <a href="#formula"><span>공식</span></a>
+    <a href="#learned"><span>배운 것</span></a>
+    <a href="#decide"><span>결정 장부</span></a>
+  </nav>
+</aside>
+
+<main>
+
+<section id="now">
+  <h2>지금 어디</h2>
+  <p class="sub">2026-08-31, 다 갈아엎기로 했다. 유저 말: <i>“우리 시스템이 점점 꼬이는 거 같아.
+  이유는 나야 — 내가 이게 좋을지 저게 좋을지 하면서 하다 보니.”</i></p>
+  <div class="hero">
+    <div class="one">너구리가 온갖 것을 파는 가게를 키운다.</div>
+    <div class="why">08-31 늦게 <b>시나리오가 20개 픽스됐다</b> — 무대는 전세계, 1챕터는 한국 조선,
+    한 챕터는 매장 20개, 끝은 없다 → <a href="#story">시나리오 기획</a>.
+    나머지 여섯 갈래는 아직 <b>0</b>이다.</div>
+    <div class="kv"><span>방치형</span><span>2.5D 아이소메트릭</span><span>세로 화면</span><span>혼자 만든다</span></div>
+  </div>
+  <div class="note warn"><b>이 장부의 규칙 하나.</b> 갈래마다 <b>정한 것</b>과 <b>안 정한 것</b>을 나란히 둔다.
+  정한 것이 <code>0</code>이면 0이라고 적는다 — 비어 있는 것을 비어 보이게 두는 게 이 장부의 일이다.</div>
+</section>
+
+<section id="keep">
+  <h2>남긴 것</h2>
+  <p class="sub">갈아엎어도 버리지 않는 넷. 이름이 무엇으로 바뀌든 그대로 쓸 수 있는 것들이다.</p>
+  <div class="tw"><table>
+    <tr><th>무엇</th><th>왜 남기나</th></tr>
+    <tr><td><b>공식</b></td><td>손님 오는 간격 · 값 · 만드는 시간 · 레벨 비용 · 뽑기 확률. 몇 달을 재서 얻은 것이고 <b>이름과 무관하다</b> → <a href="#formula">공식</a></td></tr>
+    <tr><td><b>너구리 초안</b></td><td>그림은 다시 그리면 된다. 너구리 생김새만 있으면 나머지는 따라온다</td></tr>
+    <tr><td><b>배운 것</b></td><td>다시 밟을 함정 몇 가지. 이건 겪어야만 아는 것이라 값이 제일 비쌌다 → <a href="#learned">배운 것</a></td></tr>
+    <tr><td><b>만드는 방식</b></td><td>규칙과 화면을 갈라 두기 · 재서 정하기 · 문서 하나에 사실 하나</td></tr>
+  </table></div>
+  <div class="note"><b>버린 것.</b> 조선풍 컨셉 · 가게 20채 · 물건 120개 · 짐승 30종 · 구역 이름 ·
+  이야기 초안 · 옛말(엽전 · 곳간 · 장날 · 무쇠…). 깃에는 남아 있으니 언제든 되살릴 수 있다.</div>
+</section>
+
+<section id="story">
+  <h2>시나리오 기획</h2>
+  <p class="sub"><b>진행 구조</b>를 정한다 — 한 챕터가 무엇이고, 언제 끝나고, 전체가 어디로 가는가.
+  대사와 컷은 그 위에 얹는 연출이지 본체가 아니다.</p>
+  <div class="zero done">픽스 <b>20</b> · 2026-08-31</div>
+  <div class="note"><b>이 갈래는 두 층이다.</b> 위는 <b>픽스</b> — 정해졌고 안 흔든다.
+  아래는 <b>로그</b> — 어떻게 여기까지 왔는지, 물린 것은 무엇인지. 접어 뒀다.
+  유저 말: <i>“확정된 거는 남기고 나머지는 로그로 남기고 접자.”</i></p></div>
+
+  <h3>픽스</h3>
+  <div class="tw"><table class="fx">
+    <tr><th></th><th>정한 것</th><th>근거</th></tr>
+
+    <tr><td colspan="3" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.08em; color:var(--faint)">무대</td></tr>
+    <tr><td>🟦</td><td><b>무대는 전세계.</b> 만물상 → 마켓, 골목 마켓 · 플리마켓</td><td class="who">“전세계적으로 진행해보자”</td></tr>
+    <tr><td>🟦</td><td><b>1챕터는 한국 조선.</b> 조선은 게임 전부가 아니라 첫 챕터다</td><td class="who">“이해한 게 맞고”</td></tr>
+    <tr><td>🟦</td><td><b>챕터 순서는 1챕터가 끝난 뒤에 정한다</b></td><td class="who">“1막을 끝나면 정하자”</td></tr>
+    <tr><td>🟦</td><td><b>세계지도를 미니맵으로 둔다</b></td><td class="who">“미니맵으로 세계지도를”</td></tr>
+
+    <tr><td colspan="3" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.08em; color:var(--faint)">한 챕터의 크기</td></tr>
+    <tr><td>🟦</td><td><b>한 챕터 = 스트리트 5 × 매장 4 = 매장 20개</b>, 매장마다 1,000레벨</td><td class="who">“20개씩 진행하자”</td></tr>
+    <tr><td>🟦</td><td><b>매장 20개가 전부 1,000레벨이면 다음 챕터로</b></td><td class="who">“모두 1,000레벨 하면 끝내자”</td></tr>
+    <tr><td>🟦</td><td><b>이름은 매장 · 스트리트 · 챕터 셋만.</b> 테마는 겉모습(이벤트·꾸미기)에만</td><td class="who">“막이 챕터 아닌가?”</td></tr>
+    <tr><td>🟦</td><td><b>스트리트는 순서대로, 조건만 채우면 언제든.</b> 첫 매장도 공짜가 아니다</td><td class="who">“안 그랬으면 하는데”</td></tr>
+
+    <tr><td colspan="3" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.08em; color:var(--faint)">매장 하나가 굴러가는 법</td></tr>
+    <tr><td>🟦</td><td><b>물건은 50레벨마다 바뀐다</b> — 매장당 20개, 챕터당 <b>400장</b></td><td class="who">“400장은 가능할 듯”</td></tr>
+    <tr><td>🟦</td><td><b>지나온 물건은 도감에 남는다.</b> 파는 건 언제나 하나</td><td class="who">“남긴다가 맞음”</td></tr>
+    <tr><td>🟦</td><td><b>물건에 등급은 없다.</b> 대신 <b>매장에 별(10레벨)과 색</b>이 있다</td><td class="who">“차라리 가게에”</td></tr>
+    <tr><td>🟨</td><td><b>색은 5개.</b> 물건 4개마다 하나씩 — <b>승인받은 적 없다</b></td><td class="who">내 판단</td></tr>
+    <tr><td>🟦</td><td><b>레벨은 한 번에 최대로 올린다</b></td><td class="who">“하나하나 하면 힘들지”</td></tr>
+    <tr><td>🟦</td><td><b>스트리트도 돈으로 연다.</b> 스트리트 값 하나 + 그 안의 매장 4채 값</td><td class="who">“돈으로 하는 게 더 직관적”</td></tr>
+
+    <tr><td colspan="3" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.08em; color:var(--faint)">끝내지 않기</td></tr>
+    <tr><td>🟦</td><td><b>끝은 없다</b> — 앱을 지우면 끝. 대신 새 콘텐츠가 계속 들어온다</td><td class="who">“어플을 지우면 끝이다”</td></tr>
+    <tr><td>🟦</td><td><b>차별점은 “과거로 간다”</b></td><td class="who">“우린 과거 공간으로”</td></tr>
+    <tr><td>🟦</td><td><b>시즌 2는 무시한다</b></td><td class="who">“생각이 잘 안 남”</td></tr>
+
+    <tr><td colspan="3" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.08em; color:var(--faint)">누가 나오고 어떻게 말하나</td></tr>
+    <tr><td>🟦</td><td><b>주인공은 플레이어, 너구리는 손발</b></td><td class="who">“너구리들은 플레이어의 손발”</td></tr>
+    <tr><td>🟦</td><td><b>손님이 오는 데 이야기가 필요하다</b></td><td class="who">“이야기가 필요하기도 함”</td></tr>
+    <tr><td>🟦</td><td><b>손님 이야기는 말풍선에 이모지 하나</b></td><td class="who">“이모지 하나 아닐까?”</td></tr>
+    <tr><td>🟦</td><td><b>나라가 바뀔 때 대사 없는 짧은 만화</b></td><td class="who">“대화 없는 소소한 카툰”</td></tr>
+
+    <tr><td colspan="3" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.08em; color:var(--faint)">만드는 방법</td></tr>
+    <tr><td>🟦</td><td><b>AI 그림이 얼마나 걸리는지는 유저가 직접 돌려보고 잰다</b></td><td class="who">“시간은 내 싸움이라서”</td></tr>
+  </table></div>
+
+  <div class="note"><b>이 게임은 글자 없이 말한다.</b> 따로 물어본 세 자리에서 답이 같은 데로 왔다 —
+  나라가 바뀔 때는 <b>대사 없는 만화</b>, 손님은 <b>글자 없는 이모지</b>, 매장은 <b>별과 색</b>.
+  전세계를 도는 게임에서 이건 우연이 아니라 <b>방식</b>이다. 갈림길이 나오면
+  <b>번역할 글이 없는 쪽</b>을 고른다. <code>S급</code>·<code>SSR</code>을 안 쓰는 이유도 이것이다.</div>
+
+  <h3>아직 안 정한 것</h3>
+  <ul>
+    <li><b>매장 20개가 무엇을 파는가</b> — <b>여기가 다음 일이다</b>. 콘텐츠 갈래로 넘어간다</li>
+    <li><b>스트리트가 돈만으로 열리나</b> — 돈으로 여는 건 정해졌다.
+    앞 스트리트가 어디까지 가야 <b>보이는지</b>가 남았다</li>
+    <li><b>이모지 하나로 무엇을 말하나</b> — 원하는 물건인가, 기분인가</li>
+    <li><b>도감을 어디서 보나</b> · <b>색 5개가 무슨 색인가</b> — UX·UI 갈래</li>
+  </ul>
+  <div class="note"><b>무대는 더 정할 것이 없다.</b> 유저 물음: <i>“무대는 전세계인 게 픽스로
+  생각하는데 내가 아직 결정해야 할 일이 있을까?”</i> — 없다. 위 목록에 무대는 한 줄도 없다.
+  남은 것은 <b>무대가 아니라 그 안을 채우는 일</b>이다.</div>
+
+  <h3>여기까지 온 이야기</h3>
+  <p class="sub">픽스만 보면 되고, 아래는 <b>왜 그렇게 됐는지</b>가 필요할 때 편다.</p>
+
+  <details>
+    <summary>전세계로 간 것이 조선풍 문제를 풀었다</summary>
+    <div class="body">
+      <p class="sub">유저 말: <i>“만물상에서 마켓으로 변화하면서 골목 마켓으로 하자.
+      대만·홍콩 야시장이라든가 북미엔 벼룩시장, 아님 푸드트럭. 종합적으로 보면 이게 만물상 비슷하지 않나?
+      그냥 플리마켓으로 해도 될 듯.”</i></p>
+      <div class="note">나라마다 이름은 다르지만 <b>“길가에 노점이 줄지어 선 장”</b>은 어디에나 있다 —
+      조선의 장터, 대만·홍콩의 야시장, 북미의 벼룩시장과 푸드트럭, 그리스의 아고라.
+      <b>모양은 공통, 껍데기만 갈아 끼운다.</b> 무대를 옮겨도 규칙을 다시 만들지 않아도 된다.</div>
+      <div class="note"><b>“조선풍을 버리자”와 안 부딪힌다.</b> 버린 것은 <b>조선을 게임 전부로 두는 것</b>이었다.
+      08-31 아침에 지운 옛 이야기·이름·물건 목록은 1챕터를 짤 때 다시 꺼내 볼 수 있다. 깃에 그대로 있다.</div>
+      <pre>1챕터  한국 조선  →  미국 서부  →  그리스 고대  →  …  →  한국 현대
+      ▲ 지금 여기                                  ▲ 한 바퀴 = 제자리, 시대만 앞으로</pre>
+    </div>
+  </details>
+
+  <details>
+    <summary>이름을 “챕터”로 정한 이유 — 테마는 이미 자리가 찼다</summary>
+    <div class="body">
+      <p class="sub">유저 물음: <i>“막이 챕터 아닌가? 지금 정하자면 챕터가 어울까, 테마가 어울까.
+      나중에 해외판일 때 번역 실수만 없으면.”</i></p>
+      <div class="tw"><table>
+        <tr><th>말</th><th>뜻</th><th>왜 이 말인가</th></tr>
+        <tr><td><b>매장</b></td><td>노점 한 채</td><td>레벨을 올리는 가장 작은 단위</td></tr>
+        <tr><td><b>스트리트</b></td><td>매장 4채</td><td>유저가 고른 말</td></tr>
+        <tr><td><b>챕터</b></td><td>스트리트 5 = 매장 20</td><td><b>진행</b>의 단위. 한 나라·한 시대</td></tr>
+        <tr><td><b>테마</b></td><td>겉모습</td><td><b>진행이 아니다.</b> 이벤트 테마 · 꾸미기 테마에만</td></tr>
+      </table></div>
+      <div class="note">유저가 이미 <i>“이벤트 테마에서만 얻을 수 있는 히든 캐릭터”</i>라고 말했다 —
+      테마를 진행 단위로도 쓰면 한 말이 두 뜻이 된다(규칙 4). 번역도 갈린다:
+      <code>Chapter</code>는 어디서나 “몇 번째 이야기”지만 <code>Theme</code>는 “겉모습”으로 읽힌다.</div>
+    </div>
+  </details>
+
+  <details>
+    <summary>매장 하나에 물건 하나였던 구조를 버렸다 — 그리고 400장에 이르기까지</summary>
+    <div class="body">
+      <p class="sub">유저 말: <i>“가게당 레벨 1,000인데 <b>호미가 1,000레벨 할 수 없고</b>,
+      배수마다 물건이 바뀌어야 할 거 같음.”</i></p>
+      <div class="note"><b>이게 옛 판의 진짜 고장이었다.</b> 매장 하나에 물건 하나를 두고 레벨로 값만 올렸더니
+      <b>1,000레벨짜리 호미</b>라는 말이 안 되는 그림이 나왔다.</div>
+      <p class="sub"><b>간격을 세 번 바꿔 가며 잡았다.</b></p>
+      <div class="tw"><table>
+        <tr><th>안</th><th>매장당</th><th>챕터 전체</th><th></th></tr>
+        <tr><td>배수마다 (10·20·40…)</td><td class="num mono">8</td><td class="num mono">160</td><td>640 다음이 1,000이라 끝이 어정쩡했다</td></tr>
+        <tr><td>10레벨마다</td><td class="num mono">100</td><td class="num mono">2,000</td><td><i>“나도 2,000장은 무리라고 봄”</i></td></tr>
+        <tr><td><b>50레벨마다</b></td><td class="num mono">20</td><td class="num mono"><b>400</b></td><td><i>“단 400장은 가능할 듯”</i> ← 정해진 것</td></tr>
+      </table></div>
+      <div class="note warn"><b>2챕터도 400장이다.</b> 미국 서부의 물건을 조선 물건으로 대신할 수 없다.
+      챕터 하나가 몇 달 갈 콘텐츠라면 맞는 셈이지만, <b>이게 이 게임에서 가장 무거운 일</b>이다.</div>
+      <div class="note"><b>도감이 그 400장의 값을 지킨다.</b> 안 남기면 한 번 보여주고 버리는 것이다.
+      유저는 이미 <i>“직원 컬렉션 · 손님 에디션 · 히든 캐릭터”</i>로 모으는 재미를 말했다.</div>
+    </div>
+  </details>
+
+  <details>
+    <summary>물린 것 — 물건이 색만 좋아지며 자라는 안</summary>
+    <div class="body">
+      <div class="note warn"><b>내가 냈고 유저가 물렸다.</b> 그림 1장으로 4단계를 만들자며
+      “같은 물건의 색이 좋아진다”를 제안했다. 유저 말: <i>“물건이 자라는 건 싫어.”</i></div>
+      <p class="sub"><b>맞는 판단이었다.</b> 그 안은 결국 <b>같은 물건을 네 번 보여주는 것</b>이었다.
+      장수는 아꼈지만 새로 볼 것이 없었다.</p>
+      <div class="note"><b>대신 나온 답이 훨씬 낫다.</b> 유저 말:
+      <i>“굳이 물건에 등급은 필요 없어. 차라리 가게에 등급을 준다면 모를까.
+      레벨보다 별 1개를 도달하기 위해 몇 레벨인지 등등 같은 걸로.”</i></div>
+    </div>
+  </details>
+
+  <details>
+    <summary>별과 색 — 레벨 숫자를 눈으로 바꾸는 장치</summary>
+    <div class="body">
+      <p class="sub"><code>743레벨</code>은 아무 느낌이 없지만 <b>★★★ 파란색</b>은 바로 읽힌다.</p>
+      <pre>매장 하나 · 레벨 1 ──────────────────────────── 1,000
+
+별     ★ = 10레벨.  5개 차면 비워진다
+물건   별 5개 = 50레벨마다 바뀐다  →  20개
+색     물건 4개마다 바뀐다 (200레벨) →  5색
+
+   5색 × 4물건 × 5별 × 10레벨 = 1,000  ✓</pre>
+      <div class="tw"><table>
+        <tr><th>얼마나 자주</th><th>무슨 일</th><th>챕터 전체</th></tr>
+        <tr><td><b>10레벨</b></td><td>별 하나 참 — 자주 오는 작은 기쁨</td><td class="num mono">2,000</td></tr>
+        <tr><td><b>50레벨</b></td><td>별이 비워지고 <b>물건이 바뀐다</b></td><td class="num mono">400</td></tr>
+        <tr><td><b>200레벨</b></td><td><b>색이 오른다</b> — 드문 사건</td><td class="num mono">100</td></tr>
+      </table></div>
+      <p class="sub"><b>“물건 4개마다 색 하나”가 실제로는 이렇게 굴러간다.</b>
+      매장 하나에 물건이 20개이고, 그 20개를 4개씩 묶으면 5묶음이다. 묶음 하나가 한 색이다.</p>
+      <div class="tw"><table>
+        <tr><th>색</th><th>물건</th><th>레벨</th></tr>
+        <tr><td><b>1색</b></td><td>물건 1 · 2 · 3 · 4</td><td class="num mono">1 ~ 200</td></tr>
+        <tr><td><b>2색</b></td><td>물건 5 · 6 · 7 · 8</td><td class="num mono">201 ~ 400</td></tr>
+        <tr><td><b>3색</b></td><td>물건 9 · 10 · 11 · 12</td><td class="num mono">401 ~ 600</td></tr>
+        <tr><td><b>4색</b></td><td>물건 13 · 14 · 15 · 16</td><td class="num mono">601 ~ 800</td></tr>
+        <tr><td><b>5색</b></td><td>물건 17 · 18 · 19 · 20</td><td class="num mono">801 ~ 1,000</td></tr>
+      </table></div>
+      <div class="note"><b>물건이 네 번 바뀌어야 색이 한 번 오른다.</b> 그래서 색은 매장당 5번뿐인 드문 사건이다.</div>
+      <div class="note"><span class="tag" style="background:var(--persim-bg);color:var(--persim)">🟨 내 판단</span>
+      <b>색을 5개로 묶은 것.</b> 유저 계산대로 별 5개를 한 묶음으로 보면 1,000 ÷ 50 = <b>20묶음</b>이
+      나오는데, 사람은 12번째 색과 13번째 색을 구분 못 한다. 그래서 <b>별 묶음은 20, 색은 5</b>로 갈랐다.
+      유저가 짐작한 “5그룹”이 색에는 정확히 맞았다. 10색으로 늘려도 구조는 같다.</div>
+      <div class="note"><b>스트리트가 한눈에 보인다.</b> 매장 4채가 늘어서 있는데 색이 다 다르면
+      <b>어디에 돈을 써야 할지 눈으로 골라진다.</b> 표를 안 봐도 된다.</div>
+    </div>
+  </details>
+
+  <details>
+    <summary>20,000이 아니라 400이 이 챕터의 길이다</summary>
+    <div class="body">
+      <p class="sub">유저 말: <i>“20,000 레벨업을 하나하나 하면 힘들지.
+      항상 보유 돈 최대 레벨 하면 빠르겠지.”</i></p>
+      <div class="note"><b>이 단추 하나가 “1,000레벨”의 뜻을 바꾼다.</b> 하나하나 누르는 1,000번이 아니라
+      <b>차오르는 눈금 1,000칸</b>이 된다. 사람이 실제로 <b>결정</b>하는 순간은 레벨이 아니라
+      <b>물건이 바뀌는 자리</b>다.</div>
+      <pre>누르는 횟수    매장 20 × 1,000 = 20,000   ← 손가락이 아픈 수
+물건이 바뀜    매장 20 ×    20 =    400   ← 사람이 기억하는 수</pre>
+      <div class="note">그래서 <b>물건 400개를 그리는 일이 챕터 하나를 만드는 일과 거의 같은 말</b>이 된다.</div>
+    </div>
+  </details>
+
+  <details>
+    <summary>스트리트를 여는 벽은 하나여야 한다</summary>
+    <div class="body">
+      <p class="sub">유저 말: <i>“스트리트 5개는 순서대로 열자. 오픈 조건만 달성하면 언제든지.
+      스트리트2의 첫 번째 가게는 무료 오픈인가? <b>안 그랬으면 하는데.</b>”</i></p>
+      <div class="note warn"><b>내가 냈고 유저가 물렸다.</b> 나는 “스트리트 값도 받고 첫 매장 값도 받으면
+      벽이 연달아 둘”이라며 스트리트를 진도로 열자고 했다. 유저 말:
+      <i>“스트리트 여는 건 돈으로 하는 게 더 직관적일 거 같은데.”</i></div>
+      <div class="note"><b>유저가 맞았다.</b> 방치형은 돈이 계속 쌓이니 연달아 사는 것이 벽이 아니라
+      <b>살 게 둘</b>이다. 그리고 <b>“돈 모아서 새 골목을 연다”</b>가 “조건 채우면 열린다”보다 훨씬 알기 쉽다.
+      내 걱정은 구조가 아니라 <b>값</b>으로 풀 문제였다 — 스트리트 값을 낮게 두면 두 벽이 안 붙는다.
+      밸런스 갈래에서 잰다.</div>
+    </div>
+  </details>
+
+  <details>
+    <summary>AI 그림 시간 — 재는 사람이 바뀌었다</summary>
+    <div class="body">
+      <p class="sub">유저 물음: <i>“AI 패턴으로 잡아서 그린다면 생각보다 빠르지 않을까?”</i></p>
+      <p class="sub">한 장 뽑는 시간은 빠르다. 시간이 가는 데는 따로 있다 —
+      <b>화풍 기준 잡기</b>(제일 오래), 골라내기(1장 쓰려고 여러 장 뽑는다),
+      후처리(배경 지우기·크기 맞추기·격자에 앉히기).</p>
+      <div class="note"><b>내가 재기로 했다가 유저가 가져갔다.</b> 유저 말:
+      <i>“시간은 내 싸움이라서 계산은 의미 없을 거 같음. 차라리 내가 한번 돌려보고 예측 시간을 재야지.”</i>
+      맞는 말이다 — 그리는 사람이 유저이니 유저의 손이 얼마나 빠른지가 답이다.</div>
+    </div>
+  </details>
+
+  <div class="note warn"><b>숫자는 아직 안 맞춰 봤다.</b> 물건 값도 매장 값도 지금은 재지 않는다 —
+  유저 말: <i>“공식은 참고사항일 뿐, 시나리오 작성할 때는 교차 검증 같은 거 하지 말자.”</i>
+  <b>이야기가 먼저 서고 나서 잰다.</b></div>
+</section>
+
+<section id="system">
+  <h2>시스템 기획</h2>
+  <p class="sub">규칙과 숫자를 만든다. 무엇을 누르면 무엇이 오르는가.</p>
+  <div class="zero">정한 것 <b>0</b></div>
+  <h3>정해야 할 것</h3>
+  <ul>
+    <li><b>한 바퀴가 무엇인가</b> — 이전 판은 “주문 → 만들기 → 건네기 → 돈”이었다. 그대로 갈지</li>
+    <li>돈이 사는 것 · 보석이 사는 것 — <b>둘을 어떻게 가르나</b></li>
+    <li>성장 손잡이가 몇 개인가 (이전 판은 스물둘이었고 그게 꼬임의 원인이었다)</li>
+    <li>일꾼이 있는가 · 몇 명인가</li>
+    <li>자리를 비웠을 때 무엇이 벌리나</li>
+  </ul>
+</section>
+
+<section id="level">
+  <h2>레벨 디자인</h2>
+  <p class="sub">공간을 어떻게 배치해 진행을 만드나. 화면에서 걸어 다니는 곳의 일이다.</p>
+  <div class="zero">정한 것 <b>0</b></div>
+  <h3>정해야 할 것</h3>
+  <ul>
+    <li><b>한 화면에 무엇이 보이나</b> — 한 스트리트(매장 4채)가 한 화면인가 → <a href="#story">시나리오 픽스</a></li>
+    <li><b>스트리트 5개를 어떻게 넘기나</b> — 스와이프인가, 미니맵인가 → <a href="#story">시나리오 픽스</a></li>
+    <li><b>스트리트를 여는 조건</b> — 순서대로 열리는 건 정해졌다 → <a href="#story">시나리오 픽스</a>.
+    무엇을 채워야 열리는지는 아직</li>
+    <li>지도가 자라는가 · 얼마나</li>
+    <li>손님이 어디서 들어오고 어디로 나가나</li>
+    <li>꾸밀 자리가 있는가</li>
+  </ul>
+  <div class="note"><b>이전 판에서 하나 배웠다.</b> 화면에 보이지 않는 칸까지 매 프레임 다시 그리고 있었다 —
+  988칸을 그리는데 폰에 보이는 건 570칸이었다. <b>지도를 넓히기 전에 화면 밖을 잘라 내는 것부터.</b></div>
+</section>
+
+<section id="ux">
+  <h2>UX · UI 기획</h2>
+  <p class="sub">사람이 이해하고 조작하는 방식. 창 · 단추 · 표시 · 알림.</p>
+  <div class="zero">정한 것 <b>0</b></div>
+  <h3>정해야 할 것</h3>
+  <ul>
+    <li>첫 3분에 무엇을 가르치나</li>
+    <li><b>게임 안 도움말</b> — 이전 판에는 한 군데도 없었다</li>
+    <li>“지금 어디쯤”을 어떻게 보여주나 — 매장 하나가 <b>물건 8칸짜리 눈금</b>이 된다
+    → <a href="#story">시나리오 픽스</a></li>
+    <li><b>최대로 올리는 단추</b>는 정해졌다 → <a href="#story">시나리오 픽스</a>. 생김새는 아직</li>
+    <li>화면에 글자를 얼마나 쓰나 <span style="color:var(--mid)">(이전 판은 너무 많았다)</span></li>
+  </ul>
+</section>
+
+<section id="content">
+  <h2>콘텐츠 기획</h2>
+  <p class="sub">가게 · 물건 · 손님을 실제로 채운다.</p>
+  <div class="zero">픽스 <b>0</b></div>
+  <div class="note warn"><b>아래 매장 20개는 초안이다.</b> 승인받은 적 없다 —
+  유저가 <i>“그래 뽑아주고”</i> 해서 뽑아 본 것이지 정해진 것이 아니다.
+  줄이든 바꾸든 통째로 갈든 지금이 가장 싼 때다.</div>
+
+  <h3>1챕터 · 조선 장터의 매장 20개 <span style="font-weight:400;color:var(--faint);font-size:12px">(초안)</span></h3>
+  <div class="tw"><table>
+    <tr><th></th><th>매장</th><th>무엇을 파나</th><th>역할</th><th>다른 챕터에서는</th></tr>
+    <tr><td colspan="5" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)">스트리트 1 · 먹고사는 것</td></tr>
+    <tr><td class="num mono">1</td><td><b>떡집</b></td><td>떡 · 한과 · 엿</td><td class="who">단 것</td><td class="who">빵집 · 도넛 트럭</td></tr>
+    <tr><td class="num mono">2</td><td><b>국밥집</b></td><td>밥 · 국 · 술</td><td class="who">끼니</td><td class="who">선술집 · 푸드트럭</td></tr>
+    <tr><td class="num mono">3</td><td><b>나물집</b></td><td>나물 · 채소 · 곡식</td><td class="who">땅에서 나는 것</td><td class="who">채소 좌판</td></tr>
+    <tr><td class="num mono">4</td><td><b>생선집</b></td><td>생선 · 젓갈 · 미역</td><td class="who">물에서 나는 것</td><td class="who">어물 좌판</td></tr>
+    <tr><td colspan="5" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)">스트리트 2 · 입고 쓰는 것</td></tr>
+    <tr><td class="num mono">5</td><td><b>옷감집</b></td><td>무명 · 삼베 · 비단</td><td class="who">옷감</td><td class="who">천 가게</td></tr>
+    <tr><td class="num mono">6</td><td><b>신발집</b></td><td>짚신 · 가죽신 · 나막신</td><td class="who">신발</td><td class="who">구둣방</td></tr>
+    <tr><td class="num mono">7</td><td><b>그릇집</b></td><td>옹기 · 사기그릇 · 항아리</td><td class="who">그릇</td><td class="who">도자기 가게</td></tr>
+    <tr><td class="num mono">8</td><td><b>소쿠리집</b></td><td>바구니 · 돗자리 · 대나무 물건</td><td class="who">엮은 것</td><td class="who">바구니 가게</td></tr>
+    <tr><td colspan="5" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)">스트리트 3 · 만들고 고치는 것</td></tr>
+    <tr><td class="num mono">9</td><td><b>대장간</b></td><td>호미 · 낫 · 칼 · 못</td><td class="who">쇠붙이</td><td class="who">철물점</td></tr>
+    <tr><td class="num mono">10</td><td><b>목수집</b></td><td>나무 그릇 · 상 · 궤</td><td class="who">나무 물건</td><td class="who">목공방</td></tr>
+    <tr><td class="num mono">11</td><td><b>종이집</b></td><td>한지 · 부채 · 우산</td><td class="who">종이</td><td class="who">문구점</td></tr>
+    <tr><td class="num mono">12</td><td><b>붓집</b></td><td>붓 · 먹 · 벼루</td><td class="who">글씨 도구</td><td class="who">펜 가게</td></tr>
+    <tr><td colspan="5" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)">스트리트 4 · 몸과 멋</td></tr>
+    <tr><td class="num mono">13</td><td><b>약초집</b></td><td>약초 · 탕약 · 환</td><td class="who">약</td><td class="who">약방</td></tr>
+    <tr><td class="num mono">14</td><td><b>향집</b></td><td>향 · 기름 · 비누</td><td class="who">향과 기름</td><td class="who">향수 가게</td></tr>
+    <tr><td class="num mono">15</td><td><b>갓집</b></td><td>갓 · 망건 · 머리쓰개</td><td class="who">머리에 쓰는 것</td><td class="who">모자 가게</td></tr>
+    <tr><td class="num mono">16</td><td><b>노리개집</b></td><td>노리개 · 비녀 · 매듭</td><td class="who">장신구</td><td class="who">액세서리 가게</td></tr>
+    <tr><td colspan="5" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)">스트리트 5 · 귀한 것</td></tr>
+    <tr><td class="num mono">17</td><td><b>놋그릇집</b></td><td>놋쇠 그릇 · 촛대 · 향로</td><td class="who">빛나는 그릇</td><td class="who">금속 공예</td></tr>
+    <tr><td class="num mono">18</td><td><b>자개집</b></td><td>자개함 · 나전 물건</td><td class="who">무늬 넣은 것</td><td class="who">공예품 가게</td></tr>
+    <tr><td class="num mono">19</td><td><b>금은방</b></td><td>은가락지 · 금비녀</td><td class="who">금은</td><td class="who">보석 가게</td></tr>
+    <tr><td class="num mono">20</td><td><b>골동품집</b></td><td>도자기 · 옛 글씨 · 그림</td><td class="who">오래된 것</td><td class="who">골동품 가게</td></tr>
+  </table></div>
+
+  <div class="note"><b>“역할”이 이 표에서 가장 중요한 칸이다.</b> 이름은 챕터마다 갈아 끼우지만
+  <b>역할 20개는 그대로 간다.</b> 조선의 떡집이 그리스에서는 빵집이고 미국에서는 도넛 트럭인데,
+  <b>둘 다 “단 것을 파는 첫 번째 매장”</b>이다.
+  그래서 2챕터를 만들 때 구조를 다시 짜지 않고 <b>이름과 그림만 갈아 끼우면 된다</b> —
+  <i>“모양은 공통, 껍데기만 갈아 끼운다”</i>가 매장 목록에도 그대로 걸린다.</div>
+
+  <div class="note"><b>스트리트 순서에 값이 실려 있다.</b> 먹고사는 것(싸고 흔하다) →
+  입고 쓰는 것 → 만들고 고치는 것 → 몸과 멋 → 귀한 것(비싸다).
+  <b>골목을 하나 넘을 때마다 파는 것이 귀해진다</b>는 게 눈으로 보인다.</div>
+
+  <div class="note"><b>색이 겹치지 않게 골랐다.</b> 400장이 다 흙빛이면 지루하다 —
+  떡(흰빛) · 나물(풀빛) · 생선(은빛) · 옷감(색색) · 쇠(잿빛) · 종이(흰빛) ·
+  놋(금빛) · 자개(무지개빛)로 갈라 두었다.</div>
+
+  <h3>다음에 정할 것</h3>
+  <ul>
+    <li><b>이 20개가 맞나</b> — 빼거나 넣을 것이 있나</li>
+    <li><b>1스트리트 4채의 물건 20개씩 = 80개</b> — 여기부터 채운다. 나머지는 1스트리트가 굴러가는 걸 보고</li>
+    <li><b>손님이 짐승인가</b> — 사람일 수도, 아예 없을 수도 있다</li>
+    <li><b>이모지 하나로 무엇을 말하나</b> — 원하는 물건인가, 기분인가</li>
+    <li><b>새 콘텐츠가 무엇인가</b> — 새 동물 · 직원 컬렉션 · 손님 에디션 · 이벤트 히든 캐릭터
+    → <a href="#story">시나리오 픽스</a></li>
+  </ul>
+  <div class="note"><b>400개를 지금 다 짜지 않는다.</b> 옛 판에서 물건 120개를 정해 놓고
+  대장간을 농기구 가게로 통째로 갈아서 버렸다. <b>1스트리트 80개를 먼저 채우고,
+  그게 실제로 굴러가는 걸 본 뒤에 나머지를 짠다.</b></div>
+</section>
+
+<section id="balance">
+  <h2>밸런스 기획</h2>
+  <p class="sub">숫자를 조율하고, <b>짐작하지 말고 잰다.</b></p>
+  <div class="zero">정한 것 <b>0</b></div>
+  <h3>정해야 할 것</h3>
+  <ul>
+    <li>콘텐츠가 정해진 뒤 <b>전부</b></li>
+  </ul>
+  <div class="note"><b>재는 법은 이미 안다</b> → <a href="#formula">공식</a>의 마지막 칸.
+  자동 검사 도구도 만들어 뒀지만 <b>지금은 안 돌린다</b> — 기획이 굳은 뒤에 투입한다(유저).</div>
+</section>
+
+<section id="biz">
+  <h2>사업 기획</h2>
+  <p class="sub">유료화 · 광고 · 상품.</p>
+  <div class="zero">정한 것 <b>0</b></div>
+  <h3>정해야 할 것</h3>
+  <ul>
+    <li>돈을 어디서 버나 — 광고인가 상품인가 둘 다인가</li>
+    <li>파는 것이 <b>사는 사람을 손해 보게 만들지 않는가</b></li>
+    <li>어느 스토어에 내나</li>
+  </ul>
+</section>
+
+<section id="formula">
+  <h2>공식</h2>
+  <p class="sub"><b>여기에는 이름이 하나도 없다.</b> 호미도 대장간도 엽전도 없다 —
+  <code>물건</code> · <code>가게</code> · <code>손님</code> · <code>일꾼</code> · <code>돈</code> · <code>보석</code>뿐이다.
+  그래서 무대가 무엇으로 바뀌든 그대로 쓴다.</p>
+
+  <h3>돈이 도는 한 바퀴</h3>
+<pre>손님이 온다 → 주문한다 → 일꾼이 만든다 → 건넨다 → 돈
+   ↑                                              ↓
+   └──── 손님이 늘어난다 ←── 카드 ←── 보석 ←───────┘</pre>
+  <p class="note"><b>돈은 물건을 키우고, 보석은 손님을 늘린다.</b> 이 둘이 갈려 있는 것이 뼈대다 —
+  돈이 아무리 많아도 손님은 안 늘어난다.</p>
+
+  <h3>물건 값</h3>
+<pre>값 = 기본값
+     × 등급 배수              ← 1 · 4 · 16
+     × (1 + 0.12 × (레벨−1))  ← 레벨 하나에 12%
+     × 1.25^(레벨 ÷ 25)       ← 25레벨마다 1.25배 (계단)
+     × 흥정 배수</pre>
+  <p class="note"><b>25레벨마다의 계단</b>이 이 곡선의 성격을 만든다. 매끄럽게 오르기만 하면
+  “조금만 더”가 안 생긴다 — 눈앞에 계단이 보여야 한 번 더 누른다.</p>
+
+  <h3>레벨 올리는 값</h3>
+<pre>한 단 값 = max(20, 기본값 × 등급 배수 × 4) × 1.09^(레벨−1)</pre>
+  <p class="note"><b>값은 12%씩 오르고 비용은 9%씩 오른다.</b> 그래서 올릴수록 이득이다 —
+  이 둘의 차이가 방치형 곡선의 심장이다.</p>
+
+  <h3>만드는 시간</h3>
+<pre>시간 = 기본 시간
+       × max(0.8, 0.985^(레벨−1))   ← 레벨마다 1.5%, 20%에서 멈춤
+       × 연장 배수
+       ÷ 3.5                        ← 손 하나의 손놀림
+       × (밤이면 1.35)
+       × 날씨 배수</pre>
+  <p class="note"><b>바닥 0.8이 중요하다.</b> 없으면 레벨을 올릴수록 시간이 0에 수렴해서
+  후반에 물건이 무한히 쏟아진다.</p>
+
+  <h3>손님이 오는 간격</h3>
+<pre>간격 = 기본 간격
+       ÷ (1 + 0.05 × 단골 등급)   ← 20단이면 0.51배 (두 배 자주)
+       × (밤이면 2.0)
+       ÷ 날씨 배수
+       ÷ 그 손님이 좋아하는 날씨
+       ± 흔들림</pre>
+
+  <h3>단골 — 돈으로는 못 올린다</h3>
+<pre>1→2단  카드 5장
+2→3단  10장
+그다음  15 · 20 · 30 · 40 · 55 · 70 · 90 · 115 · 145
+        180 · 220 · 270 · 330 · 400 · 480 · 580 · 700   (19단계)</pre>
+  <p class="sub" style="margin-top:8px">카드는 <b>뽑기로만</b> 나오고, 뽑기는 <b>보석</b>을 쓴다.
+  값은 1장=보석 1 · <b>10장=9</b> · 30장=25. 등급 여섯, 단계 열.
+  1단계 확률 <code>100/0/0/0/0/0</code> → 10단계 <code>20/32/32/13/2.5/0.5</code>.
+  <b>확률표는 게임 안에서 그대로 보여준다.</b></p>
+
+  <h3>일꾼과 손</h3>
+<pre>손 수 = 1 + 채용한 일꾼 수      (최대 4)</pre>
+  <ul style="margin-top:10px">
+    <li><b>손 하나가 물건 하나를 만든다.</b> 손이 모자라면 못 만드는 물건이 생긴다</li>
+    <li><b>한 번 잡은 물건은 다 만들 때까지 안 놓는다.</b> 매 순간 유리한 쪽으로 갈아타게 했더니
+      걷는 값만 내다 <b>4시간 매출이 반토막</b>이 났다</li>
+    <li>다른 물건으로 옮기면 <b>1.4초</b> 걷는다. 단 2.5초 안에 같은 것으로 돌아오면 안 문다</li>
+  </ul>
+
+  <h3>기다림 · 밤낮 · 날씨</h3>
+  <div class="tw"><table>
+    <tr><th></th><th class="num">값</th><th></th></tr>
+    <tr><td>손님 참을성</td><td class="num">6초</td><td>줄에서는 9초 · 한 명 계산 1.2초</td></tr>
+    <tr><td>하루</td><td class="num">40분</td><td>그중 <code>0.62~0.92</code>가 밤 (=12분)</td></tr>
+    <tr><td>밤에</td><td class="num">×2.0 / ×1.35</td><td>손님 간격 / 만드는 시간</td></tr>
+    <tr><td>날씨 — 오는 것</td><td class="num">1.25 · 1.0 · 0.85 · 0.55</td><td>산들바람 · 맑음 · 흐림 · 비</td></tr>
+    <tr><td>자리 비웠을 때</td><td class="num">2시간 × 0.5</td><td>받을 때 주사위로 ×1~×6</td></tr>
+  </table></div>
+
+  <h3>재는 법 — 이건 규칙이지 숫자가 아니다</h3>
+  <p class="note warn"><b>한 판으로 판단하지 않는다.</b> 운 번호만 바꿔도 8시간 매출이 0.85~1.25배로 흔들린다.
+  <b>재려는 효과보다 판마다의 운이 더 클 때가 있다.</b><br><br>
+  두 번 크게 속았다 — 한 판으로 재서 <b>손해인 강화를 +32% 이득</b>으로 봤고,
+  한 판으로 재서 <b>없는 효과를 1.7배</b>로 봤다(다섯 판을 도니 1.04배).<br>
+  <b>반드시 운 번호를 다섯 개 이상 쓰고 가운뎃값을 본다.</b></p>
+</section>
+
+<section id="learned">
+  <h2>배운 것</h2>
+  <p class="sub">이전 판에서 실제로 밟은 함정들. 조선풍 이야기는 다 버렸고 <b>다시 밟을 것만</b> 남겼다.</p>
+  <div class="tw"><table>
+    <tr><th>함정</th><th>어떻게 당했나</th></tr>
+    <tr><td><b>한 판으로 재기</b></td><td>두 번. 손해인 강화를 +32% 이득으로, 없는 효과를 1.7배로 봤다</td></tr>
+    <tr><td><b>도구가 안 써 보는 기능</b></td><td>여섯 번. 그중 한 번은 <b>기능을 빼고</b> 도구를 안 고쳐서 —
+      없는 함수를 부르자 봇이 조용히 멈췄고, <b>네 배 틀린 숫자를 하루 반</b> 봤다</td></tr>
+    <tr><td><b>한 사실이 여러 곳에</b></td><td>같은 주문서 안에서 “앞치마는 안 그린다”와 “앞치마 30장”이 같이 있었다.
+      숫자는 안 어긋났다 — <b>어긋난 건 손으로 쓴 글뿐이었다</b></td></tr>
+    <tr><td><b>같은 것을 두 말로</b></td><td>매대·작업대, 점장·일꾼. 이름이 갈리면 대화가 어긋나고 결국 코드가 어긋난다</td></tr>
+    <tr><td><b>손잡이를 너무 많이</b></td><td>성장 손잡이가 스물둘이 됐고, 그중 열아홉이 <b>재미와 무관하게 숫자만</b> 올렸다</td></tr>
+    <tr><td><b>덩이째 자르기</b></td><td>안 쓰는 코드를 덩이로 자르다 꼭 필요한 함수 셋을 같이 잘랐다. 시험이 잡았다</td></tr>
+    <tr><td><b>추론을 결정처럼</b></td><td>“(유저)”라 적어 놓고 그 아래 셋 중 둘이 내 판단이었다.
+      그래서 <a href="#decide">결정 장부</a>가 생겼다</td></tr>
+  </table></div>
+</section>
+
+<section id="decide">
+  <h2>결정 장부</h2>
+  <p class="sub">누가 정했는지를 갈라 적는다. <b>유저가 노란 것만 골라 읽으면 “내가 멋대로 정한 것”이 다 보이게</b> 하려는 장치다.</p>
+  <div class="tw"><table>
+    <tr><th>표</th><th>뜻</th><th>유저가 할 일</th></tr>
+    <tr><td><b>🟦 파랑</b></td><td><b>유저가 정한 것.</b> 옮겨 적을 문장이 있어야 파랑이다</td><td>없음</td></tr>
+    <tr><td><b>🟨 노랑</b></td><td><b>내가 판단한 것.</b> 승인 없음</td><td><b>“그 노란 거 아니야”</b> 한 마디면 물린다</td></tr>
+    <tr><td><b>🟩 초록</b></td><td><b>숫자가 정한 것.</b> 운 번호 몇 개로 쟀는지 같이 적는다</td><td>없음</td></tr>
+  </table></div>
+  <h3>2026-08-31 — 새로 시작</h3>
+  <div class="tw"><table>
+    <tr><th></th><th>정한 것</th></tr>
+    <tr><td>🟦</td><td><b>조선풍을 버린다.</b> <i>“컨셉은 좋았지만 너무 한정적이야”</i> — 현대 한국도, 다른 나라도 열어 둔다</td></tr>
+    <tr><td>🟦</td><td><b>이름은 라쿤 마켓.</b> 만물상 개념은 그대로</td></tr>
+    <tr><td>🟦</td><td><b>코드는 없는 셈 친다.</b> 장부에 먼저 다 적고, 그 뒤에 코드를 정한다</td></tr>
+    <tr><td>🟦</td><td><b>공식은 남긴다.</b> 손님 오는 계산 같은 것</td></tr>
+    <tr><td>🟦</td><td><b>각 기획의 “정한 것”은 0에서 시작한다</b></td></tr>
+    <tr><td>🟦</td><td><b>자동 검사는 지금 안 돌린다.</b> 설계가 자세해지면 투입</td></tr>
+    <tr><td>🟦</td><td>가게 20 · 짐승 수는 <b>미룬다</b> — 시나리오가 정해진 뒤에</td></tr>
+    <tr><td>🟦</td><td><b>공식은 참고사항일 뿐이다.</b> 시나리오를 짜는 동안에는 맞춰 보지 않는다 —
+    <i>“내가 공식에 어쩌구 저쩌구 하면 그때만 검증하자”</i></td></tr>
+    <tr><td>🟦</td><td><b>시나리오 칸반은 지운다.</b> <i>“필요 없음”</i></td></tr>
+  </table></div>
+
+  <h3>2026-08-31 — 시나리오</h3>
+  <div class="note"><b>파랑 20줄은 여기 안 옮겨 적는다.</b> → <a href="#story">시나리오 픽스 표</a>에 있다.
+  같은 사실을 두 곳에 손으로 옮겨 적으면 반드시 한쪽이 어긋난다(규칙 3) —
+  <b>지금까지 어긋난 것은 전부 손으로 옮겨 적은 글이었다.</b></div>
+  <p class="sub"><b>여기 남기는 것은 노랑뿐이다.</b> 유저가 이것만 훑으면
+  “내가 멋대로 정한 것”이 다 보인다. <i>“그 노란 거 아니야”</i> 한 마디면 물린다.</p>
+  <div class="tw"><table>
+    <tr><th></th><th>내가 정했고 승인받지 않은 것</th><th>물리면 어떻게 되나</th></tr>
+    <tr><td>🟨</td><td><b>매장의 색을 5개로 묶었다.</b> 별 묶음대로면 20색인데
+    사람이 12번째와 13번째 색을 구분 못 하기 때문이다</td>
+    <td>10색으로 늘려도 구조는 같다. 물건 2개마다 색이 바뀐다</td></tr>
+    <tr><td colspan="3" style="color:var(--faint)">— 지금 남은 노랑은 위 하나뿐이다 —</td></tr>
+  </table></div>
+  <h3>물린 노랑</h3>
+  <div class="tw"><table>
+    <tr><th>내가 냈던 것</th><th>유저가 물린 말</th><th>왜 유저가 맞았나</th></tr>
+    <tr><td><b>물건이 색만 좋아지며 자란다</b> — 그림 1장으로 4단계를 만들자고 했다</td>
+    <td><i>“물건이 자라는 건 싫어”</i></td>
+    <td>장수는 아꼈지만 <b>결국 같은 물건을 네 번 보여주는 것</b>이었다. 새로 볼 게 없다</td></tr>
+    <tr><td><b>스트리트는 돈이 아니라 진도로 연다</b> — 벽이 연달아 둘이 되면 안 된다고 했다</td>
+    <td><i>“돈으로 하는 게 더 직관적일 거 같은데”</i></td>
+    <td>방치형은 돈이 계속 쌓이니 연달아 사는 게 벽이 아니라 <b>살 게 둘</b>이다.
+    그리고 “돈 모아서 연다”가 “조건 채우면 열린다”보다 훨씬 알기 쉽다.
+    내 걱정은 <b>구조가 아니라 값</b>으로 풀 문제였다 — 밸런스 갈래로 넘긴다</td></tr>
+  </table></div>
+</section>
+
+<footer>
+  라쿤 마켓 장부 · 2026-08-31 새로 시작 · 저장소에 <code>FORMULAS.md</code>로도 남아 있다<br>
+  지운 것은 전부 깃에 있다 — 되살릴 수 있다
+</footer>
+
+</main>
+</div>
