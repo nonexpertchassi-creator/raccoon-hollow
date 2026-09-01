@@ -208,7 +208,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <a href="#story"><span>시나리오</span><span class="c done">24</span></a>
     <a href="#system"><span>시스템</span><span class="c done">24</span></a>
     <a href="#level"><span>레벨</span><span class="c done">16</span></a>
-    <a href="#ux"><span>UX · UI</span><span class="c done">14</span></a>
+    <a href="#ux"><span>UX · UI</span><span class="c done">16</span></a>
     <a href="#content"><span>콘텐츠</span><span class="c done">8</span></a>
     <a href="#balance"><span>밸런스</span><span class="c zero">0</span></a>
     <a href="#biz"><span>사업</span><span class="c done">3</span></a>
@@ -1031,7 +1031,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
 <section id="ux">
   <h2>UX · UI 기획</h2>
   <p class="sub">사람이 이해하고 조작하는 방식. 창 · 단추 · 표시 · 알림.</p>
-  <div class="zero done">픽스 <b>14</b> · 2026-08-31 <span style="font-weight:400;font-size:12.5px;color:var(--mid)">— 레이아웃과 화면 흐름은 초안</span></div>
+  <div class="zero done">픽스 <b>16</b> · 2026-08-31 <span style="font-weight:400;font-size:12.5px;color:var(--mid)">— 레이아웃과 화면 흐름은 초안</span></div>
   <div class="tw"><table class="fx">
     <tr><th></th><th>정한 것</th><th>근거</th></tr>
     <tr><td>🟦</td><td><b>도감은 메뉴 하나로 두고, 그 안에서 작은 메뉴나 탭으로 나눈다</b></td><td class="who">“도감 메뉴를 하나 만들고”</td></tr>
@@ -1048,30 +1048,38 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <tr><td>🟨</td><td><b>오프라인 보상에 “그냥 받기” 단추를 또렷하게 둔다.</b> 승인받은 적 없다</td><td class="who">내 판단</td></tr>
     <tr><td>🟨</td><td><b>물건이 바뀌는 것은 제자리에서 알린다 — 안 끊는다.</b> 400번 오기 때문이다</td><td class="who">내 판단</td></tr>
     <tr><td>🟨</td><td><b>축하의 크기를 4단으로 나눈다</b> — 물건 400 · 매장 20 · 스트리트 5 · 챕터 1</td><td class="who">내 판단</td></tr>
+    <tr><td>🟦</td><td><b>고른 매장 카드를 화면 아래에 늘 띄워 두지 않는다.</b> 바텀시트와 겹친다</td><td class="who">“중복 요소 같어”</td></tr>
+    <tr><td>🟦</td><td><b>골목의 매장 위에 별과 물건 뱃지를 안 띄운다.</b> 매장 앞 손님 줄은 띄운다</td><td class="who">“가게를 클릭하면 매장 카드가 열릴 테니”</td></tr>
   </table></div>
 
-  <h3>기본 레이아웃 <span style="font-weight:400;color:var(--faint);font-size:12px">(초안 · 승인받은 적 없다)</span></h3>
-  <p class="sub">세로 화면 하나. <b>오늘 정한 것을 다 앉혀 보면 이렇게 된다.</b></p>
+  <h3>기본 레이아웃 <span style="font-weight:400;color:var(--faint);font-size:12px">(2026-09-01 다시 그렸다)</span></h3>
+  <p class="sub">세로 화면 하나. <b>정한 것을 다 앉혀 보면 이렇게 된다.</b></p>
+  <div class="note warn"><b>처음 그린 것은 틀려 있었다.</b> 아래에 <b>고른 매장 카드를 늘 띄워 두는 자리</b>가 있었는데,
+  그 뒤에 <b>매장 카드를 바텀시트로 정하고도 이 그림을 안 고쳤다.</b>
+  그래서 <b>같은 것이 화면에 두 번</b> 있었다 — 유저가 잡았다
+  <span style="color:var(--mid)">(규칙 2 — 바꿨으면 앞에 그린 것도 그 바뀜을 쓰게 고친다)</span>.</div>
   <div class="wf">
     <div class="phone">
       <div class="bar"><span>💰 12.3M <span style="color:var(--persim)">×2</span></span><span>💎 240</span><span>⚙</span></div>
       <div class="stage">
         <div class="rc"><i class="on">1</i><i>2</i><i>3</i><i>4</i><i>5</i><i>🗺</i></div>
         <div class="alley">
-          <div class="queue">🐰 🦊 🐷 · · ·</div>
           <div class="shops">
-            <div class="shop"><span class="st">★★★☆☆</span><b>🍡</b></div>
-            <div class="shop"><span class="st">★☆☆☆☆</span><b>🍲</b></div>
-            <div class="shop"><span class="st">★★★★★</span><b>🥬</b></div>
-            <div class="shop" style="opacity:.35"><span class="st">·····</span><b>🔒</b></div>
+            <div class="shop"><b>🏚</b>
+              <div style="font-size:7px; color:var(--faint)">절구</div>
+              <div style="font-size:9px">🐰🦊</div></div>
+            <div class="shop"><b>🏚</b>
+              <div style="font-size:7px; color:var(--faint)">가마</div>
+              <div style="font-size:9px">🐷</div></div>
+            <div class="shop"><b>🏚</b>
+              <div style="font-size:7px; color:var(--faint)">낚싯대</div>
+              <div style="font-size:9px">🐻🐰🦊</div></div>
+            <div class="shop" style="opacity:.35"><b>🔒</b>
+              <div style="font-size:7px; color:var(--faint)">·</div>
+              <div style="font-size:9px">·</div></div>
           </div>
           <div style="text-align:center; color:var(--faint); font-size:9px">← 끌기 · 손가락으로 벌려 줌 →</div>
         </div>
-      </div>
-      <div class="card">
-        <div><b>떡집</b> <span class="st">★★★☆☆</span> <span style="color:var(--faint)">레벨 137</span></div>
-        <div style="color:var(--faint)">지금 파는 것 🍡 절편 · 다음 ⑤ 가래떡</div>
-        <div class="btn">최대로 올리기 · 12.3M</div>
       </div>
       <div class="tabs"><div>🏠<br>골목</div><div>📖<br>도감</div><div>🛒<br>상점</div><div>🎁<br>이벤트</div></div>
     </div>
@@ -1081,9 +1089,10 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
         <b>배수가 걸려 있으면 돈 옆에 작게</b>(<span style="color:var(--persim)">×2</span>)</li>
         <li><b>왼쪽 — 스트리트 리모콘.</b> 1~5와 세계지도. <b>작게, 세로로</b></li>
         <li><b>가운데 — 골목.</b> 끌기와 줌이 여기서만 먹는다.
-        매장 위에 <b>별</b>과 <b>지금 파는 물건 그림</b>, 위로 <b>손님 줄</b></li>
-        <li><b>아래 — 고른 매장 카드.</b> 매장을 누르면 여기가 바뀐다.
-        <b>골목이 계속 보이는 것</b>이 중요하다</li>
+        매장은 <b>건물 그림과 오브제</b>로 알아본다.
+        <b>매장 앞에 손님이 줄을 선다</b> — 매장마다 따로</li>
+        <li><b>매장을 누르면 아래에서 바텀시트가 올라온다.</b>
+        숫자는 <b>그때만</b> 본다. 늘 띄워 두지 않는다</li>
         <li><b>맨 아래 — 메뉴 넷.</b> 골목 · 도감 · 상점 · 이벤트</li>
       </ol>
     </div>
@@ -1092,9 +1101,13 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <h3>왜 이렇게 놓았나</h3>
   <div class="tw"><table>
     <tr><th>자리</th><th>왜</th></tr>
-    <tr><td><b>매장을 눌러도 창이 안 뜬다</b></td>
+    <tr><td><b>매장을 눌러도 전체 화면 창은 안 뜬다</b></td>
     <td>전체 화면 창을 띄우면 <b>골목이 안 보인다.</b> 방치형은 <b>돌아가는 걸 보는 재미</b>인데
-    그걸 가리면 안 된다. <b>아래쪽 카드만 바뀐다</b></td></tr>
+    그걸 가리면 안 된다. <b>바텀시트가 아래에서 올라오고 골목은 위에 남는다</b></td></tr>
+    <tr><td><b>골목에는 숫자를 안 띄운다</b></td>
+    <td>유저 말: <i>“가게를 클릭하면 매장 카드가 열릴 테니.”</i>
+    별도 레벨도 <b>필요할 때 열어서 본다.</b> 골목은 <b>구경하는 곳</b>으로 두고,
+    <b>같은 것을 두 자리에 두지 않는다</b></td></tr>
     <tr><td><b>리모콘이 왼쪽 세로</b></td>
     <td>유저가 <b>“작게 왼쪽에”</b>라고 정했다. 가로로 두면 골목 폭을 먹고,
     세로로 두면 <b>엄지가 닿는 자리</b>다</td></tr>
@@ -1251,8 +1264,10 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
       <div class="stage" style="height:60px; opacity:.4">
         <div class="rc" style="width:20px"><i style="width:14px;height:14px;font-size:8px" class="on">1</i></div>
         <div class="alley" style="padding:4px"><div class="shops">
-          <div class="shop"><span class="st">★★★</span></div><div class="shop"><span class="st">★</span></div>
-          <div class="shop"><span class="st">★★★★★</span></div><div class="shop" style="opacity:.4"><span class="st">·</span></div>
+          <div class="shop">🏚<div style="font-size:8px">🐰🦊</div></div>
+          <div class="shop">🏚<div style="font-size:8px">🐷</div></div>
+          <div class="shop">🏚<div style="font-size:8px">🐻🐰</div></div>
+          <div class="shop" style="opacity:.4">🔒</div>
         </div></div>
       </div>
       <div style="border:1px solid var(--line); border-top:2px solid var(--persim);
@@ -1297,7 +1312,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <div class="wfnote">
       <ol>
         <li><b>골목이 위에 조금 남는다.</b> 시트가 화면의 <b>7할쯤</b>을 덮고
-        위 <b>3할</b>에 골목이 보인다 — 별이 차는 것은 보인다</li>
+        위 <b>3할</b>에 골목이 보인다 — <b>손님이 오가는 것은 계속 보인다</b></li>
         <li><b>◀ 떡집 ▶ 로 옆 매장을 넘긴다.</b> 캡처에서 배운 것.
         <b>시트를 닫고 다시 고를 필요가 없다</b></li>
         <li><b>큰 초록 단추 하나가 주인공.</b> 최대로 올리기.
@@ -1469,18 +1484,18 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
       <div class="stage">
         <div class="rc"><i>1</i><i class="on">2</i><i>3</i><i>4</i><i>5</i></div>
         <div class="alley">
-          <div class="queue">🐰 🦊 🐻</div>
           <div class="shops">
-            <div class="shop"><b>🍡</b><div class="st">★★★★★</div></div>
+            <div class="shop"><b>🏚</b><div style="font-size:9px">🐰</div></div>
             <div class="shop" style="border-color:var(--persim); border-width:2px; background:var(--persim-bg)">
-              <b style="font-size:13px">🍯</b>
-              <div class="st" style="color:var(--faint)">☆☆☆☆☆</div>
+              <b>🏚</b>
+              <div style="font-size:10px">판매대 <b style="color:var(--persim)">🍢→🍯</b></div>
+              <div style="font-size:9px">🦊🐻</div>
             </div>
-            <div class="shop"><b>🐟</b><div class="st">★★☆☆☆</div></div>
-            <div class="shop"><b>🥬</b><div class="st">★★★☆☆</div></div>
+            <div class="shop"><b>🏚</b><div style="font-size:9px">🐷</div></div>
+            <div class="shop"><b>🏚</b><div style="font-size:9px">🐰🐻</div></div>
           </div>
           <div style="text-align:center; font-size:9px; color:var(--faint); margin-top:4px">
-            둘째 매장에서 <b style="color:var(--persim)">🍢 → 🍯</b> 로 바뀌었다</div>
+            둘째 매장 <b style="color:var(--persim)">판매대 위 물건</b>이 바뀌었다</div>
         </div>
       </div>
       <div class="tabs"><div>골목</div><div>도감 <span style="color:var(--persim)">●</span></div><div>상점</div><div>설정</div></div>
@@ -1488,20 +1503,25 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <div class="wfnote">
       <b>세 군데가 동시에 말한다. 글자는 한 자도 안 쓴다.</b>
       <ol>
-        <li><b>매장 자리에서</b> — 옛 물건이 <b>새 물건으로 바뀐다.</b>
+        <li><b>판매대 위 물건이 바뀐다.</b> 뱃지가 아니라 <b>매장 그림의 일부</b>다.
         번역할 글이 없다 — <b>그림이 바뀌는 것 자체가 말</b>이다</li>
-        <li><b>별 줄이 5개에서 0개로 돌아간다.</b> 채운 상이면서
-        <b>다시 채울 것이 생겼다는 뜻</b>이다 — 한 동작이 두 가지를 말한다</li>
+        <li><b>손님 이모지도 같이 바뀐다.</b> 손님은 이모지 하나로 주문하니
+        <b>새 물건이 나오면 새 이모지가 나온다</b> — 따로 만들 것이 없다</li>
         <li><b>아래 도감 아이콘에 점이 하나 붙는다.</b> 도감 한 칸이 채워졌다는 뜻</li>
       </ol>
+      <b>별 5개가 0개로 돌아가는 것은 매장 카드를 열었을 때 본다.</b>
+      골목에는 숫자를 안 띄우기로 했기 때문이다.
       <b>그리고 값이 눈에 띄게 오른다.</b> 50레벨을 올려서 받은 것이니
       <b>반드시 이득이어야 한다</b> <span style="color:var(--mid)">(규칙 5)</span>.
       물건이 바뀌었는데 수입이 그대로면 <b>이 400번은 아무 의미가 없다.</b>
     </div>
   </div>
 
-  <div class="note"><b>손님 이모지도 같이 바뀐다.</b> 손님은 이모지 하나로 주문하니
-  <b>새 물건이 나오면 새 이모지가 나온다.</b> 따로 만들 것이 없는데 신호가 하나 더 생긴다.</div>
+  <div class="note warn"><b>골목에서 숫자를 뺐으니 이 400번은 판매대 그림 하나에 걸려 있다.</b>
+  별이 골목에 없으니 <b>“5개가 0개로 돌아가는”</b> 신호를 여기서는 못 쓴다.
+  남은 것은 <b>판매대 위 물건 그림</b>과 <b>도감의 점</b>이다.
+  그래서 <b>판매대 위 물건 그림은 반드시 있어야 한다</b> — 이것까지 빼면 400번이 도감의 점 하나가 된다.
+  <span style="color:var(--mid)">(유저가 뺀 것은 <b>UI 뱃지</b>였다고 읽었다. 아니라면 말해 달라)</span></div>
 
   <div class="note warn"><b>못 보고 지나갈 수 있다.</b>
   멀리 줌으로 4채를 보고 있거나 다른 골목에 가 있으면 그 순간을 놓친다.
@@ -1563,7 +1583,6 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <li><b>첫 3분에 무엇을 가르치나</b></li>
     <li><b>게임 안 도움말</b> — 이전 판에는 한 군데도 없었다</li>
     <li><b>최대로 올리는 단추가 어떻게 생겼나</b> — 있다는 것은 정해졌다</li>
-    <li><b>매장 위에 별을 어떻게 띄우나</b> — 별로 보여준다는 것은 정해졌다</li>
     <li><b>화면에 글자를 얼마나 쓰나</b> <span style="color:var(--mid)">(이전 판은 너무 많았다)</span></li>
   </ul>
 </section>
