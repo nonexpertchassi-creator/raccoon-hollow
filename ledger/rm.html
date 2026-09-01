@@ -778,15 +778,70 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <tr><td><b>애니메이션</b></td><td><b>여기가 진짜 무겁다.</b> 공정마다 동작이 다르다</td></tr>
   </table></div>
 
-  <h4 style="margin:22px 0 6px; font-size:14.5px">시험대는 나물집이다</h4>
-  <div class="note"><b>떡집은 6과정이 나오는데 나물은 만드는 게 아니라 그냥 판다.</b>
-  공정이 0이면 <b>계산대 한 마리뿐</b>이다.</div>
-  <div class="note"><b>그게 오히려 재미일 수 있다.</b> <b>파는 매장</b>과 <b>만드는 매장</b>으로 성격이 갈린다 —
-  파는 매장은 손이 적게 들고 회전이 빠르고, 만드는 매장은 손이 많이 들고 값이 세다.
-  <b>어디에 돈을 쓸지가 고르는 재미가 된다.</b></div>
-  <div class="note warn"><b>정하기 전에 1스트리트 넷만 짜 보자.</b>
-  떡집은 유저가 이미 짰고, <b>국밥집 · 나물집 · 생선집</b>을 짜 보면
-  “매장마다 얼마나 다른가”가 바로 보인다. <b>넷을 보고 나서 넣을지 말지를 정한다.</b></div>
+  <h4 style="margin:22px 0 6px; font-size:14.5px">1스트리트 네 매장의 공정 <span style="font-weight:400;color:var(--faint);font-size:12px">(초안)</span></h4>
+  <p class="sub">떡집은 유저가 짰고, 나물집은 유저가 판타지로 풀었다:
+  <i>“우린 나름 판타지의 세계잖아. <b>화단에 물 주고 뽑고 물 주고 뽑고</b> 하면 되지 않을까? ㅋㅋㅋ
+  물 준다 &gt; 햇빛 쬐준다 &gt; 뽑는다 &gt; 세척한다 &gt; 포장한다.”</i></p>
+  <div class="tw"><table>
+    <tr><th></th><th>떡집 (6)</th><th>국밥집 (6)</th><th>나물집 (5)</th><th>생선집 (6)</th></tr>
+    <tr><td class="num mono">1</td><td>씻기</td><td>썰기</td><td>물 주기</td><td>그물 던지기</td></tr>
+    <tr><td class="num mono">2</td><td>빻기</td><td>물 붓기</td><td>햇빛 쬐기</td><td>건지기</td></tr>
+    <tr><td class="num mono">3</td><td>반죽</td><td>불 때기</td><td>뽑기</td><td>비늘 치기</td></tr>
+    <tr><td class="num mono">4</td><td>찌기</td><td>끓이기</td><td>씻기</td><td>소금 뿌리기</td></tr>
+    <tr><td class="num mono">5</td><td>치대기</td><td>간 보기</td><td>포장</td><td>말리기</td></tr>
+    <tr><td class="num mono">6</td><td>식히기</td><td>담기</td><td class="who">—</td><td>엮기</td></tr>
+  </table></div>
+  <div class="tw"><table>
+    <tr><th>매장</th><th>작업대</th></tr>
+    <tr><td><b>떡집</b></td><td>물통 · 절구 · 반죽판 · 시루 · 안반 · 채반</td></tr>
+    <tr><td><b>국밥집</b></td><td>도마 · 물동이 · 아궁이 · 가마솥 · 국자 · 뚝배기</td></tr>
+    <tr><td><b>나물집</b></td><td>물뿌리개 · 화단 · 바구니 · 함지 · 짚끈</td></tr>
+    <tr><td><b>생선집</b></td><td>그물 · 뜰채 · 비늘칼 · 소금 항아리 · 덕장 · 짚끈</td></tr>
+  </table></div>
+  <div class="note"><b>작업대가 겹치는 건 짚끈 하나뿐이다</b>(나물집 포장 · 생선집 엮기).
+  그건 오히려 자연스럽다 — 조선 장터에서 무엇을 묶든 짚끈이었다.</div>
+  <div class="note"><b>“기르기”가 파는 매장 문제를 없앴다.</b> 나물은 만드는 게 아니라 캐 오는 것이라
+  공정이 0일 뻔했는데, <b>판타지라 길러 버리면 된다.</b>
+  그러면 <b>매장 20개가 다 공정을 가질 수 있다</b> — 갈래를 둘로 나눌 필요가 없어졌다.</div>
+  <div class="note"><b>나물집만 5과정인 것도 그냥 둔다.</b> <b>매장마다 공정 수가 다른 것이 특징이 된다</b> —
+  만드는 게 무거운 매장과 가벼운 매장. 어디에 돈을 쓸지가 갈린다.</div>
+
+  <h4 style="margin:22px 0 6px; font-size:14.5px">공정 수는 물건 번호를 따라 는다</h4>
+  <pre>물건 1번   ▓                       공정 1개    빠르다
+물건 10번  ▓▓▓▓                    공정 4개
+물건 20번  ▓▓▓▓▓▓                  공정 6개    일꾼이 다 있어도 느리다</pre>
+  <div class="note"><b>몇 번째 물건에서 공정이 하나 붙는지는 밸런스에서 잰다.</b>
+  <b>여기서 정하는 것은 “는다”는 것</b>이고, 얼마나 가파른지는 재야 나온다
+  (성격을 정하는 숫자와 맞추는 숫자 → <a href="#system">시스템</a>).</div>
+
+  <h4 style="margin:22px 0 6px; font-size:14.5px">애니메이션 값이 생각보다 싸다</h4>
+  <div class="note"><b>공정 100개에 애니메이션 100개가 필요한 게 아니다.</b></div>
+  <pre>너구리 동작   3~4개만        통통 튀기 · 일하기 · 걷기
+작업대 그림   공정마다 1장    정지 그림. 김이 나거나 살짝 흔들리는 정도</pre>
+  <div class="note"><b>“지금 뭘 하는지”는 너구리가 아니라 작업대가 말한다.</b>
+  절구 앞에서 팔을 움직이면 빻는 것이고, 시루 앞에서 <b>같은 동작</b>을 하면 찌는 것이다.
+  <b>줌아웃하면 너구리는 작은 점</b>이라 정교한 동작은 보이지도 않는다.</div>
+  <div class="note warn"><b>도구 이야기는 내 아는 것이 낡았을 수 있다.</b> 특히 AI 쪽은 빨리 바뀐다 —
+  <b>직접 확인해 보는 게 맞다.</b> 아래는 2026년 5월까지 아는 것이다.</div>
+  <div class="tw"><table>
+    <tr><th>도구</th><th></th></tr>
+    <tr><td><b>Godot 기본</b> (AnimationPlayer + Skeleton2D)</td>
+    <td><b>무료.</b> 통통 튀기 · 팔 움직이기 정도면 이걸로 충분하다</td></tr>
+    <tr><td><b>Spine</b></td><td>2D 뼈대 애니메이션의 산업 표준. 유료. Godot 연동이 있다</td></tr>
+    <tr><td><b>DragonBones</b></td><td>Spine 비슷한데 무료. 좀 오래됐다</td></tr>
+  </table></div>
+  <div class="note"><b>AI로 애니메이션을 통째로 뽑는 것은 아직 게임에 쓰기 어렵다</b> —
+  프레임마다 그림이 미묘하게 달라져서 <b>부글거려 보인다.</b>
+  대신 <b>AI로 한 장 뽑기 → 부위별로 조각내기 → 뼈대 붙이기</b>가 잘 맞는다.</div>
+  <div class="note warn"><b>먼저 Godot 기본으로 해 보고, 안 되면 그때 Spine을 본다.</b>
+  <b>작게 나오는 그림에 큰 도구를 쓰면 값만 나간다.</b></div>
+
+  <h4 style="margin:22px 0 6px; font-size:14.5px">시험대였던 나물집은 풀렸다</h4>
+  <div class="note warn"><b>내가 걱정한 것:</b> 떡집은 6과정이 나오는데
+  나물은 만드는 게 아니라 그냥 파니 <b>공정이 0</b>이고, 그러면 매장이 두 갈래로 갈린다.</div>
+  <div class="note"><b>유저가 판타지로 풀었다.</b> 길러 버리면 된다.
+  <b>나는 “조선 장터에서 나물을 어떻게 파나”를 생각했고, 유저는 “이건 게임이다”를 생각했다.</b>
+  물 주고 햇빛 쬐고 뽑는 화단이 있으면 그만이다.</div>
 
   <h3>아직 안 정한 것 — 여기서 정할 것들</h3>
   <ul>
