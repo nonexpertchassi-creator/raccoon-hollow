@@ -204,7 +204,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <nav>
     <a href="#now"><span>지금 어디</span></a>
     <a href="#keep"><span>남긴 것</span></a>
-    <a href="#open"><span>미결정 모음</span><span class="c">1</span></a>
+    <a href="#open"><span>미결정 모음</span><span class="c done">0</span></a>
     <div class="grp">기획 일곱 갈래</div>
     <a href="#story"><span>시나리오</span><span class="c done">24</span></a>
     <a href="#system"><span>시스템</span><span class="c done">25</span></a>
@@ -317,13 +317,8 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <b>손으로 옮겨 적으면 반드시 한쪽이 어긋나기 때문이다</b>(규칙 3).
   고칠 것이 있으면 <b>갈래 쪽 픽스 표를 고친다.</b></div>
 <!-- AUTO:open -->
-  <div class="zero">아직 승인 안 받은 것 <b>1</b></div>
-  <p class="sub"><b>전부 내가 판단한 것이다.</b> 유저가 <i>“그거 아니야”</i> 한 마디면 물린다.</p>
-  <div class="tw"><table>
-    <tr><th>어느 갈래</th><th>내가 정한 것</th></tr>
-  <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#ux" style="color:var(--faint)">UX · UI 기획</a> · 노랑 1</td></tr>
-  <tr><td class="who" style="white-space:nowrap">🟨</td><td><b>스킬 생산속도는 모든 매장에 걸린다.</b> 매장 카드의 일꾼 속도(돈)와 층이 다르다<div class="who" style="margin-top:3px">내 판단 — 앞의 “일꾼은 돈”과 스치는 자리다</div></td></tr>
-  </table></div>
+  <div class="zero done">아직 승인 안 받은 것 <b>0</b></div>
+  <div class="note"><b>남은 노랑이 없다.</b> 낸 것을 유저가 다 물렸거나 승인했다.</div>
   <div class="note"><b>아무도 안 정한 것</b>(내가 판단조차 안 한 것)은 갈래마다 <b>「아직 안 정한 것」</b>에 따로 있다 — 그건 성격이 달라서 안 섞는다.</div>
 <!-- /AUTO:open -->
 </section>
@@ -1372,7 +1367,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <tr><td>🟦</td><td><b>뽑기는 손님 뽑기다.</b> 물건도 일꾼도 아니다</td><td class="who">“뽑기는 뭐 손님 뽑기인데”</td></tr>
     <tr><td>🟦</td><td><b>패시브 스킬은 보석으로만 올린다.</b> 광고도 현금도 안 붙는다</td><td class="who">“무조건 보석으로 레벨업해야 함”</td></tr>
     <tr><td>🟦</td><td><b>스킬은 낼 때 여덟 개</b> — 등장률 · 이동속도 · 밤 출몰률 · 생산속도 · 오프라인 시간 · 오프라인 배수 · 주사위 최저 눈 · 보석 섞일 확률</td><td class="who">“리스트만 있어도 될 거 같은데”</td></tr>
-    <tr><td>🟨</td><td><b>스킬 생산속도는 모든 매장에 걸린다.</b> 매장 카드의 일꾼 속도(돈)와 층이 다르다</td><td class="who">내 판단 — 앞의 “일꾼은 돈”과 스치는 자리다</td></tr>
+    <tr><td>🟦</td><td><b>스킬 생산속도는 모든 매장에 걸린다.</b> 매장 카드의 일꾼 속도(돈)와 층이 다르다</td><td class="who">“모든 가게에 적용해야지”</td></tr>
     <tr><td>🟦</td><td><b>손님마다 능력이 하나씩 있다.</b> 값 배수만이 아니라 <b>여러 갈래로</b></td><td class="who">“수익뿐만 아니라 … 다양하게”</td></tr>
     <tr><td>🟦</td><td><b>같은 손님이 또 나오면 그 능력이 조금 오른다</b> — 3배 → 3.1배</td><td class="who">“3배에서 3.1배로 되거나”</td></tr>
     <tr><td>🟦</td><td><b>손님 능력에는 끝이 있다.</b> 다 채운 뒤 또 나오면 <b>보석과 뽑기권 중 하나가 랜덤으로</b></td><td class="who">“둘 중 하나 랜덤으로”</td></tr>
@@ -3716,45 +3711,98 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <h2>밸런스 기획</h2>
   <p class="sub">숫자를 조율하고, <b>짐작하지 말고 잰다.</b></p>
   <div class="zero">정한 것 <b>0</b></div>
-  <h3>정해야 할 것 — 여태 “밸런스에서 잰다”고 미룬 것들</h3>
-  <div class="note warn"><b>이 목록이 없어서 미룬 것이 안 보였다.</b>
-  장부 <b>13군데</b>에 <i>“그건 밸런스에서 잰다”</i>고 적혀 있는데
-  정작 이 갈래에는 <b>“전부”</b>라는 한 줄뿐이었다.
-  <b>한 사실은 한 곳에</b>(규칙 3) — 미룬 것도 한 곳에 모은다.</div>
+  <h3>정해야 할 것 — 2026-09-01에 다시 훑었다</h3>
+  <div class="note warn"><b>밸런스로 가기 전에 픽스 135개를 한 줄씩 다시 읽었다.</b>
+  유저 말: <i>“밸런스 가기 전까지 한번 싹 훑어보자. <b>밸런스에 가야 하는데 누락된 거 찾아보자.</b>”</i>
+  <b>열다섯 개가 빠져 있었다</b> — 아래 <span style="color:var(--persim)">●</span> 표시.</div>
+  <div class="note"><b>빠진 것이 한 갈래에 몰려 있었다 — 사업 쪽이다.</b>
+  화면을 그리면서 <b>“이건 밸런스”</b>라고 넘긴 것은 잘 적었는데,
+  <b>값을 정한 적이 아예 없는 것</b>(패스 값 · 보석 묶음 값 · 광고 제거 값)은
+  <b>넘긴 기억이 없어서 목록에도 안 올랐다.</b>
+  <b>미룬 것보다 아예 손 안 댄 것이 더 안 보인다.</b></div>
   <div class="tw"><table>
-    <tr><th></th><th>재야 할 것</th><th>왜 급한가</th></tr>
-    <tr><td colspan="3" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)">이게 없으면 방금 정한 화면을 못 그린다</td></tr>
-    <tr><td class="num mono">1</td><td><s>주사위 눈이 몇 가지고 배수가 얼마까지인가</s>
-    <b>→ 정해졌다</b> · 1~6, 눈이 곧 배수</td>
-    <td><b>유저가 답했다.</b> 그래서 <b>4번 합계도 따로 정할 게 없다</b> —
-    <b>4~24배로 계산해서 나온다</b></td></tr>
-    <tr><td class="num mono">2</td><td><b>기본을 얼마로 잡나</b> — 12시간치 총액 중 <b>기본의 몫</b></td>
-    <td><b>이게 진짜 남은 문제다.</b> 주사위가 최대 24배를 얹으니
-    <b>기본이 크면 총액이 터진다.</b> <b>총액을 먼저 정하고 거꾸로 기본을 뽑는다</b></td></tr>
-    <tr><td class="num mono">3</td><td><b>스킬 여덟의 값과 효과</b> — 한 단계에 몇 %씩, <b>별 몇 개까지</b>
-    <span style="color:var(--faint)">(이름 여덟은 정해졌다)</span></td>
-    <td><b>스킬 메뉴가 여기 걸려 있다.</b> 숫자가 없으면 <b>빈 화면</b>이다.
-    <b>절대 금액이 아니라 비율</b>이라 콘텐츠를 안 기다려도 된다</td></tr>
-    <tr><td class="num mono">3-2</td><td><b>주사위 한 번 더(보석) 값</b></td><td>같은 화면</td></tr>
-    <tr><td colspan="3" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)">돈이 도는 뼈대</td></tr>
-    <tr><td class="num mono">4</td><td>매장 레벨 값 곡선 (1~1,000)</td><td>제일 자주 누르는 단추다</td></tr>
-    <tr><td class="num mono">5</td><td>물건 값 20단계</td><td>레벨을 올린 값을 여기서 돌려준다(규칙 5)</td></tr>
-    <tr><td class="num mono">6</td><td>구역 값 넷</td><td>“돈 모아서 연다”가 벽이 되면 안 된다</td></tr>
-    <tr><td class="num mono">7</td><td>공정 수가 물건 번호를 따라 느는 가파름</td><td>3과정 매장과 6과정 매장의 값이 달라야 한다</td></tr>
-    <tr><td class="num mono">8</td><td>매장당 일꾼 최대 수 · 둘째 마리 값</td><td>상한은 배치판이 정하고 값은 여기서</td></tr>
-    <tr><td class="num mono">9</td><td>일꾼 작업속도 · 이동속도 레벨 값</td><td></td></tr>
-    <tr><td class="num mono">10</td><td>한 매장 앞 줄 최대 길이</td><td>짜증 이모지가 언제 뜨는지가 여기서 정해진다</td></tr>
-    <tr><td colspan="3" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)">보석과 현금</td></tr>
-    <tr><td class="num mono">11</td><td>간판 3단계 값 · 손님 방문율이 얼마나 오르나</td><td></td></tr>
-    <tr><td class="num mono">12</td><td>가로등 값 · 밤 손님이 얼마나 느나</td><td></td></tr>
-    <tr><td class="num mono">13</td><td>도감 칸 하나당 보석</td><td></td></tr>
-    <tr><td class="num mono">14</td><td>뽑기 확률</td><td></td></tr>
-    <tr><td class="num mono">15</td><td>멤버십 배수(×2~×10)와 값</td><td></td></tr>
-    <tr><td class="num mono">16</td><td>오프라인 시간당 수입</td><td>“5분 하려다 20분 하게” 만드는 자리다</td></tr>
+    <tr><th></th><th>재야 할 것</th><th>어디서 걸려 있나</th></tr>
+    <tr><td colspan="3" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)">이게 없으면 이미 그린 화면을 못 채운다</td></tr>
+    <tr><td class="num mono">1</td><td><b>기본을 얼마로 잡나</b> — 12시간치 총액 중 기본의 몫</td>
+    <td>주사위가 최대 24배를 얹는다. <b>총액을 먼저 정하고 거꾸로 기본을 뽑는다</b></td></tr>
+    <tr><td class="num mono">2</td><td><b>스킬 여덟의 값과 효과</b> — 한 단계에 얼마씩, <b>별 몇 개까지</b></td>
+    <td>스킬 화면 · 단추 안 숫자</td></tr>
+    <tr><td colspan="3" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)">게임 전체의 길이</td></tr>
+    <tr><td class="num mono">3 <span style="color:var(--persim)">●</span></td>
+    <td><b>챕터 하나가 며칠짜리인가</b></td>
+    <td><b>이게 제일 큰 숫자다.</b> 아래 곡선이 다 여기서 나온다.
+    유저가 직접 돌려 재기로 했지만 <b>목표는 정해야 잰 값을 판단한다</b></td></tr>
+    <tr><td class="num mono">4</td><td><b>매장 레벨 값 곡선</b> (1~1,000)</td><td>제일 자주 누르는 단추</td></tr>
+    <tr><td class="num mono">5</td><td><b>물건 값 20단계</b></td><td>레벨 올린 값을 여기서 돌려준다(규칙 5)</td></tr>
+    <tr><td class="num mono">6</td><td><b>구역 값 넷</b></td><td>“돈 모아서 연다”가 벽이 되면 안 된다</td></tr>
+    <tr><td class="num mono">7</td><td><b>공정 수가 물건 번호를 따라 느는 가파름</b></td><td>3과정 매장과 6과정 매장의 값이 달라야 한다</td></tr>
+    <tr><td colspan="3" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)">매장과 일꾼</td></tr>
+    <tr><td class="num mono">8</td><td><b>매장당 일꾼 최대 수 · 둘째 마리 값</b></td><td>상한은 배치판이 정하고 값은 여기서</td></tr>
+    <tr><td class="num mono">9</td><td><b>일꾼 작업속도 · 이동속도 레벨 값</b></td><td>돈으로 산다 · 매장마다 따로</td></tr>
+    <tr><td class="num mono">10</td><td><b>한 매장 앞 줄 최대 길이</b></td><td>짜증 이모지가 언제 뜨는지가 여기서 정해진다</td></tr>
+    <tr><td class="num mono">11</td><td><b>간판 3단계 값 · 손님 방문율이 얼마나 오르나</b></td><td>보석</td></tr>
+    <tr><td class="num mono">12</td><td><b>가로등 값 · 밤 손님이 얼마나 느나</b></td><td>보석 · 매장마다</td></tr>
+    <tr><td colspan="3" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)">손님</td></tr>
+    <tr><td class="num mono">13 <span style="color:var(--persim)">●</span></td>
+    <td><b>손님이 오는 간격</b></td><td>공식에는 있는데 <b>목록에 없었다.</b> 한 바퀴의 속도를 정한다</td></tr>
+    <tr><td class="num mono">14 <span style="color:var(--persim)">●</span></td>
+    <td><b>손님 능력의 시작값과 오르는 폭</b> — ×3에서 ×3.1</td><td>중복이 얼마나 값을 하나</td></tr>
+    <tr><td class="num mono">15 <span style="color:var(--persim)">●</span></td>
+    <td><b>손님 능력이 몇 단계에서 끝나나</b></td><td>끝을 두기로 했는데 <b>몇인지는 안 정했다</b></td></tr>
+    <tr><td class="num mono">16 <span style="color:var(--persim)">●</span></td>
+    <td><b>능력 갈래마다 세기</b> — 보석 확률 · 한 번에 사는 개수 · 데려오는 친구 수 …</td>
+    <td>갈래 일곱은 정했는데 <b>각각 얼마인지는 없다</b></td></tr>
+    <tr><td class="num mono">17 <span style="color:var(--persim)">●</span></td>
+    <td><b>손님 10종에 어느 능력을 주나</b></td><td>짝짓기는 콘텐츠, <b>세기는 여기</b></td></tr>
+    <tr><td colspan="3" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)">운 · 확률 — 공개해야 하는 것들</td></tr>
+    <tr><td class="num mono">18 <span style="color:var(--persim)">●</span></td>
+    <td><b>주사위 눈 1~6이 각각 몇 %인가</b> · 스킬로 바닥을 올렸을 때는</td>
+    <td><b>확률 공개 대상.</b> 균등인지 아닌지도 안 정했다</td></tr>
+    <tr><td class="num mono">19 <span style="color:var(--persim)">●</span></td>
+    <td><b>보석이 섞일 확률</b> — 처음 몇 %, 한 단계에 몇 %</td><td>확률 공개 대상 · 스킬 여덟 번째</td></tr>
+    <tr><td class="num mono">20</td><td><b>손님 뽑기 확률</b></td><td>확률 공개 대상</td></tr>
+    <tr><td class="num mono">21 <span style="color:var(--persim)">●</span></td>
+    <td><b>뽑기권</b> — 한 번에 몇 뽑나, 어디서 얼마나 나오나</td><td>패스 프리미엄 · 능력 다 채운 손님</td></tr>
+    <tr><td colspan="3" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)">자리를 비웠을 때</td></tr>
+    <tr><td class="num mono">22</td><td><b>오프라인 시간당 수입</b></td><td>“5분 하려다 20분 하게” 만드는 자리</td></tr>
+    <tr><td class="num mono">23</td><td><b>오프라인 최대 시간 단계</b> — 2시간에서 12시간까지 몇 걸음</td><td>스킬</td></tr>
+    <tr><td class="num mono">24</td><td><b>주사위 한 번 더(보석) 값</b></td><td>4번을 다 쓴 뒤</td></tr>
+    <tr><td colspan="3" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)">골목에 뜨는 팝업</td></tr>
+    <tr><td class="num mono">25 <span style="color:var(--persim)">●</span></td>
+    <td><b>얼마나 자주 뜨나</b></td><td>잦으면 껐다는 것이 남의 게임에서 얻은 교훈이다</td></tr>
+    <tr><td class="num mono">26 <span style="color:var(--persim)">●</span></td>
+    <td><b>광고를 보면 얼마를 주나</b> — 몇 배</td><td>유저가 “돈을 한 열 배”라고 했다</td></tr>
+    <tr><td class="num mono">27 <span style="color:var(--persim)">●</span></td>
+    <td><b>광고 보고 보석 — 하루 몇 번, 몇 개</b></td><td>상점 화면에 이미 그려 놨다</td></tr>
+    <tr><td colspan="3" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)">이벤트 · 패스 · 미션</td></tr>
+    <tr><td class="num mono">28 <span style="color:var(--persim)">●</span></td>
+    <td><b>이벤트 진행 칸 몇 개 · 무엇으로 차나 · 칸마다 보상</b></td><td>3~4일에 다 못 채우게 잡아야 다시 온다</td></tr>
+    <tr><td class="num mono">29 <span style="color:var(--persim)">●</span></td>
+    <td><b>이벤트 하나에 손님 몇 종</b></td><td>그림 장수가 여기서 나온다 → 콘텐츠</td></tr>
+    <tr><td class="num mono">30 <span style="color:var(--persim)">●</span></td>
+    <td><b>패스 30일 보상표</b> — 기본 줄과 프리미엄 줄에 무엇을 얼마씩</td><td>담을 것만 정했다</td></tr>
+    <tr><td class="num mono">31 <span style="color:var(--persim)">●</span></td>
+    <td><b>데일리 미션 몇 개 · 무엇 · 보상</b></td><td>이름만 정했다</td></tr>
+    <tr><td class="num mono">32</td><td><b>도감 칸 하나당 보석</b></td><td>2,000칸이라 작아야 한다</td></tr>
+    <tr><td colspan="3" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)">현금</td></tr>
+    <tr><td class="num mono">33</td><td><b>멤버십 배수(×2~×10)</b></td><td>이미 목록에 있었다</td></tr>
+    <tr><td class="num mono">34 <span style="color:var(--persim)">●</span></td>
+    <td><b>멤버십 값 · 패스 값 · 보석 묶음 값</b> (60/300/980)</td>
+    <td><b>현금 값을 하나도 안 정했다.</b> 상점 화면에 자리는 다 그려 놨다</td></tr>
+    <tr><td class="num mono">35 <span style="color:var(--persim)">●</span></td>
+    <td><b>광고 제거 값 · 묶은 혜택 각각의 세기</b></td>
+    <td><b>“평생 볼 광고보다 비싸야 한다”만 적어 뒀다.</b> 칸이 열두 개인데 각각 얼마인지가 없다</td></tr>
+    <tr><td colspan="3" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)">잔돈</td></tr>
+    <tr><td class="num mono">36</td><td><b>줌이 움직이는 속도</b></td><td>“매끄럽게”만 정했다</td></tr>
   </table></div>
-  <div class="note warn"><b>위 셋은 성격이 다르다.</b> 4~16은 <b>콘텐츠가 굳은 뒤에 재는 것</b>이지만
-  1~3은 <b>이미 정한 화면이 기다리고 있는 것</b>이다.
-  <b>숫자가 없으면 그 화면을 그릴 수가 없다.</b></div>
+  <div class="note warn"><b>1번과 3번이 나머지를 다 끌고 간다.</b>
+  <b>챕터 하나가 며칠짜리인가</b>가 정해지면 매장 레벨 값도 물건 값도 구역 값도 거기서 나오고,
+  <b>기본을 얼마로 잡나</b>가 정해지면 오프라인 · 주사위 · 팝업이 다 따라온다.
+  <b>둘부터 잡고 나머지를 매단다.</b></div>
+  <div class="note"><b>그리고 재는 법은 규칙 1이다.</b> 한 판으로 판단하지 않는다 —
+  <b>운 번호 다섯 개 이상으로 재고 가운뎃값을 본다.</b>
+  이걸 적어 놓고도 두 번 어겼다.</div>
+
   <div class="note"><b>재는 법은 이미 안다</b> → <a href="#formula">공식</a>의 마지막 칸.
   자동 검사 도구도 만들어 뒀지만 <b>지금은 안 돌린다</b> — 기획이 굳은 뒤에 투입한다(유저).</div>
 </section>
@@ -3994,7 +4042,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   그래서 <b>도구가 갈래의 픽스 표를 읽어서 여기에 다시 쓴다</b> —
   <b>문서를 늘리지 말고 뽑아 쓴다</b>(규칙 3).</div>
 <!-- AUTO:blue -->
-  <div class="zero done">정해진 것 <b>134</b></div>
+  <div class="zero done">정해진 것 <b>135</b></div>
   <div class="tw"><table>
     <tr><th></th><th>정한 것 · 유저의 말</th></tr>
   <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#story" style="color:var(--faint)">시나리오 기획</a> · 파랑 24</td></tr>
@@ -4071,7 +4119,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <tr><td class="num mono who">20</td><td><b>손님 줄은 길을 따라 옆으로 선다</b> — 매장 정면이 아니다. 꼬리는 들어온 쪽<div class="who" style="margin-top:3px">“맞음”</div></td></tr>
   <tr><td class="num mono who">21</td><td><b>줌은 매끄럽게 이어진다.</b> 칸으로 끊지 않고, 1채~4채 밖으로는 못 나간다<div class="who" style="margin-top:3px">“매끄럽게, 끊기면 안 되겠지?”</div></td></tr>
   <tr><td class="num mono who">22</td><td><b>간판은 한 겹이다</b> — 3단계, 올리면 모양도 좋아진다 → <a href="#system">시스템</a><div class="who" style="margin-top:3px">“3단계 정도로 하자”</div></td></tr>
-  <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#ux" style="color:var(--faint)">UX · UI 기획</a> · 파랑 39</td></tr>
+  <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#ux" style="color:var(--faint)">UX · UI 기획</a> · 파랑 40</td></tr>
   <tr><td class="num mono who">1</td><td><b>도감은 메뉴 하나로 두고, 그 안에서 작은 메뉴나 탭으로 나눈다</b><div class="who" style="margin-top:3px">“도감 메뉴를 하나 만들고”</div></td></tr>
   <tr><td class="num mono who">2</td><td><b>그 메뉴는 화면 아래쪽 메뉴에 들어간다</b><div class="who" style="margin-top:3px">“하단 메뉴를 생각 중이야”</div></td></tr>
   <tr><td class="num mono who">3</td><td><b>세계지도는 펼친 지도.</b> 나라마다 동그란 말풍선 — 못 가는 곳은 자물쇠, 지금 하는 곳은 진행도<div class="who" style="margin-top:3px">“펼쳐진 세계지도에 작게 나라 마크”</div></td></tr>
@@ -4105,12 +4153,13 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <tr><td class="num mono who">31</td><td><b>뽑기는 손님 뽑기다.</b> 물건도 일꾼도 아니다<div class="who" style="margin-top:3px">“뽑기는 뭐 손님 뽑기인데”</div></td></tr>
   <tr><td class="num mono who">32</td><td><b>패시브 스킬은 보석으로만 올린다.</b> 광고도 현금도 안 붙는다<div class="who" style="margin-top:3px">“무조건 보석으로 레벨업해야 함”</div></td></tr>
   <tr><td class="num mono who">33</td><td><b>스킬은 낼 때 여덟 개</b> — 등장률 · 이동속도 · 밤 출몰률 · 생산속도 · 오프라인 시간 · 오프라인 배수 · 주사위 최저 눈 · 보석 섞일 확률<div class="who" style="margin-top:3px">“리스트만 있어도 될 거 같은데”</div></td></tr>
-  <tr><td class="num mono who">34</td><td><b>손님마다 능력이 하나씩 있다.</b> 값 배수만이 아니라 <b>여러 갈래로</b><div class="who" style="margin-top:3px">“수익뿐만 아니라 … 다양하게”</div></td></tr>
-  <tr><td class="num mono who">35</td><td><b>같은 손님이 또 나오면 그 능력이 조금 오른다</b> — 3배 → 3.1배<div class="who" style="margin-top:3px">“3배에서 3.1배로 되거나”</div></td></tr>
-  <tr><td class="num mono who">36</td><td><b>손님 능력에는 끝이 있다.</b> 다 채운 뒤 또 나오면 <b>보석과 뽑기권 중 하나가 랜덤으로</b><div class="who" style="margin-top:3px">“둘 중 하나 랜덤으로”</div></td></tr>
-  <tr><td class="num mono who">37</td><td><b>손님 능력은 단계를 안 보여준다.</b> <b>지금 값만</b> 적는다 — 별도 바도 안 쓴다<div class="who" style="margin-top:3px">“단계로 굳이 보여주지 말자”</div></td></tr>
-  <tr><td class="num mono who">38</td><td><b>능력은 전부 “덤”이다.</b> <b>어느 손님이 오든 물건 값은 똑같이 받고</b> 능력은 그 위에 얹힌다<div class="who" style="margin-top:3px">“맞음 좋아”</div></td></tr>
-  <tr><td class="num mono who">39</td><td><b>잠긴 칸을 두 세기로 가린다</b> — 곧 올 것은 진한 실루엣, 먼 것은 거의 안 보이게.
+  <tr><td class="num mono who">34</td><td><b>스킬 생산속도는 모든 매장에 걸린다.</b> 매장 카드의 일꾼 속도(돈)와 층이 다르다<div class="who" style="margin-top:3px">“모든 가게에 적용해야지”</div></td></tr>
+  <tr><td class="num mono who">35</td><td><b>손님마다 능력이 하나씩 있다.</b> 값 배수만이 아니라 <b>여러 갈래로</b><div class="who" style="margin-top:3px">“수익뿐만 아니라 … 다양하게”</div></td></tr>
+  <tr><td class="num mono who">36</td><td><b>같은 손님이 또 나오면 그 능력이 조금 오른다</b> — 3배 → 3.1배<div class="who" style="margin-top:3px">“3배에서 3.1배로 되거나”</div></td></tr>
+  <tr><td class="num mono who">37</td><td><b>손님 능력에는 끝이 있다.</b> 다 채운 뒤 또 나오면 <b>보석과 뽑기권 중 하나가 랜덤으로</b><div class="who" style="margin-top:3px">“둘 중 하나 랜덤으로”</div></td></tr>
+  <tr><td class="num mono who">38</td><td><b>손님 능력은 단계를 안 보여준다.</b> <b>지금 값만</b> 적는다 — 별도 바도 안 쓴다<div class="who" style="margin-top:3px">“단계로 굳이 보여주지 말자”</div></td></tr>
+  <tr><td class="num mono who">39</td><td><b>능력은 전부 “덤”이다.</b> <b>어느 손님이 오든 물건 값은 똑같이 받고</b> 능력은 그 위에 얹힌다<div class="who" style="margin-top:3px">“맞음 좋아”</div></td></tr>
+  <tr><td class="num mono who">40</td><td><b>잠긴 칸을 두 세기로 가린다</b> — 곧 올 것은 진한 실루엣, 먼 것은 거의 안 보이게.
     <b>그림은 더 안 그린다</b>(아래)<div class="who" style="margin-top:3px">“나도 동의”</div></td></tr>
   <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#content" style="color:var(--faint)">콘텐츠 기획</a> · 파랑 12</td></tr>
   <tr><td class="num mono who">1</td><td><b>1챕터 조선 장터의 매장 20개</b> — 아래 표<div class="who" style="margin-top:3px">“잘 뽑았다 좋아”</div></td></tr>
