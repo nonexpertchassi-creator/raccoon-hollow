@@ -204,7 +204,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <nav>
     <a href="#now"><span>지금 어디</span></a>
     <a href="#keep"><span>남긴 것</span></a>
-    <a href="#open"><span>미결정 모음</span><span class="c">1</span></a>
+    <a href="#open"><span>미결정 모음</span><span class="c done">0</span></a>
     <div class="grp">기획 일곱 갈래</div>
     <a href="#story"><span>시나리오</span><span class="c done">24</span></a>
     <a href="#system"><span>시스템</span><span class="c done">25</span></a>
@@ -314,13 +314,8 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <b>손으로 옮겨 적으면 반드시 한쪽이 어긋나기 때문이다</b>(규칙 3).
   고칠 것이 있으면 <b>갈래 쪽 픽스 표를 고친다.</b></div>
 <!-- AUTO:open -->
-  <div class="zero">아직 승인 안 받은 것 <b>1</b></div>
-  <p class="sub"><b>전부 내가 판단한 것이다.</b> 유저가 <i>“그거 아니야”</i> 한 마디면 물린다.</p>
-  <div class="tw"><table>
-    <tr><th>어느 갈래</th><th>내가 정한 것</th></tr>
-  <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#ux" style="color:var(--faint)">UX · UI 기획</a> · 노랑 1</td></tr>
-  <tr><td class="who" style="white-space:nowrap">🟨</td><td><b>주사위는 멤버십·스킬이 걸린 기본에 곱한다</b> — 멤버십이 묽어지지 않게<div class="who" style="margin-top:3px">내 판단 · 규칙 5</div></td></tr>
-  </table></div>
+  <div class="zero done">아직 승인 안 받은 것 <b>0</b></div>
+  <div class="note"><b>남은 노랑이 없다.</b> 낸 것을 유저가 다 물렸거나 승인했다.</div>
   <div class="note"><b>아무도 안 정한 것</b>(내가 판단조차 안 한 것)은 갈래마다 <b>「아직 안 정한 것」</b>에 따로 있다 — 그건 성격이 달라서 안 섞는다.</div>
 <!-- /AUTO:open -->
 </section>
@@ -1303,7 +1298,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <tr><td>🟦</td><td><b>주사위는 굴린 것이 다 더해진다</b> — 무료 1회 + 광고 3회 + 보석. 줄어드는 칸은 없다</td><td class="who">“그 값도 주고 … 3회도 다 줘”</td></tr>
     <tr><td>🟦</td><td><b>주사위 눈은 1~6이고 눈이 곧 배수다</b> — ⚀는 ×1, ⚅는 ×6</td><td class="who">“1은 ×1이고 6은 ×6이겠지?”</td></tr>
     <tr><td>🟦</td><td><b>주사위는 하루 4번, 다음 날 초기화.</b> 오프라인 한 번당이 아니라 하루당이다</td><td class="who">“하루 4번 하면 끝남”</td></tr>
-    <tr><td>🟨</td><td><b>주사위는 멤버십·스킬이 걸린 기본에 곱한다</b> — 멤버십이 묽어지지 않게</td><td class="who">내 판단 · 규칙 5</td></tr>
+    <tr><td>🟦</td><td><b>주사위는 멤버십·스킬이 걸린 기본에 곱한다</b> — 멤버십이 묽어지지 않게</td><td class="who">“맞음”</td></tr>
     <tr><td>🟦</td><td><b>잠긴 칸을 두 세기로 가린다</b> — 곧 올 것은 진한 실루엣, 먼 것은 거의 안 보이게.
     <b>그림은 더 안 그린다</b>(아래)</td><td class="who">“나도 동의”</td></tr>
   </table></div>
@@ -1923,7 +1918,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
             골목은 <b>그대로다.</b> 아무것도 안 튀어나온다</div>
         </div>
       </div>
-      <div class="tabs"><div>골목</div><div>도감 <span style="color:var(--persim)">●</span></div><div>상점</div><div>설정</div></div>
+      <div class="tabs"><div>도감 <span style="color:var(--persim)">●</span></div><div>스킬</div><div>상점</div><div>이벤트</div></div>
     </div>
     <div class="wfnote">
       <b>신호는 딱 하나다 — 도감 아이콘의 점.</b>
@@ -2103,6 +2098,46 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <div class="note"><b>위 둘이 특히 급한 이유가 같다.</b>
   <b>오프라인 보상</b>은 <b>매일 첫 화면</b>이고, <b>물건이 바뀌는 순간</b>은 <b>제일 자주 오는 기쁨</b>이다.
   <b>자주 보는 것부터 그린다.</b></div>
+
+  <h3>화면 목록 — UX는 아직 안 끝났다</h3>
+  <p class="sub">유저 물음: <i>“이러면 <b>UX가 끝났나?</b> 아닌 거 같기도 하고.
+  이유는 <b>이벤트 페이지에 대해 뭐 넣은 게 없어서?</b>”</i></p>
+  <div class="note warn"><b>맞다. 그리고 이벤트만이 아니다.</b>
+  <b>아래 메뉴 넷 중 그림이 있는 것은 도감 하나뿐</b>이다 —
+  스킬은 표만 있고, <b>상점과 이벤트는 아무것도 없다.</b></div>
+  <div class="tw"><table>
+    <tr><th>화면</th><th>어디서 열리나</th><th>지금</th></tr>
+    <tr><td colspan="3" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)">그렸다</td></tr>
+    <tr><td><b>골목</b></td><td>기본 화면</td><td>✅ 기본 레이아웃</td></tr>
+    <tr><td><b>매장 카드</b></td><td>매장을 누르면 <b>바텀시트</b></td><td>✅</td></tr>
+    <tr><td><b>세계지도</b></td><td>마을 지도 끝 · <b>챕터를 깨면 저절로</b></td><td>✅</td></tr>
+    <tr><td><b>오프라인 보상</b></td><td>돌아왔을 때 <b>덮는 창</b></td><td>✅</td></tr>
+    <tr><td><b>도감 · 물건</b></td><td>메뉴</td><td>✅</td></tr>
+    <tr><td colspan="3" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)">담을 것은 정했는데 그림이 없다</td></tr>
+    <tr><td><b>🎁 이벤트</b></td><td>메뉴</td>
+    <td><b>패스 · 데일리 상점 · 뽑기 · 이벤트 테마</b>가 들어간다고 이미 적어 뒀다.
+    <b>넷을 한 화면에 어떻게 놓나</b>가 없다</td></tr>
+    <tr><td><b>🛒 상점</b></td><td>메뉴</td>
+    <td><b>보석 사기 · 현금 상품 · 멤버십 · 광고 없애기</b>. 같은 문제다</td></tr>
+    <tr><td><b>✨ 스킬</b></td><td>메뉴</td>
+    <td>갈래 여섯은 적었는데 <b>목록이 어떻게 생겼는지</b>가 없다.
+    <b>숫자가 있어야 그릴 수 있다</b>(밸런스 3)</td></tr>
+    <tr><td><b>도감 · 손님</b></td><td>도감 탭</td><td>물건 탭만 그렸다</td></tr>
+    <tr><td><b>매장을 다 채운 창</b></td><td>1,000레벨이 되면</td><td>지나온 물건 20개를 어떻게 까나</td></tr>
+    <tr><td><b>⚙ 설정</b></td><td>맨 위 톱니</td><td>소리 · 언어 · 계정. <b>어느 게임이나 있는 것</b></td></tr>
+    <tr><td colspan="3" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)">담을 것부터 안 정했다</td></tr>
+    <tr><td><b>도감 · 일꾼</b></td><td>도감 탭</td><td><b>무엇을 담을지가 미정</b> — 스킨 · 공정 역할 · 안 만들기 셋 중</td></tr>
+    <tr><td><b>첫 3분</b></td><td>처음 켰을 때</td><td>무엇부터 가르치나</td></tr>
+    <tr><td><b>챕터 완료 만화</b></td><td>챕터를 깨면</td><td>흐름은 정했다(만화 → 세계지도). <b>만화 내용이 없다</b></td></tr>
+    <tr><td><b>도감 빈 화면</b></td><td>처음 열면</td><td>400칸이 다 물음표다. <b>겁나 보이면 안 된다</b></td></tr>
+    <tr><td><b>알림(푸시) · 로딩</b></td><td>—</td><td>나중</td></tr>
+  </table></div>
+  <div class="note"><b>그렸다 5 · 그림만 없다 6 · 담을 것부터 없다 5.</b>
+  <b>절반이 안 끝났다.</b></div>
+  <div class="note warn"><b>순서는 “숫자가 필요한가”로 가른다.</b>
+  <b>이벤트와 상점은 지금 그릴 수 있다</b> — 무엇을 파는지는 정했고 값만 나중에 붙이면 된다.
+  <b>스킬은 못 그린다</b> — 목록에 뭐라고 쓸지가 곧 숫자다.
+  <b>그래서 이벤트·상점 → 밸런스 → 스킬</b> 순서가 막히지 않는다.</div>
 
   <h3>다음에 그릴 것</h3>
   <ul>
@@ -3593,7 +3628,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   그래서 <b>도구가 갈래의 픽스 표를 읽어서 여기에 다시 쓴다</b> —
   <b>문서를 늘리지 말고 뽑아 쓴다</b>(규칙 3).</div>
 <!-- AUTO:blue -->
-  <div class="zero done">정해진 것 <b>112</b></div>
+  <div class="zero done">정해진 것 <b>113</b></div>
   <div class="tw"><table>
     <tr><th></th><th>정한 것 · 유저의 말</th></tr>
   <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#story" style="color:var(--faint)">시나리오 기획</a> · 파랑 24</td></tr>
@@ -3670,7 +3705,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <tr><td class="num mono who">20</td><td><b>손님 줄은 길을 따라 옆으로 선다</b> — 매장 정면이 아니다. 꼬리는 들어온 쪽<div class="who" style="margin-top:3px">“맞음”</div></td></tr>
   <tr><td class="num mono who">21</td><td><b>줌은 매끄럽게 이어진다.</b> 칸으로 끊지 않고, 1채~4채 밖으로는 못 나간다<div class="who" style="margin-top:3px">“매끄럽게, 끊기면 안 되겠지?”</div></td></tr>
   <tr><td class="num mono who">22</td><td><b>간판은 한 겹이다</b> — 3단계, 올리면 모양도 좋아진다 → <a href="#system">시스템</a><div class="who" style="margin-top:3px">“3단계 정도로 하자”</div></td></tr>
-  <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#ux" style="color:var(--faint)">UX · UI 기획</a> · 파랑 30</td></tr>
+  <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#ux" style="color:var(--faint)">UX · UI 기획</a> · 파랑 31</td></tr>
   <tr><td class="num mono who">1</td><td><b>도감은 메뉴 하나로 두고, 그 안에서 작은 메뉴나 탭으로 나눈다</b><div class="who" style="margin-top:3px">“도감 메뉴를 하나 만들고”</div></td></tr>
   <tr><td class="num mono who">2</td><td><b>그 메뉴는 화면 아래쪽 메뉴에 들어간다</b><div class="who" style="margin-top:3px">“하단 메뉴를 생각 중이야”</div></td></tr>
   <tr><td class="num mono who">3</td><td><b>세계지도는 펼친 지도.</b> 나라마다 동그란 말풍선 — 못 가는 곳은 자물쇠, 지금 하는 곳은 진행도<div class="who" style="margin-top:3px">“펼쳐진 세계지도에 작게 나라 마크”</div></td></tr>
@@ -3700,7 +3735,8 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <tr><td class="num mono who">27</td><td><b>주사위는 굴린 것이 다 더해진다</b> — 무료 1회 + 광고 3회 + 보석. 줄어드는 칸은 없다<div class="who" style="margin-top:3px">“그 값도 주고 … 3회도 다 줘”</div></td></tr>
   <tr><td class="num mono who">28</td><td><b>주사위 눈은 1~6이고 눈이 곧 배수다</b> — ⚀는 ×1, ⚅는 ×6<div class="who" style="margin-top:3px">“1은 ×1이고 6은 ×6이겠지?”</div></td></tr>
   <tr><td class="num mono who">29</td><td><b>주사위는 하루 4번, 다음 날 초기화.</b> 오프라인 한 번당이 아니라 하루당이다<div class="who" style="margin-top:3px">“하루 4번 하면 끝남”</div></td></tr>
-  <tr><td class="num mono who">30</td><td><b>잠긴 칸을 두 세기로 가린다</b> — 곧 올 것은 진한 실루엣, 먼 것은 거의 안 보이게.
+  <tr><td class="num mono who">30</td><td><b>주사위는 멤버십·스킬이 걸린 기본에 곱한다</b> — 멤버십이 묽어지지 않게<div class="who" style="margin-top:3px">“맞음”</div></td></tr>
+  <tr><td class="num mono who">31</td><td><b>잠긴 칸을 두 세기로 가린다</b> — 곧 올 것은 진한 실루엣, 먼 것은 거의 안 보이게.
     <b>그림은 더 안 그린다</b>(아래)<div class="who" style="margin-top:3px">“나도 동의”</div></td></tr>
   <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#content" style="color:var(--faint)">콘텐츠 기획</a> · 파랑 8</td></tr>
   <tr><td class="num mono who">1</td><td><b>1챕터 조선 장터의 매장 20개</b> — 아래 표<div class="who" style="margin-top:3px">“잘 뽑았다 좋아”</div></td></tr>
