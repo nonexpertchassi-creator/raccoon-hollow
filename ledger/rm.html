@@ -208,7 +208,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <a href="#story"><span>시나리오</span><span class="c done">24</span></a>
     <a href="#system"><span>시스템</span><span class="c done">24</span></a>
     <a href="#level"><span>레벨</span><span class="c done">16</span></a>
-    <a href="#ux"><span>UX · UI</span><span class="c done">16</span></a>
+    <a href="#ux"><span>UX · UI</span><span class="c done">18</span></a>
     <a href="#content"><span>콘텐츠</span><span class="c done">8</span></a>
     <a href="#balance"><span>밸런스</span><span class="c zero">0</span></a>
     <a href="#biz"><span>사업</span><span class="c done">3</span></a>
@@ -1031,7 +1031,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
 <section id="ux">
   <h2>UX · UI 기획</h2>
   <p class="sub">사람이 이해하고 조작하는 방식. 창 · 단추 · 표시 · 알림.</p>
-  <div class="zero done">픽스 <b>16</b> · 2026-08-31 <span style="font-weight:400;font-size:12.5px;color:var(--mid)">— 레이아웃과 화면 흐름은 초안</span></div>
+  <div class="zero done">픽스 <b>18</b> · 2026-08-31 <span style="font-weight:400;font-size:12.5px;color:var(--mid)">— 레이아웃과 화면 흐름은 초안</span></div>
   <div class="tw"><table class="fx">
     <tr><th></th><th>정한 것</th><th>근거</th></tr>
     <tr><td>🟦</td><td><b>도감은 메뉴 하나로 두고, 그 안에서 작은 메뉴나 탭으로 나눈다</b></td><td class="who">“도감 메뉴를 하나 만들고”</td></tr>
@@ -1050,7 +1050,41 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <tr><td>🟨</td><td><b>축하의 크기를 4단으로 나눈다</b> — 물건 400 · 매장 20 · 스트리트 5 · 챕터 1</td><td class="who">내 판단</td></tr>
     <tr><td>🟦</td><td><b>고른 매장 카드를 화면 아래에 늘 띄워 두지 않는다.</b> 바텀시트와 겹친다</td><td class="who">“중복 요소 같어”</td></tr>
     <tr><td>🟦</td><td><b>골목의 매장 위에 별과 물건 뱃지를 안 띄운다.</b> 매장 앞 손님 줄은 띄운다</td><td class="who">“가게를 클릭하면 매장 카드가 열릴 테니”</td></tr>
+    <tr><td>🟦</td><td><b>판매대 위 물건 그림도 안 바꾼다.</b> 물건이 바뀐 것은 <b>도감 아이콘의 점</b>으로만 알린다</td><td class="who">“굳이 안 바뀌어도 됨. 복잡스럽다”</td></tr>
+    <tr><td>🟦</td><td><b>무대는 2.5D, UI는 평면.</b> 와이어프레임의 네모는 자리지 생김새가 아니다</td><td class="who">“2.5D인 점을 감안해야 함”</td></tr>
   </table></div>
+
+  <h3>무대는 2.5D, UI는 평면</h3>
+  <p class="sub">유저 말: <i>“<b>2.5D인 점을 감안해야 함.</b> 오케이?”</i>
+  <b>이 갈래의 그림을 읽는 법이 여기서 정해진다.</b></p>
+  <div class="tw"><table>
+    <tr><th>층</th><th>무엇이 여기 있나</th><th>어떻게 생겼나</th></tr>
+    <tr><td><b>무대</b></td><td>골목 · 매장 · 너구리 · 손님 · 오브제 · 간판 · 가로등</td>
+    <td><b>2.5D.</b> 비스듬히 놓이고 <b>앞뒤가 있다.</b> 끌기와 줌이 여기서만 먹는다</td></tr>
+    <tr><td><b>UI</b></td><td>맨 위 돈줄 · 리모콘 · 바텀시트 · 도감 · 세계지도 · 오프라인 보상</td>
+    <td><b>평면.</b> 화면에 딱 붙어 있고 <b>끌어도 줌해도 안 움직인다</b></td></tr>
+  </table></div>
+  <div class="note warn"><b>이 갈래의 와이어프레임은 다 네모다. 그건 생김새가 아니라 자리다.</b>
+  <b>무엇이 어디에 있는지</b>만 말한다. 실제로는 매장이 비스듬히 서고 골목이 대각선으로 뻗는다.
+  <b>와이어프레임을 그림으로 착각하면 안 된다.</b></div>
+
+  <div class="tw"><table>
+    <tr><th>2.5D라서 새로 생기는 것</th><th>무슨 일</th></tr>
+    <tr><td><b>앞뒤가 생긴다</b></td>
+    <td>앞 매장이 뒤 매장을 가린다. <b>겹치는 차례를 정해야 한다</b> —
+    화면에서 <b>아래에 있는 것이 앞</b>이 되는 것이 보통이다</td></tr>
+    <tr><td><b>손님이 매장을 가린다</b></td>
+    <td>줄이 매장 정면에 서면 <b>매장을 덮는다.</b>
+    <b>비스듬히 옆으로</b> 서야 매장도 보이고 줄 길이도 보인다</td></tr>
+    <tr><td><b>매장 안이 보여야 한다</b></td>
+    <td>줌 1채에서 <b>작업대와 일꾼이 보인다</b>고 이미 정했다.
+    2.5D에서 그러려면 <b>앞벽이 없어야</b> 한다 — 앞이 트인 노점이라 마침 맞는다</td></tr>
+  </table></div>
+  <div class="note"><b>그리고 이게 “판매대 그림을 안 바꾼다”와 맞물린다.</b>
+  물건이 매장 위에 안 올라가니 <b>물건 400장은 2.5D로 안 그려도 된다.</b>
+  도감 칸과 매장 카드에만 올라가고, 그 둘은 <b>평면</b>이다.
+  <b>지금 뽑고 있는 각도 그대로</b> 쓰면 된다 —
+  <b>2.5D로 그릴 것은 매장 건물과 오브제뿐</b>이다.</div>
 
   <h3>기본 레이아웃 <span style="font-weight:400;color:var(--faint);font-size:12px">(2026-09-01 다시 그렸다)</span></h3>
   <p class="sub">세로 화면 하나. <b>정한 것을 다 앉혀 보면 이렇게 된다.</b></p>
@@ -1486,42 +1520,44 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
         <div class="alley">
           <div class="shops">
             <div class="shop"><b>🏚</b><div style="font-size:9px">🐰</div></div>
-            <div class="shop" style="border-color:var(--persim); border-width:2px; background:var(--persim-bg)">
-              <b>🏚</b>
-              <div style="font-size:10px">판매대 <b style="color:var(--persim)">🍢→🍯</b></div>
-              <div style="font-size:9px">🦊🐻</div>
-            </div>
+            <div class="shop"><b>🏚</b><div style="font-size:9px">🦊🐻</div></div>
             <div class="shop"><b>🏚</b><div style="font-size:9px">🐷</div></div>
             <div class="shop"><b>🏚</b><div style="font-size:9px">🐰🐻</div></div>
           </div>
           <div style="text-align:center; font-size:9px; color:var(--faint); margin-top:4px">
-            둘째 매장 <b style="color:var(--persim)">판매대 위 물건</b>이 바뀌었다</div>
+            골목은 <b>그대로다.</b> 아무것도 안 튀어나온다</div>
         </div>
       </div>
       <div class="tabs"><div>골목</div><div>도감 <span style="color:var(--persim)">●</span></div><div>상점</div><div>설정</div></div>
     </div>
     <div class="wfnote">
-      <b>세 군데가 동시에 말한다. 글자는 한 자도 안 쓴다.</b>
+      <b>신호는 딱 하나다 — 도감 아이콘의 점.</b>
       <ol>
-        <li><b>판매대 위 물건이 바뀐다.</b> 뱃지가 아니라 <b>매장 그림의 일부</b>다.
-        번역할 글이 없다 — <b>그림이 바뀌는 것 자체가 말</b>이다</li>
-        <li><b>손님 이모지도 같이 바뀐다.</b> 손님은 이모지 하나로 주문하니
-        <b>새 물건이 나오면 새 이모지가 나온다</b> — 따로 만들 것이 없다</li>
-        <li><b>아래 도감 아이콘에 점이 하나 붙는다.</b> 도감 한 칸이 채워졌다는 뜻</li>
+        <li><b>아래 도감 아이콘에 점이 하나 붙는다.</b>
+        유저 말: <i>“새로운 아이템이 나와서 도감으로 늘어났다 표시잖아? 좋아.”</i></li>
+        <li><b>그리고 수입이 눈에 띄게 오른다.</b> 이건 연출이 아니라 <b>실제로 이득이 나는 것</b>이다
+        <span style="color:var(--mid)">(규칙 5)</span></li>
       </ol>
-      <b>별 5개가 0개로 돌아가는 것은 매장 카드를 열었을 때 본다.</b>
-      골목에는 숫자를 안 띄우기로 했기 때문이다.
+      <b>골목은 아무 일도 없다는 듯이 계속 돌아간다.</b>
+      별도 안 띄우고, 판매대 그림도 안 바뀐다.
+      <b>별 5개가 0개로 돌아가는 것은 매장 카드를 열었을 때</b> 본다.
       <b>그리고 값이 눈에 띄게 오른다.</b> 50레벨을 올려서 받은 것이니
       <b>반드시 이득이어야 한다</b> <span style="color:var(--mid)">(규칙 5)</span>.
       물건이 바뀌었는데 수입이 그대로면 <b>이 400번은 아무 의미가 없다.</b>
     </div>
   </div>
 
-  <div class="note warn"><b>골목에서 숫자를 뺐으니 이 400번은 판매대 그림 하나에 걸려 있다.</b>
-  별이 골목에 없으니 <b>“5개가 0개로 돌아가는”</b> 신호를 여기서는 못 쓴다.
-  남은 것은 <b>판매대 위 물건 그림</b>과 <b>도감의 점</b>이다.
-  그래서 <b>판매대 위 물건 그림은 반드시 있어야 한다</b> — 이것까지 빼면 400번이 도감의 점 하나가 된다.
-  <span style="color:var(--mid)">(유저가 뺀 것은 <b>UI 뱃지</b>였다고 읽었다. 아니라면 말해 달라)</span></div>
+  <div class="note warn"><b>내가 판매대 그림도 바꾸자고 했다가 물렸다.</b>
+  유저 말: <i>“판매대에 그림은 굳이 안 바뀌어도 됨. <b>복잡스럽다.</b>”</i>
+  <b>빈칸을 보면 뭔가 채우려는 내 버릇</b>이 또 나왔다 —
+  신호가 하나 줄었다고 다른 신호를 만들어 메우려 했다.</div>
+  <div class="note"><b>그래서 400번은 조용해졌는데, 그게 나쁘지 않다.</b>
+  400번을 다 터뜨리면 <b>400번을 다 방해받는다.</b> 조용히 쌓이다가
+  <b>도감을 열었을 때 한꺼번에 보이는 쪽</b>이 힐링 게임에 맞는다.</div>
+  <div class="note"><b>그러면 도감이 이 게임의 상장이다.</b>
+  400번의 기쁨이 전부 <b>도감 한 곳</b>으로 모인다.
+  “목록 화면”이 아니라 <b>제일 공들여 만들 화면</b>이라는 뜻이다 —
+  <b>도감 탭 넷의 생김새</b>가 갑자기 훨씬 중요해졌다.</div>
 
   <div class="note warn"><b>못 보고 지나갈 수 있다.</b>
   멀리 줌으로 4채를 보고 있거나 다른 골목에 가 있으면 그 순간을 놓친다.
@@ -1573,13 +1609,14 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
 
   <h3>다음에 그릴 것</h3>
   <ul>
+    <li><b>도감 탭 넷</b>의 생김새 — <b>400번의 기쁨이 다 여기로 모이니 제일 급해졌다</b></li>
     <li><b>매장을 다 채운 순간</b>(1,000레벨)의 덮는 창 — 지나온 물건 20개를 어떻게 까나</li>
-    <li><b>도감 탭 넷</b>의 생김새</li>
     <li><b>첫 3분</b> — 무엇을 가르치나</li>
   </ul>
 
   <h3>아직 안 정한 것</h3>
   <ul>
+    <li><b>2.5D에서 손님 줄이 어느 쪽으로 서나</b> — 매장을 안 가리는 자리여야 한다</li>
     <li><b>첫 3분에 무엇을 가르치나</b></li>
     <li><b>게임 안 도움말</b> — 이전 판에는 한 군데도 없었다</li>
     <li><b>최대로 올리는 단추가 어떻게 생겼나</b> — 있다는 것은 정해졌다</li>
