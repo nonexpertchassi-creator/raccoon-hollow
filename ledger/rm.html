@@ -208,7 +208,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <a href="#story"><span>시나리오</span><span class="c done">22</span></a>
     <a href="#system"><span>시스템</span><span class="c done">27</span></a>
     <a href="#level"><span>레벨</span><span class="c done">16</span></a>
-    <a href="#ux"><span>UX · UI</span><span class="c done">2</span></a>
+    <a href="#ux"><span>UX · UI</span><span class="c done">8</span></a>
     <a href="#content"><span>콘텐츠</span><span class="c done">8</span></a>
     <a href="#balance"><span>밸런스</span><span class="c zero">0</span></a>
     <a href="#biz"><span>사업</span><span class="c done">3</span></a>
@@ -228,7 +228,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <div class="hero">
     <div class="one">너구리가 온갖 것을 파는 가게를 키운다.</div>
     <div class="why">08-31 하루에 <b>일곱 갈래 중 여섯이 열렸다</b> —
-    시나리오 <b>22</b> · 시스템 <b>27</b> · 콘텐츠 <b>8</b> · 레벨 <b>16</b> · 사업 <b>3</b> · UX <b>2</b>.
+    시나리오 <b>22</b> · 시스템 <b>27</b> · 콘텐츠 <b>8</b> · 레벨 <b>16</b> · 사업 <b>3</b> · UX <b>8</b>.
     무대는 전세계, 1챕터는 한국 조선, <b>물건 400개</b>와 <b>손님 10종</b>이 나왔고
     한 바퀴 · 돈 쓰는 곳 · 광고 자리 · 화면 움직임까지 정해졌다. <b>밸런스만 아직 0</b>이다.</div>
     <div class="kv"><span>방치형</span><span>2.5D 아이소메트릭</span><span>세로 화면</span><span>혼자 만든다</span></div>
@@ -1031,18 +1031,23 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
 <section id="ux">
   <h2>UX · UI 기획</h2>
   <p class="sub">사람이 이해하고 조작하는 방식. 창 · 단추 · 표시 · 알림.</p>
-  <div class="zero done">픽스 <b>2</b> · 2026-08-31 <span style="font-weight:400;font-size:12.5px;color:var(--mid)">— 레이아웃은 초안</span></div>
+  <div class="zero done">픽스 <b>8</b> · 2026-08-31 <span style="font-weight:400;font-size:12.5px;color:var(--mid)">— 레이아웃과 화면 흐름은 초안</span></div>
   <div class="tw"><table class="fx">
     <tr><th></th><th>정한 것</th><th>근거</th></tr>
     <tr><td>🟦</td><td><b>도감은 메뉴 하나로 두고, 그 안에서 작은 메뉴나 탭으로 나눈다</b></td><td class="who">“도감 메뉴를 하나 만들고”</td></tr>
     <tr><td>🟦</td><td><b>그 메뉴는 화면 아래쪽 메뉴에 들어간다</b></td><td class="who">“하단 메뉴를 생각 중이야”</td></tr>
+    <tr><td>🟦</td><td><b>세계지도는 펼친 지도.</b> 나라마다 동그란 말풍선 — 못 가는 곳은 자물쇠, 지금 하는 곳은 진행도</td><td class="who">“펼쳐진 세계지도에 작게 나라 마크”</td></tr>
+    <tr><td>🟦</td><td><b>지도로도 목록으로도 볼 수 있다</b></td><td class="who">“리스트 형태로 보는 것도 있고”</td></tr>
+    <tr><td>🟦</td><td><b>챕터 보상은 <code>???</code>로 가린다</b> — 완료하면 그 나라 동물이 손님으로 등장한다</td><td class="who">“완료 시 ??? 동물 손님 등장”</td></tr>
+    <tr><td>🟦</td><td><b>깬 챕터는 다시 갈 수 있지만 조작은 못 한다.</b> 구경만</td><td class="who">“그냥 보는 거지~”</td></tr>
+    <tr><td>🟦</td><td><b>배수가 1보다 클 때만 돈 옆에 띄운다</b></td><td class="who">“돈 옆에 몇 배수 이런 건?”</td></tr>
   </table></div>
 
   <h3>기본 레이아웃 <span style="font-weight:400;color:var(--faint);font-size:12px">(초안 · 승인받은 적 없다)</span></h3>
   <p class="sub">세로 화면 하나. <b>오늘 정한 것을 다 앉혀 보면 이렇게 된다.</b></p>
   <div class="wf">
     <div class="phone">
-      <div class="bar"><span>💰 12.3M</span><span>💎 240</span><span>⚙</span></div>
+      <div class="bar"><span>💰 12.3M <span style="color:var(--persim)">×2</span></span><span>💎 240</span><span>⚙</span></div>
       <div class="stage">
         <div class="rc"><i class="on">1</i><i>2</i><i>3</i><i>4</i><i>5</i><i>🗺</i></div>
         <div class="alley">
@@ -1065,7 +1070,8 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     </div>
     <div class="wfnote">
       <ol>
-        <li><b>맨 위 — 가진 것.</b> 돈과 보석. 늘 보인다</li>
+        <li><b>맨 위 — 가진 것.</b> 돈과 보석. 늘 보인다.
+        <b>배수가 걸려 있으면 돈 옆에 작게</b>(<span style="color:var(--persim)">×2</span>)</li>
         <li><b>왼쪽 — 스트리트 리모콘.</b> 1~5와 세계지도. <b>작게, 세로로</b></li>
         <li><b>가운데 — 골목.</b> 끌기와 줌이 여기서만 먹는다.
         매장 위에 <b>별</b>과 <b>지금 파는 물건 그림</b>, 위로 <b>손님 줄</b></li>
@@ -1147,41 +1153,88 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   자주 누르는 것이면 창이 자꾸 떠서 골목을 가린다.
   <b>얼마나 자주 만지는지</b>를 보고, 잦으면 <b>카드 안에 그대로 펴 두는</b> 쪽으로 옮긴다.</div>
 
-  <h3>세계지도를 누르면 <span style="font-weight:400;color:var(--faint);font-size:12px">(초안)</span></h3>
+  <h3>돈 옆의 배수</h3>
+  <p class="sub">유저 물음: <i>“돈 옆에 몇 배수 이런 건 표기 안 해도 되려나?”</i></p>
+  <div class="tw"><table>
+    <tr><th>누가 보나</th><th>무엇이 보이나</th></tr>
+    <tr><td>안 산 사람 (×1)</td><td><code>💰 12.3M</code> — <b>아무것도 안 붙는다</b></td></tr>
+    <tr><td>멤버십 (×2)</td><td><code>💰 12.3M</code> <span style="color:var(--persim)"><b>×2</b></span> — <b>늘 보인다</b></td></tr>
+  </table></div>
+  <div class="note"><b>배수가 1보다 클 때만 띄운다.</b>
+  <b>산 것이 지금 일하고 있다는 걸 안 보여주면 낸 값을 못 느낀다.</b>
+  그런데 늘 띄우면 화면이 복잡하다. <b>기본이면 아무것도 안 띄우면</b> 둘 다 된다.</div>
+  <div class="note"><b>규칙 5의 뜻이기도 하다.</b> 산 것이 정말 이득이어야 하고,
+  <b>이득인 것이 보여야 한다.</b> 숫자 안에 녹아 있으면 산 사람도 못 알아본다.</div>
+
+  <h3>세계지도를 누르면 <span style="font-weight:400;color:var(--faint);font-size:12px">(초안 · 다시 그렸다)</span></h3>
+  <p class="sub">유저 말: <i>“지구본 말고 <b>캡처본과 같이 펼쳐진 세계지도</b>에 작게 나라 마크 있으면 좋을 거 같고,
+  <b>갈 수 없는 나라는 동그란 말풍선에 자물쇠</b>가 있었으면 좋겠어. 그리고 <b>진행 중인 나라 말풍선 위에 진행도</b>가
+  있으면 좋을 거 같음. <b>리스트 형태로 보는 것도 있고 세계지도로 보는 형태</b>가 있고.”</i></p>
   <div class="wf">
     <div class="phone">
-      <div class="bar"><span>세계지도</span><span>✕</span></div>
-      <div class="stage" style="height:210px">
-        <div class="alley" style="justify-content:flex-start; gap:6px">
-          <div style="text-align:center; color:var(--faint); font-size:9px">지구본을 돌려서 고른다</div>
-          <div class="card" style="margin-top:2px">
-            <div><b>1챕터 · 한국 조선</b> <span class="st">지금 여기</span></div>
-            <div style="color:var(--faint)">매장 7 / 20 만렙 · 🐕 진돗개 <span style="color:var(--faint)">잠김</span></div>
+      <div class="bar"><span>세계지도</span><span>🗺 / ☰</span></div>
+      <div class="stage" style="height:230px; background:#dff0f7">
+        <div class="alley" style="padding:0; position:relative">
+          <div style="position:absolute; inset:8px; border:1px dashed var(--line); border-radius:8px;
+                      display:flex; align-items:center; justify-content:center; color:var(--faint); font-size:9px">
+            펼친 세계지도 — 끌기 · 줌
           </div>
-          <div class="card" style="opacity:.4">
-            <div><b>2챕터 · 🔒</b></div>
-            <div style="color:var(--faint)">1챕터를 다 채우면 열린다</div>
+          <div style="position:absolute; left:22%; top:22%; text-align:center">
+            <div style="width:28px;height:28px;border:2px solid var(--line);border-radius:50%;
+                        background:var(--card);display:flex;align-items:center;justify-content:center;font-size:13px">🔒</div>
           </div>
-          <div class="card" style="opacity:.25">
-            <div><b>3챕터 · 🔒</b></div>
+          <div style="position:absolute; left:57%; top:34%; text-align:center">
+            <div style="font-size:8.5px; color:var(--persim); font-weight:700">7 / 20</div>
+            <div style="width:32px;height:32px;border:2px solid var(--persim);border-radius:50%;
+                        background:var(--card);display:flex;align-items:center;justify-content:center;font-size:15px">🏮</div>
+          </div>
+          <div style="position:absolute; left:75%; top:62%; text-align:center">
+            <div style="width:28px;height:28px;border:2px solid var(--line);border-radius:50%;
+                        background:var(--card);display:flex;align-items:center;justify-content:center;font-size:13px">🔒</div>
+          </div>
+          <div style="position:absolute; left:36%; top:66%; text-align:center">
+            <div style="width:28px;height:28px;border:2px solid var(--line);border-radius:50%;
+                        background:var(--card);display:flex;align-items:center;justify-content:center;font-size:13px">🔒</div>
           </div>
         </div>
       </div>
-      <div class="tabs" style="margin-top:8px"><div>닫으면 골목으로 돌아온다</div></div>
+      <div class="card">
+        <div><b>1챕터 · 한국 조선</b> <span class="st">진행 중</span></div>
+        <div style="color:var(--faint)">매장 7 / 20 만렙 · 완료하면 <b>??? 동물 손님 등장</b></div>
+      </div>
+      <div class="tabs"><div>닫으면 골목으로</div></div>
     </div>
     <div class="wfnote">
       <ol>
-        <li><b>지금 챕터가 맨 위</b>에, 얼마나 왔는지(<b>매장 7 / 20 만렙</b>)가 한 줄로</li>
-        <li><b>받을 동물이 보인다.</b> 아직 잠겨 있어도 <b>무엇을 받는지는 보여야</b> 당긴다 —
-        골목의 “불 꺼진 스트리트”와 같은 방법이다</li>
-        <li><b>다음 챕터는 잠겨 있고 흐리다.</b> 무엇인지는 안 보인다 —
-        <b>챕터 순서를 1챕터 끝나고 정하기로 했으니</b> 지금은 보여줄 것도 없다</li>
-        <li><b>깬 챕터는 다시 갈 수 있어야 하나</b> — 아직 안 정했다</li>
+        <li><b>펼친 지도.</b> 지구본이 아니라 <b>어릴 때 보던 세계지도</b> 모양.
+        끌기와 줌은 골목에서 쓰던 것과 같다</li>
+        <li><b>나라마다 동그란 말풍선</b> 하나. 못 가는 곳은 <b>🔒</b>,
+        지금 하는 곳은 <b>그 나라 마크</b>와 <b>말풍선 위에 진행도</b>(7 / 20)</li>
+        <li><b>지도로 볼 수도, 목록으로 볼 수도.</b> 오른쪽 위에서 갈아탄다
+        (<code>🗺 / ☰</code>). 챕터가 늘면 목록이 편해진다</li>
+        <li><b>보상은 <code>???</code>로 가린다.</b> 무엇을 받는지는 안 알려 준다</li>
       </ol>
     </div>
   </div>
-  <div class="note warn"><span class="tag" style="background:var(--persim-bg);color:var(--persim)">🟨 전부 내 판단</span>
-  <b>화면 흐름도 지도 화면도 승인받은 적 없다.</b></div>
+  <div class="note warn"><b>내가 앞뒤가 안 맞았다.</b> 나는 “받을 동물이 보여야 당긴다”고 적었는데,
+  <b>골목의 “불 꺼진 스트리트”는 뭐가 있는지 모르게 뒀다.</b>
+  유저가 <code>???</code>로 바로잡았다 — <b>모르는 것이 더 당긴다.</b> 두 자리가 이제 같은 방식이다.</div>
+  <div class="note"><b>보상의 성격도 또렷해졌다.</b> 유저 말: <i>“완료 시 <b>??? 동물 손님 등장</b>.”</i>
+  <b>챕터를 깨면 손님이 한 종 는다.</b> 그 나라 동물이 <b>내 골목을 걸어다니게</b> 되는 것이다 —
+  들고 다니는 물건이 아니라 <b>세상이 넓어지는 것</b>이라 다음 챕터로도 그대로 간다.</div>
+
+  <h3>깬 챕터는 구경만 한다</h3>
+  <p class="sub">유저 말: <i>“깬 챕터는 갈 수 있는데 <b>조작은 못 하게</b> 하자. 그냥 보는 거지~”</i></p>
+  <div class="note"><b>박물관이 된다.</b> 다 키운 조선 장터에 다시 들어가 볼 수는 있는데
+  레벨을 올리거나 팔지는 못한다.</div>
+  <div class="tw"><table>
+    <tr><th>왜 좋은가</th></tr>
+    <tr><td><b>한 일이 남는다.</b> 챕터를 넘으면 앞 챕터가 사라지는 게임이 많은데,
+    <b>다시 볼 수 있으면 400장을 그린 값이 남는다</b></td></tr>
+    <tr><td><b>계산이 안 꼬인다.</b> 조작을 막으면 <b>돈이 두 군데서 들어오지 않는다</b> —
+    앞 챕터가 계속 벌면 새 챕터가 의미 없어진다</td></tr>
+    <tr><td><b>규칙이 하나 준다.</b> 안 돌아가는 챕터는 <b>저장할 것도 잴 것도 없다</b></td></tr>
+  </table></div>
 
   <h3>다음에 그릴 것</h3>
   <ul>
