@@ -1108,9 +1108,83 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <b>레이아웃도 메뉴 넷도 승인받은 적 없다.</b> 오늘 정한 것을 화면에 앉혀 본 것뿐이다.
   자리를 옮기든 메뉴를 늘리든 <b>지금이 가장 싸다.</b></div>
 
+  <h3>누르면 어디로 가나 <span style="font-weight:400;color:var(--faint);font-size:12px">(초안)</span></h3>
+  <p class="sub">유저가 뜻을 바로잡아 줬다: <i>“세계지도가 스트리트 리스트 맨 위로 갔으면 좋겠어가 아니고,
+  <b>세계지도를 클릭하면 어떤 화면이 떴으면 좋겠어</b> 이거지?”</i> — 맞다.
+  자리 옮기기가 아니라 <b>눌렀을 때 무슨 일이 일어나나</b>다.</p>
+  <div class="note"><b>누르는 것은 세 종류다.</b> 가르는 기준은 하나 —
+  <b>골목이 가려지는 시간을 짧게.</b> 방치형은 돌아가는 걸 보는 재미다.</div>
+  <div class="tw"><table>
+    <tr><th></th><th>무슨 일</th><th>골목이 보이나</th></tr>
+    <tr><td><b>제자리</b></td><td>화면이 안 바뀐다</td><td>✅ 보인다</td></tr>
+    <tr><td><b>덮는 창</b></td><td>위에 뜨고, 닫으면 돌아온다</td><td>⬜ 잠깐 가린다</td></tr>
+    <tr><td><b>딴 화면</b></td><td>하단 메뉴로 갈아탄다</td><td>❌ 안 보인다</td></tr>
+  </table></div>
+
+  <div class="tw"><table>
+    <tr><th>누르는 것</th><th>종류</th><th>무엇이 뜨나</th></tr>
+    <tr><td colspan="3" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)">골목 화면 안</td></tr>
+    <tr><td><b>매장</b></td><td>제자리</td><td><b>아래 카드가 그 매장 것으로 바뀐다.</b> 화면은 그대로</td></tr>
+    <tr><td><b>최대로 올리기</b></td><td>제자리</td><td>돈이 줄고 <b>별이 찬다.</b> 창이 안 뜬다</td></tr>
+    <tr><td><b>리모콘 1~5</b></td><td>제자리</td><td>골목이 <b>그리로 미끄러진다</b></td></tr>
+    <tr><td><b>손님</b></td><td>제자리</td><td>아무 일도 없다 — <b>누를 것이 아니다</b></td></tr>
+    <tr><td colspan="3" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)">덮는 창</td></tr>
+    <tr><td><b>🗺 세계지도</b></td><td>덮는 창</td><td><b>챕터 지도.</b> 아래에 따로 그렸다</td></tr>
+    <tr><td><b>⚙ 설정</b></td><td>덮는 창</td><td>소리 · 알림 · 저장 · 만든 사람</td></tr>
+    <tr><td><b>💎 보석</b></td><td>덮는 창</td><td><b>보석 사기</b>만 바로. 상점 전체가 아니다</td></tr>
+    <tr><td><b>💰 돈</b></td><td>—</td><td><b>아무 일도 없다.</b> 돈은 파는 것이 아니다(보석→돈을 안 하기로 했다)</td></tr>
+    <tr><td><b>카드 안 · 일꾼</b></td><td>덮는 창</td><td>이 매장 일꾼 늘리기 · 작업속도 · 이동속도</td></tr>
+    <tr><td><b>카드 안 · 꾸미기</b></td><td>덮는 창</td><td>간판 3단계 · 가로등 · 매장 안 꾸밈 1자리</td></tr>
+    <tr><td colspan="3" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)">딴 화면</td></tr>
+    <tr><td><b>📖 도감</b></td><td>딴 화면</td><td>탭 넷 — 물건 400 · 일꾼 · 손님 10 · 꾸미기</td></tr>
+    <tr><td><b>🛒 상점</b></td><td>딴 화면</td><td>보석 · 현금 상품 · 멤버십 · 광고 없애기</td></tr>
+    <tr><td><b>🎁 이벤트</b></td><td>딴 화면</td><td>패스 · 데일리 상점 · 뽑기 · 이벤트 테마</td></tr>
+  </table></div>
+  <div class="note"><b>돈을 눌러도 아무 일이 없는 것이 뜻이 있다.</b>
+  보석은 <b>살 수 있으니</b> 누르면 사는 곳이 뜨는데, 돈은 <b>보석으로도 현금으로도 안 판다.</b>
+  <b>돈은 오직 벌어서 쓴다</b> — 그게 이 게임의 뼈대라 화면에서도 그렇게 보여야 한다.</div>
+  <div class="note warn"><b>일꾼과 꾸미기가 “덮는 창”인 것이 이 그림의 약한 자리다.</b>
+  자주 누르는 것이면 창이 자꾸 떠서 골목을 가린다.
+  <b>얼마나 자주 만지는지</b>를 보고, 잦으면 <b>카드 안에 그대로 펴 두는</b> 쪽으로 옮긴다.</div>
+
+  <h3>세계지도를 누르면 <span style="font-weight:400;color:var(--faint);font-size:12px">(초안)</span></h3>
+  <div class="wf">
+    <div class="phone">
+      <div class="bar"><span>세계지도</span><span>✕</span></div>
+      <div class="stage" style="height:210px">
+        <div class="alley" style="justify-content:flex-start; gap:6px">
+          <div style="text-align:center; color:var(--faint); font-size:9px">지구본을 돌려서 고른다</div>
+          <div class="card" style="margin-top:2px">
+            <div><b>1챕터 · 한국 조선</b> <span class="st">지금 여기</span></div>
+            <div style="color:var(--faint)">매장 7 / 20 만렙 · 🐕 진돗개 <span style="color:var(--faint)">잠김</span></div>
+          </div>
+          <div class="card" style="opacity:.4">
+            <div><b>2챕터 · 🔒</b></div>
+            <div style="color:var(--faint)">1챕터를 다 채우면 열린다</div>
+          </div>
+          <div class="card" style="opacity:.25">
+            <div><b>3챕터 · 🔒</b></div>
+          </div>
+        </div>
+      </div>
+      <div class="tabs" style="margin-top:8px"><div>닫으면 골목으로 돌아온다</div></div>
+    </div>
+    <div class="wfnote">
+      <ol>
+        <li><b>지금 챕터가 맨 위</b>에, 얼마나 왔는지(<b>매장 7 / 20 만렙</b>)가 한 줄로</li>
+        <li><b>받을 동물이 보인다.</b> 아직 잠겨 있어도 <b>무엇을 받는지는 보여야</b> 당긴다 —
+        골목의 “불 꺼진 스트리트”와 같은 방법이다</li>
+        <li><b>다음 챕터는 잠겨 있고 흐리다.</b> 무엇인지는 안 보인다 —
+        <b>챕터 순서를 1챕터 끝나고 정하기로 했으니</b> 지금은 보여줄 것도 없다</li>
+        <li><b>깬 챕터는 다시 갈 수 있어야 하나</b> — 아직 안 정했다</li>
+      </ol>
+    </div>
+  </div>
+  <div class="note warn"><span class="tag" style="background:var(--persim-bg);color:var(--persim)">🟨 전부 내 판단</span>
+  <b>화면 흐름도 지도 화면도 승인받은 적 없다.</b></div>
+
   <h3>다음에 그릴 것</h3>
   <ul>
-    <li><b>누르면 어디로 가나</b> — 화면끼리 이어지는 그림(무엇을 누르면 무엇이 뜨나)</li>
     <li><b>매장 카드 안</b> — 최대로 올리기 · 일꾼 · 간판 · 가로등 · 꾸미기를 어떻게 담나</li>
     <li><b>도감 탭 넷</b>의 생김새</li>
   </ul>
