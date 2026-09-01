@@ -136,6 +136,57 @@ details .body{padding:2px 14px 15px; border-top:1px solid var(--line)}
 details .body > *:first-child{margin-top:12px}
 .fx td:first-child{white-space:nowrap; text-align:center; width:1%}
 .fx .who{font-size:11px; color:var(--faint); white-space:nowrap}
+
+/* ── 와이어프레임 ── */
+.wf{display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start; margin-top:14px}
+.phone{
+  width:250px; flex:0 0 250px; border:2px solid var(--ink); border-radius:18px;
+  background:var(--card); padding:5px; font-size:11px; line-height:1.4;
+}
+.phone .bar{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:6px 8px; background:var(--sunk); border-radius:11px 11px 4px 4px; font-weight:700;
+}
+.phone .stage{
+  position:relative; height:250px; background:var(--paper);
+  border-left:1px dashed var(--line); border-right:1px dashed var(--line);
+  display:flex; align-items:stretch;
+}
+.phone .rc{
+  width:26px; border-right:1px dashed var(--line); display:flex; flex-direction:column;
+  gap:3px; padding:6px 3px; align-items:center; background:var(--sunk);
+}
+.phone .rc i{
+  font-style:normal; width:19px; height:19px; border:1px solid var(--line); border-radius:5px;
+  display:flex; align-items:center; justify-content:center; font-size:9.5px; background:var(--card);
+}
+.phone .rc i.on{border-color:var(--persim); color:var(--persim); font-weight:700}
+.phone .alley{flex:1; display:flex; flex-direction:column; justify-content:space-between; padding:8px 6px}
+.phone .shops{display:flex; gap:4px; justify-content:center}
+.phone .shop{
+  flex:1; border:1px solid var(--line); border-radius:6px; background:var(--card);
+  padding:4px 2px; text-align:center; font-size:9px;
+}
+.phone .shop b{display:block; font-size:9px}
+.phone .st{color:var(--persim); letter-spacing:-1px; font-size:9px}
+.phone .queue{display:flex; gap:2px; justify-content:center; font-size:12px}
+.phone .card{
+  border:1px solid var(--line); border-radius:8px; background:var(--sunk);
+  padding:7px 8px; margin-top:4px;
+}
+.phone .btn{
+  border:1px solid var(--persim); color:var(--persim); border-radius:6px;
+  text-align:center; padding:5px; font-weight:700; margin-top:5px; background:var(--card);
+}
+.phone .tabs{
+  display:flex; justify-content:space-around; padding:7px 4px; background:var(--sunk);
+  border-radius:4px 4px 11px 11px; margin-top:4px; text-align:center; font-size:9.5px;
+}
+.phone .tabs div{flex:1}
+.wfnote{flex:1; min-width:240px; font-size:13.5px; line-height:1.8}
+.wfnote b{color:var(--ink)}
+.wfnote ol{padding-left:20px; margin:0}
+.wfnote li{margin-bottom:7px}
 .kv{display:flex; flex-wrap:wrap; gap:7px; margin-top:10px}
 .kv span{
   font-size:11.5px; padding:3px 9px; border-radius:6px;
@@ -980,23 +1031,97 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
 <section id="ux">
   <h2>UX · UI 기획</h2>
   <p class="sub">사람이 이해하고 조작하는 방식. 창 · 단추 · 표시 · 알림.</p>
-  <div class="zero done">픽스 <b>2</b> · 2026-08-31</div>
+  <div class="zero done">픽스 <b>2</b> · 2026-08-31 <span style="font-weight:400;font-size:12.5px;color:var(--mid)">— 레이아웃은 초안</span></div>
   <div class="tw"><table class="fx">
     <tr><th></th><th>정한 것</th><th>근거</th></tr>
     <tr><td>🟦</td><td><b>도감은 메뉴 하나로 두고, 그 안에서 작은 메뉴나 탭으로 나눈다</b></td><td class="who">“도감 메뉴를 하나 만들고”</td></tr>
     <tr><td>🟦</td><td><b>그 메뉴는 화면 아래쪽 메뉴에 들어간다</b></td><td class="who">“하단 메뉴를 생각 중이야”</td></tr>
   </table></div>
-  <div class="note"><b>메뉴를 하나로 묶는 게 중요하다.</b> 물건 400개 · 일꾼 · 손님 · 스킨이
-  전부 “모으는 것”인데 <b>메뉴를 따로따로 만들면 화면 맨 아래가 단추로 가득 찬다.</b>
-  도감 하나로 들어가서 <b>안에서 탭으로 가른다.</b></div>
-  <h3>정해야 할 것</h3>
+
+  <h3>기본 레이아웃 <span style="font-weight:400;color:var(--faint);font-size:12px">(초안 · 승인받은 적 없다)</span></h3>
+  <p class="sub">세로 화면 하나. <b>오늘 정한 것을 다 앉혀 보면 이렇게 된다.</b></p>
+  <div class="wf">
+    <div class="phone">
+      <div class="bar"><span>💰 12.3M</span><span>💎 240</span><span>⚙</span></div>
+      <div class="stage">
+        <div class="rc"><i class="on">1</i><i>2</i><i>3</i><i>4</i><i>5</i><i>🗺</i></div>
+        <div class="alley">
+          <div class="queue">🐰 🦊 🐷 · · ·</div>
+          <div class="shops">
+            <div class="shop"><span class="st">★★★☆☆</span><b>🍡</b></div>
+            <div class="shop"><span class="st">★☆☆☆☆</span><b>🍲</b></div>
+            <div class="shop"><span class="st">★★★★★</span><b>🥬</b></div>
+            <div class="shop" style="opacity:.35"><span class="st">·····</span><b>🔒</b></div>
+          </div>
+          <div style="text-align:center; color:var(--faint); font-size:9px">← 끌기 · 손가락으로 벌려 줌 →</div>
+        </div>
+      </div>
+      <div class="card">
+        <div><b>떡집</b> <span class="st">★★★☆☆</span> <span style="color:var(--faint)">레벨 137</span></div>
+        <div style="color:var(--faint)">지금 파는 것 🍡 절편 · 다음 ⑤ 가래떡</div>
+        <div class="btn">최대로 올리기 · 12.3M</div>
+      </div>
+      <div class="tabs"><div>🏠<br>골목</div><div>📖<br>도감</div><div>🛒<br>상점</div><div>🎁<br>이벤트</div></div>
+    </div>
+    <div class="wfnote">
+      <ol>
+        <li><b>맨 위 — 가진 것.</b> 돈과 보석. 늘 보인다</li>
+        <li><b>왼쪽 — 스트리트 리모콘.</b> 1~5와 세계지도. <b>작게, 세로로</b></li>
+        <li><b>가운데 — 골목.</b> 끌기와 줌이 여기서만 먹는다.
+        매장 위에 <b>별</b>과 <b>지금 파는 물건 그림</b>, 위로 <b>손님 줄</b></li>
+        <li><b>아래 — 고른 매장 카드.</b> 매장을 누르면 여기가 바뀐다.
+        <b>골목이 계속 보이는 것</b>이 중요하다</li>
+        <li><b>맨 아래 — 메뉴 넷.</b> 골목 · 도감 · 상점 · 이벤트</li>
+      </ol>
+    </div>
+  </div>
+
+  <h3>왜 이렇게 놓았나</h3>
+  <div class="tw"><table>
+    <tr><th>자리</th><th>왜</th></tr>
+    <tr><td><b>매장을 눌러도 창이 안 뜬다</b></td>
+    <td>전체 화면 창을 띄우면 <b>골목이 안 보인다.</b> 방치형은 <b>돌아가는 걸 보는 재미</b>인데
+    그걸 가리면 안 된다. <b>아래쪽 카드만 바뀐다</b></td></tr>
+    <tr><td><b>리모콘이 왼쪽 세로</b></td>
+    <td>유저가 <b>“작게 왼쪽에”</b>라고 정했다. 가로로 두면 골목 폭을 먹고,
+    세로로 두면 <b>엄지가 닿는 자리</b>다</td></tr>
+    <tr><td><b>메뉴가 넷뿐</b></td>
+    <td>다섯을 넘으면 <b>글자를 붙여야 알아본다.</b> 넷이면 그림만으로 간다 —
+    <b>글자 없이 말한다</b>가 메뉴에도 걸린다</td></tr>
+    <tr><td><b>꾸미기 메뉴가 따로 없다</b></td>
+    <td>간판 · 가로등 · 안 꾸미기는 <b>그 매장 카드 안</b>에 있으면 된다.
+    메뉴로 빼면 “어느 매장 것인지”를 또 골라야 한다</td></tr>
+    <tr><td><b>세계지도가 리모콘 끝</b></td>
+    <td>챕터를 넘는 건 <b>매장 20개를 다 만렙 찍은 뒤</b>라 자주 안 쓴다.
+    스트리트를 고르는 것과 <b>같은 종류의 일</b>이라 같은 자리에 뒀다</td></tr>
+  </table></div>
+
+  <h3>메뉴 넷 안에 무엇이 들어가나</h3>
+  <div class="tw"><table>
+    <tr><th>메뉴</th><th>안에 무엇</th></tr>
+    <tr><td><b>🏠 골목</b></td><td>게임 화면. 여기가 기본</td></tr>
+    <tr><td><b>📖 도감</b></td><td>탭으로 — <b>물건 400 · 일꾼 · 손님 10 · 꾸미기</b></td></tr>
+    <tr><td><b>🛒 상점</b></td><td>보석 사기 · 현금 상품 · 멤버십 · 광고 없애기</td></tr>
+    <tr><td><b>🎁 이벤트</b></td><td>패스 · 데일리 상점 · 뽑기 · 이벤트 테마</td></tr>
+  </table></div>
+  <div class="note warn"><span class="tag" style="background:var(--persim-bg);color:var(--persim)">🟨 전부 내 판단</span>
+  <b>레이아웃도 메뉴 넷도 승인받은 적 없다.</b> 오늘 정한 것을 화면에 앉혀 본 것뿐이다.
+  자리를 옮기든 메뉴를 늘리든 <b>지금이 가장 싸다.</b></div>
+
+  <h3>다음에 그릴 것</h3>
   <ul>
-    <li><b>도감 안의 탭이 무엇무엇인가</b> — 물건 · 일꾼 · 손님 · 꾸미기?</li>
-    <li>첫 3분에 무엇을 가르치나</li>
+    <li><b>누르면 어디로 가나</b> — 화면끼리 이어지는 그림(무엇을 누르면 무엇이 뜨나)</li>
+    <li><b>매장 카드 안</b> — 최대로 올리기 · 일꾼 · 간판 · 가로등 · 꾸미기를 어떻게 담나</li>
+    <li><b>도감 탭 넷</b>의 생김새</li>
+  </ul>
+
+  <h3>아직 안 정한 것</h3>
+  <ul>
+    <li><b>첫 3분에 무엇을 가르치나</b></li>
     <li><b>게임 안 도움말</b> — 이전 판에는 한 군데도 없었다</li>
     <li><b>최대로 올리는 단추가 어떻게 생겼나</b> — 있다는 것은 정해졌다</li>
     <li><b>매장 위에 별을 어떻게 띄우나</b> — 별로 보여준다는 것은 정해졌다</li>
-    <li>화면에 글자를 얼마나 쓰나 <span style="color:var(--mid)">(이전 판은 너무 많았다)</span></li>
+    <li><b>화면에 글자를 얼마나 쓰나</b> <span style="color:var(--mid)">(이전 판은 너무 많았다)</span></li>
   </ul>
 </section>
 
