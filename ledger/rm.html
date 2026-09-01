@@ -204,14 +204,14 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <nav>
     <a href="#now"><span>지금 어디</span></a>
     <a href="#keep"><span>남긴 것</span></a>
-    <a href="#open"><span>미결정 모음</span><span class="c done">0</span></a>
+    <a href="#open"><span>미결정 모음</span><span class="c">6</span></a>
     <div class="grp">기획 일곱 갈래</div>
     <a href="#story"><span>시나리오</span><span class="c done">24</span></a>
     <a href="#system"><span>시스템</span><span class="c done">25</span></a>
     <a href="#level"><span>레벨</span><span class="c done">22</span></a>
     <a href="#ux"><span>UX · UI</span><span class="c done">40</span></a>
     <a href="#content"><span>콘텐츠</span><span class="c done">12</span></a>
-    <a href="#balance"><span>밸런스</span><span class="c zero">0</span></a>
+    <a href="#balance"><span>밸런스</span><span class="c zero">9</span></a>
     <a href="#biz"><span>사업</span><span class="c done">12</span></a>
     <div class="grp">가진 것</div>
     <a href="#formula"><span>공식</span></a>
@@ -317,8 +317,18 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <b>손으로 옮겨 적으면 반드시 한쪽이 어긋나기 때문이다</b>(규칙 3).
   고칠 것이 있으면 <b>갈래 쪽 픽스 표를 고친다.</b></div>
 <!-- AUTO:open -->
-  <div class="zero done">아직 승인 안 받은 것 <b>0</b></div>
-  <div class="note"><b>남은 노랑이 없다.</b> 낸 것을 유저가 다 물렸거나 승인했다.</div>
+  <div class="zero">아직 승인 안 받은 것 <b>6</b></div>
+  <p class="sub"><b>전부 내가 판단한 것이다.</b> 유저가 <i>“그거 아니야”</i> 한 마디면 물린다.</p>
+  <div class="tw"><table>
+    <tr><th>어느 갈래</th><th>내가 정한 것</th></tr>
+  <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#balance" style="color:var(--faint)">밸런스 기획</a> · 노랑 6</td></tr>
+  <tr><td class="who" style="white-space:nowrap">🟨</td><td><b>오프라인 기본 몫은 벌었을 것의 0.5배</b> — 옛 공식 그대로 살렸다<div class="who" style="margin-top:3px">몇 달 재서 얻은 값</div></td></tr>
+  <tr><td class="who" style="white-space:nowrap">🟨</td><td><b>주사위 눈은 균등</b> — 1~6이 각각 ⅙. 스킬은 바닥만 올린다<div class="who" style="margin-top:3px">내 판단 · 제일 설명하기 쉽다</div></td></tr>
+  <tr><td class="who" style="white-space:nowrap">🟨</td><td><b>한 매장 앞 줄은 4마리까지</b><div class="who" style="margin-top:3px">옛 판의 값 그대로 — 재 본 적 있는 수</div></td></tr>
+  <tr><td class="who" style="white-space:nowrap">🟨</td><td><b>스킬 여덟의 초안 표</b> — 대부분 별 5개, 값은 별마다 ×2<div class="who" style="margin-top:3px">아래 · 아직 아무도 승인 안 함</div></td></tr>
+  <tr><td class="who" style="white-space:nowrap">🟨</td><td><b>손님 능력 초안</b> — ×2에서 시작, 중복마다 +0.1, ×4에서 끝<div class="who" style="margin-top:3px">아래</div></td></tr>
+  <tr><td class="who" style="white-space:nowrap">🟨</td><td><b>돈 표기는 줄임말로</b> — K · M · B · T · aa … 숫자가 10¹⁸까지 간다<div class="who" style="margin-top:3px">계산해 보니 그렇다</div></td></tr>
+  </table></div>
   <div class="note"><b>아무도 안 정한 것</b>(내가 판단조차 안 한 것)은 갈래마다 <b>「아직 안 정한 것」</b>에 따로 있다 — 그건 성격이 달라서 안 섞는다.</div>
 <!-- /AUTO:open -->
 </section>
@@ -3710,7 +3720,133 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
 <section id="balance">
   <h2>밸런스 기획</h2>
   <p class="sub">숫자를 조율하고, <b>짐작하지 말고 잰다.</b></p>
-  <div class="zero">정한 것 <b>0</b></div>
+  <div class="zero">픽스 <b>9</b> · 2026-09-02 새벽 초안</div>
+  <div class="tw"><table class="fx">
+    <tr><th></th><th>정한 것</th><th>근거</th></tr>
+    <tr><td>🟦</td><td><b>과녁: 챕터 하나 = 무과금 7일쯤 · 유료 4일쯤</b></td><td class="who">“최소 4일 아닐까 최대 7일 아닐까 … 맞출 수 있는 밸런스 조정 해줘”</td></tr>
+    <tr><td>🟩</td><td><b>곡선 한 벌이 과녁에 들어왔다</b> — 무과금 <b>6.9일</b> · 유료 <b>4.3일</b> (아래 표)</td><td class="who">운 번호 11개 · 가운뎃값 · <code>tools/pace.py</code></td></tr>
+    <tr><td>🟩</td><td><b>매장 값은 ×4씩, 구역 값은 그 구역 첫 매장의 ×3</b> — 구역이 2.3 · 3.3 · 4.3 · 4.9일째 열린다</td><td class="who">같은 판에서 나왔다</td></tr>
+    <tr><td>🟨</td><td><b>오프라인 기본 몫은 벌었을 것의 0.5배</b> — 옛 공식 그대로 살렸다</td><td class="who">몇 달 재서 얻은 값</td></tr>
+    <tr><td>🟨</td><td><b>주사위 눈은 균등</b> — 1~6이 각각 ⅙. 스킬은 바닥만 올린다</td><td class="who">내 판단 · 제일 설명하기 쉽다</td></tr>
+    <tr><td>🟨</td><td><b>한 매장 앞 줄은 4마리까지</b></td><td class="who">옛 판의 값 그대로 — 재 본 적 있는 수</td></tr>
+    <tr><td>🟨</td><td><b>스킬 여덟의 초안 표</b> — 대부분 별 5개, 값은 별마다 ×2</td><td class="who">아래 · 아직 아무도 승인 안 함</td></tr>
+    <tr><td>🟨</td><td><b>손님 능력 초안</b> — ×2에서 시작, 중복마다 +0.1, ×4에서 끝</td><td class="who">아래</td></tr>
+    <tr><td>🟨</td><td><b>돈 표기는 줄임말로</b> — K · M · B · T · aa … 숫자가 10¹⁸까지 간다</td><td class="who">계산해 보니 그렇다</td></tr>
+  </table></div>
+
+  <h3>2026-09-02 새벽 — 유저가 자는 동안 잰 것</h3>
+  <div class="note"><b>유저가 과녁을 주고 잤다.</b> <i>“챕터 하나는 며칠일까. 최소 4일 아닐까 최대 7일 아닐까?
+  이건 유료 여부에 따라 다르지 않을까. … 내일 아침 7시까지 맞출 수 있는 밸런스 조정 해 줘.”</i>
+  그래서 <b>재는 도구를 만들어 돌렸다.</b> 아래 숫자는 전부 <b>아침에 훑고 물릴 수 있는 초안</b>이다 —
+  🟨과 🟩뿐이고 파랑은 과녁 하나다.</div>
+
+  <h3>어떻게 쟀나 — <code>tools/pace.py</code></h3>
+  <div class="note"><b>하루 일과를 흉내 내는 도구다.</b> 아침 7시 반(10분) · 점심(5분) · 밤(10분)
+  세 번 들어와서, 오프라인 보상을 받고(아침에 주사위 4번을 다 굴린다),
+  돈이 되는 대로 <b>별 하나 채우기</b>로 제일 본전 빨리 뽑는 것부터 산다.
+  매장 20개가 다 1,000레벨이 되면 끝.</div>
+  <div class="tw"><table>
+    <tr><th></th><th>무과금</th><th>유료라 친 것</th></tr>
+    <tr><td><b>멤버십</b></td><td>—</td><td>×2</td></tr>
+    <tr><td><b>스킬</b></td><td>오프라인 상한만 차차(2h→6h→12h)</td><td>등장률 · 오프라인 배수 · 상한 12h 바로</td></tr>
+    <tr><td><b>주사위</b></td><td>하루 4번</td><td>보석으로 2번 더</td></tr>
+    <tr><td><b>결과</b></td><td><b>6.9일</b> (6.5~6.9)</td><td><b>4.3일</b> (다 4.3)</td></tr>
+  </table></div>
+  <div class="note warn"><b>흔들림이 작게 나온 건 모형이 단순해서다.</b>
+  이 모형의 운은 주사위와 세션 길이뿐이다. 실제 게임에는 밤낮 · 날씨 · 공정이 있어서
+  <b>더 흔들릴 것</b>이다 — 그때 다시 잰다(규칙 1).</div>
+
+  <h3>곡선 한 벌 <span style="font-weight:400;color:var(--faint);font-size:12px">(🟩 잰 것 · 유저 승인 전)</span></h3>
+  <pre>물건 값(수입)   = 4 × 1.025^(레벨−1) × 2^(물건 번호−1)
+                   레벨마다 <b>+2.5%</b> · 물건이 바뀌면 <b>×2</b>
+레벨 하나 값    = 20 × 1.04^(레벨−1)
+                   레벨마다 <b>+4%</b>  (50레벨에 ×7.1 ≈ 수입 ×6.9와 짝)
+손님 간격       = 매장마다 10초
+매장 값        = 매장마다 <b>×4</b>  (1번 매장 = 500)
+구역 값        = 그 구역 첫 매장 값 <b>×3</b>
+오프라인       = 벌었을 것의 <b>0.5배</b> · 주사위가 그 위에 얹힌다</pre>
+  <div class="note warn"><b>옛 공식과 심장이 반대다 — 일부러다.</b>
+  옛 판은 수입 +12% vs 비용 +9%로 <b>레벨 자체가 이득</b>이었다.
+  우리는 +2.5% vs +4%라 <b>한 물건 안에서는 뒤로 갈수록 본전이 늦어진다.</b>
+  대신 <b>50레벨의 ×2 점프</b>가 그걸 다 돌려준다 —
+  <b>보상이 레벨이 아니라 물건 바뀜에 살기 때문</b>이다. “조금만 더”가 계단 앞에서 생긴다.
+  <span style="color:var(--mid)">(+12%를 1,000레벨에 쓰면 10⁴⁹까지 가서 못 쓰기도 한다)</span></div>
+  <div class="note"><b>규칙 5는 지켜진다.</b> 어느 레벨을 사도 수입은 <b>반드시 는다</b>(+2.5%).
+  본전 속도가 계단 앞에서 처질 뿐이고, 계단을 넘으면 크게 돌아온다.</div>
+
+  <h3>스킬 여덟 · 초안 <span style="font-weight:400;color:var(--persim);font-size:12px">(🟨 전부)</span></h3>
+  <div class="tw"><table>
+    <tr><th>스킬</th><th>별 하나마다</th><th>끝(별)</th><th>첫 별 값</th></tr>
+    <tr><td>🚶 손님 등장률</td><td>+5%</td><td>5 (+25%)</td><td class="num mono">💎 40</td></tr>
+    <tr><td>💨 손님 이동속도</td><td>+6%</td><td>5</td><td class="num mono">💎 30</td></tr>
+    <tr><td>🌙 밤 손님 출몰률</td><td>+10%</td><td>5</td><td class="num mono">💎 25</td></tr>
+    <tr><td>⚙ 생산속도</td><td>+4%</td><td>5</td><td class="num mono">💎 50</td></tr>
+    <tr><td>⏳ 오프라인 최대 시간</td><td>+2시간</td><td>5 (2h→12h)</td><td class="num mono">💎 60</td></tr>
+    <tr><td>😴 오프라인 배수</td><td>기본 몫 +0.05</td><td>5 (0.5→0.75)</td><td class="num mono">💎 50</td></tr>
+    <tr><td>🎲 주사위 최저 눈</td><td>바닥 +1</td><td><b>2</b> (바닥 3까지)</td><td class="num mono">💎 90</td></tr>
+    <tr><td>💎 보석 섞일 확률</td><td>+3%p</td><td>5 (5%→20%)</td><td class="num mono">💎 45</td></tr>
+  </table></div>
+  <div class="note"><b>값은 별마다 ×2</b>로 오른다. 여덟을 끝까지 다 올리는 데 <b>보석 약 4,000</b> —
+  일부러 멀게 잡았다. <b>스킬이 보석의 바닥 없는 독</b>이어야 보석을 살 이유가 산다.
+  <b>주사위 바닥만 별 2개에서 끝</b>낸다 — 바닥이 4를 넘으면 굴리는 재미가 죽는다.</div>
+
+  <h3>보석이 도는 하루 · 초안 <span style="font-weight:400;color:var(--persim);font-size:12px">(🟨 전부)</span></h3>
+  <div class="tw"><table>
+    <tr><th>무과금이 하루에 얻는 것</th><th></th><th>쓰는 곳</th><th></th></tr>
+    <tr><td>골목 팝업에서 가끔</td><td class="num mono">~5</td><td>손님 뽑기 1회</td><td class="num mono">100</td></tr>
+    <tr><td>광고 보고 보석 (3번)</td><td class="num mono">15</td><td>10연 뽑기</td><td class="num mono">900</td></tr>
+    <tr><td>데일리 미션 완료</td><td class="num mono">10</td><td>주사위 한 번 더</td><td class="num mono">40</td></tr>
+    <tr><td>도감 새 칸 (칸당 2)</td><td class="num mono">~10</td><td>간판 한 단</td><td class="num mono">60~</td></tr>
+    <tr><td><b>합</b></td><td class="num mono"><b>~40</b></td><td>가로등</td><td class="num mono">80~</td></tr>
+  </table></div>
+  <div class="note"><b>무과금이 이틀 반에 뽑기 한 번</b> 나오는 속도다. 짜면 올리고 후하면 내리면 된다 —
+  <b>이 표의 값은 서로 비율만 맞으면 통째로 움직일 수 있다.</b></div>
+
+  <h3>손님 능력 · 초안 <span style="font-weight:400;color:var(--persim);font-size:12px">(🟨 전부)</span></h3>
+  <div class="tw"><table>
+    <tr><th>갈래</th><th>시작</th><th>중복마다</th><th>끝</th></tr>
+    <tr><td>🪙 값을 더 준다</td><td>×2</td><td>+0.1</td><td>×4 (중복 20)</td></tr>
+    <tr><td>💎 보석을 떨어뜨린다</td><td>5%로 1개</td><td>+0.5%p</td><td>15%</td></tr>
+    <tr><td>📦 여러 개 산다</td><td>2개</td><td>+0.15</td><td>5개</td></tr>
+    <tr><td>👥 친구를 데려온다</td><td>1마리</td><td>확률 +</td><td>2마리</td></tr>
+    <tr><td>🔁 자주 온다</td><td>등장 ×1.5</td><td>+0.05</td><td>×2.5</td></tr>
+    <tr><td>🌙 밤에만 · 값이 세다</td><td>×3</td><td>+0.15</td><td>×6</td></tr>
+    <tr><td>🏃 줄을 안 선다</td><td>—</td><td>값 배수가 +</td><td>—</td></tr>
+  </table></div>
+  <div class="note"><b>손님 뽑기 확률 초안:</b> 흔한 손님 60% · 보통 30% · 귀한 손님 10%.
+  옛 공식의 6단계 표를 <b>3단계로 줄였다</b> — 손님 종류가 아직 적어서다. <b>표는 게임 안에 그대로 보여준다.</b></div>
+
+  <h3>나머지 초안 한 줄씩 <span style="font-weight:400;color:var(--persim);font-size:12px">(🟨 전부)</span></h3>
+  <div class="tw"><table>
+    <tr><td><b>골목 팝업</b></td><td>25분쯤마다 · 광고 보면 <b>지금 수입 30분어치</b> · 보석 확률은 스킬 따라 5~20%</td></tr>
+    <tr><td><b>데일리 미션 5개</b></td><td>물건 50개 팔기 · 별 1개 채우기 · 주사위 굴리기 · 광고 1번 · 손님 100마리 —
+    다 하면 보석 10</td></tr>
+    <tr><td><b>이벤트 진행 칸</b></td><td>15칸 — 무과금이 3~4일에 <b>11~13칸</b>까지 가게. 마지막 한둘은 아쉽게</td></tr>
+    <tr><td><b>패스 30일</b></td><td>기본 줄: 매일 돈(그때 수입 20분어치) · 5일마다 보석 20 · 15일째 광고 제거 1회권.
+    프리미엄 줄: 매일 보석 15 · 뽑기권 총 30장</td></tr>
+    <tr><td><b>간판 3단</b></td><td>그 매장 방문 +10% → +20% → +30% · 값 60 → 150 → 400</td></tr>
+    <tr><td><b>가로등 3단</b></td><td>그 매장 밤 손님 +40%씩 · 값 80부터</td></tr>
+    <tr><td><b>도감 모두 받기</b></td><td>칸당 보석 2 — 챕터 하나 다 채우면 800</td></tr>
+    <tr><td><b>계산 시간</b></td><td>한 명 1.2초 — 옛 공식 그대로</td></tr>
+  </table></div>
+
+  <h3>현금 값은 초안도 안 낸다</h3>
+  <div class="note warn"><b>여기만은 숫자를 안 적는다.</b> 멤버십 월 값 · 보석 묶음 값 · 패스 값 · 광고 제거 값은
+  <b>지갑에서 나가는 돈</b>이라 승인자가 정할 일이다.
+  참고 닻만 둔다 — 참고한 게임의 광고 제거가 <b>₩20,000</b>이었고,
+  광고 제거 값은 <b>“그 사람이 평생 볼 광고 값”보다 비싸야</b> 한다.</div>
+
+  <h3>이 판에서 못 잰 것 — 다음 판</h3>
+  <div class="tw"><table>
+    <tr><th>못 잰 것</th><th>왜</th></tr>
+    <tr><td><b>일꾼 값 · 생산속도의 실효</b></td>
+    <td>모형이 손님 간격 10초로 뭉뚱그렸다. <b>공정(3~6과정)과 일꾼 처리량을 넣은 모형</b>이 있어야
+    “일꾼 둘째 마리가 얼마나 값하나”를 잰다</td></tr>
+    <tr><td><b>밤낮 · 날씨</b></td><td>옛 공식의 배수들을 아직 안 얹었다 — 얹으면 흔들림이 커진다</td></tr>
+    <tr><td><b>몰빵 플레이</b></td><td>모형이 순서대로만 산다. 5구역 먼저 여는 길은 따로 재야 한다</td></tr>
+    <tr><td><b>보석 수입과 스킬 구매의 맞물림</b></td><td>스킬을 “언제 샀다 치는지”를 가정으로 박았다</td></tr>
+  </table></div>
+
   <h3>정해야 할 것 — 2026-09-01에 다시 훑었다</h3>
   <div class="note warn"><b>밸런스로 가기 전에 픽스 135개를 한 줄씩 다시 읽었다.</b>
   유저 말: <i>“밸런스 가기 전까지 한번 싹 훑어보자. <b>밸런스에 가야 하는데 누락된 거 찾아보자.</b>”</i>
@@ -3803,6 +3939,8 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <b>운 번호 다섯 개 이상으로 재고 가운뎃값을 본다.</b>
   이걸 적어 놓고도 두 번 어겼다.</div>
 
+  <div class="note"><b>위 36개 중 상당수가 9-02 새벽 초안으로 채워졌다 — 위의 픽스 표와 초안 표들을 봐라.</b>
+  여기 목록은 <b>물음의 원본</b>으로 그대로 둔다(지우면 뭘 채웠는지 모르게 된다).</div>
   <div class="note"><b>재는 법은 이미 안다</b> → <a href="#formula">공식</a>의 마지막 칸.
   자동 검사 도구도 만들어 뒀지만 <b>지금은 안 돌린다</b> — 기획이 굳은 뒤에 투입한다(유저).</div>
 </section>
@@ -4042,7 +4180,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   그래서 <b>도구가 갈래의 픽스 표를 읽어서 여기에 다시 쓴다</b> —
   <b>문서를 늘리지 말고 뽑아 쓴다</b>(규칙 3).</div>
 <!-- AUTO:blue -->
-  <div class="zero done">정해진 것 <b>135</b></div>
+  <div class="zero done">정해진 것 <b>136</b></div>
   <div class="tw"><table>
     <tr><th></th><th>정한 것 · 유저의 말</th></tr>
   <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#story" style="color:var(--faint)">시나리오 기획</a> · 파랑 24</td></tr>
@@ -4174,6 +4312,8 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <tr><td class="num mono who">10</td><td><b>이벤트는 3~4일마다 돈다.</b> 못 끝낸 것을 다음에 얻으려고 다시 오게<div class="who" style="margin-top:3px">“3~4일 단위로 쿨이 돌았으면 해”</div></td></tr>
   <tr><td class="num mono who">11</td><td><b>테마는 만든 것으로 사이클을 돌리고, 새 테마는 운영하며 늘린다</b><div class="who" style="margin-top:3px">“그 전까지는 만든 걸로 사이클 돌려야지”</div></td></tr>
   <tr><td class="num mono who">12</td><td><b>이벤트에서 얻은 손님이 기본 게임 골목에 등장한다.</b> 돈을 쓰면 빨리 모은다<div class="who" style="margin-top:3px">“기본 게임에 손님으로 등장할 거고”</div></td></tr>
+  <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#balance" style="color:var(--faint)">밸런스 기획</a> · 파랑 1</td></tr>
+  <tr><td class="num mono who">1</td><td><b>과녁: 챕터 하나 = 무과금 7일쯤 · 유료 4일쯤</b><div class="who" style="margin-top:3px">“최소 4일 아닐까 최대 7일 아닐까 … 맞출 수 있는 밸런스 조정 해줘”</div></td></tr>
   <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#biz" style="color:var(--faint)">사업 기획</a> · 파랑 12</td></tr>
   <tr><td class="num mono who">1</td><td><b>광고는 붙일 수 있는 곳에 다 붙인다</b><div class="who" style="margin-top:3px">“붙일 수 있는 곳은 다 붙이고 싶은데”</div></td></tr>
   <tr><td class="num mono who">2</td><td><b>광고 없애기는 현금으로 판다.</b> 보석으로는 못 산다<div class="who" style="margin-top:3px">“무조건 현금”</div></td></tr>
