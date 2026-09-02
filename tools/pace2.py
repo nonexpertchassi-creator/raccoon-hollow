@@ -39,7 +39,7 @@ if "--ch" in sys.argv and CHAP > 1:
     if "--faster" not in sys.argv: FASTER = 1 + 1.1 * _f   # 손님 빨라지는 합 상한 +110%
     if "--boost"  not in sys.argv: BOOST  = 1 + 2.0 * _f   # 손님 능력 ×1 → ×3
     C0 = C0 * M["챕터당_밑값배수"] ** (CHAP - 1)
-OFF_W = N["오프라인"]["기본_몫"]
+OFF_W = a("--off", N["오프라인"]["기본_몫"])   # 오프라인 몫. 광고 없애기를 사면 두 배가 된다
 OFF_0, OFF_MAX = N["오프라인"]["처음_시간"], N["오프라인"]["최대_시간"]
 FLOOR, PER = _C["바닥"], _C["레벨마다"]
 
