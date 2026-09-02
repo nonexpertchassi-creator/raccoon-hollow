@@ -30,6 +30,7 @@ MINS  = a("--mins", 25.0)          # 하루에 손에 잡고 있는 분
 SESS  = int(a("--sess", 3))        # 하루에 몇 번 들어오나. 오프라인을 몇 번 걷어 가느냐가 진짜 레버다
 CAP   = a("--cap", 0)              # 오프라인 최대 시간을 못 박는다. 0이면 예전처럼 날짜로 늘어난다
 OFF_W = N["오프라인"]["기본_몫"]
+OFF_0, OFF_MAX = N["오프라인"]["처음_시간"], N["오프라인"]["최대_시간"]
 FLOOR, PER = _C["바닥"], _C["레벨마다"]
 
 BAND = [tuple(x) for x in _C["계단"]]
@@ -119,7 +120,9 @@ def run(seed, paid, log=None):
     last = 0.0
     online = 0.0                          # 실제로 손에 잡고 있던 분
     for day in range(120):
-        cap = CAP if CAP else (12 if paid else (2 if day < 2 else 6 if day < 4 else 12))
+        # 오프라인 상한은 스킬로만 열린다(유저가 정했다) — 날짜로 저절로 안 열린다.
+        # 무과금은 안 산 채로 시작하고, 돈 쓴 사람은 일찍 산 것으로 친다.
+        cap = CAP if CAP else (OFF_MAX if paid else OFF_0)
         dice = [rng.randint(1,6) for _ in range(6 if paid else 4)]
         first = True
         for at, mins in sess:

@@ -204,14 +204,14 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <nav>
     <a href="#now"><span>지금 어디</span></a>
     <a href="#keep"><span>남긴 것</span></a>
-    <a href="#open"><span>미결정 모음</span><span class="c done">0</span></a>
+    <a href="#open"><span>미결정 모음</span><span class="c">2</span></a>
     <div class="grp">기획 일곱 갈래</div>
     <a href="#story"><span>시나리오</span><span class="c done">24</span></a>
     <a href="#system"><span>시스템</span><span class="c done">25</span></a>
     <a href="#level"><span>레벨</span><span class="c done">22</span></a>
     <a href="#ux"><span>UX · UI</span><span class="c done">40</span></a>
     <a href="#content"><span>콘텐츠</span><span class="c done">12</span></a>
-    <a href="#balance"><span>밸런스</span><span class="c zero">40</span></a>
+    <a href="#balance"><span>밸런스</span><span class="c zero">46</span></a>
     <a href="#biz"><span>사업</span><span class="c done">12</span></a>
     <div class="grp">가진 것</div>
     <a href="#formula"><span>공식</span></a>
@@ -317,8 +317,14 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <b>손으로 옮겨 적으면 반드시 한쪽이 어긋나기 때문이다</b>(규칙 3).
   고칠 것이 있으면 <b>갈래 쪽 픽스 표를 고친다.</b></div>
 <!-- AUTO:open -->
-  <div class="zero done">아직 승인 안 받은 것 <b>0</b></div>
-  <div class="note"><b>남은 노랑이 없다.</b> 낸 것을 유저가 다 물렸거나 승인했다.</div>
+  <div class="zero">아직 승인 안 받은 것 <b>2</b></div>
+  <p class="sub"><b>전부 내가 판단한 것이다.</b> 유저가 <i>“그거 아니야”</i> 한 마디면 물린다.</p>
+  <div class="tw"><table>
+    <tr><th>어느 갈래</th><th>내가 정한 것</th></tr>
+  <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#balance" style="color:var(--faint)">밸런스 기획</a> · 노랑 2</td></tr>
+  <tr><td class="who" style="white-space:nowrap">🟨</td><td><b>오프라인 상한 스킬의 끝을 12시간이 아니라 24시간으로</b> 늘린다 — 뜸하게 들어오는 사람에게 끝까지 이득이게<div class="who" style="margin-top:3px">내 판단 — 유저 승인 전</div></td></tr>
+  <tr><td class="who" style="white-space:nowrap">🟨</td><td><b>오프라인 문턱 60초.</b> 그 아래로 나갔다 오면 오프라인으로 안 치고 <b>100% 주고 팝업도 안 띄운다</b><div class="who" style="margin-top:3px">내 판단 — 유저 승인 전</div></td></tr>
+  </table></div>
   <div class="note"><b>아무도 안 정한 것</b>(내가 판단조차 안 한 것)은 갈래마다 <b>「아직 안 정한 것」</b>에 따로 있다 — 그건 성격이 달라서 안 섞는다.</div>
 <!-- /AUTO:open -->
 </section>
@@ -3790,7 +3796,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
 <section id="balance">
   <h2>밸런스 기획</h2>
   <p class="sub">숫자를 조율하고, <b>짐작하지 말고 잰다.</b></p>
-  <div class="zero">픽스 <b>40</b> · 2026-09-02 새벽 초안</div>
+  <div class="zero">픽스 <b>46</b> · 2026-09-02 새벽 초안</div>
   <div class="tw"><table class="fx">
     <tr><th></th><th>정한 것</th><th>근거</th></tr>
     <tr><td>🟦</td><td><b>과녁: 챕터 하나 = 무과금 7일쯤 · 유료 4일쯤</b></td><td class="who">“최소 4일 아닐까 최대 7일 아닐까 … 맞출 수 있는 밸런스 조정 해줘”</td></tr>
@@ -3827,8 +3833,8 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <tr><td>🟩</td><td><b>그 25%는 레벨만 올려도 풀린다</b> — 800레벨이면 0%. 보석은 “빨리”를 살 뿐이다</td><td class="who">제조시간이 46레벨 동안 반으로 준다</td></tr>
     <tr><td>🟩</td><td><b>생산속도와 등장률이 서로를 부른다</b> — 손님을 늘리면 다시 밀리고, 속도를 올리면 풀린다</td><td class="who">노리고 짠 게 아니라 저절로 나왔다</td></tr>
     <tr><td>🟦</td><td><b>매장 카드에서 일꾼 자리를 밝게 안 한다.</b> 대신 <b>너구리가 처음 짜증 낼 때 일꾼 채용 가이드</b>가 열린다</td><td class="who">“밝게 보여줄 필요는 없어 … 처음 짜증 낼 경우 일꾼 채용 가이드가 열리는 게”</td></tr>
-    <tr><td>🟩</td><td><b>제조시간을 넣고도 과녁에 들었다</b> — 무과금 <b>7.3일</b> · 유료 <b>4.9일</b></td><td class="who">운 번호 11개 · <code>tools/pace2.py</code></td></tr>
-    <tr><td>🟩</td><td><b>비용 증가율이 1.0425 → 1.056</b>으로 올랐다</td><td class="who">제조가 막으니 더 천천히 커진다</td></tr>
+    <tr><td>🟩</td><td><b>제조시간과 오프라인 상한을 다 넣고도 과녁에 들었다</b> — 무과금 <b>7.3일</b> · 유료 <b>4.3일</b> <span style="color:var(--faint)">(하루 3번 · 모두 25분)</span></td><td class="who">운 번호 11개 · <code>tools/pace2.py</code></td></tr>
+    <tr><td>🟩</td><td><b>비용 증가율 1.0425 → 1.056 → 1.0543</b></td><td class="who">제조가 막아서 올랐고, 오프라인 상한이 조여서 조금 내렸다</td></tr>
     <tr><td>🟦</td><td><b>매장 별 하나에 보석 1개</b> — 매장당 100개 · <b>챕터당 2,000개</b></td><td class="who">“별 1개당 보석 1개를 준다면”</td></tr>
     <tr><td>🟩</td><td><b>그러면 무과금이 하루 425개다</b> — 내가 낸 “하루 40개”는 <b>10배 틀렸다</b></td><td class="who">별 2,000 + 도감 800 + 미션·광고 175</td></tr>
     <tr><td>🟩</td><td><b>다 섞어 쓰면 스킬 마스터가 45일에 끝난다</b> — 5챕터를 다 밀면 마스터의 77%가 손에 있다</td><td class="who">19,244 ÷ 2,975</td></tr>
@@ -3838,6 +3844,12 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <tr><td>🟩</td><td><b>접속 시간은 거의 안 움직인다</b> — 하루 5분을 200분으로 <b>40배</b> 해도 7.3일 → 6.9일</td><td class="who">운 번호 11개 · <code>--mins</code></td></tr>
     <tr><td>🟩</td><td><b>진짜 레버는 하루 몇 번 들어오나</b> — 1번이면 11.3일, 6번이면 5.3일. 오프라인을 <b>걷어 가는 횟수</b>다</td><td class="who">운 번호 11개 · <code>--sess</code></td></tr>
     <tr><td>🟩</td><td><b>오프라인 최대 시간 스킬은 규칙 5를 지킨다</b> — 상한 2시간이면 9.5일, 12시간이면 6.3일</td><td class="who">운 번호 11개 · <code>--cap</code></td></tr>
+    <tr><td>🟦</td><td><b>오프라인 상한은 스킬로만 열린다</b> — 날짜가 지난다고 저절로 안 열린다. 시작은 2시간</td><td class="who">“스킬로만 열리는 게 맞는 거 같아”</td></tr>
+    <tr><td>🟦</td><td><b>오프라인 보상은 실제 떠나 있던 시간만큼만</b> — 5분 나갔으면 5분치</td><td class="who">“재접속까지 5분이 걸렸다면 5분치만”</td></tr>
+    <tr><td>🟩</td><td><b>그러면 무과금 첫 챕터는 7.3일이 아니라 9.5일</b>이다 — 스킬을 안 산 사람 기준</td><td class="who">운 번호 11개 · <code>--cap 2</code></td></tr>
+    <tr><td>🟩</td><td><b>오프라인 상한 스킬은 10시간에서 끝난다</b> — 하루 세 번 들어오면 제일 긴 틈이 10시간이라 그 위는 안 준다</td><td class="who">규칙 5가 깨지는 자리</td></tr>
+    <tr><td>🟨</td><td><b>오프라인 상한 스킬의 끝을 12시간이 아니라 24시간으로</b> 늘린다 — 뜸하게 들어오는 사람에게 끝까지 이득이게</td><td class="who">내 판단 — 유저 승인 전</td></tr>
+    <tr><td>🟨</td><td><b>오프라인 문턱 60초.</b> 그 아래로 나갔다 오면 오프라인으로 안 치고 <b>100% 주고 팝업도 안 띄운다</b></td><td class="who">내 판단 — 유저 승인 전</td></tr>
   </table></div>
 
   <h3>피곤한 일꾼 — 강요 말고 눈치채게</h3>
@@ -4439,6 +4451,83 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <b>둘 중 하나가 틀렸고, 지금 잰 7.3일은 “날짜로 저절로 열린다”를 깔고 있다.</b>
   <b>스킬로만 열린다면 무과금은 9.5일에 가깝다.</b>
   <span style="color:var(--mid)">(어느 쪽이 맞는지는 유저에게 물어야 한다 — 규칙 7)</span></div>
+
+  <h3>오프라인은 어떻게 알아채나 — 원리부터 <span style="font-weight:400;color:var(--faint);font-size:12px">(찾아본 것)</span></h3>
+  <p class="sub">유저 물음: <i>“플레이하다가 <b>잠금화면에 돌입하거나 홈 탭으로 간 후</b>
+  몇 분 또는 몇 초 뒤부터 오프라인을 감지하잖아? <b>이거 원리는 내가 몰라 네가 찾아와야 해.</b>”</i></p>
+  <div class="note"><b>한 줄로 하면 이렇다.</b>
+  <b>게임은 꺼져 있는 동안 아무것도 안 한다.</b>
+  <b>나갈 때 시각을 적어 두고, 돌아올 때 빼기를 할 뿐이다.</b></div>
+  <div class="tw"><table>
+    <tr><th></th><th>무슨 일이</th></tr>
+    <tr><td><b>1. 나간다</b></td><td>홈 단추를 누르거나 잠금 화면이 되면 <b>운영체제가 앱한테 “너 뒤로 간다”고 알려 준다</b>
+    <span style="color:var(--faint)">(유니티는 <code>OnApplicationPause(true)</code>, 안드로이드 <code>onPause</code>, iOS <code>didEnterBackground</code>)</span></td></tr>
+    <tr><td><b>2. 적어 둔다</b></td><td>그때 <b>지금 시각을 저장본에 적는다</b></td></tr>
+    <tr><td><b>3. 돌아온다</b></td><td>다시 열면 알림이 또 오고, <b>지금 시각 − 적어 둔 시각 = 떠나 있던 시간</b></td></tr>
+    <tr><td><b>4. 한 번에 곱한다</b></td><td>떠나 있던 동안을 <b>하나하나 돌리지 않는다.</b>
+    실제로 그렇게 만들었다가 <b>24시간치를 계산하는 데 14분이 걸린 사례</b>가 있다</td></tr>
+  </table></div>
+  <div class="note warn"><b>걸리는 데가 둘 있다.</b><br>
+  <b>하나 — 앱이 강제로 죽으면 “나간다” 알림이 안 올 수 있다.</b>
+  그래서 <b>몇 초마다 시각을 미리 적어 둔다.</b> 죽어도 마지막으로 적힌 시각이 남는다.<br>
+  <b>둘 — 기기 시계를 앞으로 돌리면 공짜 보상이다.</b>
+  <b>완전히 막는 방법은 없다</b>(찾아본 글들도 다 그렇게 말한다). 셋 중 하나로 눅인다:
+  ① <b>서버 시각</b>을 쓴다(제일 확실하지만 인터넷이 있어야 한다) ·
+  ② <b>부팅 이후 흐른 시간</b>을 같이 적어 둔다 — 이건 사람이 못 돌리니
+  <b>두 시계가 안 맞으면 시계를 만졌다는 뜻</b> ·
+  ③ 시계가 <b>뒤로</b> 간 것만 잡아서 경고한다.
+  <b>우리는 서버가 없으니 ②가 현실적이다.</b></div>
+
+  <h3>5분이면 얼마인가 — 1시간에 100원일 때</h3>
+  <p class="sub">유저 말: <i>“<b>재접속까지 5분이 걸렸다면 5분치만 보상 주면 될 거야.</b>
+  1시간에 100원이라면 5분이면 얼마일까?”</i></p>
+  <div class="tw"><table>
+    <tr><th>떠나 있던 시간</th><th class="num mono">그냥 켜 뒀다면</th><th class="num mono">오프라인 몫 0.5면</th></tr>
+    <tr><td>30초</td><td class="num mono">0.83원</td><td class="num mono">0.42원</td></tr>
+    <tr><td><b>5분</b></td><td class="num mono"><b>8.33원</b></td><td class="num mono"><b>4.17원</b></td></tr>
+    <tr><td>30분</td><td class="num mono">50원</td><td class="num mono">25원</td></tr>
+    <tr><td>2시간</td><td class="num mono">200원</td><td class="num mono">100원</td></tr>
+    <tr><td>8시간 <span style="color:var(--faint)">(자고 남)</span></td><td class="num mono">800원</td><td class="num mono">400원 → <b>상한 2시간이면 100원</b></td></tr>
+  </table></div>
+  <div class="note"><b>“5분이면 5분치”는 이미 그렇게 되어 있다.</b>
+  오프라인은 <b>떠나 있던 시간 × 초당 수입 × 0.5</b>고,
+  <b>상한은 위쪽만 자른다</b> — 2시간 넘게 떠나 있어야 걸린다.
+  <b>새로 정할 것은 아래쪽이다.</b></div>
+  <div class="note warn"><b>아래쪽에 문턱이 없으면 억울해진다.</b>
+  전화 30초 받고 왔는데 그 30초가 <b>반값</b>이 되고,
+  <b>0.42원짜리 팝업</b>이 뜬다. 하루에 몇 번씩.</div>
+  <div class="note"><b>내 제안(🟨):</b> <b>문턱 60초.</b>
+  그 아래로 나갔다 오면 <b>오프라인으로 안 치고 그냥 켜 뒀던 것으로 100% 준다.</b>
+  <b>팝업도 안 뜬다.</b> 악용해도 이득이 없다 — <b>켜 놓은 것과 똑같아지기 때문</b>이다.
+  그 위부터 오프라인(0.5배)이고 상한까지 간다.</div>
+
+  <h3>상한을 스킬로만 열면 첫 챕터가 <b>9.5일</b>이다</h3>
+  <p class="sub">유저 말: <i>“<b>스킬로만 열리는 게 맞는 거 같아.</b>”</i>
+  → 모형이 날짜로 열던 것을 <b>고쳐야 한다.</b></p>
+  <div class="tw"><table>
+    <tr><th>오프라인 상한</th><th class="num mono">흐른 날 <span style="font-weight:400">(하루 3번 · 25분)</span></th><th class="num mono">하루 1번만 들어오면</th></tr>
+    <tr><td><b>2시간</b> <span style="color:var(--faint)">(스킬 0레벨 · 시작)</span></td><td class="num mono"><b>9.5일</b></td><td class="num mono">16.3일</td></tr>
+    <tr><td>4시간</td><td class="num mono">7.5일</td><td class="num mono">—</td></tr>
+    <tr><td>6시간</td><td class="num mono">7.3일</td><td class="num mono">12.3일</td></tr>
+    <tr><td>8시간</td><td class="num mono">6.5일</td><td class="num mono">—</td></tr>
+    <tr><td><b>12시간</b> <span style="color:var(--faint)">(마스터)</span></td><td class="num mono"><b>6.3일</b></td><td class="num mono">11.3일</td></tr>
+  </table></div>
+  <div class="note"><b>그래서 모형을 고치고 다시 맞췄다.</b>
+  날짜로 열던 것을 <b>스킬로만 열게</b> 바꾸니 무과금이 9.5일이 됐고,
+  <b>이미 승인된 과녁(무과금 7일)</b>에 맞추려고 비용 증가율만 다시 풀었다 —
+  <b>1.056 → 1.0543.</b> 그것뿐이다.
+  <b>지금 값: 무과금 7.3일 · 유료 4.3일</b>(하루 3번 · 모두 25분, 운 번호 11개).
+  <b>과녁이 이미 파랑이라 이건 새 판단이 아니라 다시 푼 것이다.</b></div>
+  <div class="note warn"><b>규칙 5가 깨지는 자리를 하나 찾았다.</b>
+  <b>하루 세 번(아침·점심·밤) 들어오는 사람은 제일 긴 틈이 10시간</b>이라
+  <b>상한이 10시간을 넘으면 그 위는 한 푼도 더 안 준다.</b>
+  그런데 스킬은 <b>12시간까지 판다</b> — <b>마지막 네 레벨이 돈만 먹는다.</b><br>
+  <b>하루 한 번만 들어오는 사람은 틈이 24시간</b>이라 12시간도 모자란다.
+  <b>즉 이 스킬은 뜸하게 들어오는 사람 것이다.</b><br>
+  <b>고칠 길 둘:</b> ① 끝을 <b>24시간</b>으로 늘린다(뜸한 사람에게 끝까지 이득) ·
+  ② 12시간에서 끝내되 <b>“자주 들어오면 이 스킬은 덜 필요하다”</b>고 화면에서 말해 준다.
+  <b>①을 민다</b> — 규칙 5는 “산 사람이 손해 보면 안 된다”이고,
+  ②는 안 사게 말리는 것이지 <b>산 사람을 구해 주지는 못한다.</b></div>
 
   <h3>숫자 말고 느낌으로 — <code>tools/pace.py --feel</code></h3>
   <p class="sub">유저 말: <i>“밸런스 보는데 <b>확실히 내가 수학은 많이 약하긴 하네.</b>”</i></p>
@@ -5048,7 +5137,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   그래서 <b>도구가 갈래의 픽스 표를 읽어서 여기에 다시 쓴다</b> —
   <b>문서를 늘리지 말고 뽑아 쓴다</b>(규칙 3).</div>
 <!-- AUTO:blue -->
-  <div class="zero done">정해진 것 <b>158</b></div>
+  <div class="zero done">정해진 것 <b>160</b></div>
   <div class="tw"><table>
     <tr><th></th><th>정한 것 · 유저의 말</th></tr>
   <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#story" style="color:var(--faint)">시나리오 기획</a> · 파랑 24</td></tr>
@@ -5180,7 +5269,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <tr><td class="num mono who">10</td><td><b>이벤트는 3~4일마다 돈다.</b> 못 끝낸 것을 다음에 얻으려고 다시 오게<div class="who" style="margin-top:3px">“3~4일 단위로 쿨이 돌았으면 해”</div></td></tr>
   <tr><td class="num mono who">11</td><td><b>테마는 만든 것으로 사이클을 돌리고, 새 테마는 운영하며 늘린다</b><div class="who" style="margin-top:3px">“그 전까지는 만든 걸로 사이클 돌려야지”</div></td></tr>
   <tr><td class="num mono who">12</td><td><b>이벤트에서 얻은 손님이 기본 게임 골목에 등장한다.</b> 돈을 쓰면 빨리 모은다<div class="who" style="margin-top:3px">“기본 게임에 손님으로 등장할 거고”</div></td></tr>
-  <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#balance" style="color:var(--faint)">밸런스 기획</a> · 파랑 23</td></tr>
+  <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#balance" style="color:var(--faint)">밸런스 기획</a> · 파랑 25</td></tr>
   <tr><td class="num mono who">1</td><td><b>과녁: 챕터 하나 = 무과금 7일쯤 · 유료 4일쯤</b><div class="who" style="margin-top:3px">“최소 4일 아닐까 최대 7일 아닐까 … 맞출 수 있는 밸런스 조정 해줘”</div></td></tr>
   <tr><td class="num mono who">2</td><td><b>오프라인 기본 몫은 벌었을 것의 0.5배</b> — 옛 공식 그대로 살렸다<div class="who" style="margin-top:3px">“좋아”</div></td></tr>
   <tr><td class="num mono who">3</td><td><b>주사위 눈은 균등</b> — 1~6이 각각 ⅙. 스킬은 바닥만 올린다<div class="who" style="margin-top:3px">“오케이”</div></td></tr>
@@ -5204,6 +5293,8 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <tr><td class="num mono who">21</td><td><b>재화는 돈과 보석 둘뿐이다.</b> 별 보석을 꾸미기 전용으로 나누지 않는다 — 재화를 늘리는 건 콘텐츠가 늘 때 본다<div class="who" style="margin-top:3px">“구분해야 할 재화가 너무 많아”</div></td></tr>
   <tr><td class="num mono who">22</td><td><b>스킬 마스터가 45일이어도 상관없다.</b> 챕터·이벤트·아이템이 계속 늘어난다 — <b>게임의 끝은 지금 만들 게 아니다</b><div class="who" style="margin-top:3px">“45일 만에 끝나도 상관없다”</div></td></tr>
   <tr><td class="num mono who">23</td><td><b>“며칠”만 적지 않는다.</b> <b>하루 몇 번 들어와 모두 몇 분</b>인지를 같이 적는다<div class="who" style="margin-top:3px">“며칠 기준으로 하지 말자 … 어느 기준인지 감이 안 잡혀”</div></td></tr>
+  <tr><td class="num mono who">24</td><td><b>오프라인 상한은 스킬로만 열린다</b> — 날짜가 지난다고 저절로 안 열린다. 시작은 2시간<div class="who" style="margin-top:3px">“스킬로만 열리는 게 맞는 거 같아”</div></td></tr>
+  <tr><td class="num mono who">25</td><td><b>오프라인 보상은 실제 떠나 있던 시간만큼만</b> — 5분 나갔으면 5분치<div class="who" style="margin-top:3px">“재접속까지 5분이 걸렸다면 5분치만”</div></td></tr>
   <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#biz" style="color:var(--faint)">사업 기획</a> · 파랑 12</td></tr>
   <tr><td class="num mono who">1</td><td><b>광고는 붙일 수 있는 곳에 다 붙인다</b><div class="who" style="margin-top:3px">“붙일 수 있는 곳은 다 붙이고 싶은데”</div></td></tr>
   <tr><td class="num mono who">2</td><td><b>광고 없애기는 현금으로 판다.</b> 보석으로는 못 산다<div class="who" style="margin-top:3px">“무조건 현금”</div></td></tr>
