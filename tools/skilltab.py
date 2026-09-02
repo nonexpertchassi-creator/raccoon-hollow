@@ -12,7 +12,12 @@ from balnum import N
 LEDGER = Path(__file__).resolve().parent.parent / "ledger" / "rm.html"
 S = N["스킬"]["목록"]
 
-def cost(s, lv):  return s["밑값"] * s["값배수"] ** (lv - 1)      # 그 레벨 하나 값
+_K = N["스킬"]["값곡선"]
+def cost(s, lv):                                   # 그 레벨 하나를 사는 값
+    if "값" in s: return s["값"][lv - 1]           # 주사위는 곡선을 안 쓴다
+    k = _K["꺾는_레벨"]
+    return _K["기울기1"] * lv if lv <= k else \
+           _K["기울기1"] * k + _K["기울기2"] * (lv - k)
 def total(s):     return sum(cost(s, i) for i in range(1, s["최대"] + 1))
 
 def cell(v): return f'<td class="num mono">{v}</td>'

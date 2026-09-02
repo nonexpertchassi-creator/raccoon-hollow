@@ -100,3 +100,11 @@ html = re.sub(r'(<a href="#open"><span>미결정 모음</span><span class=")c[^"
 
 io.open(LEDGER, "w", encoding="utf-8").write(html)
 print(f"미결정 {yellow_n} · 파랑 {blue_n}")
+
+# 픽스 표 밖에 떠도는 🟨는 미결정 모음이 못 본다 — 네 번 그렇게 놓쳤다.
+# 표에 올리든 파랑으로 바꾸든 하라고 여기서 말해 준다.
+loose = len(re.findall(r"🟨 내 제안", html))
+if loose:
+    print(f"\n⚠ 본문에 떠도는 🟨가 {loose}개 있다 — 픽스 표에 없으면 미결정 모음에 안 잡힌다.")
+    for m in re.finditer(r"🟨 내 제안</span>\s*\n?\s*(.{0,90})", html, re.S):
+        print("   · " + re.sub(r"<[^>]+>", "", m.group(1)).strip().replace("\n", " "))
