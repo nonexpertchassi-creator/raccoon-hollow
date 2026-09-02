@@ -13,6 +13,10 @@ from pathlib import Path
 LEDGER = Path(__file__).resolve().parent.parent / "ledger" / "rm.html"
 FIX = "--fix" in sys.argv
 
+class _All:
+    def __init__(self, parts): self._s = "".join(parts)
+    def group(self, i): return self._s
+
 html = io.open(LEDGER, encoding="utf-8").read()
 orig = html
 bad = []
@@ -21,7 +25,8 @@ for sid, body in re.findall(r'<section id="(\w+)">(.*?)</section>', html, re.S):
     head = re.search(r'(<div class="zero[^"]*">픽스 <b>)(\d+)(</b>)', body)
     if not head:
         continue
-    table = re.search(r'<table class="fx">(.*?)</table>', body, re.S)
+    parts = re.findall(r'<table class="fx">(.*?)</table>', body, re.S)
+    table = _All(parts) if parts else None
     real = len(re.findall(r"<tr><td>[\U0001F7E6\U0001F7E8\U0001F7E9]", table.group(1))) if table else 0
 
     # 갈래 머리

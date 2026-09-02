@@ -16,13 +16,18 @@ LEDGER = Path(__file__).resolve().parent.parent / "ledger" / "rm.html"
 ROW = re.compile(r'<tr><td>([\U0001F7E6\U0001F7E8\U0001F7E9])</td><td>(.*?)</td>'
                  r'<td class="who">(.*?)</td></tr>', re.S)
 
+class _All:
+    def __init__(self, parts): self._s = "".join(parts)
+    def group(self, i): return self._s
+
 html = io.open(LEDGER, encoding="utf-8").read()
 
 branches = []
 for sid, body in re.findall(r'<section id="(\w+)">(.*?)</section>', html, re.S):
-    table = re.search(r'<table class="fx">(.*?)</table>', body, re.S)
-    if not table:
+    parts = re.findall(r'<table class="fx">(.*?)</table>', body, re.S)
+    if not parts:
         continue
+    table = _All(parts)
     title = re.search(r"<h2>(.*?)</h2>", body).group(1)
     rows = ROW.findall(table.group(1))
     total = len(re.findall(r"<tr><td>[\U0001F7E6\U0001F7E8\U0001F7E9]", table.group(1)))

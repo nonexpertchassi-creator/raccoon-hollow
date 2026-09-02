@@ -211,7 +211,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <a href="#level"><span>레벨</span><span class="c done">22</span></a>
     <a href="#ux"><span>UX · UI</span><span class="c done">40</span></a>
     <a href="#content"><span>콘텐츠</span><span class="c done">12</span></a>
-    <a href="#balance"><span>밸런스</span><span class="c zero">13</span></a>
+    <a href="#balance"><span>밸런스</span><span class="c zero">20</span></a>
     <a href="#biz"><span>사업</span><span class="c done">12</span></a>
     <div class="grp">가진 것</div>
     <a href="#formula"><span>공식</span></a>
@@ -3788,7 +3788,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
 <section id="balance">
   <h2>밸런스 기획</h2>
   <p class="sub">숫자를 조율하고, <b>짐작하지 말고 잰다.</b></p>
-  <div class="zero">픽스 <b>13</b> · 2026-09-02 새벽 초안</div>
+  <div class="zero">픽스 <b>20</b> · 2026-09-02 새벽 초안</div>
   <div class="tw"><table class="fx">
     <tr><th></th><th>정한 것</th><th>근거</th></tr>
     <tr><td>🟦</td><td><b>과녁: 챕터 하나 = 무과금 7일쯤 · 유료 4일쯤</b></td><td class="who">“최소 4일 아닐까 최대 7일 아닐까 … 맞출 수 있는 밸런스 조정 해줘”</td></tr>
@@ -3806,7 +3806,98 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <tr><td>🟦</td><td><b>보석은 보라색 계열</b> — 감빛(주황)·풀빛과 안 겹친다</td><td class="who">“보라색계열로 해줘”</td></tr>
   </table></div>
 
-  <h3>×2를 별마다 붙이나, 물건마다 붙이나 <span style="font-weight:400;color:var(--persim);font-size:12px">(유저가 고를 것)</span></h3>
+  <h3>2026-09-02 · 제조시간을 넣고 다시 쟀다 — 7.3일 / 4.9일</h3>
+  <div class="tw"><table class="fx">
+    <tr><th></th><th>정한 것</th><th>근거</th></tr>
+    <tr><td>🟦</td><td><b>손님 간격 밑값 3초</b> · <b>제일 빨라도 1.44초</b>. 1초 미만은 없다</td><td class="who">“1.44가 제일 빠르게 목표로”</td></tr>
+    <tr><td>🟦</td><td><b>손님을 빨리 오게 하는 것은 전부 더하기</b>다 — 곱하면 폭발한다</td><td class="who">“퍼센트 계산을 다시하면 될 듯”</td></tr>
+    <tr><td>🟦</td><td><b>별마다 ×1.15 + 물건 바뀔 때 ×2</b>를 같이 쓴다</td><td class="who">“너 제안에 동의하되 … 그냥 두배해도 괜찮을거야”</td></tr>
+    <tr><td>🟦</td><td><b>제조시간은 물건 번호로 계단</b> — 1~5번 3초 · 6~10번 6초 · 11~15번 12초 · 16~20번 16초</td><td class="who">“이렇게 고정해버리고”</td></tr>
+    <tr><td>🟦</td><td><b>무과금 기준을 조금 빡세게 잡는다</b> — 광고·멤버십·손님 배수가 그 위에 얹힌다</td><td class="who">“조금 빡새게 잡아도 된다 생각해”</td></tr>
+    <tr><td>🟩</td><td><b>제조시간을 넣고도 과녁에 들었다</b> — 무과금 <b>7.3일</b> · 유료 <b>4.9일</b></td><td class="who">운 번호 11개 · <code>tools/pace2.py</code></td></tr>
+    <tr><td>🟩</td><td><b>비용 증가율이 1.0425 → 1.056</b>으로 올랐다</td><td class="who">제조가 막으니 더 천천히 커진다</td></tr>
+  </table></div>
+
+  <h3>손님을 빨리 오게 하는 것 — 곱셈이 폭발의 원인이었다</h3>
+  <p class="sub">유저 말: <i>“<b>무조건 등장 1초 미만은 불가.</b> 사실 1초도 빠른 거 같기도 함.
+  <b>1.44가 제일 빠르게 목표로 퍼센트 계산을 다시</b> 해. <b>너무 확확 늘릴 필요 없어</b> —
+  유저들은 사실상 한 번에 만렙을 찍지 않는 이상 체감도 안 할 거야.”</i></p>
+  <div class="note warn"><b>0.29초가 나온 진짜 이유는 전부 곱셈이었기 때문이다.</b>
+  <code>1.60 × 1.30 × 2.20 × 5.00 = 22.9배</code> — <b>넷을 곱하면 스물두 배</b>가 된다.
+  <b>더하기로 바꾸면 스물두 배가 두 배가 된다.</b></div>
+  <div class="tw"><table>
+    <tr><th>무엇</th><th>레벨(단)마다</th><th>다 올리면</th></tr>
+    <tr><td>🚶 손님 등장률 스킬 (20레벨)</td><td class="num mono">+1.5%</td><td class="num mono">+30%</td></tr>
+    <tr><td>🪧 간판 (3단)</td><td class="num mono">+5%</td><td class="num mono">+15%</td></tr>
+    <tr><td>🏮 가로등 (3단 · 밤에만)</td><td class="num mono">+8%</td><td class="num mono">+24%</td></tr>
+    <tr><td>🔁 손님 능력 「자주 온다」</td><td class="num mono">그 손님만</td><td class="num mono">+40%</td></tr>
+    <tr><td><b>합</b></td><td></td><td class="num mono"><b>+109%</b> → <b>1.44초</b></td></tr>
+  </table></div>
+  <div class="note"><b>합에 상한 +110%를 못 박는다.</b> 나중에 무엇을 더 붙여도
+  <b>1.43초 밑으로는 안 간다.</b> 낮에는 가로등이 빠지니 <b>1.62초</b>다.</div>
+  <div class="note"><b>유저 말이 맞다 — “너무 확확 늘릴 필요 없다”.</b>
+  <b>3초에서 1.44초는 두 배</b>고, 그 정도면 <b>화면이 확실히 붐벼 보인다.</b>
+  <b>스물두 배는 숫자만 크지 사람 눈에는 “너무 많다”로만 보인다.</b></div>
+
+  <h3>내가 20물건을 다 같은 공정으로 치고 있었다</h3>
+  <p class="sub">유저 말: <i>“<b>1번 물품은 제조 과정이 1개일 거고 나중에 되서야 6과정을 다 거칠 수 있겠지.</b>
+  그리고 거기에 일꾼이 4명이 붙을 때 <b>물품 레벨에 따라 제조 시간이 줄어든다는 과정이 안 보여.</b>”</i></p>
+  <div class="note warn"><b>둘 다 맞았다.</b> 내가 앞에서 “6공정 매장에 일꾼 하나면 18초”라고 쟀는데,
+  <b>그건 20번 물건 이야기지 1번 물건 이야기가 아니었다.</b>
+  <b>1번 물건은 1공정이고 3초다.</b></div>
+  <div class="tw"><table>
+    <tr><th>물건</th><th>공정</th><th>만드는 시간</th><th>일꾼1</th><th>일꾼2</th><th>일꾼4</th><th>손님 3초 대비</th></tr>
+    <tr><td class="num mono">1~2</td><td class="num mono">1</td><td class="num mono">3초</td><td class="num mono">3.0초</td><td class="num mono">3.0초</td><td class="num mono">3.0초</td><td>딱 맞는다</td></tr>
+    <tr><td class="num mono">3~5</td><td class="num mono">2</td><td class="num mono">3초</td><td class="num mono">3.0초</td><td class="num mono">1.5초</td><td class="num mono">1.5초</td><td>손님이 모자란다</td></tr>
+    <tr><td class="num mono">6~10</td><td class="num mono">3</td><td class="num mono">6초</td><td class="num mono">6.0초</td><td class="num mono">3.0초</td><td class="num mono">2.0초</td><td>일꾼 2면 뚫린다</td></tr>
+    <tr><td class="num mono">11~15</td><td class="num mono">4</td><td class="num mono">12초</td><td class="num mono">12.0초</td><td class="num mono">6.0초</td><td class="num mono">3.0초</td><td><b>일꾼 4가 필요</b></td></tr>
+    <tr><td class="num mono">16~20</td><td class="num mono">6</td><td class="num mono">16초</td><td class="num mono">16.0초</td><td class="num mono">8.0초</td><td class="num mono">4.0초</td><td><b>일꾼 4로도 막힌다</b></td></tr>
+  </table></div>
+  <div class="note"><b>뒤로 갈수록 막히는 것이 정상이다.</b>
+  <b>그게 일꾼과 생산속도 스킬을 살 이유</b>이고, <b>짜증 이모지가 뜨는 자리</b>다.
+  16번 물건부터는 <b>일꾼 넷으로도 손님을 다 못 받는다</b> — <b>스킬로 뚫으라는 뜻</b>이다.</div>
+
+  <h3>그리고 그 물건 안에서는 레벨마다 빨라진다</h3>
+  <pre>  1레벨  3.00초        51레벨  3.00초  ← 물건이 바뀌면 <b>다시 느려진다</b>
+ 10레벨  2.62초        60레벨  2.62초
+ 25레벨  2.09초       100레벨  1.50초
+ 46레벨  1.52초  ← 바닥(0.5배)
+ 50레벨  1.50초       501레벨 12.00초  ← 계단이 뛴다</pre>
+  <div class="note"><b>바닥(0.5배)에 <b>46레벨</b>이면 닿는다 — 물건 하나가 50레벨이니 딱 맞는다.</b>
+  <b>46레벨 동안 계속 빨라지다가, 물건이 바뀌면 다시 느려진다.</b>
+  <b>50레벨마다 리듬이 생긴다</b> — 옛 공식은 16레벨이면 바닥이라 984레벨이 밋밋했다.</div>
+
+  <h3>재다가 규칙 5 위반을 하나 찾았다</h3>
+  <div class="note warn"><b>일꾼이 하나면 500레벨에서 수입이 <b>줄어든다.</b></b>
+  물건이 10번에서 11번으로 바뀔 때 <b>값은 ×2인데 시간은 6초→12초로 ×2</b>고,
+  거기에 <b>그 물건 안에서 46레벨 동안 빨라진 것이 통째로 날아간다.</b>
+  <b>레벨을 올렸는데 수입이 주는 것</b>은 규칙 5 정면 위반이다.</div>
+  <div class="tw"><table>
+    <tr><th>500 → 501레벨</th><th>일꾼 1</th><th>일꾼 4</th></tr>
+    <tr><td>초당 수입</td><td class="num mono" style="color:var(--persim)">3.6e10 → 2.1e10 ✗</td><td class="num mono">3.6e10 → 8.5e10 ✓</td></tr>
+  </table></div>
+  <div class="note"><b>답은 일꾼이다.</b> <b>계단이 뛰는 자리에서는 일꾼을 먼저 뽑아야 뚫린다.</b>
+  <b>이게 오히려 좋은 설계다</b> — <b>“물건이 바뀌기 전에 일꾼을 준비해라”</b>가 저절로 가르쳐진다.
+  <span style="color:var(--mid)">(도구가 그 순서를 못 찾아서 20일이 지나도 못 끝냈다 — 도구를 고쳤다)</span></div>
+  <div class="note warn"><b>다만 화면에서 이걸 알려 줘야 한다.</b>
+  <b>일꾼이 모자란 채로 물건이 바뀌면 수입이 준다</b> —
+  <b>그 순간 짜증 이모지가 뜨는 것</b>으로 알려지긴 하는데,
+  <b>“일꾼을 뽑아라”가 더 또렷해야 할지는 UX에서 볼 일</b>이다.</div>
+
+  <h3>다시 잰 결과</h3>
+  <div class="tw"><table>
+    <tr><th></th><th>제조시간 없을 때</th><th>넣은 뒤</th></tr>
+    <tr><td><b>무과금</b></td><td class="num mono">7.3일</td><td class="num mono"><b>7.3일</b></td></tr>
+    <tr><td><b>유료</b></td><td class="num mono">4.3일</td><td class="num mono"><b>4.9일</b></td></tr>
+    <tr><td><b>비용 증가율</b></td><td class="num mono">1.0425</td><td class="num mono"><b>1.056</b></td></tr>
+  </table></div>
+  <div class="note"><b>비용 증가율이 올라간 것이 제조시간이 한 일이다.</b>
+  <b>제조가 막으니 수입이 천천히 크고, 그래서 비용을 더 가파르게 해도 7일에 맞는다.</b>
+  <b>같은 7일인데 안에서 하는 일이 늘었다</b> — 레벨만 올리는 게 아니라 <b>일꾼도 뽑아야 한다.</b></div>
+  <div class="note"><b>초반 30분도 다시 봤다.</b> 별 1개 <b>3분</b> · 별 2개 <b>8분</b> ·
+  <b>둘째 매장 14분</b> · 물건 바뀜 <b>27분</b>. <b>유저가 말한 “30분에 두 매장”이 들어온다.</b></div>
+
+  <h3>×2를 별마다 붙이나, 물건마다 붙이나 <span style="font-weight:400;color:var(--faint);font-size:12px">(정해졌다 — 둘 다)</span></h3>
   <p class="sub">유저 말: <i>“<b>별 5개의 두 배 수익이 아니고 별 하나당 두 배 수익인 거지</b>.”</i>
   <b>지금은 별 5개(50레벨)마다이고, 그건 내가 정한 것이라 유저 말이 맞으면 바꾼다.</b></p>
   <div class="tw"><table>
@@ -4670,7 +4761,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   그래서 <b>도구가 갈래의 픽스 표를 읽어서 여기에 다시 쓴다</b> —
   <b>문서를 늘리지 말고 뽑아 쓴다</b>(규칙 3).</div>
 <!-- AUTO:blue -->
-  <div class="zero done">정해진 것 <b>144</b></div>
+  <div class="zero done">정해진 것 <b>149</b></div>
   <div class="tw"><table>
     <tr><th></th><th>정한 것 · 유저의 말</th></tr>
   <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#story" style="color:var(--faint)">시나리오 기획</a> · 파랑 24</td></tr>
@@ -4802,7 +4893,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <tr><td class="num mono who">10</td><td><b>이벤트는 3~4일마다 돈다.</b> 못 끝낸 것을 다음에 얻으려고 다시 오게<div class="who" style="margin-top:3px">“3~4일 단위로 쿨이 돌았으면 해”</div></td></tr>
   <tr><td class="num mono who">11</td><td><b>테마는 만든 것으로 사이클을 돌리고, 새 테마는 운영하며 늘린다</b><div class="who" style="margin-top:3px">“그 전까지는 만든 걸로 사이클 돌려야지”</div></td></tr>
   <tr><td class="num mono who">12</td><td><b>이벤트에서 얻은 손님이 기본 게임 골목에 등장한다.</b> 돈을 쓰면 빨리 모은다<div class="who" style="margin-top:3px">“기본 게임에 손님으로 등장할 거고”</div></td></tr>
-  <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#balance" style="color:var(--faint)">밸런스 기획</a> · 파랑 9</td></tr>
+  <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#balance" style="color:var(--faint)">밸런스 기획</a> · 파랑 14</td></tr>
   <tr><td class="num mono who">1</td><td><b>과녁: 챕터 하나 = 무과금 7일쯤 · 유료 4일쯤</b><div class="who" style="margin-top:3px">“최소 4일 아닐까 최대 7일 아닐까 … 맞출 수 있는 밸런스 조정 해줘”</div></td></tr>
   <tr><td class="num mono who">2</td><td><b>오프라인 기본 몫은 벌었을 것의 0.5배</b> — 옛 공식 그대로 살렸다<div class="who" style="margin-top:3px">“좋아”</div></td></tr>
   <tr><td class="num mono who">3</td><td><b>주사위 눈은 균등</b> — 1~6이 각각 ⅙. 스킬은 바닥만 올린다<div class="who" style="margin-top:3px">“오케이”</div></td></tr>
@@ -4812,6 +4903,11 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <tr><td class="num mono who">7</td><td><b>돈은 1원부터 시작한다</b> — 표기는 줄임말(K · M · B …)<div class="who" style="margin-top:3px">“1원부터 시작해도 됨”</div></td></tr>
   <tr><td class="num mono who">8</td><td><b>돈 그림은 금색 동전에 나뭇잎</b><div class="who" style="margin-top:3px">“금색동전에 나뭇잎 모양을 박자”</div></td></tr>
   <tr><td class="num mono who">9</td><td><b>보석은 보라색 계열</b> — 감빛(주황)·풀빛과 안 겹친다<div class="who" style="margin-top:3px">“보라색계열로 해줘”</div></td></tr>
+  <tr><td class="num mono who">10</td><td><b>손님 간격 밑값 3초</b> · <b>제일 빨라도 1.44초</b>. 1초 미만은 없다<div class="who" style="margin-top:3px">“1.44가 제일 빠르게 목표로”</div></td></tr>
+  <tr><td class="num mono who">11</td><td><b>손님을 빨리 오게 하는 것은 전부 더하기</b>다 — 곱하면 폭발한다<div class="who" style="margin-top:3px">“퍼센트 계산을 다시하면 될 듯”</div></td></tr>
+  <tr><td class="num mono who">12</td><td><b>별마다 ×1.15 + 물건 바뀔 때 ×2</b>를 같이 쓴다<div class="who" style="margin-top:3px">“너 제안에 동의하되 … 그냥 두배해도 괜찮을거야”</div></td></tr>
+  <tr><td class="num mono who">13</td><td><b>제조시간은 물건 번호로 계단</b> — 1~5번 3초 · 6~10번 6초 · 11~15번 12초 · 16~20번 16초<div class="who" style="margin-top:3px">“이렇게 고정해버리고”</div></td></tr>
+  <tr><td class="num mono who">14</td><td><b>무과금 기준을 조금 빡세게 잡는다</b> — 광고·멤버십·손님 배수가 그 위에 얹힌다<div class="who" style="margin-top:3px">“조금 빡새게 잡아도 된다 생각해”</div></td></tr>
   <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#biz" style="color:var(--faint)">사업 기획</a> · 파랑 12</td></tr>
   <tr><td class="num mono who">1</td><td><b>광고는 붙일 수 있는 곳에 다 붙인다</b><div class="who" style="margin-top:3px">“붙일 수 있는 곳은 다 붙이고 싶은데”</div></td></tr>
   <tr><td class="num mono who">2</td><td><b>광고 없애기는 현금으로 판다.</b> 보석으로는 못 산다<div class="who" style="margin-top:3px">“무조건 현금”</div></td></tr>
