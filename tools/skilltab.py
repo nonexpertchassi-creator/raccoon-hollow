@@ -29,7 +29,8 @@ for s in S:
     rows.append("    <tr><td>{} {}</td><td>{}</td><td>{}</td>{}{}{}{}</tr>".format(
         s["아이콘"], s["이름"], s["레벨당"], s["끝"],
         cell(at(1)), cell(at(10)), cell(at(20)), cell(f'{round(total(s)):,}')))
-rows.append('    <tr><td colspan="6"><b>여덟 다 마스터</b></td>'
+KO = {8: "여덟", 9: "아홉", 10: "열"}.get(len(S), str(len(S)))
+rows.append(f'    <tr><td colspan="6"><b>{KO} 다 마스터</b></td>'
             f'<td class="num mono"><b>{round(sum(total(s) for s in S)):,}</b></td></tr>')
 
 html = io.open(LEDGER, encoding="utf-8").read()
@@ -39,4 +40,4 @@ if a not in html:
 i, j = html.index(a) + len(a), html.index(b)
 html = html[:i] + "\n" + "\n".join(rows) + "\n  " + html[j:]
 io.open(LEDGER, "w", encoding="utf-8").write(html)
-print(f"스킬 {len(S)}개 · 여덟 다 마스터 {round(sum(total(s) for s in S)):,}")
+print(f"스킬 {len(S)}개 · 다 마스터 {round(sum(total(s) for s in S)):,}")
