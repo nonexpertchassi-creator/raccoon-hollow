@@ -31,6 +31,7 @@ SESS  = int(a("--sess", 3))        # 하루에 몇 번 들어오나. 오프라�
 CAP   = a("--cap", 0)              # 오프라인 최대 시간을 못 박는다. 0이면 예전처럼 날짜로 늘어난다
 # 앞 챕터에서 들고 오는 힘. 첫 챕터는 둘 다 1이다.
 DAILY = a("--daily", 0.0)          # 매일 받기 — 하루에 "그때 수입 N분어치"를 더 준다
+ONMUL = a("--onmul", 1.0)          # 손에 잡고 있을 때만 걸리는 배수 (멤버십)
 BOOST = a("--boost", 1.0)          # 물건 값에 곱해지는 것 — 손님 능력 배수
 FASTER= a("--faster", 1.0)         # 빨라지는 것 — 손님도 제조도 같이 (상한 2.1배)
 CHAP  = int(a("--ch", 1))          # 몇 번째 챕터인가. 챕터마다 레벨 밑값이 오르고,
@@ -142,7 +143,7 @@ def run(seed, paid, log=None):
             if first and DAILY: g += rate() * DAILY * 60   # 매일 받기는 그날 첫 접속에
             if first: g *= 1 + sum(dice); first = False
             m = mins * (0.7 + 0.6*rng.random())
-            for _ in range(int(m)): g += rate()*60
+            for _ in range(int(m)): g += rate()*60*ONMUL
             online += m
             last = now + m/60
             money += g; buy()
