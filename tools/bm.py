@@ -62,9 +62,13 @@ for gem, price in ((60, 1_500), (300, 6_900), (980, 19_000), (2_000, 39_000), (5
     print(f"  💎{gem:>5} = {won(price):>10}   보석 1개당 {price/gem:6.1f}원")
 
 print("\n── 광고 제거를 얼마에 파나 ──")
-DAILY_ADS = 3 + 3 + 1     # 주사위 3 + 보석 3 + 팝업 1쯤
-ECPM      = 9_000         # 보상형 광고 1,000번에 (원) — 한국 높은 편
-per_view  = ECPM/1000
-for days in (60, 120, 365):
-    life = DAILY_ADS * days * per_view
-    print(f"  {days:3}일 붙어 있는 사람이 보는 광고값 ≈ {won(life)}")
+# 광고 자리는 17개인데 다 보는 사람은 없다 — 몇 %나 보는지가 진짜 손잡이다.
+SLOTS   = 3 + 3 + 5 + 4 + 2   # 주사위3 · 보석3 · 뽑기5 · 팝업4 · 패스와 미션2
+ECPM    = 9_000               # 보상형 광고 1,000번에 (원) — 한국 높은 편
+per_view= ECPM/1000
+print(f"  광고 자리 하루 {SLOTS}개 · 보상형 1회 {per_view:.0f}원")
+for take in (0.4, 0.6, 0.8):
+    seen = SLOTS*take
+    print(f"\n  자리의 {take*100:.0f}%를 보면 하루 {seen:.1f}개 · {won(seen*per_view)}")
+    for days in (30, 60, 120, 365):
+        print(f"    {days:3}일 붙어 있는 사람이 보는 광고값 ≈ {won(seen*days*per_view)}")

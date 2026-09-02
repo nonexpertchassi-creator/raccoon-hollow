@@ -204,14 +204,14 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <nav>
     <a href="#now"><span>지금 어디</span></a>
     <a href="#keep"><span>남긴 것</span></a>
-    <a href="#open"><span>미결정 모음</span><span class="c done">0</span></a>
+    <a href="#open"><span>미결정 모음</span><span class="c">1</span></a>
     <div class="grp">기획 일곱 갈래 <span style="font-weight:400;text-transform:none;letter-spacing:0">· 숫자는 <b>정해진 것</b></span></div>
     <a href="#story"><span>시나리오</span><span class="c done">24</span></a>
     <a href="#system"><span>시스템</span><span class="c done">25</span></a>
     <a href="#level"><span>레벨</span><span class="c done">22</span></a>
     <a href="#ux"><span>UX · UI</span><span class="c done">40</span></a>
     <a href="#content"><span>콘텐츠</span><span class="c done">12</span></a>
-    <a href="#balance"><span>밸런스</span><span class="c done">85</span></a>
+    <a href="#balance"><span>밸런스</span><span class="c done">87</span></a>
     <a href="#biz"><span>사업</span><span class="c done">12</span></a>
     <div class="grp">가진 것</div>
     <a href="#formula"><span>공식</span></a>
@@ -318,8 +318,13 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <b>손으로 옮겨 적으면 반드시 한쪽이 어긋나기 때문이다</b>(규칙 3).
   고칠 것이 있으면 <b>갈래 쪽 픽스 표를 고친다.</b></div>
 <!-- AUTO:open -->
-  <div class="zero done">아직 승인 안 받은 것 <b>0</b></div>
-  <div class="note"><b>남은 노랑이 없다.</b> 낸 것을 유저가 다 물렸거나 승인했다.</div>
+  <div class="zero">아직 승인 안 받은 것 <b>1</b></div>
+  <p class="sub"><b>전부 내가 판단한 것이다.</b> 유저가 <i>“그거 아니야”</i> 한 마디면 물린다.</p>
+  <div class="tw"><table>
+    <tr><th>어느 갈래</th><th>내가 정한 것</th></tr>
+  <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#balance" style="color:var(--faint)">밸런스 기획</a> · 노랑 1</td></tr>
+  <tr><td class="who" style="white-space:nowrap">🟨</td><td><b>광고 없애기는 “귀찮음”만 판다</b> — 광고 자리가 그냥 열리고 <b>세지는 것은 안 얹는다</b>. 세지는 것은 멤버십 몫<div class="who" style="margin-top:3px">내 판단 — 유저 승인 전</div></td></tr>
+  </table></div>
   <div class="note"><b>아무도 안 정한 것</b>(내가 판단조차 안 한 것)은 갈래마다 <b>「아직 안 정한 것」</b>에 따로 있다 — 그건 성격이 달라서 안 섞는다.</div>
 <!-- /AUTO:open -->
 </section>
@@ -3791,7 +3796,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
 <section id="balance">
   <h2>밸런스 기획</h2>
   <p class="sub">숫자를 조율하고, <b>짐작하지 말고 잰다.</b></p>
-  <div class="zero">픽스 <b>85</b> · 2026-09-02 새벽 초안</div>
+  <div class="zero">픽스 <b>87</b> · 2026-09-02 새벽 초안</div>
   <div class="tw"><table class="fx">
     <tr><th></th><th>정한 것</th><th>근거</th></tr>
     <tr><td>🟦</td><td><b>과녁: 챕터 하나 = 무과금 7일쯤 · 유료 4일쯤</b></td><td class="who">“최소 4일 아닐까 최대 7일 아닐까 … 맞출 수 있는 밸런스 조정 해줘”</td></tr>
@@ -3824,6 +3829,8 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <tr><td>🟩</td><td><b>수입이 100배여도 비용 곡선에서 87레벨 건너뛴 것</b>뿐이다 — 1,000레벨 중 8.7%</td><td class="who">log 100 ÷ log 1.0543</td></tr>
     <tr><td>🟦</td><td><b>챕터마다 레벨 밑값을 올린다</b> — 어느 챕터를 열어도 일주일이 되게</td><td class="who">“챕터마다 밑값 올리자 그게 맞음”</td></tr>
     <tr><td>🟩</td><td><b>배수는 ×1.12다</b> — 챕터 1·5·10·15·20이 <b>7.3 · 6.9 · 7.3 · 7.3 · 7.9일</b>로 고르게 눕는다</td><td class="who">운 번호 11개 · <code>--ch</code></td></tr>
+    <tr><td>🟩</td><td><b>광고 자리가 17개가 되면서 “안 보게 해 주는 값”이 커졌다</b> — 절반쯤 보는 사람이 <b>60일이면 5,508원</b>어치</td><td class="who"><code>tools/bm.py</code> · 보상형 1회 9원</td></tr>
+    <tr><td>🟨</td><td><b>광고 없애기는 “귀찮음”만 판다</b> — 광고 자리가 그냥 열리고 <b>세지는 것은 안 얹는다</b>. 세지는 것은 멤버십 몫</td><td class="who">내 판단 — 유저 승인 전</td></tr>
     <tr><td>🟦</td><td><b>꾸미기 값은 간판 50 · 100 · 가로등 300</b>(매장마다) — 유저 초안 그대로 간다</td><td class="who">“내 초안 괜찮게 생각해? 난 나쁘지 않다 보는데”</td></tr>
     <tr><td>🟩</td><td><b>간판만 다 올리면 챕터 보석 하나가 딱 든다</b>(3,000 vs 2,975 · 101%). 가로등은 그 두 배</td><td class="who">50+100 × 매장 20</td></tr>
     <tr><td>🟦</td><td><b>뽑기권 1장 = 뽑기 1회</b>(보석 100어치). 주는 곳마다 <b>1장씩</b></td><td class="who">“뽑기권은 1장이면 될 거임”</td></tr>
@@ -5337,6 +5344,66 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <div class="note"><b>스킬 아홉 마스터가 67,500개니 121만원어치</b>다.
   거기에 뽑기·간판·가로등까지 하면 <b>깊이가 충분하다.</b>
   <b>1개당 값이 25원에서 18원으로만 내려간다</b> — 큰 묶음이 너무 싸면 작은 묶음이 안 팔린다.</div>
+
+  <h3>⑤ 광고 없애기 — <b>우리는 이미 “혜택 있는” 쪽에 서 있다</b></h3>
+  <p class="sub">유저 말: <i>“요즘 광고 없애기 하면 <b>이것저것 혜택도 많이 주는데</b>
+  우린 <b>혜택 없는 거와 있는 거 먼저 구분</b>해 보자.
+  혜택을 준다면 <b>뭘 줄 것인지</b>부터.”</i></p>
+  <div class="note"><b>구분부터 하면 갈래는 셋이다.</b></div>
+  <div class="tw"><table>
+    <tr><th></th><th>무엇이 달라지나</th><th></th></tr>
+    <tr><td><b>가</b> 순수형</td><td>광고가 안 나온다. <b>광고로 열리던 것은 못 받는다</b></td>
+    <td class="who"><b>이미 물렸다</b> — 돈 낸 사람이 무과금보다 덜 받는다(규칙 5)</td></tr>
+    <tr><td><b>나</b> 열어주는형</td><td>광고 자리 <b>17개가 그냥 열린다</b></td>
+    <td class="who"><b>지금 우리</b> — <i>“광고 없이 그냥 받는다”</i>로 이미 정해 뒀다</td></tr>
+    <tr><td><b>다</b> 얹는형</td><td>나 + <b>세지는 것</b>(배수 · 매일 보석 …)</td>
+    <td class="who">요즘 게임들이 하는 것</td></tr>
+  </table></div>
+  <div class="note warn"><b>그러니 “혜택 없는 것”은 이미 선택지가 아니다.</b>
+  <b>「가」는 우리가 한참 전에 물린 자리</b>다 —
+  광고 없애기를 사면 <b>오프라인 주사위 3회를 못 굴리게 되어</b> 돈 낸 사람이 손해를 봤다.
+  그래서 <b>“광고를 없앤다”가 아니라 “광고 없이 그냥 받는다”</b>로 고쳤다.
+  <b>그 순간 우리는 이미 「나」에 서 있었다.</b></div>
+
+  <h3>브레이크 — 「다」로 가면 <b>멤버십과 겹친다</b></h3>
+  <div class="note warn"><b>둘 다 현금 상품인데 같은 것을 팔면 하나가 죽는다</b>(규칙 4의 사촌).
+  <b>광고 없애기에 배수를 얹으면 멤버십을 살 이유가 준다.</b>
+  <b>갈래를 나눠 두면 둘 다 산다.</b></div>
+  <div class="tw"><table>
+    <tr><th></th><th>무엇을 파나</th><th>언제</th><th>무엇을 주나</th></tr>
+    <tr><td><b>광고 없애기</b></td><td><b>귀찮음을 없앤다</b></td><td>한 번 사고 끝</td>
+    <td>광고 자리 17개가 그냥 열린다 · <b>손이 덜 간다</b></td></tr>
+    <tr><td><b>멤버십</b></td><td><b>더 세진다</b></td><td>다달이</td>
+    <td>배수 · 매일 보석 · 추가 보상</td></tr>
+  </table></div>
+  <div class="note"><b>그래서 얹는다면 “편함” 갈래 안에서만 얹는다</b>(🟨 내 초안).
+  <b>세지는 것은 하나도 안 얹는다.</b></div>
+  <div class="tw"><table>
+    <tr><th>얹어도 되는 것 <span style="font-weight:400;color:var(--faint)">(편함)</span></th><th>얹으면 안 되는 것 <span style="font-weight:400;color:var(--faint)">(세짐)</span></th></tr>
+    <tr><td><b>오프라인 보상 한 번에 받기</b> — 열면 바로 다 들어온다</td><td>오프라인 배수 올리기</td></tr>
+    <tr><td><b>골목 팝업 자동으로 받기</b></td><td>매일 보석 주기</td></tr>
+    <tr><td><b>뽑기 결과 빨리 넘기기</b></td><td>뽑기 확률 올리기</td></tr>
+    <tr><td><b>산 사람 표시</b>(너구리 모자 같은 것)</td><td>손님 능력 배수</td></tr>
+  </table></div>
+  <div class="note"><b>왼쪽은 다 “시간을 아끼는 것”이고 오른쪽은 다 “남보다 세지는 것”이다.</b>
+  <b>5,000원짜리가 시간을 팔면 멤버십은 힘을 팔 수 있다</b> — 서로 안 잡아먹는다.</div>
+
+  <h3>다시 재 보니 — <b>광고 자리가 늘어서 잃는 값도 커졌다</b></h3>
+  <div class="tw"><table>
+    <tr><th>자리 17개 중 얼마나 보나</th><th class="num mono">하루</th><th class="num mono">30일</th><th class="num mono">60일</th><th class="num mono">365일</th></tr>
+    <tr><td>40%를 본다 (6.8개)</td><td class="num mono">61원</td><td class="num mono">1,836원</td><td class="num mono">3,672원</td><td class="num mono">22,338원</td></tr>
+    <tr><td><b>60%를 본다</b> (10.2개)</td><td class="num mono">92원</td><td class="num mono">2,754원</td><td class="num mono"><b>5,508원</b></td><td class="num mono">33,507원</td></tr>
+    <tr><td>80%를 본다 (13.6개)</td><td class="num mono">122원</td><td class="num mono">3,672원</td><td class="num mono">7,344원</td><td class="num mono">44,676원</td></tr>
+  </table></div>
+  <div class="note warn"><b>절반쯤 보는 사람이 60일을 넘기면 5,000원보다 광고를 더 본다.</b>
+  <b>게다가 광고를 많이 보는 사람일수록 광고 없애기를 산다</b> —
+  <b>제일 손해 보는 사람이 제일 잘 사는 구조</b>다.</div>
+  <div class="note"><b>그래도 5,000원을 유지한다.</b>
+  <b>진짜 값은 광고가 아니라 “첫 결제”에 있다</b>(아래에서 이미 쟀다) —
+  <b>한 번 결제한 사람 셋 중 하나는 그 뒤로 또 산다.</b>
+  <b>그리고 대부분은 60일을 못 넘긴다.</b>
+  <span style="color:var(--mid)">(그 “대부분”이 몇 %인지는 우리 숫자가 아니라 남의 평균이다 —
+  내면 그때 진짜 숫자로 갈아 낀다)</span></div>
 
   <h3>광고 제거는 얼마가 맞나 — 5,000원이다</h3>
   <p class="sub">유저 물음: <i>“광고 제거가 2만원인데 적당한 가격인가?
