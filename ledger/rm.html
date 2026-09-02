@@ -204,14 +204,14 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <nav>
     <a href="#now"><span>지금 어디</span></a>
     <a href="#keep"><span>남긴 것</span></a>
-    <a href="#open"><span>미결정 모음</span><span class="c">2</span></a>
+    <a href="#open"><span>미결정 모음</span><span class="c">1</span></a>
     <div class="grp">기획 일곱 갈래</div>
     <a href="#story"><span>시나리오</span><span class="c done">24</span></a>
     <a href="#system"><span>시스템</span><span class="c done">25</span></a>
     <a href="#level"><span>레벨</span><span class="c done">22</span></a>
     <a href="#ux"><span>UX · UI</span><span class="c done">40</span></a>
     <a href="#content"><span>콘텐츠</span><span class="c done">12</span></a>
-    <a href="#balance"><span>밸런스</span><span class="c zero">46</span></a>
+    <a href="#balance"><span>밸런스</span><span class="c zero">49</span></a>
     <a href="#biz"><span>사업</span><span class="c done">12</span></a>
     <div class="grp">가진 것</div>
     <a href="#formula"><span>공식</span></a>
@@ -317,13 +317,12 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <b>손으로 옮겨 적으면 반드시 한쪽이 어긋나기 때문이다</b>(규칙 3).
   고칠 것이 있으면 <b>갈래 쪽 픽스 표를 고친다.</b></div>
 <!-- AUTO:open -->
-  <div class="zero">아직 승인 안 받은 것 <b>2</b></div>
+  <div class="zero">아직 승인 안 받은 것 <b>1</b></div>
   <p class="sub"><b>전부 내가 판단한 것이다.</b> 유저가 <i>“그거 아니야”</i> 한 마디면 물린다.</p>
   <div class="tw"><table>
     <tr><th>어느 갈래</th><th>내가 정한 것</th></tr>
-  <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#balance" style="color:var(--faint)">밸런스 기획</a> · 노랑 2</td></tr>
-  <tr><td class="who" style="white-space:nowrap">🟨</td><td><b>오프라인 상한 스킬의 끝을 12시간이 아니라 24시간으로</b> 늘린다 — 뜸하게 들어오는 사람에게 끝까지 이득이게<div class="who" style="margin-top:3px">내 판단 — 유저 승인 전</div></td></tr>
-  <tr><td class="who" style="white-space:nowrap">🟨</td><td><b>오프라인 문턱 60초.</b> 그 아래로 나갔다 오면 오프라인으로 안 치고 <b>100% 주고 팝업도 안 띄운다</b><div class="who" style="margin-top:3px">내 판단 — 유저 승인 전</div></td></tr>
+  <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#balance" style="color:var(--faint)">밸런스 기획</a> · 노랑 1</td></tr>
+  <tr><td class="who" style="white-space:nowrap">🟨</td><td><b>오프라인 상한 스킬의 끝을 12시간 → 8시간</b>으로 낮춘다 — 자는 시간에 맞추면 <b>하루 3번</b>이 저절로 강제된다<div class="who" style="margin-top:3px">내 판단 — 유저 승인 전</div></td></tr>
   </table></div>
   <div class="note"><b>아무도 안 정한 것</b>(내가 판단조차 안 한 것)은 갈래마다 <b>「아직 안 정한 것」</b>에 따로 있다 — 그건 성격이 달라서 안 섞는다.</div>
 <!-- /AUTO:open -->
@@ -3796,7 +3795,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
 <section id="balance">
   <h2>밸런스 기획</h2>
   <p class="sub">숫자를 조율하고, <b>짐작하지 말고 잰다.</b></p>
-  <div class="zero">픽스 <b>46</b> · 2026-09-02 새벽 초안</div>
+  <div class="zero">픽스 <b>49</b> · 2026-09-02 새벽 초안</div>
   <div class="tw"><table class="fx">
     <tr><th></th><th>정한 것</th><th>근거</th></tr>
     <tr><td>🟦</td><td><b>과녁: 챕터 하나 = 무과금 7일쯤 · 유료 4일쯤</b></td><td class="who">“최소 4일 아닐까 최대 7일 아닐까 … 맞출 수 있는 밸런스 조정 해줘”</td></tr>
@@ -3848,8 +3847,11 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <tr><td>🟦</td><td><b>오프라인 보상은 실제 떠나 있던 시간만큼만</b> — 5분 나갔으면 5분치</td><td class="who">“재접속까지 5분이 걸렸다면 5분치만”</td></tr>
     <tr><td>🟩</td><td><b>그러면 무과금 첫 챕터는 7.3일이 아니라 9.5일</b>이다 — 스킬을 안 산 사람 기준</td><td class="who">운 번호 11개 · <code>--cap 2</code></td></tr>
     <tr><td>🟩</td><td><b>오프라인 상한 스킬은 10시간에서 끝난다</b> — 하루 세 번 들어오면 제일 긴 틈이 10시간이라 그 위는 안 준다</td><td class="who">규칙 5가 깨지는 자리</td></tr>
-    <tr><td>🟨</td><td><b>오프라인 상한 스킬의 끝을 12시간이 아니라 24시간으로</b> 늘린다 — 뜸하게 들어오는 사람에게 끝까지 이득이게</td><td class="who">내 판단 — 유저 승인 전</td></tr>
-    <tr><td>🟨</td><td><b>오프라인 문턱 60초.</b> 그 아래로 나갔다 오면 오프라인으로 안 치고 <b>100% 주고 팝업도 안 띄운다</b></td><td class="who">내 판단 — 유저 승인 전</td></tr>
+    <tr><td>🟦</td><td><b>오프라인 문턱 60초.</b> 초 단위로 나갔다 오면 오프라인으로 안 치고 <b>100% 주고 팝업도 안 띄운다</b></td><td class="who">“초 단위는 보상 주지 말자 … 그냥 100% 줘도 됨”</td></tr>
+    <tr><td>🟦</td><td><b>오프라인 상한을 24시간으로 안 늘린다.</b> 상한이 길면 <b>영영 안 여는 앱</b>이 된다</td><td class="who">“24시로 하면 진짜 영영 잊혀지는 앱일 수 있다”</td></tr>
+    <tr><td>🟦</td><td><b>오프라인 상한은 리텐션 손잡이다</b> — 하루에 몇 번은 들어오게 만드는 것이 목표다</td><td class="who">“하루에 몇 번은 계속 접속하게 만드는 게 목표”</td></tr>
+    <tr><td>🟦</td><td><b>시계 조작은 싼 방어만 한다</b> — 부팅 이후 흐른 시간을 같이 적는 것까지. <b>서버는 안 세운다</b></td><td class="who">“체리피커는 다 막을 순 없지 1,000명 중 몇이겠어”</td></tr>
+    <tr><td>🟨</td><td><b>오프라인 상한 스킬의 끝을 12시간 → 8시간</b>으로 낮춘다 — 자는 시간에 맞추면 <b>하루 3번</b>이 저절로 강제된다</td><td class="who">내 판단 — 유저 승인 전</td></tr>
   </table></div>
 
   <h3>피곤한 일꾼 — 강요 말고 눈치채게</h3>
@@ -4521,13 +4523,52 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <div class="note warn"><b>규칙 5가 깨지는 자리를 하나 찾았다.</b>
   <b>하루 세 번(아침·점심·밤) 들어오는 사람은 제일 긴 틈이 10시간</b>이라
   <b>상한이 10시간을 넘으면 그 위는 한 푼도 더 안 준다.</b>
-  그런데 스킬은 <b>12시간까지 판다</b> — <b>마지막 네 레벨이 돈만 먹는다.</b><br>
-  <b>하루 한 번만 들어오는 사람은 틈이 24시간</b>이라 12시간도 모자란다.
-  <b>즉 이 스킬은 뜸하게 들어오는 사람 것이다.</b><br>
-  <b>고칠 길 둘:</b> ① 끝을 <b>24시간</b>으로 늘린다(뜸한 사람에게 끝까지 이득) ·
-  ② 12시간에서 끝내되 <b>“자주 들어오면 이 스킬은 덜 필요하다”</b>고 화면에서 말해 준다.
-  <b>①을 민다</b> — 규칙 5는 “산 사람이 손해 보면 안 된다”이고,
-  ②는 안 사게 말리는 것이지 <b>산 사람을 구해 주지는 못한다.</b></div>
+  그런데 스킬은 <b>12시간까지 판다</b> — <b>마지막 네 레벨이 돈만 먹는다.</b></div>
+  <div class="tw"><table>
+    <tr><th>오프라인 상한</th><th class="num mono">하루에 걷는 오프라인</th><th></th></tr>
+    <tr><td>2시간 <span style="color:var(--faint)">(시작)</span></td><td class="num mono">6시간치 / 24</td><td>—</td></tr>
+    <tr><td>4시간</td><td class="num mono">12시간치</td><td>두 배</td></tr>
+    <tr><td>6시간</td><td class="num mono">17시간치</td><td></td></tr>
+    <tr><td><b>8시간</b></td><td class="num mono"><b>21시간치</b></td><td><b>자는 시간을 딱 덮는다</b></td></tr>
+    <tr><td>10시간</td><td class="num mono">24시간치</td><td>여기서 <b>꽉 찬다</b></td></tr>
+    <tr><td>12시간 <span style="color:var(--faint)">(지금의 마스터)</span></td><td class="num mono">24시간치</td><td class="who"><b>더 안 준다</b></td></tr>
+  </table></div>
+
+  <h3>내가 낸 답(24시간)을 유저가 잘랐다 — <b>상한은 리텐션 손잡이였다</b></h3>
+  <p class="sub">유저 말: <i>“<b>24시간으로 늘리지 말자. 12시간도 고민 중이야.</b>
+  이유는 <b>하루에 몇 번은 계속 접속하게 만드는 게 목표</b>인데
+  24시로 하면 <b>진짜 영영 잊혀지는 앱</b>일 수 있다.”</i></p>
+  <div class="note"><b>내가 이 스킬을 경제 손잡이로만 봤다.</b>
+  규칙 5만 보고 <b>“산 만큼 이득이 나게 끝을 늘리자”</b>고 냈는데,
+  이 스킬은 <b>“얼마나 자주 열게 만드느냐”</b>를 같이 쥐고 있었다.
+  <b>상한이 24시간이면 하루 한 번만 들어와도 손해가 없고</b>,
+  <b>하루 한 번짜리 앱은 곧 안 여는 앱이 된다.</b>
+  <b>늘리는 쪽이 아니라 줄이는 쪽이었다.</b></div>
+  <div class="note"><b>그러면 규칙 5는 어떻게 지키나 — 끝을 낮추면 저절로 지켜진다.</b>
+  안 주는 구간이 생기는 건 <b>끝이 그 사람의 제일 긴 틈보다 길기 때문</b>이다.
+  <b>끝을 8시간에 두면, 틈이 8시간 넘는 사람은 모든 레벨이 이득</b>이고
+  <b>자는 사람은 거의 전부 여기 든다.</b></div>
+  <div class="note"><b>내 제안(🟨): 끝을 8시간으로.</b>
+  ① <b>자고 일어나면 꽉 채워 받는다</b> — 아침에 아쉬울 일이 없다 ·
+  ② <b>낮에는 8시간 넘게 안 비우니 계속 들어와야 한다</b> —
+  <b>24 ÷ 8 = 하루 3번</b>이 저절로 강제된다(유저 목표 그대로) ·
+  ③ <b>돈만 먹는 레벨이 사라진다.</b><br>
+  <b>레벨은 20 그대로 두고 레벨당 +18분</b>(2시간 → 8시간).
+  <span style="color:var(--mid)">(레벨당 +0.5시간을 지키고 싶으면 12레벨에서 끝내는 길도 있다 — 유저가 고르면 된다)</span></div>
+  <div class="note warn"><b>다만 상한을 낮추면 규칙 5를 늘 지키는 스킬은 하나뿐이 된다.</b>
+  <b>😴 오프라인 배수</b>(0.5 → 1.0)는 <b>누가 언제 들어오든 반드시 이득</b>이다 —
+  받는 시간이 아니라 <b>받는 비율</b>을 올리기 때문이다.
+  <b>⏳ 오프라인 시간</b>은 <b>그 사람이 얼마나 오래 비우느냐</b>에 매달려 있다.
+  <b>같은 “오프라인 스킬”로 보이지만 성질이 다르다</b> — 화면에서도 그렇게 갈라 보여야 한다.</div>
+
+  <h3>시계 조작은 <b>싼 방어만</b> 한다</h3>
+  <p class="sub">유저 말: <i>“<b>체리피커는 다 막을 순 없지. 1,000명 중 몇이겠어.</b>”</i></p>
+  <div class="note"><b>그래서 서버는 안 세운다.</b>
+  <b>부팅 이후 흐른 시간을 같이 적어 두는 것까지만</b> 한다 —
+  코드 몇 줄이고 <b>기기 시계를 앞으로 돌린 사람은 거기서 걸린다.</b>
+  그 위(서버 시각 맞추기)는 <b>인터넷과 서버 값을 평생 치르는 일</b>이라
+  <b>천 명 중 몇 명 때문에 할 일이 아니다.</b></div>
+
 
   <h3>숫자 말고 느낌으로 — <code>tools/pace.py --feel</code></h3>
   <p class="sub">유저 말: <i>“밸런스 보는데 <b>확실히 내가 수학은 많이 약하긴 하네.</b>”</i></p>
@@ -5137,7 +5178,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   그래서 <b>도구가 갈래의 픽스 표를 읽어서 여기에 다시 쓴다</b> —
   <b>문서를 늘리지 말고 뽑아 쓴다</b>(규칙 3).</div>
 <!-- AUTO:blue -->
-  <div class="zero done">정해진 것 <b>160</b></div>
+  <div class="zero done">정해진 것 <b>164</b></div>
   <div class="tw"><table>
     <tr><th></th><th>정한 것 · 유저의 말</th></tr>
   <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#story" style="color:var(--faint)">시나리오 기획</a> · 파랑 24</td></tr>
@@ -5269,7 +5310,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <tr><td class="num mono who">10</td><td><b>이벤트는 3~4일마다 돈다.</b> 못 끝낸 것을 다음에 얻으려고 다시 오게<div class="who" style="margin-top:3px">“3~4일 단위로 쿨이 돌았으면 해”</div></td></tr>
   <tr><td class="num mono who">11</td><td><b>테마는 만든 것으로 사이클을 돌리고, 새 테마는 운영하며 늘린다</b><div class="who" style="margin-top:3px">“그 전까지는 만든 걸로 사이클 돌려야지”</div></td></tr>
   <tr><td class="num mono who">12</td><td><b>이벤트에서 얻은 손님이 기본 게임 골목에 등장한다.</b> 돈을 쓰면 빨리 모은다<div class="who" style="margin-top:3px">“기본 게임에 손님으로 등장할 거고”</div></td></tr>
-  <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#balance" style="color:var(--faint)">밸런스 기획</a> · 파랑 25</td></tr>
+  <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#balance" style="color:var(--faint)">밸런스 기획</a> · 파랑 29</td></tr>
   <tr><td class="num mono who">1</td><td><b>과녁: 챕터 하나 = 무과금 7일쯤 · 유료 4일쯤</b><div class="who" style="margin-top:3px">“최소 4일 아닐까 최대 7일 아닐까 … 맞출 수 있는 밸런스 조정 해줘”</div></td></tr>
   <tr><td class="num mono who">2</td><td><b>오프라인 기본 몫은 벌었을 것의 0.5배</b> — 옛 공식 그대로 살렸다<div class="who" style="margin-top:3px">“좋아”</div></td></tr>
   <tr><td class="num mono who">3</td><td><b>주사위 눈은 균등</b> — 1~6이 각각 ⅙. 스킬은 바닥만 올린다<div class="who" style="margin-top:3px">“오케이”</div></td></tr>
@@ -5295,6 +5336,10 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <tr><td class="num mono who">23</td><td><b>“며칠”만 적지 않는다.</b> <b>하루 몇 번 들어와 모두 몇 분</b>인지를 같이 적는다<div class="who" style="margin-top:3px">“며칠 기준으로 하지 말자 … 어느 기준인지 감이 안 잡혀”</div></td></tr>
   <tr><td class="num mono who">24</td><td><b>오프라인 상한은 스킬로만 열린다</b> — 날짜가 지난다고 저절로 안 열린다. 시작은 2시간<div class="who" style="margin-top:3px">“스킬로만 열리는 게 맞는 거 같아”</div></td></tr>
   <tr><td class="num mono who">25</td><td><b>오프라인 보상은 실제 떠나 있던 시간만큼만</b> — 5분 나갔으면 5분치<div class="who" style="margin-top:3px">“재접속까지 5분이 걸렸다면 5분치만”</div></td></tr>
+  <tr><td class="num mono who">26</td><td><b>오프라인 문턱 60초.</b> 초 단위로 나갔다 오면 오프라인으로 안 치고 <b>100% 주고 팝업도 안 띄운다</b><div class="who" style="margin-top:3px">“초 단위는 보상 주지 말자 … 그냥 100% 줘도 됨”</div></td></tr>
+  <tr><td class="num mono who">27</td><td><b>오프라인 상한을 24시간으로 안 늘린다.</b> 상한이 길면 <b>영영 안 여는 앱</b>이 된다<div class="who" style="margin-top:3px">“24시로 하면 진짜 영영 잊혀지는 앱일 수 있다”</div></td></tr>
+  <tr><td class="num mono who">28</td><td><b>오프라인 상한은 리텐션 손잡이다</b> — 하루에 몇 번은 들어오게 만드는 것이 목표다<div class="who" style="margin-top:3px">“하루에 몇 번은 계속 접속하게 만드는 게 목표”</div></td></tr>
+  <tr><td class="num mono who">29</td><td><b>시계 조작은 싼 방어만 한다</b> — 부팅 이후 흐른 시간을 같이 적는 것까지. <b>서버는 안 세운다</b><div class="who" style="margin-top:3px">“체리피커는 다 막을 순 없지 1,000명 중 몇이겠어”</div></td></tr>
   <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#biz" style="color:var(--faint)">사업 기획</a> · 파랑 12</td></tr>
   <tr><td class="num mono who">1</td><td><b>광고는 붙일 수 있는 곳에 다 붙인다</b><div class="who" style="margin-top:3px">“붙일 수 있는 곳은 다 붙이고 싶은데”</div></td></tr>
   <tr><td class="num mono who">2</td><td><b>광고 없애기는 현금으로 판다.</b> 보석으로는 못 산다<div class="who" style="margin-top:3px">“무조건 현금”</div></td></tr>
@@ -5363,6 +5408,12 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <h3>물린 노랑 — 하나씩</h3>
   <div class="tw"><table>
     <tr><th>내가 냈던 것</th><th>유저가 물린 말</th><th>왜 유저가 맞았나</th></tr>
+    <tr><td><b>오프라인 상한 스킬의 끝을 24시간으로 늘리자</b> — 규칙 5가 깨지길래 늘리는 쪽으로 풀었다</td>
+    <td><i>“24시간으로 늘리지 말자. <b>24시로 하면 진짜 영영 잊혀지는 앱</b>일 수 있다”</i></td>
+    <td><b>이 스킬을 경제 손잡이로만 봤다.</b>
+    상한은 <b>“얼마나 자주 열게 만드느냐”</b>도 같이 쥐고 있는데,
+    <b>24시간이면 하루 한 번만 들어와도 손해가 없어진다.</b>
+    <b>규칙 5는 늘려서도 줄여서도 지킬 수 있었는데 나는 늘리는 쪽만 봤다</b></td></tr>
     <tr><td><b>별 보석은 꾸미기 전용으로 나누자</b> — 간판·가로등에만 쓰게 묶으려 했다</td>
     <td><i>“나는 반대. 그럼 <b>구분해야 할 재화가 너무 많아</b>”</i></td>
     <td>내가 잰 벽은 <b>지금 있는 것만으로 세운 벽</b>이었다 —
