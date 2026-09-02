@@ -204,7 +204,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <nav>
     <a href="#now"><span>지금 어디</span></a>
     <a href="#keep"><span>남긴 것</span></a>
-    <a href="#open"><span>미결정 모음</span><span class="c">1</span></a>
+    <a href="#open"><span>미결정 모음</span><span class="c done">0</span></a>
     <div class="grp">기획 일곱 갈래</div>
     <a href="#story"><span>시나리오</span><span class="c done">24</span></a>
     <a href="#system"><span>시스템</span><span class="c done">25</span></a>
@@ -317,13 +317,8 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <b>손으로 옮겨 적으면 반드시 한쪽이 어긋나기 때문이다</b>(규칙 3).
   고칠 것이 있으면 <b>갈래 쪽 픽스 표를 고친다.</b></div>
 <!-- AUTO:open -->
-  <div class="zero">아직 승인 안 받은 것 <b>1</b></div>
-  <p class="sub"><b>전부 내가 판단한 것이다.</b> 유저가 <i>“그거 아니야”</i> 한 마디면 물린다.</p>
-  <div class="tw"><table>
-    <tr><th>어느 갈래</th><th>내가 정한 것</th></tr>
-  <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#balance" style="color:var(--faint)">밸런스 기획</a> · 노랑 1</td></tr>
-  <tr><td class="who" style="white-space:nowrap">🟨</td><td><b>보석 그림은 분홍빛 도는 자수정색</b> — 감빛·풀빛과 안 겹친다<div class="who" style="margin-top:3px">내 판단</div></td></tr>
-  </table></div>
+  <div class="zero done">아직 승인 안 받은 것 <b>0</b></div>
+  <div class="note"><b>남은 노랑이 없다.</b> 낸 것을 유저가 다 물렸거나 승인했다.</div>
   <div class="note"><b>아무도 안 정한 것</b>(내가 판단조차 안 한 것)은 갈래마다 <b>「아직 안 정한 것」</b>에 따로 있다 — 그건 성격이 달라서 안 섞는다.</div>
 <!-- /AUTO:open -->
 </section>
@@ -3808,8 +3803,84 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <tr><td>🟦</td><td><b>돈 그림은 금색 동전에 나뭇잎</b></td><td class="who">“금색동전에 나뭇잎 모양을 박자”</td></tr>
     <tr><td>🟩</td><td><b>스킬 여덟 마스터 = 보석 19,243</b> — 무과금이 1년이면 거의 다 간다</td><td class="who">아래 표 · 계산</td></tr>
     <tr><td>🟩</td><td><b>광고 제거는 5,000원이 2만원보다 두 배 가까이 번다</b></td><td class="who">아래 · 유저 직감이 맞았다</td></tr>
-    <tr><td>🟨</td><td><b>보석 그림은 분홍빛 도는 자수정색</b> — 감빛·풀빛과 안 겹친다</td><td class="who">내 판단</td></tr>
+    <tr><td>🟦</td><td><b>보석은 보라색 계열</b> — 감빛(주황)·풀빛과 안 겹친다</td><td class="who">“보라색계열로 해줘”</td></tr>
   </table></div>
+
+  <h3>어디서부터 보나 — 매달린 순서가 있다</h3>
+  <p class="sub">유저 물음: <i>“밸런스 어디서부터 보는 게 가장 적합할까?
+  <b>스킬부터 보면 계산이 꼬일 거 같고 기본을 먼저 세팅하고 맞추는 게 좋을까?</b>”</i>
+  <b>맞다. 그리고 내가 그 순서를 어겼다.</b></p>
+  <div class="note warn"><b>스킬 값을 “무과금이 하루에 보석 40개를 번다”고 치고 냈다.</b>
+  그런데 <b>그 40개도 내가 같은 밤에 낸 초안</b>이다.
+  <b>보석 수입이 30이 되면 스킬 값이 다 흔들리고, 60이 되면 또 흔들린다.</b>
+  유저가 짚은 “계산이 꼬인다”가 <b>이미 일어나 있었다.</b></div>
+  <pre>① <b>기본</b>  챕터가 며칠짜리인가
+      └ 물건 값 · 레벨 값 · 매장 값 · 구역 값이 여기서 나온다     <b>✅ 쟀다</b>
+
+② <b>오프라인</b>  기본에 <b>얹히는 것</b>이라 ①이 있어야 잰다
+      └ 시간당 수입 · 주사위 배수                                  <b>✅ 쟀다</b>
+
+③ <b>보석 수입</b>  하루에 몇 개나 손에 들어오나
+      └ 팝업 · 광고 · 미션 · 도감                                 <b>🟨 초안뿐</b>
+
+④ <b>보석 쓰는 곳</b>  ③이 정해져야 값이 정해진다
+      └ <b>스킬</b> · 뽑기 · 간판 · 가로등                          <b>🟨 ③을 가정하고 냈다</b>
+
+⑤ <b>현금</b>  ③④가 정해져야 “얼마에 팔면 되나”가 나온다
+      └ 보석 묶음 값 · 멤버십 · 패스                               <b>🟨 광고 제거만 쟀다</b></pre>
+  <div class="tw"><table>
+    <tr><th>왜 이 순서인가</th><th></th></tr>
+    <tr><td><b>①은 아무것에도 안 매달려 있다</b></td>
+    <td>돈은 게임 안에서 저절로 는다. <b>다른 걸 몰라도 잴 수 있는 유일한 것</b></td></tr>
+    <tr><td><b>②는 ①에 곱해진다</b></td>
+    <td>오프라인은 “벌었을 것의 0.5배”라 <b>①이 바뀌면 저절로 따라온다</b> — 다시 안 잰다</td></tr>
+    <tr><td><b>③이 진짜 갈림길이다</b></td>
+    <td>보석은 <b>저절로 안 는다.</b> 우리가 주는 만큼만 들어온다 —
+    <b>여기 하나가 ④⑤를 다 흔든다</b></td></tr>
+    <tr><td><b>④는 ③의 그림자다</b></td>
+    <td>“마스터에 19,243개”가 값있는 말이 되려면 <b>하루에 몇 개 버는지가 먼저</b></td></tr>
+  </table></div>
+  <div class="note"><b>그래서 다음 판은 ③이다.</b>
+  ③을 정하면 ④는 <b>다시 재는 게 아니라 곱셈으로 옮겨 앉는다</b> —
+  하루 40이 30이 되면 스킬 값을 전부 0.75배 하면 된다.
+  <b>표를 다시 만들 필요가 없다.</b></div>
+  <div class="note warn"><b>이건 잘못 낸 게 아니라 순서가 뒤였을 뿐이다.</b>
+  ④를 먼저 낸 덕에 <b>“보석이 하루 40개면 이런 느낌”이 눈에 보이게</b> 됐고,
+  <b>③을 정할 때 그걸 보고 정할 수 있다.</b> 다만 <b>③이 정해지기 전까지 ④는 파랑이 아니다.</b></div>
+
+  <h3>숫자 말고 느낌으로 — <code>tools/pace.py --feel</code></h3>
+  <p class="sub">유저 말: <i>“밸런스 보는데 <b>확실히 내가 수학은 많이 약하긴 하네.</b>”</i></p>
+  <div class="note"><b>수학은 내 일이다.</b> 유저가 볼 것은 숫자가 아니라
+  <b>“그래서 하는 사람이 뭘 느끼나”</b>다. 그걸 보여주는 표를 도구에 붙였다.
+  <b>곡선을 고치면 이 표가 저절로 바뀐다</b> — 유저는 <b>이 표만 보고 “빠르다/느리다”만 말하면 된다.</b></div>
+  <div class="tw"><table>
+    <tr><th></th><th>무과금</th><th>돈을 쓴 사람</th></tr>
+    <tr><td><b>1일째</b></td><td>밤에 첫 물건이 바뀐다</td><td>점심에 물건이 바뀌고 <b>둘째 매장</b>을 산다</td></tr>
+    <tr><td><b>2일째</b></td><td>둘째 매장 · 도감 5칸</td><td><b>2구역</b>이 열린다 · 도감 20칸</td></tr>
+    <tr><td><b>3일째</b></td><td><b>2구역</b>이 열린다 · 도감 20칸 · 5채째</td><td><b>3·4구역</b> · 10채째 · 도감 100칸</td></tr>
+    <tr><td><b>4일째</b></td><td><b>3구역</b> · 10채째 · 도감 100칸</td><td><b>5구역</b> · 20채째 · 도감 200칸</td></tr>
+    <tr><td><b>5일째</b></td><td><b>4·5구역</b> · 도감 200칸</td><td><b>첫 매장 만렙 → 바로 챕터 끝</b></td></tr>
+    <tr><td><b>6일째</b></td><td>20채째를 산다</td><td>—</td></tr>
+    <tr><td><b>7일째</b></td><td><b>첫 매장 만렙 → 챕터 끝</b></td><td>—</td></tr>
+  </table></div>
+  <div class="note"><b>하루도 빈 날이 없다.</b> 매일 <b>구역이 열리거나 · 매장을 사거나 · 도감이 크게 차거나</b>
+  셋 중 하나가 일어난다. <b>방치형에서 제일 무서운 건 “오늘 아무 일도 안 일어남”</b>인데 그게 없다.</div>
+  <div class="note warn"><b>다만 여기서 걸리는 것이 하나 보인다 — 마지막 하루가 몰려 있다.</b>
+  <b>첫 매장이 만렙이 되는 날에 스무 매장이 다 만렙이 된다.</b>
+  “매장을 다 채우면 덮는 창”이라고 정해 놨는데
+  <b>그 창이 스무 번 연달아 뜨거나, 겹침 규칙에 먹혀서 한 번도 못 보게 된다.</b></div>
+  <div class="tw"><table>
+    <tr><th>왜 몰리나</th><th>어떻게 푸나</th></tr>
+    <tr><td>도구가 <b>제일 본전 빨리 뽑는 것부터</b> 사서
+    스무 매장이 <b>고르게</b> 큰다. 그래서 끝도 같이 온다</td>
+    <td><b>①</b> 그냥 둔다 — 실제 사람은 고르게 안 산다(몰빵도 하고 좋아하는 매장만 키운다).
+    <b>모형이 너무 똑똑한 것</b>일 수 있다</td></tr>
+    <tr><td></td><td><b>②</b> 매장마다 <b>값을 조금씩 다르게</b> 해서 만렙 시점을 흩는다</td></tr>
+    <tr><td></td><td><b>③</b> 덮는 창을 <b>매장 만렙</b>이 아니라 <b>구역 만렙</b>에만 띄운다 (창이 5번)</td></tr>
+  </table></div>
+  <div class="note"><b>내 생각은 ①이다 — 다음 판에 “사람처럼 사는” 모형으로 다시 재 보고 정한다.</b>
+  <b>모형이 만든 문제인지 진짜 문제인지부터 갈라야</b> 한다.
+  <span style="color:var(--mid)">(규칙 1의 다른 얼굴이다 — 한 판, 그것도 <b>기계가 최적으로 논 한 판</b>으로 판단하지 않는다)</span></div>
 
   <h3>2026-09-02 새벽 — 유저가 자는 동안 잰 것</h3>
   <div class="note"><b>유저가 과녁을 주고 잤다.</b> <i>“챕터 하나는 며칠일까. 최소 4일 아닐까 최대 7일 아닐까?
@@ -4385,7 +4456,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   그래서 <b>도구가 갈래의 픽스 표를 읽어서 여기에 다시 쓴다</b> —
   <b>문서를 늘리지 말고 뽑아 쓴다</b>(규칙 3).</div>
 <!-- AUTO:blue -->
-  <div class="zero done">정해진 것 <b>143</b></div>
+  <div class="zero done">정해진 것 <b>144</b></div>
   <div class="tw"><table>
     <tr><th></th><th>정한 것 · 유저의 말</th></tr>
   <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#story" style="color:var(--faint)">시나리오 기획</a> · 파랑 24</td></tr>
@@ -4517,7 +4588,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <tr><td class="num mono who">10</td><td><b>이벤트는 3~4일마다 돈다.</b> 못 끝낸 것을 다음에 얻으려고 다시 오게<div class="who" style="margin-top:3px">“3~4일 단위로 쿨이 돌았으면 해”</div></td></tr>
   <tr><td class="num mono who">11</td><td><b>테마는 만든 것으로 사이클을 돌리고, 새 테마는 운영하며 늘린다</b><div class="who" style="margin-top:3px">“그 전까지는 만든 걸로 사이클 돌려야지”</div></td></tr>
   <tr><td class="num mono who">12</td><td><b>이벤트에서 얻은 손님이 기본 게임 골목에 등장한다.</b> 돈을 쓰면 빨리 모은다<div class="who" style="margin-top:3px">“기본 게임에 손님으로 등장할 거고”</div></td></tr>
-  <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#balance" style="color:var(--faint)">밸런스 기획</a> · 파랑 8</td></tr>
+  <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#balance" style="color:var(--faint)">밸런스 기획</a> · 파랑 9</td></tr>
   <tr><td class="num mono who">1</td><td><b>과녁: 챕터 하나 = 무과금 7일쯤 · 유료 4일쯤</b><div class="who" style="margin-top:3px">“최소 4일 아닐까 최대 7일 아닐까 … 맞출 수 있는 밸런스 조정 해줘”</div></td></tr>
   <tr><td class="num mono who">2</td><td><b>오프라인 기본 몫은 벌었을 것의 0.5배</b> — 옛 공식 그대로 살렸다<div class="who" style="margin-top:3px">“좋아”</div></td></tr>
   <tr><td class="num mono who">3</td><td><b>주사위 눈은 균등</b> — 1~6이 각각 ⅙. 스킬은 바닥만 올린다<div class="who" style="margin-top:3px">“오케이”</div></td></tr>
@@ -4526,6 +4597,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <tr><td class="num mono who">6</td><td><b>기본 손님 10종은 능력 ×1에서 시작</b> · 챕터 손님 ×2 · 이벤트 손님 ×3<div class="who" style="margin-top:3px">“1배수고 … 2배수로 … 3배수로 시작”</div></td></tr>
   <tr><td class="num mono who">7</td><td><b>돈은 1원부터 시작한다</b> — 표기는 줄임말(K · M · B …)<div class="who" style="margin-top:3px">“1원부터 시작해도 됨”</div></td></tr>
   <tr><td class="num mono who">8</td><td><b>돈 그림은 금색 동전에 나뭇잎</b><div class="who" style="margin-top:3px">“금색동전에 나뭇잎 모양을 박자”</div></td></tr>
+  <tr><td class="num mono who">9</td><td><b>보석은 보라색 계열</b> — 감빛(주황)·풀빛과 안 겹친다<div class="who" style="margin-top:3px">“보라색계열로 해줘”</div></td></tr>
   <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#biz" style="color:var(--faint)">사업 기획</a> · 파랑 12</td></tr>
   <tr><td class="num mono who">1</td><td><b>광고는 붙일 수 있는 곳에 다 붙인다</b><div class="who" style="margin-top:3px">“붙일 수 있는 곳은 다 붙이고 싶은데”</div></td></tr>
   <tr><td class="num mono who">2</td><td><b>광고 없애기는 현금으로 판다.</b> 보석으로는 못 산다<div class="who" style="margin-top:3px">“무조건 현금”</div></td></tr>

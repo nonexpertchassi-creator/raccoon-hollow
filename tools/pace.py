@@ -95,8 +95,84 @@ def run(seed, paid):
                 return st
     return st
 
+def feel(seed=1000, paid=False):
+    """숫자 말고 느낌으로 — 며칠째에 무슨 일이 일어나나."""
+    rng = random.Random(seed)
+    st = {"L": [0]*20, "zones": 1, "money": shop_price(0)}
+    member  = 2.0  if paid else 1.0
+    ts_mult = 0.85 if paid else 1.0
+    off_mult = 1.3 if paid else 1.0
+    log = []
+    seen_shop, seen_zone, seen_item = 0, 1, 0
+    def rate(): return sum(income(x) for x in st["L"]) * member / ts_mult
+    def buy_all(when):
+        nonlocal seen_shop, seen_zone, seen_item
+        while True:
+            L = st["L"]
+            if st["zones"] < 5 and all(x > 0 for x in L[:st["zones"]*4]) \
+               and zone_price(st["zones"]) <= st["money"]:
+                st["money"] -= zone_price(st["zones"]); st["zones"] += 1
+                log.append((when, f"{st['zones']}구역이 열렸다 — 새 매장 4채")); continue
+            best = None
+            for i in range(20):
+                if 0 < L[i] < 1000:
+                    to, c = chunk(L[i])
+                    if c <= st["money"]:
+                        d = (income(to) - income(L[i])) * member / ts_mult
+                        if d > 0 and (best is None or c/d < best[0]): best = (c/d, i, to, c)
+                elif L[i] == 0 and i < st["zones"]*4:
+                    c = shop_price(i)
+                    if c <= st["money"]:
+                        d = income(1) * member / ts_mult
+                        if best is None or c/d < best[0]: best = (c/d, i, 1, c)
+                    break
+            if best is None: return
+            _, i, to, c = best
+            before = st["L"][i]
+            st["money"] -= c; st["L"][i] = to
+            if before == 0:
+                seen_shop += 1
+                if seen_shop in (2, 5, 10, 20):
+                    log.append((when, f"매장 {seen_shop}채째를 샀다"))
+            items = sum(x // 50 for x in st["L"])
+            if items > seen_item:
+                seen_item = items
+                if items in (1, 5, 20, 100, 200, 400):
+                    log.append((when, f"물건이 {items}번째로 바뀌었다 (도감 {items}칸)"))
+            if any(x >= 1000 for x in st["L"]) and not any(t[1].startswith("첫 매장을 다") for t in log):
+                log.append((when, "첫 매장을 다 채웠다 — 덮는 창이 뜬다"))
+    sessions = [(7.5, 10), (12.5, 5), (22.5, 10)]
+    last_end = 0.0
+    for day in range(60):
+        cap = 12 if paid else (2 if day < 2 else 6 if day < 4 else 12)
+        dice = [rng.randint(1, 6) for _ in range(6 if paid else 4)]
+        first = True
+        for at, minutes in sessions:
+            now = day*24 + at
+            gain = rate() * min(now - last_end, cap) * 3600 * OFF_W * off_mult
+            if first: gain *= 1 + sum(dice); first = False
+            m = minutes * (0.7 + 0.6*rng.random())
+            for _ in range(int(m)): gain += rate() * 60
+            last_end = now + m/60
+            st["money"] += gain
+            buy_all(day + at/24)
+            if all(x >= 1000 for x in st["L"]):
+                log.append((day + at/24, "20매장을 다 채웠다 — 챕터 끝, 세계지도가 열린다"))
+                return log
+    return log
+
 if __name__ == "__main__":
     if "--c0" in sys.argv: C0 = float(sys.argv[sys.argv.index("--c0")+1])
+    if "--feel" in sys.argv:
+        for paid in (False, True):
+            print(f"\n══ {'돈을 쓴 사람' if paid else '무과금'} — 며칠째에 무슨 일이 ══")
+            last = None
+            for when, what in feel(1000, paid):
+                d = int(when); hh = "아침" if when%1 < 0.4 else ("점심" if when%1 < 0.6 else "밤")
+                tag = f"{d+1}일째 {hh}"
+                print(f"  {tag if tag != last else ' ' * len(tag)}   {what}")
+                last = tag
+        sys.exit(0)
     for paid in (False, True):
         runs = [run(1000+s, paid) for s in range(11)]
         outs = [r.get("done", 99) for r in runs]
