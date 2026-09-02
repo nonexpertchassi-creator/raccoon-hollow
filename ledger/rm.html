@@ -211,7 +211,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <a href="#level"><span>레벨</span><span class="c done">22</span></a>
     <a href="#ux"><span>UX · UI</span><span class="c done">40</span></a>
     <a href="#content"><span>콘텐츠</span><span class="c done">12</span></a>
-    <a href="#balance"><span>밸런스</span><span class="c done">87</span></a>
+    <a href="#balance"><span>밸런스</span><span class="c done">91</span></a>
     <a href="#biz"><span>사업</span><span class="c done">12</span></a>
     <div class="grp">가진 것</div>
     <a href="#formula"><span>공식</span></a>
@@ -3796,7 +3796,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
 <section id="balance">
   <h2>밸런스 기획</h2>
   <p class="sub">숫자를 조율하고, <b>짐작하지 말고 잰다.</b></p>
-  <div class="zero">픽스 <b>87</b> · 2026-09-02 새벽 초안</div>
+  <div class="zero">픽스 <b>91</b> · 2026-09-02 새벽 초안</div>
   <div class="tw"><table class="fx">
     <tr><th></th><th>정한 것</th><th>근거</th></tr>
     <tr><td>🟦</td><td><b>과녁: 챕터 하나 = 무과금 7일쯤 · 유료 4일쯤</b></td><td class="who">“최소 4일 아닐까 최대 7일 아닐까 … 맞출 수 있는 밸런스 조정 해줘”</td></tr>
@@ -3829,6 +3829,10 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <tr><td>🟩</td><td><b>수입이 100배여도 비용 곡선에서 87레벨 건너뛴 것</b>뿐이다 — 1,000레벨 중 8.7%</td><td class="who">log 100 ÷ log 1.0543</td></tr>
     <tr><td>🟦</td><td><b>챕터마다 레벨 밑값을 올린다</b> — 어느 챕터를 열어도 일주일이 되게</td><td class="who">“챕터마다 밑값 올리자 그게 맞음”</td></tr>
     <tr><td>🟩</td><td><b>배수는 ×1.12다</b> — 챕터 1·5·10·15·20이 <b>7.3 · 6.9 · 7.3 · 7.3 · 7.9일</b>로 고르게 눕는다</td><td class="who">운 번호 11개 · <code>--ch</code></td></tr>
+    <tr><td>🟩</td><td><b>“광고 제거를 몇 %나 사나”는 공개된 수치가 없다</b> — 찾아봤고 못 찾았다. 게임마다 값도 혜택도 달라 벤치마크가 안 나온다</td><td class="who">찾아본 것</td></tr>
+    <tr><td>🟩</td><td><b>아이들 게임 광고 참여율은 42%</b>다(캐주얼 평균 25~30%) — 내가 쓰던 <b>60%는 너무 높았다</b></td><td class="who">밖의 수치</td></tr>
+    <tr><td>🟩</td><td><b>모바일 게임 전체 과금율은 0.8%</b> — 내가 적은 “5,000원이면 4%가 산다”는 <b>10배 낙관적</b>이었다</td><td class="who">밖의 수치 · 내 초안 정정</td></tr>
+    <tr><td>🟩</td><td><b>그래도 5,000원이 이긴다</b> — 비율을 10분의 1로 눌러도 <b>순위가 그대로다</b>(1인당 20.0원 vs 2만원 16.0원)</td><td class="who">눌러서 다시 계산</td></tr>
     <tr><td>🟩</td><td><b>광고 자리가 17개가 되면서 “안 보게 해 주는 값”이 커졌다</b> — 절반쯤 보는 사람이 <b>60일이면 5,508원</b>어치</td><td class="who"><code>tools/bm.py</code> · 보상형 1회 9원</td></tr>
     <tr><td>🟨</td><td><b>광고 없애기는 “귀찮음”만 판다</b> — 광고 자리가 그냥 열리고 <b>세지는 것은 안 얹는다</b>. 세지는 것은 멤버십 몫</td><td class="who">내 판단 — 유저 승인 전</td></tr>
     <tr><td>🟦</td><td><b>꾸미기 값은 간판 50 · 100 · 가로등 300</b>(매장마다) — 유저 초안 그대로 간다</td><td class="who">“내 초안 괜찮게 생각해? 난 나쁘지 않다 보는데”</td></tr>
@@ -5388,6 +5392,49 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <div class="note"><b>왼쪽은 다 “시간을 아끼는 것”이고 오른쪽은 다 “남보다 세지는 것”이다.</b>
   <b>5,000원짜리가 시간을 팔면 멤버십은 힘을 팔 수 있다</b> — 서로 안 잡아먹는다.</div>
 
+  <h3>“광고 제거를 얼마나 자주 사나” 리서치는 <b>없다</b> — 찾아봤다</h3>
+  <p class="sub">유저 물음: <i>“또 궁금한 거 <b>광고 없애기 얼마나 자주 없앨까 이런 리서치는 없나?</b>”</i></p>
+  <div class="note warn"><b>없다.</b> <b>“광고 제거만” 따로 낸 공개 수치를 못 찾았다.</b>
+  이유는 짐작이 간다 — <b>게임마다 값도 다르고 무엇을 얹어 주는지도 달라서</b>
+  <b>한 줄로 묶을 수가 없다.</b> 대부분의 회사는 이걸 따로 안 내놓는다.</div>
+  <div class="note"><b>대신 쓸 만한 것 셋을 건졌고, 그중 둘이 내 숫자를 고쳤다.</b></div>
+  <div class="tw"><table>
+    <tr><th>밖에서 찾은 것</th><th>우리한테 무슨 뜻인가</th></tr>
+    <tr><td><b>아이들 게임 광고 참여율 42%</b><br><span style="color:var(--faint)">(캐주얼 평균은 25~30%)</span></td>
+    <td><b>내가 쓰던 60%가 너무 높았다.</b> 아이들이 유난히 높은 편인데도 42%다</td></tr>
+    <tr><td><b>모바일 게임 전체 과금율 0.8%</b></td>
+    <td><b>내가 “5,000원이면 4%가 산다”고 적었다 — 10배 낙관적이었다.</b>
+    첫 결제의 절반이 광고 제거라 쳐도 <b>전체의 0.4%</b>다</td></tr>
+    <tr><td><b>아이들에서 “세 번째 확장”까지 온 사람은 3.4배 더 산다</b></td>
+    <td><b>우리 챕터 구조와 그대로 겹친다.</b> <b>챕터 3쯤이 지갑이 열리는 자리</b>다</td></tr>
+  </table></div>
+  <div class="note warn"><b>그래서 “1,000명에 4명”이다.</b>
+  내가 적어 둔 4%는 <b>1,000명에 40명</b>이었다 — <b>한 자리가 틀렸다.</b></div>
+
+  <h3>눌러서 다시 재도 <b>5,000원이 이긴다</b></h3>
+  <div class="tw"><table>
+    <tr><th>값</th><th class="num mono">내 초안</th><th class="num mono">밖의 수치로 누른 것</th><th class="num mono">1인당 버는 돈</th></tr>
+    <tr><td>20,000원</td><td class="num mono">0.8%</td><td class="num mono">0.08%</td><td class="num mono">16.0원</td></tr>
+    <tr><td>9,900원</td><td class="num mono">2.0%</td><td class="num mono">0.20%</td><td class="num mono">19.8원</td></tr>
+    <tr><td><b>5,000원</b></td><td class="num mono">4.0%</td><td class="num mono">0.40%</td><td class="num mono"><b>20.0원</b></td></tr>
+    <tr><td>3,300원</td><td class="num mono">5.5%</td><td class="num mono">0.55%</td><td class="num mono">18.2원</td></tr>
+  </table></div>
+  <div class="note"><b>비율을 통째로 10분의 1로 눌러도 순위가 안 바뀐다.</b>
+  <b>절대 금액만 10분의 1이 되고 “어느 값이 제일 낫나”는 그대로다.</b>
+  <b>정하는 것은 비율의 크기가 아니라 값이 오를수록 비율이 얼마나 빨리 떨어지느냐</b>인데,
+  <b>그 기울기는 내가 낸 것이지 밖에서 가져온 것이 아니다</b> — 내면 그때 진짜 숫자로 갈아 낀다.</div>
+  <div class="tw"><table>
+    <tr><th>광고 참여율</th><th class="num mono">하루</th><th class="num mono">5,000원 본전까지</th></tr>
+    <tr><td>30%</td><td class="num mono">46원</td><td class="num mono">109일</td></tr>
+    <tr><td><b>42%</b> <span style="color:var(--faint)">(아이들 벤치마크)</span></td><td class="num mono">64원</td><td class="num mono"><b>78일</b></td></tr>
+    <tr><td>60%</td><td class="num mono">92원</td><td class="num mono">54일</td></tr>
+  </table></div>
+  <div class="note"><b>78일 넘게 붙어 있는 사람에게는 우리가 손해다.</b>
+  <b>앞 판에서 “60일”이라고 적었는데 그건 60% 참여율 기준이었다</b> — <b>78일이 맞다.</b>
+  그래도 <b>대부분은 78일을 못 넘긴다</b>는 것이 5,000원의 근거고,
+  <b>“세 번째 확장에서 3.4배”가 그 말과 짝이 맞는다</b> —
+  <b>거기까지 온 사람은 오래 남고 또 산다.</b></div>
+
   <h3>다시 재 보니 — <b>광고 자리가 늘어서 잃는 값도 커졌다</b></h3>
   <div class="tw"><table>
     <tr><th>자리 17개 중 얼마나 보나</th><th class="num mono">하루</th><th class="num mono">30일</th><th class="num mono">60일</th><th class="num mono">365일</th></tr>
@@ -5395,7 +5442,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <tr><td><b>60%를 본다</b> (10.2개)</td><td class="num mono">92원</td><td class="num mono">2,754원</td><td class="num mono"><b>5,508원</b></td><td class="num mono">33,507원</td></tr>
     <tr><td>80%를 본다 (13.6개)</td><td class="num mono">122원</td><td class="num mono">3,672원</td><td class="num mono">7,344원</td><td class="num mono">44,676원</td></tr>
   </table></div>
-  <div class="note warn"><b>절반쯤 보는 사람이 60일을 넘기면 5,000원보다 광고를 더 본다.</b>
+  <div class="note warn"><b>벤치마크(42%)로 보면 78일을 넘기는 사람에게 우리가 손해다.</b>
   <b>게다가 광고를 많이 보는 사람일수록 광고 없애기를 산다</b> —
   <b>제일 손해 보는 사람이 제일 잘 사는 구조</b>다.</div>
   <div class="note"><b>그래도 5,000원을 유지한다.</b>
