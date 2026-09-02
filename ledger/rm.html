@@ -204,14 +204,14 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <nav>
     <a href="#now"><span>지금 어디</span></a>
     <a href="#keep"><span>남긴 것</span></a>
-    <a href="#open"><span>미결정 모음</span><span class="c done">0</span></a>
+    <a href="#open"><span>미결정 모음</span><span class="c">1</span></a>
     <div class="grp">기획 일곱 갈래 <span style="font-weight:400;text-transform:none;letter-spacing:0">· 숫자는 <b>정해진 것</b></span></div>
     <a href="#story"><span>시나리오</span><span class="c done">24</span></a>
     <a href="#system"><span>시스템</span><span class="c done">25</span></a>
     <a href="#level"><span>레벨</span><span class="c done">22</span></a>
     <a href="#ux"><span>UX · UI</span><span class="c done">40</span></a>
     <a href="#content"><span>콘텐츠</span><span class="c done">12</span></a>
-    <a href="#balance"><span>밸런스</span><span class="c done">128</span></a>
+    <a href="#balance"><span>밸런스</span><span class="c done">131</span></a>
     <a href="#biz"><span>사업</span><span class="c done">12</span></a>
     <div class="grp">가진 것</div>
     <a href="#formula"><span>공식</span></a>
@@ -323,8 +323,13 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <b>손으로 옮겨 적으면 반드시 한쪽이 어긋나기 때문이다</b>(규칙 3).
   고칠 것이 있으면 <b>갈래 쪽 픽스 표를 고친다.</b></div>
 <!-- AUTO:open -->
-  <div class="zero done">아직 승인 안 받은 것 <b>0</b></div>
-  <div class="note"><b>남은 노랑이 없다.</b> 낸 것을 유저가 다 물렸거나 승인했다.</div>
+  <div class="zero">아직 승인 안 받은 것 <b>1</b></div>
+  <p class="sub"><b>전부 내가 판단한 것이다.</b> 유저가 <i>“그거 아니야”</i> 한 마디면 물린다.</p>
+  <div class="tw"><table>
+    <tr><th>어느 갈래</th><th>내가 정한 것</th></tr>
+  <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#balance" style="color:var(--faint)">밸런스 기획</a> · 노랑 1</td></tr>
+  <tr><td class="who" style="white-space:nowrap">🟨</td><td><b>인터넷이 없어도 논다</b> — 못 하는 것은 <b>광고 · 결제 · 새 이벤트 받기</b>뿐<div class="who" style="margin-top:3px">내 판단 — 유저 승인 전</div></td></tr>
+  </table></div>
   <div class="note"><b>아무도 안 정한 것</b>(내가 판단조차 안 한 것)은 갈래마다 <b>「아직 안 정한 것」</b>에 따로 있다 — 그건 성격이 달라서 안 섞는다.</div>
 <!-- /AUTO:open -->
 </section>
@@ -3796,7 +3801,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
 <section id="balance">
   <h2>밸런스 기획</h2>
   <p class="sub">숫자를 조율하고, <b>짐작하지 말고 잰다.</b></p>
-  <div class="zero">픽스 <b>128</b> · 2026-09-02 새벽 초안</div>
+  <div class="zero">픽스 <b>131</b> · 2026-09-02 새벽 초안</div>
   <div class="tw"><table class="fx">
     <tr><th></th><th>정한 것</th><th>근거</th></tr>
     <tr><td>🟦</td><td><b>과녁: 챕터 하나 = 무과금 7일쯤 · 유료 4일쯤</b></td><td class="who">“최소 4일 아닐까 최대 7일 아닐까 … 맞출 수 있는 밸런스 조정 해줘”</td></tr>
@@ -3854,6 +3859,9 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <tr><td>🟩</td><td><b>한 사람이 한 달에 주는 돈은 777원</b>(수수료 떼면 660원) — 광고 67% · 결제 33%</td><td class="who"><code>tools/bm.py</code> · 구매율은 내 초안</td></tr>
     <tr><td>🟩</td><td><b>서버비를 62배 부풀렸었다</b> — 월 80만원이 아니라 <b>월 1만 3천원</b>. 저장을 기기에 두면 무료 칸에서 끝난다</td><td class="who">유저가 짚었다</td></tr>
     <tr><td>🟩</td><td><b>하루 2,475명이면 본전</b>이고 <b>5,300명이면 마진까지</b> 나온다 — 서버비를 고쳐서 내려갔다</td><td class="who"><code>tools/bm.py</code></td></tr>
+    <tr><td>🟩</td><td><b>우리는 온라인 게임이 아니다</b> — 남과 겨루지도 만나지도 않는다. <b>혼자 하는 게임</b>이다</td><td class="who">정한 것들을 모아 보니 그렇다</td></tr>
+    <tr><td>🟨</td><td><b>인터넷이 없어도 논다</b> — 못 하는 것은 <b>광고 · 결제 · 새 이벤트 받기</b>뿐</td><td class="who">내 판단 — 유저 승인 전</td></tr>
+    <tr><td>🟩</td><td><b>이벤트를 3~4일마다 돌리려면 “언제 무엇을 켜나”만 밖에서 받아야 한다</b> — 그림은 앱에 다 들어 있다</td><td class="who">앱 심사를 3~4일마다 통과할 수는 없다</td></tr>
     <tr><td>🟦</td><td><b>“하루 100명만 들어와도 상관없다”</b> — 이 계산은 <b>과녁이 아니라 자</b>다</td><td class="who">“하루 100명만 들어와도 상관없는데”</td></tr>
     <tr><td>🟩</td><td><b>광고가 매출의 3분의 2</b>가 됐다 — 자리를 7개에서 21개로 늘린 값이다. <b>광고 단가가 떨어지면 그만큼 흔들린다</b></td><td class="who">전에는 “반반”으로 잡았다</td></tr>
     <tr><td>🟩</td><td><b>전설이 늘수록 옛 전설이 안 나온다</b> — 5종이면 1,000번, 41종이면 <b>8,200번</b></td><td class="who">0.5% ÷ 종수</td></tr>
@@ -5385,6 +5393,50 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <div class="note"><b>스킬 아홉 마스터가 67,500개니 121만원어치</b>다.
   거기에 뽑기·간판·가로등까지 하면 <b>깊이가 충분하다.</b>
   <b>1개당 값이 25원에서 18원으로만 내려간다</b> — 큰 묶음이 너무 싸면 작은 묶음이 안 팔린다.</div>
+
+  <h3>온라인 게임인가 — <b>아니다.</b> 혼자 하는 게임이다</h3>
+  <p class="sub">유저 물음: <i>“<b>우리 온라인 게임이야?</b>”</i></p>
+  <div class="note"><b>지금까지 정한 것들을 모아 놓고 보면 답이 나온다.</b>
+  <b>남과 겨루는 것도, 남을 만나는 것도 하나도 없다.</b></div>
+  <div class="tw"><table>
+    <tr><th>온라인 게임에 있는 것</th><th>우리는</th></tr>
+    <tr><td>남과 겨루기 (랭킹)</td><td><b>없다</b> — 유저가 <i>“랭킹전이 들어가면 그때 다시”</i>라고 미뤄 뒀다</td></tr>
+    <tr><td>남과 같이 하기 (길드 · 친구)</td><td><b>없다</b> — “친구를 데려온다”는 <b>게임 안 손님</b>이지 진짜 사람이 아니다</td></tr>
+    <tr><td>남의 마을 구경</td><td><b>없다</b> — 꾸미기를 “치장”으로 정했는데 <b>보여 줄 사람이 없다</b></td></tr>
+    <tr><td>서버가 판을 돌린다</td><td><b>없다</b> — <i>“서버는 안 세운다”</i>고 이미 정했다</td></tr>
+  </table></div>
+  <div class="note"><b>그래서 “인터넷이 있어야 도는 게임”이 아니라 “인터넷을 가끔 쓰는 게임”이다.</b></div>
+  <div class="tw"><table>
+    <tr><th>인터넷이 있어야 되는 것</th><th>없으면</th></tr>
+    <tr><td><b>광고</b> (자리 21개)</td><td><b>광고 단추가 안 열린다</b> — 그만큼 덜 받는다</td></tr>
+    <tr><td><b>결제</b></td><td>못 산다</td></tr>
+    <tr><td><b>새 이벤트 받기</b></td><td><b>마지막에 받은 것으로 돈다</b></td></tr>
+    <tr><td><b>클라우드 백업</b></td><td>기기 바꿀 때만 쓴다</td></tr>
+    <tr><td colspan="2" style="background:var(--sunk)"><b>그 밖에는 다 된다 — 팔고, 올리고, 오프라인 받고, 뽑기까지</b></td></tr>
+  </table></div>
+  <div class="note"><b>비행기 모드에서도 놀 수 있어야 한다</b>(🟨).
+  <b>이건 그냥 되는 게 아니라 정해 놓아야 하는 것</b>이다 —
+  <b>“인터넷 없으면 못 들어온다”로 만들기가 오히려 더 쉽기 때문</b>이다.
+  <b>지하철에서 되는 게임이라는 것</b>이 이 갈래의 큰 장점이고,
+  <b>“자리를 비운 시간만큼 번다”는 우리 심장과도 맞는다.</b></div>
+
+  <h3>다만 이벤트 하나가 인터넷을 붙든다</h3>
+  <div class="note warn"><b>이벤트를 3~4일마다 갈아 끼우기로 했는데</b>,
+  <b>앱을 새로 내려면 스토어 심사를 3~4일마다 통과해야 한다 — 그건 안 된다.</b></div>
+  <div class="note"><b>풀리는 길은 이미 유저가 깔아 뒀다</b> —
+  <i>“새로운 테마는 운영 중에 계속 증가해야 하고
+  <b>그 전까지는 만든 걸로 사이클 돌려야지 반복적으로</b>”</i>.
+  <b>그림은 앱에 미리 다 넣어 두고, 밖에서 받는 것은 “언제 무엇을 켜나”라는 쪽지 한 장뿐</b>이다.
+  <b>새 테마를 넣을 때만 앱을 새로 낸다.</b></div>
+  <div class="tw"><table>
+    <tr><th></th><th>어디에</th><th>얼마마다</th></tr>
+    <tr><td><b>테마 그림 · 물건 · 손님</b></td><td>앱 안에</td><td>새 테마를 낼 때만</td></tr>
+    <tr><td><b>“이번엔 호러, 다음엔 판타지”</b></td><td><b>밖에서 받는 쪽지</b></td><td>3~4일마다</td></tr>
+  </table></div>
+  <div class="note"><b>이 쪽지는 아주 작아서 무료 칸에서 끝난다</b>(파이어베이스 원격 설정).
+  <b>서버를 세우는 것과는 다르다</b> — <b>우리가 관리할 기계가 없다.</b>
+  <b>밸런스 숫자도 같은 쪽지에 실어 보낼 수 있다</b> —
+  <b>스토어 심사 없이 곡선을 고칠 수 있다는 뜻</b>이라 낸 뒤에 아주 값지다.</div>
 
   <h3>서버비를 <b>62배 부풀렸었다</b> — 유저가 짚었다</h3>
   <p class="sub">유저 말: <i>“<b>뭔 서버비가 저렇게 많이 드냐;;</b>”</i></p>
