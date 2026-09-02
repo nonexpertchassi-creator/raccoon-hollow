@@ -59,7 +59,7 @@ body{
   font-family:"Gowun Dodum",sans-serif; font-weight:400;
   font-variant-numeric:tabular-nums; margin-top:1px}
 
-/* 마당 — 위는 만드는 쪽, 아래는 사는 쪽 */
+/* 마당 — 위는 줄, 아래는 계산대 */
 .yard{margin-top:10px; display:flex; flex-direction:column; gap:7px}
 .row{display:flex; align-items:center; gap:8px; min-height:30px}
 .tag{font-size:10px; color:var(--ink3); width:32px; flex:none; letter-spacing:.04em}
@@ -72,16 +72,15 @@ body{
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
 .empty{flex:1; height:2px; border-bottom:1px dashed var(--line); opacity:.7}
 
-.slots{display:flex; gap:4px}
-.slot{width:19px; height:26px; border:1px solid var(--line); border-radius:4px;
-  background:var(--card2); position:relative; overflow:hidden}
-.slot i{position:absolute; left:0; right:0; bottom:0; background:var(--leaf); display:block}
-.slot.off{opacity:.28}
-.stock{display:flex; gap:3px; align-items:center; flex:1; padding-left:8px;
-  margin-left:4px; border-left:1px dashed var(--line); min-height:26px}
-.stock i{width:8px; height:8px; border-radius:50%; background:var(--clay); display:block}
-.stock em,.stock .none{font-size:10.5px; color:var(--ink3); font-style:normal;
-  font-variant-numeric:tabular-nums}
+.slots{display:flex; gap:5px; flex:1}
+.slot{width:32px; height:32px; border:1px solid var(--line); border-radius:8px;
+  background:var(--card2); position:relative; overflow:hidden;
+  display:grid; place-items:center}
+.slot i{position:absolute; left:0; right:0; bottom:0; background:var(--leaf);
+  display:block; opacity:.42}
+.slot u{position:relative; font-size:19px; text-decoration:none; line-height:1}
+.slot.idle{border-style:dashed; background:transparent}
+.slot.idle::after{content:"💤"; font-size:12px; opacity:.35}
 
 /* 잠긴 자리는 한 줄로 얇게 */
 .lockrow{display:flex; align-items:center; gap:9px; padding:9px 12px;
@@ -190,7 +189,6 @@ const band = i => B.BAND.find(([a,b])=>i>=a&&i<=b)[2];
 const proc = i => B.PROC.find(([a,b])=>i>=a&&i<=b)[2];
 const itemOf = lv => Math.min(20, Math.floor((lv-1)/50)+1);
 const craft = lv => band(itemOf(lv)) * Math.max(B.FLOOR, Math.pow(B.PER,(lv-1)%50));
-const shelf = lv => proc(itemOf(lv))*2;
 const price = lv => B.P0*Math.pow(B.INC,lv-1)*Math.pow(B.STAR,Math.floor((lv-1)/10))*Math.pow(B.JUMP,Math.floor((lv-1)/50));
 const lvCost = lv => B.C0*Math.pow(B.G,lv-1);
 const hireCost = (s,j) => Math.max(20, (SHOPS[j].cost||50)/2) * Math.pow(2, s.w-1);
@@ -208,7 +206,7 @@ function fresh(){
   return {
     money:0, played:0, sold:0, taps:0, served:0, mad:0,
     shops: SHOPS.map((d,j)=>({
-      open:j===0, lv:1, w:1, stock:0, acc:0, q:[], slots:[0,0,0,0,0,0]
+      open:j===0, lv:1, w:1, acc:0, q:[], mk:[null,null,null,null,null,null]
     }))
   };
 }
@@ -225,7 +223,7 @@ function rateOf(){
     if(!s.open) return;
     const it = itemOf(s.lv);
     const make = Math.min(s.w, proc(it)) / craft(s.lv);
-    r += Math.min(make, 1/B.TS) * price(s.lv);
+    r += Math.min(make, 1/B.TS) * price(s.lv);   // 만드는 속도와 손님 속도 중 느린 쪽
   });
   return r;
 }
@@ -265,29 +263,26 @@ function tick(now){
     if(!s.open) return;
     const it = itemOf(s.lv), np = proc(it), act = Math.min(s.w, np), ct = craft(s.lv);
 
+    // ① 손님이 나타난다 — 줄이 꽉 차 있으면 그냥 지나간다
     s.acc += dt;
     while(s.acc >= B.TS){
       s.acc -= B.TS;
       if(s.q.length < B.QMAX)
-        s.q.push({f:FACES[(Math.random()*FACES.length)|0], wait:0, pay:0});
+        s.q.push({f:FACES[(Math.random()*FACES.length)|0], wait:0});
+      else { S.mad++; S.served++; }
     }
-    const cap = shelf(s.lv);
+    // ② 계산대가 비면 줄 맨 앞이 가서 주문한다
+    for(let k=0;k<act;k++)
+      if(!s.mk[k] && s.q.length){ const c = s.q.shift(); c.p = 0; s.mk[k] = c; }
+    // 일꾼이 줄면 만들던 손님은 줄 앞으로 돌아간다
+    for(let k=act;k<6;k++) if(s.mk[k]){ s.mk[k].p = 0; s.q.unshift(s.mk[k]); s.mk[k] = null; }
+    // ③ 너구리가 만든다 → ④ 다 되면 받고 간다
     for(let k=0;k<act;k++){
-      if(s.stock >= cap){ s.slots[k] = 0; continue; }   // 판매대가 차면 손을 놓는다
-      s.slots[k] += dt;
-      if(s.slots[k] >= ct){ s.slots[k] -= ct; s.stock++; }
+      const c = s.mk[k]; if(!c) continue;
+      c.p += dt;
+      if(c.p >= ct){ S.money += price(s.lv); S.sold++; S.served++; s.mk[k] = null; }
     }
-    for(let k=act;k<6;k++) s.slots[k] = 0;
-
-    if(s.q.length){
-      const c = s.q[0];
-      if(s.stock > 0){
-        c.pay += dt;
-        if(c.pay >= B.PAY){
-          s.stock--; S.money += price(s.lv); S.sold++; S.served++; s.q.shift();
-        }
-      }
-    }
+    // ⑤ 줄에서 너무 오래 기다리면 화내고 간다 (주문한 손님은 안 간다)
     for(let k=s.q.length-1;k>=0;k--){
       s.q[k].wait += dt;
       if(s.q[k].wait > B.MAD){ s.q.splice(k,1); S.mad++; S.served++; }
@@ -316,11 +311,10 @@ function build(){
         <div class="stars" id="st${j}"></div>
       </div>
       <div class="yard">
-        <div class="row"><span class="tag">만든다</span>
-          <span class="slots" id="sl${j}"></span>
-          <span class="stock" id="sk${j}"></span></div>
-        <div class="row"><span class="tag">판다</span>
+        <div class="row"><span class="tag">줄</span>
           <span class="line" id="ln${j}"></span></div>
+        <div class="row"><span class="tag">계산대</span>
+          <span class="slots" id="sl${j}"></span></div>
       </div>
       <div class="acts">
         <button class="up" id="up${j}"><span>올리기</span><b>0</b></button>
@@ -381,24 +375,20 @@ function paint(){
     const ln = document.getElementById("ln"+j);
     if(!s.q.length) ln.innerHTML = `<span class="empty"></span>`;
     else{
-      const want = s.q.map((c,i)=>{
-        const cls = c.wait > B.MAD*0.6 ? "cust wait mad" : (i===0 && s.stock>0 ? "cust" : "cust wait");
-        return `<span class="${cls}">${c.f}</span>`;
-      }).join("");
+      const want = s.q.map(c=>
+        `<span class="cust wait${c.wait > B.MAD*0.6 ? " mad" : ""}">${c.f}</span>`).join("");
       if(ln.dataset.k !== want){ ln.dataset.k = want; ln.innerHTML = want; }
     }
 
-    const full = s.stock >= shelf(s.lv);
     let sl = "";
-    for(let k=0;k<np;k++){
-      const p = k<act && !full ? Math.min(1, s.slots[k]/ct) : 0;
-      sl += `<span class="slot${k<act&&!full?"":" off"}"><i style="height:${(p*100).toFixed(0)}%"></i></span>`;
+    for(let k=0;k<act;k++){
+      const c = s.mk[k];
+      sl += c
+        ? `<span class="slot"><i style="height:${(Math.min(1,c.p/ct)*100).toFixed(0)}%"></i><u>${c.f}</u></span>`
+        : `<span class="slot idle"></span>`;
     }
-    document.getElementById("sl"+j).innerHTML = sl;
-    const show = Math.min(s.stock, 12);
-    document.getElementById("sk"+j).innerHTML = s.stock
-      ? "<i></i>".repeat(show) + (full ? `<em>가득</em>` : "")
-      : `<span class="none">·</span>`;
+    const el = document.getElementById("sl"+j);
+    if(el.dataset.k !== sl){ el.dataset.k = sl; el.innerHTML = sl; }
 
     const ub = document.getElementById("up"+j), c = lvCost(s.lv);
     ub.querySelector("b").textContent = won(c);
