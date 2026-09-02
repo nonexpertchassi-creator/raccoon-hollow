@@ -204,7 +204,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <nav>
     <a href="#now"><span>지금 어디</span></a>
     <a href="#keep"><span>남긴 것</span></a>
-    <a href="#open"><span>미결정 모음</span><span class="c">2</span></a>
+    <a href="#open"><span>미결정 모음</span><span class="c done">0</span></a>
     <div class="grp">기획 일곱 갈래 <span style="font-weight:400;text-transform:none;letter-spacing:0">· 숫자는 <b>정해진 것</b></span></div>
     <a href="#story"><span>시나리오</span><span class="c done">24</span></a>
     <a href="#system"><span>시스템</span><span class="c done">25</span></a>
@@ -248,6 +248,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
 
   <div class="tw"><table>
     <tr><th>쓰는 말</th><th>무엇</th><th>예전에 뭐라 불렀나</th></tr>
+    <tr><td><b>주사위 운</b></td><td>큰 눈이 잘 나오게 기울이는 스킬</td><td class="who">주사위 최저 눈 <span style="color:var(--faint)">(바닥을 올리는 게 아니라 확률을 기울이기로 바뀌었다)</span></td></tr>
     <tr><td><b>매장</b></td><td>가게 한 채</td><td class="who">가게 · 점포</td></tr>
     <tr><td><b>구역</b></td><td>매장 4채 묶음</td><td class="who"><b>스트리트</b> · 골목 · 거리 <span style="color:var(--persim)">(09-01 바꿈)</span></td></tr>
     <tr><td><b>챕터</b></td><td>구역 5개 = 한 나라 한 시대</td><td class="who">막 · 덩이 · 스테이지</td></tr>
@@ -317,14 +318,8 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <b>손으로 옮겨 적으면 반드시 한쪽이 어긋나기 때문이다</b>(규칙 3).
   고칠 것이 있으면 <b>갈래 쪽 픽스 표를 고친다.</b></div>
 <!-- AUTO:open -->
-  <div class="zero">아직 승인 안 받은 것 <b>2</b></div>
-  <p class="sub"><b>전부 내가 판단한 것이다.</b> 유저가 <i>“그거 아니야”</i> 한 마디면 물린다.</p>
-  <div class="tw"><table>
-    <tr><th>어느 갈래</th><th>내가 정한 것</th></tr>
-  <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#balance" style="color:var(--faint)">밸런스 기획</a> · 노랑 2</td></tr>
-  <tr><td class="who" style="white-space:nowrap">🟨</td><td><b>🎲 주사위 최저 눈만 곡선을 안 쓴다</b> — 2레벨에서 끝나서 1,000 · 3,000으로 따로 뒀다<div class="who" style="margin-top:3px">내 판단 — 유저 승인 전</div></td></tr>
-  <tr><td class="who" style="white-space:nowrap">🟨</td><td><b>제조시간 바닥을 0.8배가 아니라 0.5배로</b> 하고 <b>50레벨에 닿게</b> 천천히 내린다 — 물건이 바뀔 때마다 리듬이 생긴다<div class="who" style="margin-top:3px">내 판단 — 유저 승인 전</div></td></tr>
-  </table></div>
+  <div class="zero done">아직 승인 안 받은 것 <b>0</b></div>
+  <div class="note"><b>남은 노랑이 없다.</b> 낸 것을 유저가 다 물렸거나 승인했다.</div>
   <div class="note"><b>아무도 안 정한 것</b>(내가 판단조차 안 한 것)은 갈래마다 <b>「아직 안 정한 것」</b>에 따로 있다 — 그건 성격이 달라서 안 섞는다.</div>
 <!-- /AUTO:open -->
 </section>
@@ -1372,7 +1367,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <tr><td>🟦</td><td><b>주사위는 멤버십·스킬이 걸린 기본에 곱한다</b> — 멤버십이 묽어지지 않게</td><td class="who">“맞음”</td></tr>
     <tr><td>🟦</td><td><b>뽑기는 손님 뽑기다.</b> 물건도 일꾼도 아니다</td><td class="who">“뽑기는 뭐 손님 뽑기인데”</td></tr>
     <tr><td>🟦</td><td><b>패시브 스킬은 보석으로만 올린다.</b> 광고도 현금도 안 붙는다</td><td class="who">“무조건 보석으로 레벨업해야 함”</td></tr>
-    <tr><td>🟦</td><td><b>스킬은 낼 때 여덟 개</b> — 등장률 · 이동속도 · 밤 출몰률 · 생산속도 · 오프라인 시간 · 오프라인 배수 · 주사위 최저 눈 · 보석 섞일 확률</td><td class="who">“리스트만 있어도 될 거 같은데”</td></tr>
+    <tr><td>🟦</td><td><b>스킬은 낼 때 여덟 개</b> — 등장률 · 이동속도 · 밤 출몰률 · 생산속도 · 오프라인 시간 · 오프라인 배수 · <b>주사위 운</b> · 보석 섞일 확률</td><td class="who">“리스트만 있어도 될 거 같은데”</td></tr>
     <tr><td>🟦</td><td><b>스킬 생산속도는 모든 매장에 걸린다.</b> 매장 카드의 일꾼 속도(돈)와 층이 다르다</td><td class="who">“모든 가게에 적용해야지”</td></tr>
     <tr><td>🟦</td><td><b>손님마다 능력이 하나씩 있다.</b> 값 배수만이 아니라 <b>여러 갈래로</b></td><td class="who">“수익뿐만 아니라 … 다양하게”</td></tr>
     <tr><td>🟦</td><td><b>같은 손님이 또 나오면 그 능력이 조금 오른다</b> — 3배 → 3.1배</td><td class="who">“3배에서 3.1배로 되거나”</td></tr>
@@ -1538,7 +1533,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <tr><td class="num mono">5</td><td><b>보석이 섞일 확률</b></td>
     <td><b>골목에 뜨는 작은 팝업</b>과 <b>오프라인 보상</b>에 <b>돈 말고 보석</b>이 섞인다</td><td class="who">🟦 유저가 부름</td></tr>
     <tr><td class="num mono">6</td><td><b>생산속도</b></td><td><b>모든 매장</b>의 만드는 시간이 준다</td><td class="who">🟦 “차라리 생산속도 늘리기가”</td></tr>
-    <tr><td class="num mono">7</td><td><b>주사위 최저 눈</b></td><td>⚀이 안 나오게 바닥을 올린다</td><td class="who">🟨 내 판단</td></tr>
+    <tr><td class="num mono">7</td><td><b>주사위 운</b></td><td><b>큰 눈이 잘 나오게 기울인다</b> — ⚅이 16.7% → 50%</td><td class="who">🟦 유저가 고쳤다</td></tr>
     <tr><td class="num mono">8</td><td><b>밤 손님 출몰률</b></td><td>밤에 손님이 <b>나타날 확률</b>이 는다 — <b>가로등의 전체판</b></td><td class="who">🟦 “출몰할 율이 늘어난다로”</td></tr>
   </table></div>
   <div class="note warn"><b>줄 자리를 뺐다.</b> 유저 말: <i>“<b>줄 자리가 뭐야?</b> 줄 개수가 늘어난다는 거야?
@@ -1566,7 +1561,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <b>운이 걸린 자리가 셋</b>이다 — <b>주사위 눈 · 손님 뽑기 · 보상에 보석이 섞이는 것.</b></div>
   <div class="tw"><table>
     <tr><th>어디</th><th>무엇을 알려주나</th></tr>
-    <tr><td><b>🎲 주사위</b></td><td>눈 1~6이 각각 몇 %인지. <b>스킬로 바닥을 올렸으면 그 바뀐 확률</b>을 보여준다</td></tr>
+    <tr><td><b>🎲 주사위</b></td><td>눈 1~6이 각각 몇 %인지. <b>스킬로 기울였으면 그 바뀐 확률</b>을 보여준다 — <b>이 스킬은 확률 자체를 바꾸니 고지가 더 중요하다</b></td></tr>
     <tr><td><b>🎲 손님 뽑기</b></td><td>어느 손님이 몇 %로 나오는지</td></tr>
     <tr><td><b>💎 보석이 섞일 확률</b></td><td>지금 몇 %인지 · 한 단계 올리면 몇 %가 되는지</td></tr>
   </table></div>
@@ -2388,13 +2383,13 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
       <div class="bar"><span>✨ 스킬</span><span>💎 148</span></div>
       <div style="padding:7px 6px">
         <div style="font-size:8px; color:var(--faint); margin-bottom:4px">손님</div>
-        <div class="card" style="margin:0 0 4px; background:var(--card); padding:6px; display:flex; align-items:center; gap:6px"><div style="font-size:13px">🚶</div><div style="flex:1; min-width:0"><div style="font-size:9.5px"><b>손님 등장률</b></div><div class="st" style="font-size:8px">★★★☆☆</div></div><div style="font-size:8.5px; border:1px solid var(--persim); color:var(--persim); border-radius:5px; padding:3px 6px; white-space:nowrap; background:var(--card)">💎 40</div></div><div class="card" style="margin:0 0 4px; background:var(--card); padding:6px; display:flex; align-items:center; gap:6px"><div style="font-size:13px">💨</div><div style="flex:1; min-width:0"><div style="font-size:9.5px"><b>손님 이동속도</b></div><div class="st" style="font-size:8px">★★☆☆☆</div></div><div style="font-size:8.5px; border:1px solid var(--persim); color:var(--persim); border-radius:5px; padding:3px 6px; white-space:nowrap; background:var(--card)">💎 25</div></div><div class="card" style="margin:0 0 4px; background:var(--card); padding:6px; display:flex; align-items:center; gap:6px"><div style="font-size:13px">🌙</div><div style="flex:1; min-width:0"><div style="font-size:9.5px"><b>밤 손님 출몰률</b></div><div class="st" style="font-size:8px">☆☆☆☆☆</div></div><div style="font-size:8.5px; border:1px solid var(--persim); color:var(--persim); border-radius:5px; padding:3px 6px; white-space:nowrap; background:var(--card)">💎 15</div></div>
+        <div class="card" style="margin:0 0 4px; background:var(--card); padding:6px; display:flex; align-items:center; gap:6px"><div style="font-size:13px">🚶</div><div style="flex:1; min-width:0"><div style="font-size:9.5px"><b>손님 등장률</b></div><div class="st" style="font-size:8px">Lv.6 <span style="color:var(--faint)">/ 20</span></div></div><div style="font-size:8.5px; border:1px solid var(--persim); color:var(--persim); border-radius:5px; padding:3px 6px; white-space:nowrap; background:var(--card)">💎 140</div></div><div class="card" style="margin:0 0 4px; background:var(--card); padding:6px; display:flex; align-items:center; gap:6px"><div style="font-size:13px">💨</div><div style="flex:1; min-width:0"><div style="font-size:9.5px"><b>손님 이동속도</b></div><div class="st" style="font-size:8px">Lv.5 <span style="color:var(--faint)">/ 20</span></div></div><div style="font-size:8.5px; border:1px solid var(--persim); color:var(--persim); border-radius:5px; padding:3px 6px; white-space:nowrap; background:var(--card)">💎 120</div></div><div class="card" style="margin:0 0 4px; background:var(--card); padding:6px; display:flex; align-items:center; gap:6px"><div style="font-size:13px">🌙</div><div style="flex:1; min-width:0"><div style="font-size:9.5px"><b>밤 손님 출몰률</b></div><div class="st" style="font-size:8px">Lv.3 <span style="color:var(--faint)">/ 20</span></div></div><div style="font-size:8.5px; border:1px solid var(--persim); color:var(--persim); border-radius:5px; padding:3px 6px; white-space:nowrap; background:var(--card)">💎 80</div></div>
         <div style="font-size:8px; color:var(--faint); margin:8px 0 4px">매장</div>
-        <div class="card" style="margin:0 0 4px; background:var(--card); padding:6px; display:flex; align-items:center; gap:6px"><div style="font-size:13px">⚙</div><div style="flex:1; min-width:0"><div style="font-size:9.5px"><b>생산속도</b></div><div class="st" style="font-size:8px">★☆☆☆☆</div></div><div style="font-size:8.5px; border:1px solid var(--persim); color:var(--persim); border-radius:5px; padding:3px 6px; white-space:nowrap; background:var(--card)">💎 60</div></div>
+        <div class="card" style="margin:0 0 4px; background:var(--card); padding:6px; display:flex; align-items:center; gap:6px"><div style="font-size:13px">⚙</div><div style="flex:1; min-width:0"><div style="font-size:9.5px"><b>생산속도</b></div><div class="st" style="font-size:8px">Lv.2 <span style="color:var(--faint)">/ 20</span></div></div><div style="font-size:8.5px; border:1px solid var(--persim); color:var(--persim); border-radius:5px; padding:3px 6px; white-space:nowrap; background:var(--card)">💎 60</div></div>
         <div style="font-size:8px; color:var(--faint); margin:8px 0 4px">자리를 비웠을 때</div>
-        <div class="card" style="margin:0 0 4px; background:var(--card); padding:6px; display:flex; align-items:center; gap:6px"><div style="font-size:13px">⏳</div><div style="flex:1; min-width:0"><div style="font-size:9.5px"><b>오프라인 최대 시간</b></div><div class="st" style="font-size:8px">★★★★☆</div></div><div style="font-size:8.5px; border:1px solid var(--persim); color:var(--persim); border-radius:5px; padding:3px 6px; white-space:nowrap; background:var(--card)">💎 120</div></div><div class="card" style="margin:0 0 4px; background:var(--card); padding:6px; display:flex; align-items:center; gap:6px"><div style="font-size:13px">😴</div><div style="flex:1; min-width:0"><div style="font-size:9.5px"><b>오프라인 배수</b></div><div class="st" style="font-size:8px">★★☆☆☆</div></div><div style="font-size:8.5px; border:1px solid var(--persim); color:var(--persim); border-radius:5px; padding:3px 6px; white-space:nowrap; background:var(--card)">💎 55</div></div><div class="card" style="margin:0 0 4px; background:var(--card); padding:6px; display:flex; align-items:center; gap:6px"><div style="font-size:13px">🎲</div><div style="flex:1; min-width:0"><div style="font-size:9.5px"><b>주사위 최저 눈 ⓘ</b></div><div class="st" style="font-size:8px">★☆☆☆☆</div></div><div style="font-size:8.5px; border:1px solid var(--persim); color:var(--persim); border-radius:5px; padding:3px 6px; white-space:nowrap; background:var(--card)">💎 90</div></div>
+        <div class="card" style="margin:0 0 4px; background:var(--card); padding:6px; display:flex; align-items:center; gap:6px"><div style="font-size:13px">⏳</div><div style="flex:1; min-width:0"><div style="font-size:9.5px"><b>오프라인 최대 시간</b></div><div class="st" style="font-size:8px">Lv.8 <span style="color:var(--faint)">/ 20</span></div></div><div style="font-size:8.5px; border:1px solid var(--persim); color:var(--persim); border-radius:5px; padding:3px 6px; white-space:nowrap; background:var(--card)">💎 180</div></div><div class="card" style="margin:0 0 4px; background:var(--card); padding:6px; display:flex; align-items:center; gap:6px"><div style="font-size:13px">😴</div><div style="flex:1; min-width:0"><div style="font-size:9.5px"><b>오프라인 배수</b></div><div class="st" style="font-size:8px">Lv.4 <span style="color:var(--faint)">/ 20</span></div></div><div style="font-size:8.5px; border:1px solid var(--persim); color:var(--persim); border-radius:5px; padding:3px 6px; white-space:nowrap; background:var(--card)">💎 100</div></div><div class="card" style="margin:0 0 4px; background:var(--card); padding:6px; display:flex; align-items:center; gap:6px"><div style="font-size:13px">🎲</div><div style="flex:1; min-width:0"><div style="font-size:9.5px"><b>주사위 운 ⓘ</b></div><div class="st" style="font-size:8px">Lv.1 <span style="color:var(--faint)">/ 20</span></div></div><div style="font-size:8.5px; border:1px solid var(--persim); color:var(--persim); border-radius:5px; padding:3px 6px; white-space:nowrap; background:var(--card)">💎 40</div></div>
         <div style="font-size:8px; color:var(--faint); margin:8px 0 4px">받는 것</div>
-        <div class="card" style="margin:0 0 4px; background:var(--card); padding:6px; display:flex; align-items:center; gap:6px"><div style="font-size:13px">💎</div><div style="flex:1; min-width:0"><div style="font-size:9.5px"><b>보석이 섞일 확률 ⓘ</b></div><div class="st" style="font-size:8px">☆☆☆☆☆</div></div><div style="font-size:8.5px; border:1px solid var(--persim); color:var(--persim); border-radius:5px; padding:3px 6px; white-space:nowrap; background:var(--card)">💎 30</div></div>
+        <div class="card" style="margin:0 0 4px; background:var(--card); padding:6px; display:flex; align-items:center; gap:6px"><div style="font-size:13px">💎</div><div style="flex:1; min-width:0"><div style="font-size:9.5px"><b>보석이 섞일 확률 ⓘ</b></div><div class="st" style="font-size:8px">Lv.0 <span style="color:var(--faint)">/ 20</span></div></div><div style="font-size:8.5px; border:1px solid var(--persim); color:var(--persim); border-radius:5px; padding:3px 6px; white-space:nowrap; background:var(--card)">💎 20</div></div>
         <div style="text-align:center; font-size:8px; color:var(--faint); margin-top:6px">
           보석으로만 올린다 · 광고도 현금도 안 붙는다</div>
       </div>
@@ -3810,8 +3805,9 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <tr><td>🟦</td><td><b>돈은 1원부터 시작한다</b> — 표기는 줄임말(K · M · B …)</td><td class="who">“1원부터 시작해도 됨”</td></tr>
     <tr><td>🟦</td><td><b>돈 그림은 금색 동전에 나뭇잎</b></td><td class="who">“금색동전에 나뭇잎 모양을 박자”</td></tr>
     <tr><td>🟦</td><td><b>스킬 값 곡선은 20 · 200 · 1,000</b> — 1~10레벨은 20씩, 11~20레벨은 80씩. <b>여덟이 값이 다 같고 효과만 다르다</b></td><td class="who">“10레벨에 200개 … 마지막은 1000개로”</td></tr>
-    <tr><td>🟩</td><td><b>스킬 하나 마스터 = 7,500</b>(2.5챕터) · <b>여덟 다 = 56,500</b>(19챕터 · 133일)</td><td class="who"><code>tools/skilltab.py</code></td></tr>
-    <tr><td>🟨</td><td><b>🎲 주사위 최저 눈만 곡선을 안 쓴다</b> — 2레벨에서 끝나서 1,000 · 3,000으로 따로 뒀다</td><td class="who">내 판단 — 유저 승인 전</td></tr>
+    <tr><td>🟩</td><td><b>스킬 하나 마스터 = 7,500</b>(2.5챕터) · <b>여덟 다 = 60,000</b>(20챕터 · 141일)</td><td class="who"><code>tools/skilltab.py</code></td></tr>
+    <tr><td>🟦</td><td><b>🎲 스킬은 바닥을 올리는 게 아니라 <b>확률을 기울인다</b></b> — ⚀은 줄고 ⚅은 <b>16.7% → 50%</b>. 20레벨이라 <b>여덟이 다 같은 곡선을 쓴다</b></td><td class="who">“⚀ 나올 확률 낮추고 2~6은 조금씩 늘림 … 최종은 6이 50%까지”</td></tr>
+    <tr><td>🟦</td><td><b>제조시간 바닥은 0.5배</b>이고 <b>50레벨에 닿는다</b> — 물건이 바뀔 때마다 리듬이 생긴다</td><td class="who">“0.8배가 아닌 0.5배라는 게 그래…”</td></tr>
     <tr><td>🟩</td><td><b>광고 제거는 5,000원이 2만원보다 두 배 가까이 번다</b></td><td class="who">아래 · 유저 직감이 맞았다</td></tr>
     <tr><td>🟦</td><td><b>보석은 보라색 계열</b> — 감빛(주황)·풀빛과 안 겹친다</td><td class="who">“보라색계열로 해줘”</td></tr>
   </table></div>
@@ -3839,9 +3835,9 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <tr><td>🟩</td><td><b>비용 증가율 1.0425 → 1.056 → 1.0543</b></td><td class="who">제조가 막아서 올랐고, 오프라인 상한이 조여서 조금 내렸다</td></tr>
     <tr><td>🟦</td><td><b>매장 별 하나에 보석 1개</b> — 매장당 100개 · <b>챕터당 2,000개</b></td><td class="who">“별 1개당 보석 1개를 준다면”</td></tr>
     <tr><td>🟩</td><td><b>그러면 무과금이 하루 425개다</b> — 내가 낸 “하루 40개”는 <b>10배 틀렸다</b></td><td class="who">별 2,000 + 도감 800 + 미션·광고 175</td></tr>
-    <tr><td>🟩</td><td><b>여덟 다 마스터가 133일</b> — 유저가 <b>“45일에 끝나도 상관없다”</b>고 했으니 더 여유로운 쪽이다</td><td class="who">56,500 ÷ 2,975 = 19챕터</td></tr>
+    <tr><td>🟩</td><td><b>여덟 다 마스터가 141일</b> — 유저가 <b>“45일에 끝나도 상관없다”</b>고 했으니 더 여유로운 쪽이다</td><td class="who">60,000 ÷ 2,975 = 20챕터</td></tr>
     <tr><td>🟦</td><td><b>재화는 돈과 보석 둘뿐이다.</b> 별 보석을 꾸미기 전용으로 나누지 않는다 — 재화를 늘리는 건 콘텐츠가 늘 때 본다</td><td class="who">“구분해야 할 재화가 너무 많아”</td></tr>
-    <tr><td>🟦</td><td><b>스킬 마스터가 한 달 남짓에 끝나도 상관없다.</b> 챕터·이벤트·아이템이 계속 늘어난다 — <b>게임의 끝은 지금 만들 게 아니다</b> <span style="color:var(--faint)">(그 뒤 값 곡선이 올라 지금은 133일)</span></td><td class="who">“45일 만에 끝나도 상관없다”</td></tr>
+    <tr><td>🟦</td><td><b>스킬 마스터가 한 달 남짓에 끝나도 상관없다.</b> 챕터·이벤트·아이템이 계속 늘어난다 — <b>게임의 끝은 지금 만들 게 아니다</b> <span style="color:var(--faint)">(그 뒤 값 곡선이 올라 지금은 141일)</span></td><td class="who">“45일 만에 끝나도 상관없다”</td></tr>
     <tr><td>🟦</td><td><b>“며칠”만 적지 않는다.</b> <b>하루 몇 번 들어와 모두 몇 분</b>인지를 같이 적는다</td><td class="who">“며칠 기준으로 하지 말자 … 어느 기준인지 감이 안 잡혀”</td></tr>
     <tr><td>🟩</td><td><b>접속 시간은 거의 안 움직인다</b> — 하루 5분을 200분으로 <b>40배</b> 해도 7.3일 → 6.9일</td><td class="who">운 번호 11개 · <code>--mins</code></td></tr>
     <tr><td>🟩</td><td><b>진짜 레버는 하루 몇 번 들어오나</b> — 1번이면 11.3일, 6번이면 5.3일. 오프라인을 <b>걷어 가는 횟수</b>다</td><td class="who">운 번호 11개 · <code>--sess</code></td></tr>
@@ -3856,7 +3852,6 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <tr><td>🟦</td><td><b>시계 조작은 싼 방어만 한다</b> — 부팅 이후 흐른 시간을 같이 적는 것까지. <b>서버는 안 세운다</b></td><td class="who">“체리피커는 다 막을 순 없지 1,000명 중 몇이겠어”</td></tr>
     <tr><td>🟦</td><td><b>오프라인 상한은 2시간에서 시작해 스킬로 8시간까지</b> — 레벨당 +18분. 자는 시간에 맞추면 <b>하루 3번</b>이 저절로 강제된다</td><td class="who">“그래 8시간으로 끝내자”</td></tr>
     <tr><td>🟩</td><td><b>8시간으로 낮춰도 과녁은 그대로다</b> — 무과금 7.3일 · 유료 4.3일</td><td class="who">운 번호 11개 · <code>pace2</code></td></tr>
-    <tr><td>🟨</td><td><b>제조시간 바닥을 0.8배가 아니라 0.5배로</b> 하고 <b>50레벨에 닿게</b> 천천히 내린다 — 물건이 바뀔 때마다 리듬이 생긴다</td><td class="who">내 판단 — 유저 승인 전</td></tr>
   </table></div>
 
   <h3>피곤한 일꾼 — 강요 말고 눈치채게</h3>
@@ -4195,7 +4190,8 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <tr><td><b>제조시간</b></td><td><b>초반의 체감.</b> 바닥까지 몇십 레벨이면 끝난다</td></tr>
     <tr><td><b>일꾼 수</b></td><td><b>막힌 것을 뚫는다.</b> 시간을 줄이는 게 아니라 <b>여러 개를 동시에</b></td></tr>
   </table></div>
-  <div class="note"><span class="tag" style="background:var(--persim-bg);color:var(--persim)">🟨 내 제안</span>
+  <div class="note"><span class="tag" style="background:var(--leaf-bg);color:var(--leaf)">🟦 정해졌다</span>
+  유저 말: <i>“<b>0.8배가 아닌 0.5배라는 게 그래…</b>”</i>
   <b>바닥을 0.8배가 아니라 0.5배로 하고 더 천천히 내린다</b> —
   옛 공식은 <b>16레벨</b>이면 바닥이라 너무 빨리 끝난다.
   <b>바닥을 만나는 레벨을 물건이 바뀌는 자리(50레벨)에 맞추면</b>
@@ -4340,7 +4336,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <td>보석은 <b>저절로 안 는다.</b> 우리가 주는 만큼만 들어온다 —
     <b>여기 하나가 ④⑤를 다 흔든다</b></td></tr>
     <tr><td><b>④는 ③의 그림자다</b></td>
-    <td>“마스터에 56,500개”가 값있는 말이 되려면 <b>하루에 몇 개 버는지가 먼저</b></td></tr>
+    <td>“마스터에 60,000개”가 값있는 말이 되려면 <b>하루에 몇 개 버는지가 먼저</b></td></tr>
   </table></div>
   <div class="note"><b>그래서 다음 판은 ③이다.</b>
   ③을 정하면 ④는 <b>다시 재는 게 아니라 곱셈으로 옮겨 앉는다</b> —
@@ -4398,7 +4394,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <tr><td>🚶 손님 등장률</td><td class="num mono">7</td></tr>
     <tr><td>⚙ 생산속도 · 😴 오프라인 배수 · 💎 보석 섞일 확률</td><td class="num mono">6</td></tr>
     <tr><td>⏳ 오프라인 최대 시간</td><td class="num mono">5</td></tr>
-    <tr><td>🎲 주사위 최저 눈</td><td class="num mono">1</td></tr>
+    <tr><td>🎲 주사위 운</td><td class="num mono">6</td></tr>
   </table></div>
   <div class="note"><b>한 챕터 치고는 너무 많이 산다.</b>
   <b>생산속도 8레벨이 751레벨의 짜증을 푸는 값</b>인데(앞에서 쟀다),
@@ -4653,6 +4649,37 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <div class="note"><b>규칙 5는 지켜진다.</b> 어느 레벨을 사도 수입은 <b>반드시 는다</b>(+2.5%).
   본전 속도가 계단 앞에서 처질 뿐이고, 계단을 넘으면 크게 돌아온다.</div>
 
+  <h3>🎲 바닥을 올리는 게 아니라 <b>확률을 기울인다</b> — 유저가 고쳤다</h3>
+  <p class="sub">유저 물음: <i>“<b>2레벨에 끝난다고? 왜 굳이?</b>
+  말 그대로 <b>⚀ 나올 확률 낮추고 2~6은 조금씩 늘림</b> 되지 않아?
+  <b>최종은 6이 50%까지 올라가게</b> 하는 게 좋을 거 같은데?”</i></p>
+  <div class="note warn"><b>내가 “바닥”이라는 틀에 갇혀 있었다.</b>
+  바닥은 <b>정수라서 2~3칸이면 끝난다</b> — 그래서 2레벨에서 멈췄고,
+  <b>2레벨짜리 스킬 하나 때문에 값 곡선에 예외를 파고 있었다.</b>
+  <b>확률을 기울이면 20레벨이 자연스럽게 나오고 예외가 사라진다.</b>
+  <b>유저 안이 단순한데 더 멀리 간다.</b></div>
+  <div class="note"><b>어떻게 기울이나 — 주머니에 쪽지를 넣는데 큰 눈일수록 여러 장 넣는다.</b>
+  레벨을 올리면 <b>큰 눈의 장수가 더 늘어난다.</b>
+  <b>0레벨이면 여섯이 한 장씩(균등)</b>이고, <b>20레벨이면 ⚅이 절반</b>이 된다.</div>
+  <div class="tw"><table>
+    <tr><th>레벨</th><th class="num mono">⚀</th><th class="num mono">⚁</th><th class="num mono">⚂</th><th class="num mono">⚃</th><th class="num mono">⚄</th><th class="num mono">⚅</th><th class="num mono">한 번 평균</th><th class="num mono">하루 4번 합</th></tr>
+    <tr><td><b>0</b> <span style="color:var(--faint)">(안 샀을 때)</span></td><td class="num mono">16.7%</td><td class="num mono">16.7%</td><td class="num mono">16.7%</td><td class="num mono">16.7%</td><td class="num mono">16.7%</td><td class="num mono">16.7%</td><td class="num mono">3.50</td><td class="num mono">14.0</td></tr>
+    <tr><td>5</td><td class="num mono">6.4%</td><td class="num mono">11.0%</td><td class="num mono">15.1%</td><td class="num mono">18.9%</td><td class="num mono">22.5%</td><td class="num mono">26.0%</td><td class="num mono">4.18</td><td class="num mono">16.7</td></tr>
+    <tr><td>10</td><td class="num mono">2.1%</td><td class="num mono">6.3%</td><td class="num mono">11.8%</td><td class="num mono">18.5%</td><td class="num mono">26.3%</td><td class="num mono">34.9%</td><td class="num mono">4.65</td><td class="num mono">18.6</td></tr>
+    <tr><td>15</td><td class="num mono">0.6%</td><td class="num mono">3.3%</td><td class="num mono">8.5%</td><td class="num mono">16.6%</td><td class="num mono">28.0%</td><td class="num mono">42.9%</td><td class="num mono">4.97</td><td class="num mono">19.9</td></tr>
+    <tr><td><b>20</b> <span style="color:var(--faint)">(마스터)</span></td><td class="num mono"><b>0.2%</b></td><td class="num mono">1.6%</td><td class="num mono">5.8%</td><td class="num mono">14.1%</td><td class="num mono">28.3%</td><td class="num mono"><b>50.0%</b></td><td class="num mono"><b>5.19</b></td><td class="num mono"><b>20.7</b></td></tr>
+  </table></div>
+  <div class="note"><b>유저가 말한 두 가지가 다 나온다.</b>
+  <b>⚀은 16.7%에서 0.2%로</b> 거의 사라지고, <b>⚅은 50%</b>가 된다.
+  가운데 눈들은 <b>올랐다가 다시 내려간다</b> — ⚃는 16.7%까지 올랐다가 14.1%로 돌아온다.
+  <b>큰 눈이 자리를 가져가기 때문</b>이고, 그게 “기울인다”는 말 그대로다.</div>
+  <div class="note"><b>수입으로는 오프라인 보상이 하루 14배에서 20.7배가 된다</b>(1.48배).
+  <b>규칙 5는 어느 레벨에서나 지켜진다</b> — 기울이면 평균은 <b>반드시</b> 올라간다.
+  <b>⏳ 오프라인 시간</b>처럼 “언제 들어오냐”에 매달리지도 않는다.</div>
+  <div class="note warn"><b>확률 고지가 여기서 더 중요해졌다.</b>
+  전에는 “바닥이 3”이라 한 줄이면 됐는데, 이제는 <b>여섯 눈이 각각 몇 %인지</b>가 레벨마다 바뀐다.
+  <b>주사위 화면에 지금 확률 표를 그대로 띄운다</b>(유저가 이미 말한 것).</div>
+
   <h3>스킬 값 곡선을 유저가 직접 그었다 — <b>20 · 200 · 1,000</b></h3>
   <p class="sub">유저 말: <i>“<b>스킬 레벨업은 높아도 된다.</b>
   처음은 1&gt;2는 <b>20&gt;40&gt;60&gt;</b> 이렇게 가다가 <b>10레벨에 200개</b>가 되어야 하고
@@ -4673,7 +4700,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <div class="tw"><table>
     <tr><th></th><th class="num mono">보석</th><th class="num mono">챕터</th><th class="num mono">날</th></tr>
     <tr><td><b>스킬 하나 마스터</b></td><td class="num mono">7,500</td><td class="num mono">2.5</td><td class="num mono">18일</td></tr>
-    <tr><td><b>여덟 다 마스터</b></td><td class="num mono">56,500</td><td class="num mono"><b>19.0</b></td><td class="num mono"><b>133일</b> (4.4개월)</td></tr>
+    <tr><td><b>여덟 다 마스터</b></td><td class="num mono">60,000</td><td class="num mono"><b>20.2</b></td><td class="num mono"><b>141일</b> (4.7개월)</td></tr>
   </table></div>
   <div class="tw"><table>
     <tr><th>1챕터에 버는 2,975개를 이렇게 쓰면</th><th class="num mono">레벨</th></tr>
@@ -4681,15 +4708,15 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <tr><td>여덟에 골고루(371씩)</td><td class="num mono">5</td></tr>
     <tr><td><span style="color:var(--faint)">참고 — 751레벨 짜증을 푸는 ⚙ 생산속도 8레벨</span></td><td class="num mono">720개 <span style="color:var(--faint)">(한 챕터 보석의 24%)</span></td></tr>
   </table></div>
-  <div class="note"><b>전보다 세 배 넘게 비싸졌다</b>(17,484 → 56,500).
-  <b>여덟 다 마스터가 41일에서 133일로</b> 늘었는데,
+  <div class="note"><b>전보다 세 배 넘게 비싸졌다</b>(17,484 → 60,000).
+  <b>여덟 다 마스터가 41일에서 141일로</b> 늘었는데,
   유저가 <i>“45일 만에 끝나도 상관없다”</i>고 했으니 <b>이건 더 여유로운 쪽이다.</b></div>
   <div class="note"><b>“몰면 14레벨, 나누면 5레벨”이 이 곡선의 값어치다.</b>
   <b>고르는 재미가 생긴다</b> — 하나를 확 밀 것인가 골고루 갈 것인가.
   값이 여덟 다 같으니 <b>고민이 “뭐가 싸지”가 아니라 “뭐가 지금 필요하지”가 된다.</b></div>
   <div class="note warn"><b>이 숫자들은 아직 낙관적이다.</b>
   <b>보석을 스킬에만 부었을 때</b>고, <b>뽑기 · 간판 · 가로등이 값이 없어서 안 들어가 있다.</b>
-  그 셋을 정하면 <b>133일은 더 길어진다.</b></div>
+  그 셋을 정하면 <b>141일은 더 길어진다.</b></div>
 
   <h3>스킬 여덟 · 레벨 20이 마스터 <span style="font-weight:400;color:var(--faint);font-size:12px">(값은 위 곡선에서 뽑는다 · <code>tools/skilltab.py</code>)</span></h3>
   <p class="sub">유저 말: <i>“스킬은 <b>별로 주는 게 아닌 레벨로 표기</b>하고 <b>레벨은 20이 마스터</b>.
@@ -4704,9 +4731,9 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <tr><td>⚙ 생산속도</td><td>+3%</td><td>+60%</td><td class="num mono">20</td><td class="num mono">200</td><td class="num mono">1,000</td><td class="num mono">7,500</td></tr>
     <tr><td>⏳ 오프라인 최대 시간</td><td>+18분</td><td>2h → 8h</td><td class="num mono">20</td><td class="num mono">200</td><td class="num mono">1,000</td><td class="num mono">7,500</td></tr>
     <tr><td>😴 오프라인 배수</td><td>+0.025</td><td>0.5 → 1.0</td><td class="num mono">20</td><td class="num mono">200</td><td class="num mono">1,000</td><td class="num mono">7,500</td></tr>
-    <tr><td>🎲 주사위 최저 눈</td><td>바닥+1</td><td>2레벨에서 끝 · 바닥 3</td><td class="num mono">1,000</td><td class="num mono">—</td><td class="num mono">—</td><td class="num mono">4,000</td></tr>
+    <tr><td>🎲 주사위 운</td><td>큰 눈 쪽으로</td><td>⚅이 16.7% → 50%</td><td class="num mono">20</td><td class="num mono">200</td><td class="num mono">1,000</td><td class="num mono">7,500</td></tr>
     <tr><td>💎 보석 섞일 확률</td><td>+0.75%p</td><td>5% → 20%</td><td class="num mono">20</td><td class="num mono">200</td><td class="num mono">1,000</td><td class="num mono">7,500</td></tr>
-    <tr><td colspan="6"><b>여덟 다 마스터</b></td><td class="num mono"><b>56,500</b></td></tr>
+    <tr><td colspan="6"><b>여덟 다 마스터</b></td><td class="num mono"><b>60,000</b></td></tr>
   <!-- /AUTO:skill -->
   </table></div>
   <div class="note warn"><b>“레벨마다 ×2”를 안 쓴 이유가 재 보니 나왔다.</b>
@@ -4717,15 +4744,15 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <tr><th>무과금이 하루 425개 벌면 <span style="font-weight:400;color:var(--faint)">(보석을 스킬에만 부었을 때)</span></th><th>골고루 쓸 때 레벨</th><th></th></tr>
     <tr><td><b>1챕터</b>(7일 · 2,975개)</td><td class="num mono">5</td><td>맛을 본다</td></tr>
     <tr><td><b>한 달</b>(12,750개)</td><td class="num mono">11</td><td><b>절반쯤</b></td></tr>
-    <tr><td><b>넉 달 반</b>(56,500개)</td><td class="num mono">19</td><td><b>거의 마스터</b> <span style="color:var(--faint)">(골고루 나누면 마지막 한 레벨이 남는다 — 🎲가 싸서 몫이 남기 때문)</span></td></tr>
+    <tr><td><b>넉 달 열흘</b>(60,000개)</td><td class="num mono">20</td><td><b>마스터</b> <span style="color:var(--faint)">(값이 여덟 다 같아져서 딱 나눠떨어진다)</span></td></tr>
   </table></div>
   <div class="note warn"><b>이 표는 “스킬에만 부었을 때”다.</b>
   실제로는 <b>뽑기·간판·가로등이 같이 빨아들인다</b> —
   <b>넷이 보석을 어떻게 나눠 가지는지는 아직 안 쟀다.</b>
   <b>④ 보석 쓰는 곳</b>에서 잴 자리다.</div>
-  <div class="note">마스터에 <b>보석 56,500</b>이면 <b>제일 싼 묶음으로도 102만원어치</b>(개당 18원)라
+  <div class="note">마스터에 <b>보석 60,000</b>이면 <b>제일 싼 묶음으로도 108만원어치</b>(개당 18원)라
   <b>과금하는 사람이 쓸 자리는 아주 깊다.</b>
-  <b>주사위 바닥만 2레벨에서 끝낸다</b> — 바닥이 4를 넘으면 굴리는 재미가 죽는다.</div>
+  <b>🎲도 20레벨이라 여덟이 값이 다 같다</b> — 바닥을 올리는 대신 확률을 기울이기로 바꾸면서 그렇게 됐다.</div>
 
   <h3>버린 초안 <span style="font-weight:400;color:var(--faint);font-size:12px">(별 5개짜리 · 유저가 레벨 20으로 바꿨다)</span></h3>
   <div class="tw"><table>
@@ -4855,7 +4882,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <tr><td class="num mono">💎 2,000</td><td class="num mono">39,000원</td><td class="num mono">19.5원</td><td></td></tr>
     <tr><td class="num mono">💎 5,500</td><td class="num mono">99,000원</td><td class="num mono">18.0원</td><td>많이 사면 눅게</td></tr>
   </table></div>
-  <div class="note"><b>스킬 여덟 마스터가 56,500개니 102만원어치</b>다.
+  <div class="note"><b>스킬 여덟 마스터가 60,000개니 108만원어치</b>다.
   거기에 뽑기·간판·가로등까지 하면 <b>깊이가 충분하다.</b>
   <b>1개당 값이 25원에서 18원으로만 내려간다</b> — 큰 묶음이 너무 싸면 작은 묶음이 안 팔린다.</div>
 
@@ -5230,7 +5257,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   그래서 <b>도구가 갈래의 픽스 표를 읽어서 여기에 다시 쓴다</b> —
   <b>문서를 늘리지 말고 뽑아 쓴다</b>(규칙 3).</div>
 <!-- AUTO:blue -->
-  <div class="zero done">정해진 것 <b>166</b></div>
+  <div class="zero done">정해진 것 <b>168</b></div>
   <div class="tw"><table>
     <tr><th></th><th>정한 것 · 유저의 말</th></tr>
   <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#story" style="color:var(--faint)">시나리오 기획</a> · 파랑 24</td></tr>
@@ -5340,7 +5367,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <tr><td class="num mono who">30</td><td><b>주사위는 멤버십·스킬이 걸린 기본에 곱한다</b> — 멤버십이 묽어지지 않게<div class="who" style="margin-top:3px">“맞음”</div></td></tr>
   <tr><td class="num mono who">31</td><td><b>뽑기는 손님 뽑기다.</b> 물건도 일꾼도 아니다<div class="who" style="margin-top:3px">“뽑기는 뭐 손님 뽑기인데”</div></td></tr>
   <tr><td class="num mono who">32</td><td><b>패시브 스킬은 보석으로만 올린다.</b> 광고도 현금도 안 붙는다<div class="who" style="margin-top:3px">“무조건 보석으로 레벨업해야 함”</div></td></tr>
-  <tr><td class="num mono who">33</td><td><b>스킬은 낼 때 여덟 개</b> — 등장률 · 이동속도 · 밤 출몰률 · 생산속도 · 오프라인 시간 · 오프라인 배수 · 주사위 최저 눈 · 보석 섞일 확률<div class="who" style="margin-top:3px">“리스트만 있어도 될 거 같은데”</div></td></tr>
+  <tr><td class="num mono who">33</td><td><b>스킬은 낼 때 여덟 개</b> — 등장률 · 이동속도 · 밤 출몰률 · 생산속도 · 오프라인 시간 · 오프라인 배수 · <b>주사위 운</b> · 보석 섞일 확률<div class="who" style="margin-top:3px">“리스트만 있어도 될 거 같은데”</div></td></tr>
   <tr><td class="num mono who">34</td><td><b>스킬 생산속도는 모든 매장에 걸린다.</b> 매장 카드의 일꾼 속도(돈)와 층이 다르다<div class="who" style="margin-top:3px">“모든 가게에 적용해야지”</div></td></tr>
   <tr><td class="num mono who">35</td><td><b>손님마다 능력이 하나씩 있다.</b> 값 배수만이 아니라 <b>여러 갈래로</b><div class="who" style="margin-top:3px">“수익뿐만 아니라 … 다양하게”</div></td></tr>
   <tr><td class="num mono who">36</td><td><b>같은 손님이 또 나오면 그 능력이 조금 오른다</b> — 3배 → 3.1배<div class="who" style="margin-top:3px">“3배에서 3.1배로 되거나”</div></td></tr>
@@ -5362,7 +5389,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <tr><td class="num mono who">10</td><td><b>이벤트는 3~4일마다 돈다.</b> 못 끝낸 것을 다음에 얻으려고 다시 오게<div class="who" style="margin-top:3px">“3~4일 단위로 쿨이 돌았으면 해”</div></td></tr>
   <tr><td class="num mono who">11</td><td><b>테마는 만든 것으로 사이클을 돌리고, 새 테마는 운영하며 늘린다</b><div class="who" style="margin-top:3px">“그 전까지는 만든 걸로 사이클 돌려야지”</div></td></tr>
   <tr><td class="num mono who">12</td><td><b>이벤트에서 얻은 손님이 기본 게임 골목에 등장한다.</b> 돈을 쓰면 빨리 모은다<div class="who" style="margin-top:3px">“기본 게임에 손님으로 등장할 거고”</div></td></tr>
-  <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#balance" style="color:var(--faint)">밸런스 기획</a> · 파랑 31</td></tr>
+  <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#balance" style="color:var(--faint)">밸런스 기획</a> · 파랑 33</td></tr>
   <tr><td class="num mono who">1</td><td><b>과녁: 챕터 하나 = 무과금 7일쯤 · 유료 4일쯤</b><div class="who" style="margin-top:3px">“최소 4일 아닐까 최대 7일 아닐까 … 맞출 수 있는 밸런스 조정 해줘”</div></td></tr>
   <tr><td class="num mono who">2</td><td><b>오프라인 기본 몫은 벌었을 것의 0.5배</b> — 옛 공식 그대로 살렸다<div class="who" style="margin-top:3px">“좋아”</div></td></tr>
   <tr><td class="num mono who">3</td><td><b>주사위 눈은 균등</b> — 1~6이 각각 ⅙. 스킬은 바닥만 올린다<div class="who" style="margin-top:3px">“오케이”</div></td></tr>
@@ -5372,28 +5399,30 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <tr><td class="num mono who">7</td><td><b>돈은 1원부터 시작한다</b> — 표기는 줄임말(K · M · B …)<div class="who" style="margin-top:3px">“1원부터 시작해도 됨”</div></td></tr>
   <tr><td class="num mono who">8</td><td><b>돈 그림은 금색 동전에 나뭇잎</b><div class="who" style="margin-top:3px">“금색동전에 나뭇잎 모양을 박자”</div></td></tr>
   <tr><td class="num mono who">9</td><td><b>스킬 값 곡선은 20 · 200 · 1,000</b> — 1~10레벨은 20씩, 11~20레벨은 80씩. <b>여덟이 값이 다 같고 효과만 다르다</b><div class="who" style="margin-top:3px">“10레벨에 200개 … 마지막은 1000개로”</div></td></tr>
-  <tr><td class="num mono who">10</td><td><b>보석은 보라색 계열</b> — 감빛(주황)·풀빛과 안 겹친다<div class="who" style="margin-top:3px">“보라색계열로 해줘”</div></td></tr>
-  <tr><td class="num mono who">11</td><td><b>손님 간격 밑값 3초</b> · <b>제일 빨라도 1.44초</b>. 1초 미만은 없다<div class="who" style="margin-top:3px">“1.44가 제일 빠르게 목표로”</div></td></tr>
-  <tr><td class="num mono who">12</td><td><b>손님을 빨리 오게 하는 것은 전부 더하기</b>다 — 곱하면 폭발한다<div class="who" style="margin-top:3px">“퍼센트 계산을 다시하면 될 듯”</div></td></tr>
-  <tr><td class="num mono who">13</td><td><b>별마다 ×1.15 + 물건 바뀔 때 ×2</b>를 같이 쓴다<div class="who" style="margin-top:3px">“너 제안에 동의하되 … 그냥 두배해도 괜찮을거야”</div></td></tr>
-  <tr><td class="num mono who">14</td><td><b>제조시간은 물건 번호로 계단</b> — 1~5번 3초 · 6~10번 6초 · 11~15번 12초 · 16~20번 16초<div class="who" style="margin-top:3px">“이렇게 고정해버리고”</div></td></tr>
-  <tr><td class="num mono who">15</td><td><b>무과금 기준을 조금 빡세게 잡는다</b> — 광고·멤버십·손님 배수가 그 위에 얹힌다<div class="who" style="margin-top:3px">“조금 빡새게 잡아도 된다 생각해”</div></td></tr>
-  <tr><td class="num mono who">16</td><td><b>일꾼이 밀리면 피곤한 이모지가 뜬다. 강요는 안 한다</b> — 창도 화살표도 없다<div class="who" style="margin-top:3px">“타이밍도 주되 강요는 하지 말자”</div></td></tr>
-  <tr><td class="num mono who">17</td><td><b>이모지는 너구리 위에만 뜬다.</b> 작업대에는 안 띄운다 — 물건이 말하면 이상하다<div class="who" style="margin-top:3px">“작업대가 말하는 꼴이니”</div></td></tr>
-  <tr><td class="num mono who">18</td><td><b>일꾼 값으로 레벨을 막지 않는다.</b> 싸게 두고 <b>필요해질 때 사게</b> 한다<div class="who" style="margin-top:3px">“저렴해도 좋다는 건 나도 찬성”</div></td></tr>
-  <tr><td class="num mono who">19</td><td><b>짜증은 손님 100명에 10% 미만</b>이 과녁이다<div class="who" style="margin-top:3px">“100명 방문이라면 10% 미만이었으면”</div></td></tr>
-  <tr><td class="num mono who">20</td><td><b>매장 카드에서 일꾼 자리를 밝게 안 한다.</b> 대신 <b>너구리가 처음 짜증 낼 때 일꾼 채용 가이드</b>가 열린다<div class="who" style="margin-top:3px">“밝게 보여줄 필요는 없어 … 처음 짜증 낼 경우 일꾼 채용 가이드가 열리는 게”</div></td></tr>
-  <tr><td class="num mono who">21</td><td><b>매장 별 하나에 보석 1개</b> — 매장당 100개 · <b>챕터당 2,000개</b><div class="who" style="margin-top:3px">“별 1개당 보석 1개를 준다면”</div></td></tr>
-  <tr><td class="num mono who">22</td><td><b>재화는 돈과 보석 둘뿐이다.</b> 별 보석을 꾸미기 전용으로 나누지 않는다 — 재화를 늘리는 건 콘텐츠가 늘 때 본다<div class="who" style="margin-top:3px">“구분해야 할 재화가 너무 많아”</div></td></tr>
-  <tr><td class="num mono who">23</td><td><b>스킬 마스터가 한 달 남짓에 끝나도 상관없다.</b> 챕터·이벤트·아이템이 계속 늘어난다 — <b>게임의 끝은 지금 만들 게 아니다</b> <span style="color:var(--faint)">(그 뒤 값 곡선이 올라 지금은 133일)</span><div class="who" style="margin-top:3px">“45일 만에 끝나도 상관없다”</div></td></tr>
-  <tr><td class="num mono who">24</td><td><b>“며칠”만 적지 않는다.</b> <b>하루 몇 번 들어와 모두 몇 분</b>인지를 같이 적는다<div class="who" style="margin-top:3px">“며칠 기준으로 하지 말자 … 어느 기준인지 감이 안 잡혀”</div></td></tr>
-  <tr><td class="num mono who">25</td><td><b>오프라인 상한은 스킬로만 열린다</b> — 날짜가 지난다고 저절로 안 열린다. 시작은 2시간<div class="who" style="margin-top:3px">“스킬로만 열리는 게 맞는 거 같아”</div></td></tr>
-  <tr><td class="num mono who">26</td><td><b>오프라인 보상은 실제 떠나 있던 시간만큼만</b> — 5분 나갔으면 5분치<div class="who" style="margin-top:3px">“재접속까지 5분이 걸렸다면 5분치만”</div></td></tr>
-  <tr><td class="num mono who">27</td><td><b>오프라인 문턱 60초.</b> 초 단위로 나갔다 오면 오프라인으로 안 치고 <b>100% 주고 팝업도 안 띄운다</b><div class="who" style="margin-top:3px">“초 단위는 보상 주지 말자 … 그냥 100% 줘도 됨”</div></td></tr>
-  <tr><td class="num mono who">28</td><td><b>오프라인 상한을 24시간으로 안 늘린다.</b> 상한이 길면 <b>영영 안 여는 앱</b>이 된다<div class="who" style="margin-top:3px">“24시로 하면 진짜 영영 잊혀지는 앱일 수 있다”</div></td></tr>
-  <tr><td class="num mono who">29</td><td><b>오프라인 상한은 리텐션 손잡이다</b> — 하루에 몇 번은 들어오게 만드는 것이 목표다<div class="who" style="margin-top:3px">“하루에 몇 번은 계속 접속하게 만드는 게 목표”</div></td></tr>
-  <tr><td class="num mono who">30</td><td><b>시계 조작은 싼 방어만 한다</b> — 부팅 이후 흐른 시간을 같이 적는 것까지. <b>서버는 안 세운다</b><div class="who" style="margin-top:3px">“체리피커는 다 막을 순 없지 1,000명 중 몇이겠어”</div></td></tr>
-  <tr><td class="num mono who">31</td><td><b>오프라인 상한은 2시간에서 시작해 스킬로 8시간까지</b> — 레벨당 +18분. 자는 시간에 맞추면 <b>하루 3번</b>이 저절로 강제된다<div class="who" style="margin-top:3px">“그래 8시간으로 끝내자”</div></td></tr>
+  <tr><td class="num mono who">10</td><td><b>🎲 스킬은 바닥을 올리는 게 아니라 <b>확률을 기울인다</b></b> — ⚀은 줄고 ⚅은 <b>16.7% → 50%</b>. 20레벨이라 <b>여덟이 다 같은 곡선을 쓴다</b><div class="who" style="margin-top:3px">“⚀ 나올 확률 낮추고 2~6은 조금씩 늘림 … 최종은 6이 50%까지”</div></td></tr>
+  <tr><td class="num mono who">11</td><td><b>제조시간 바닥은 0.5배</b>이고 <b>50레벨에 닿는다</b> — 물건이 바뀔 때마다 리듬이 생긴다<div class="who" style="margin-top:3px">“0.8배가 아닌 0.5배라는 게 그래…”</div></td></tr>
+  <tr><td class="num mono who">12</td><td><b>보석은 보라색 계열</b> — 감빛(주황)·풀빛과 안 겹친다<div class="who" style="margin-top:3px">“보라색계열로 해줘”</div></td></tr>
+  <tr><td class="num mono who">13</td><td><b>손님 간격 밑값 3초</b> · <b>제일 빨라도 1.44초</b>. 1초 미만은 없다<div class="who" style="margin-top:3px">“1.44가 제일 빠르게 목표로”</div></td></tr>
+  <tr><td class="num mono who">14</td><td><b>손님을 빨리 오게 하는 것은 전부 더하기</b>다 — 곱하면 폭발한다<div class="who" style="margin-top:3px">“퍼센트 계산을 다시하면 될 듯”</div></td></tr>
+  <tr><td class="num mono who">15</td><td><b>별마다 ×1.15 + 물건 바뀔 때 ×2</b>를 같이 쓴다<div class="who" style="margin-top:3px">“너 제안에 동의하되 … 그냥 두배해도 괜찮을거야”</div></td></tr>
+  <tr><td class="num mono who">16</td><td><b>제조시간은 물건 번호로 계단</b> — 1~5번 3초 · 6~10번 6초 · 11~15번 12초 · 16~20번 16초<div class="who" style="margin-top:3px">“이렇게 고정해버리고”</div></td></tr>
+  <tr><td class="num mono who">17</td><td><b>무과금 기준을 조금 빡세게 잡는다</b> — 광고·멤버십·손님 배수가 그 위에 얹힌다<div class="who" style="margin-top:3px">“조금 빡새게 잡아도 된다 생각해”</div></td></tr>
+  <tr><td class="num mono who">18</td><td><b>일꾼이 밀리면 피곤한 이모지가 뜬다. 강요는 안 한다</b> — 창도 화살표도 없다<div class="who" style="margin-top:3px">“타이밍도 주되 강요는 하지 말자”</div></td></tr>
+  <tr><td class="num mono who">19</td><td><b>이모지는 너구리 위에만 뜬다.</b> 작업대에는 안 띄운다 — 물건이 말하면 이상하다<div class="who" style="margin-top:3px">“작업대가 말하는 꼴이니”</div></td></tr>
+  <tr><td class="num mono who">20</td><td><b>일꾼 값으로 레벨을 막지 않는다.</b> 싸게 두고 <b>필요해질 때 사게</b> 한다<div class="who" style="margin-top:3px">“저렴해도 좋다는 건 나도 찬성”</div></td></tr>
+  <tr><td class="num mono who">21</td><td><b>짜증은 손님 100명에 10% 미만</b>이 과녁이다<div class="who" style="margin-top:3px">“100명 방문이라면 10% 미만이었으면”</div></td></tr>
+  <tr><td class="num mono who">22</td><td><b>매장 카드에서 일꾼 자리를 밝게 안 한다.</b> 대신 <b>너구리가 처음 짜증 낼 때 일꾼 채용 가이드</b>가 열린다<div class="who" style="margin-top:3px">“밝게 보여줄 필요는 없어 … 처음 짜증 낼 경우 일꾼 채용 가이드가 열리는 게”</div></td></tr>
+  <tr><td class="num mono who">23</td><td><b>매장 별 하나에 보석 1개</b> — 매장당 100개 · <b>챕터당 2,000개</b><div class="who" style="margin-top:3px">“별 1개당 보석 1개를 준다면”</div></td></tr>
+  <tr><td class="num mono who">24</td><td><b>재화는 돈과 보석 둘뿐이다.</b> 별 보석을 꾸미기 전용으로 나누지 않는다 — 재화를 늘리는 건 콘텐츠가 늘 때 본다<div class="who" style="margin-top:3px">“구분해야 할 재화가 너무 많아”</div></td></tr>
+  <tr><td class="num mono who">25</td><td><b>스킬 마스터가 한 달 남짓에 끝나도 상관없다.</b> 챕터·이벤트·아이템이 계속 늘어난다 — <b>게임의 끝은 지금 만들 게 아니다</b> <span style="color:var(--faint)">(그 뒤 값 곡선이 올라 지금은 141일)</span><div class="who" style="margin-top:3px">“45일 만에 끝나도 상관없다”</div></td></tr>
+  <tr><td class="num mono who">26</td><td><b>“며칠”만 적지 않는다.</b> <b>하루 몇 번 들어와 모두 몇 분</b>인지를 같이 적는다<div class="who" style="margin-top:3px">“며칠 기준으로 하지 말자 … 어느 기준인지 감이 안 잡혀”</div></td></tr>
+  <tr><td class="num mono who">27</td><td><b>오프라인 상한은 스킬로만 열린다</b> — 날짜가 지난다고 저절로 안 열린다. 시작은 2시간<div class="who" style="margin-top:3px">“스킬로만 열리는 게 맞는 거 같아”</div></td></tr>
+  <tr><td class="num mono who">28</td><td><b>오프라인 보상은 실제 떠나 있던 시간만큼만</b> — 5분 나갔으면 5분치<div class="who" style="margin-top:3px">“재접속까지 5분이 걸렸다면 5분치만”</div></td></tr>
+  <tr><td class="num mono who">29</td><td><b>오프라인 문턱 60초.</b> 초 단위로 나갔다 오면 오프라인으로 안 치고 <b>100% 주고 팝업도 안 띄운다</b><div class="who" style="margin-top:3px">“초 단위는 보상 주지 말자 … 그냥 100% 줘도 됨”</div></td></tr>
+  <tr><td class="num mono who">30</td><td><b>오프라인 상한을 24시간으로 안 늘린다.</b> 상한이 길면 <b>영영 안 여는 앱</b>이 된다<div class="who" style="margin-top:3px">“24시로 하면 진짜 영영 잊혀지는 앱일 수 있다”</div></td></tr>
+  <tr><td class="num mono who">31</td><td><b>오프라인 상한은 리텐션 손잡이다</b> — 하루에 몇 번은 들어오게 만드는 것이 목표다<div class="who" style="margin-top:3px">“하루에 몇 번은 계속 접속하게 만드는 게 목표”</div></td></tr>
+  <tr><td class="num mono who">32</td><td><b>시계 조작은 싼 방어만 한다</b> — 부팅 이후 흐른 시간을 같이 적는 것까지. <b>서버는 안 세운다</b><div class="who" style="margin-top:3px">“체리피커는 다 막을 순 없지 1,000명 중 몇이겠어”</div></td></tr>
+  <tr><td class="num mono who">33</td><td><b>오프라인 상한은 2시간에서 시작해 스킬로 8시간까지</b> — 레벨당 +18분. 자는 시간에 맞추면 <b>하루 3번</b>이 저절로 강제된다<div class="who" style="margin-top:3px">“그래 8시간으로 끝내자”</div></td></tr>
   <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#biz" style="color:var(--faint)">사업 기획</a> · 파랑 12</td></tr>
   <tr><td class="num mono who">1</td><td><b>광고는 붙일 수 있는 곳에 다 붙인다</b><div class="who" style="margin-top:3px">“붙일 수 있는 곳은 다 붙이고 싶은데”</div></td></tr>
   <tr><td class="num mono who">2</td><td><b>광고 없애기는 현금으로 판다.</b> 보석으로는 못 산다<div class="who" style="margin-top:3px">“무조건 현금”</div></td></tr>

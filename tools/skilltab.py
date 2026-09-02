@@ -13,8 +13,7 @@ LEDGER = Path(__file__).resolve().parent.parent / "ledger" / "rm.html"
 S = N["스킬"]["목록"]
 
 _K = N["스킬"]["값곡선"]
-def cost(s, lv):                                   # 그 레벨 하나를 사는 값
-    if "값" in s: return s["값"][lv - 1]           # 주사위는 곡선을 안 쓴다
+def cost(s, lv):                                   # 그 레벨 하나를 사는 값 — 여덟이 다 같다
     k = _K["꺾는_레벨"]
     return _K["기울기1"] * lv if lv <= k else \
            _K["기울기1"] * k + _K["기울기2"] * (lv - k)
