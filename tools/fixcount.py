@@ -35,10 +35,15 @@ for sid, body in re.findall(r'<section id="(\w+)">(.*?)</section>', html, re.S):
         html = html.replace(body, body.replace(head.group(0), head.group(1) + str(real) + head.group(3), 1), 1)
 
     # 옆 목록
-    nav = re.search(r'(<a href="#%s"><span>[^<]*</span><span class="c[^"]*">)(\d+)(</span></a>)' % sid, html)
-    if nav and nav.group(2) != str(real):
-        bad.append(f"{sid} 옆 목록 {nav.group(2)} → {real}")
-        html = html.replace(nav.group(0), nav.group(1) + str(real) + nav.group(3), 1)
+    # 숫자만 고치고 빛깔을 손으로 두었더니 어긋났다 — 밸런스가 49개인데 감빛(0개)이었다.
+    # 빛깔도 여기서 만든다(규칙 3).
+    nav = re.search(r'(<a href="#%s"><span>[^<]*</span><span class=")(c[^"]*)(">)(\d+)(</span></a>)' % sid, html)
+    if nav:
+        want = "c done" if real else "c zero"
+        if nav.group(4) != str(real) or nav.group(2) != want:
+            bad.append(f"{sid} 옆 목록 {nav.group(2)}/{nav.group(4)} → {want}/{real}")
+            html = html.replace(nav.group(0),
+                                nav.group(1) + want + nav.group(3) + str(real) + nav.group(5), 1)
 
     print(f"{sid:9} 픽스 {real}")
 
