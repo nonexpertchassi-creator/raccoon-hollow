@@ -204,14 +204,14 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <nav>
     <a href="#now"><span>지금 어디</span></a>
     <a href="#keep"><span>남긴 것</span></a>
-    <a href="#open"><span>미결정 모음</span><span class="c">2</span></a>
+    <a href="#open"><span>미결정 모음</span><span class="c done">0</span></a>
     <div class="grp">기획 일곱 갈래</div>
     <a href="#story"><span>시나리오</span><span class="c done">24</span></a>
     <a href="#system"><span>시스템</span><span class="c done">25</span></a>
     <a href="#level"><span>레벨</span><span class="c done">22</span></a>
     <a href="#ux"><span>UX · UI</span><span class="c done">40</span></a>
     <a href="#content"><span>콘텐츠</span><span class="c done">12</span></a>
-    <a href="#balance"><span>밸런스</span><span class="c zero">35</span></a>
+    <a href="#balance"><span>밸런스</span><span class="c zero">40</span></a>
     <a href="#biz"><span>사업</span><span class="c done">12</span></a>
     <div class="grp">가진 것</div>
     <a href="#formula"><span>공식</span></a>
@@ -317,14 +317,8 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <b>손으로 옮겨 적으면 반드시 한쪽이 어긋나기 때문이다</b>(규칙 3).
   고칠 것이 있으면 <b>갈래 쪽 픽스 표를 고친다.</b></div>
 <!-- AUTO:open -->
-  <div class="zero">아직 승인 안 받은 것 <b>2</b></div>
-  <p class="sub"><b>전부 내가 판단한 것이다.</b> 유저가 <i>“그거 아니야”</i> 한 마디면 물린다.</p>
-  <div class="tw"><table>
-    <tr><th>어느 갈래</th><th>내가 정한 것</th></tr>
-  <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#balance" style="color:var(--faint)">밸런스 기획</a> · 노랑 2</td></tr>
-  <tr><td class="who" style="white-space:nowrap">🟨</td><td><b>매장 카드에서 지금 쓸모 있는 일꾼 자리만 밝게</b> 보여준다<div class="who" style="margin-top:3px">내 판단</div></td></tr>
-  <tr><td class="who" style="white-space:nowrap">🟨</td><td><b>별 보석은 그 챕터를 꾸미는 데만 쓴다</b>(간판·가로등, 매장당 100). 스킬·뽑기는 도감·미션에서 → 마스터 <b>138일</b><div class="who" style="margin-top:3px">내 판단 — 유저 승인 전</div></td></tr>
-  </table></div>
+  <div class="zero done">아직 승인 안 받은 것 <b>0</b></div>
+  <div class="note"><b>남은 노랑이 없다.</b> 낸 것을 유저가 다 물렸거나 승인했다.</div>
   <div class="note"><b>아무도 안 정한 것</b>(내가 판단조차 안 한 것)은 갈래마다 <b>「아직 안 정한 것」</b>에 따로 있다 — 그건 성격이 달라서 안 섞는다.</div>
 <!-- /AUTO:open -->
 </section>
@@ -3796,7 +3790,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
 <section id="balance">
   <h2>밸런스 기획</h2>
   <p class="sub">숫자를 조율하고, <b>짐작하지 말고 잰다.</b></p>
-  <div class="zero">픽스 <b>35</b> · 2026-09-02 새벽 초안</div>
+  <div class="zero">픽스 <b>40</b> · 2026-09-02 새벽 초안</div>
   <div class="tw"><table class="fx">
     <tr><th></th><th>정한 것</th><th>근거</th></tr>
     <tr><td>🟦</td><td><b>과녁: 챕터 하나 = 무과금 7일쯤 · 유료 4일쯤</b></td><td class="who">“최소 4일 아닐까 최대 7일 아닐까 … 맞출 수 있는 밸런스 조정 해줘”</td></tr>
@@ -3832,13 +3826,18 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <tr><td>🟩</td><td><b>여정 평균 3.1%</b> — 700레벨까지 0%, 751~1000레벨만 25%</td><td class="who">일꾼 4 기준 · 계산</td></tr>
     <tr><td>🟩</td><td><b>그 25%는 레벨만 올려도 풀린다</b> — 800레벨이면 0%. 보석은 “빨리”를 살 뿐이다</td><td class="who">제조시간이 46레벨 동안 반으로 준다</td></tr>
     <tr><td>🟩</td><td><b>생산속도와 등장률이 서로를 부른다</b> — 손님을 늘리면 다시 밀리고, 속도를 올리면 풀린다</td><td class="who">노리고 짠 게 아니라 저절로 나왔다</td></tr>
-    <tr><td>🟨</td><td><b>매장 카드에서 지금 쓸모 있는 일꾼 자리만 밝게</b> 보여준다</td><td class="who">내 판단</td></tr>
+    <tr><td>🟦</td><td><b>매장 카드에서 일꾼 자리를 밝게 안 한다.</b> 대신 <b>너구리가 처음 짜증 낼 때 일꾼 채용 가이드</b>가 열린다</td><td class="who">“밝게 보여줄 필요는 없어 … 처음 짜증 낼 경우 일꾼 채용 가이드가 열리는 게”</td></tr>
     <tr><td>🟩</td><td><b>제조시간을 넣고도 과녁에 들었다</b> — 무과금 <b>7.3일</b> · 유료 <b>4.9일</b></td><td class="who">운 번호 11개 · <code>tools/pace2.py</code></td></tr>
     <tr><td>🟩</td><td><b>비용 증가율이 1.0425 → 1.056</b>으로 올랐다</td><td class="who">제조가 막으니 더 천천히 커진다</td></tr>
     <tr><td>🟦</td><td><b>매장 별 하나에 보석 1개</b> — 매장당 100개 · <b>챕터당 2,000개</b></td><td class="who">“별 1개당 보석 1개를 준다면”</td></tr>
     <tr><td>🟩</td><td><b>그러면 무과금이 하루 425개다</b> — 내가 낸 “하루 40개”는 <b>10배 틀렸다</b></td><td class="who">별 2,000 + 도감 800 + 미션·광고 175</td></tr>
     <tr><td>🟩</td><td><b>다 섞어 쓰면 스킬 마스터가 45일에 끝난다</b> — 5챕터를 다 밀면 마스터의 77%가 손에 있다</td><td class="who">19,244 ÷ 2,975</td></tr>
-    <tr><td>🟨</td><td><b>별 보석은 그 챕터를 꾸미는 데만 쓴다</b>(간판·가로등, 매장당 100). 스킬·뽑기는 도감·미션에서 → 마스터 <b>138일</b></td><td class="who">내 판단 — 유저 승인 전</td></tr>
+    <tr><td>🟦</td><td><b>재화는 돈과 보석 둘뿐이다.</b> 별 보석을 꾸미기 전용으로 나누지 않는다 — 재화를 늘리는 건 콘텐츠가 늘 때 본다</td><td class="who">“구분해야 할 재화가 너무 많아”</td></tr>
+    <tr><td>🟦</td><td><b>스킬 마스터가 45일이어도 상관없다.</b> 챕터·이벤트·아이템이 계속 늘어난다 — <b>게임의 끝은 지금 만들 게 아니다</b></td><td class="who">“45일 만에 끝나도 상관없다”</td></tr>
+    <tr><td>🟦</td><td><b>“며칠”만 적지 않는다.</b> <b>하루 몇 번 들어와 모두 몇 분</b>인지를 같이 적는다</td><td class="who">“며칠 기준으로 하지 말자 … 어느 기준인지 감이 안 잡혀”</td></tr>
+    <tr><td>🟩</td><td><b>접속 시간은 거의 안 움직인다</b> — 하루 5분을 200분으로 <b>40배</b> 해도 7.3일 → 6.9일</td><td class="who">운 번호 11개 · <code>--mins</code></td></tr>
+    <tr><td>🟩</td><td><b>진짜 레버는 하루 몇 번 들어오나</b> — 1번이면 11.3일, 6번이면 5.3일. 오프라인을 <b>걷어 가는 횟수</b>다</td><td class="who">운 번호 11개 · <code>--sess</code></td></tr>
+    <tr><td>🟩</td><td><b>오프라인 최대 시간 스킬은 규칙 5를 지킨다</b> — 상한 2시간이면 9.5일, 12시간이면 6.3일</td><td class="who">운 번호 11개 · <code>--cap</code></td></tr>
   </table></div>
 
   <h3>피곤한 일꾼 — 강요 말고 눈치채게</h3>
@@ -4344,31 +4343,27 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <tr><td><b>합</b>(7일)</td><td class="num mono"><b>2,975</b></td><td class="num mono"><b>하루 425개</b></td></tr>
   </table></div>
 
-  <h3>브레이크 — 별 보석은 <b>수입이 아니라 재고</b>다</h3>
-  <div class="note warn"><b>그대로 두면 스킬 여덟 마스터가 45일에 끝난다.</b>
-  마스터가 19,244개인데 챕터마다 2,975개가 들어오니 <b>6.5챕터</b>다.
-  <b>“1년이면 거의 다 간다”고 적어 둔 줄이 한 달 반으로 줄었다.</b></div>
-  <div class="note warn"><b>더 큰 문제는 낼 때 챕터가 5개라는 것이다.</b>
-  5챕터를 다 밀면 35일에 <b>14,875개</b>가 손에 있다 — <b>마스터의 77%</b>다.
-  그러면 <b>콘텐츠 끝에 선 사람이 살 것이 없다.</b> 보석을 살 이유가 거기서 사라진다.</div>
-  <div class="note"><b>왜 이런 일이 생기나.</b>
-  <b>스킬은 영구적이고 여덟 개뿐이라 바닥이 있다.</b>
-  <b>별 보석은 챕터에 묶여 있어서 챕터가 떨어지면 같이 멈춘다.</b>
-  바닥 있는 것에 재고를 통째로 부으면 <b>바닥이 금방 보인다</b> — 지금이 그 꼴이다.</div>
-
-  <h3>어디에 붙이나 — 두 갈래를 재 봤다</h3>
-  <div class="tw"><table>
-    <tr><th></th><th>별 2,000이 가는 곳</th><th class="num mono">챕터당</th><th class="num mono">마스터까지</th></tr>
-    <tr><td><b>가</b></td><td>다 섞어 쓴다 (스킬에도 쓴다)</td><td class="num mono">2,975</td><td class="num mono">45일</td></tr>
-    <tr><td><b>나</b></td><td><b>별은 그 챕터를 꾸미는 데만</b> — 간판 · 가로등</td><td class="num mono">975</td><td class="num mono"><b>138일</b></td></tr>
-  </table></div>
-  <div class="note"><b>「나」를 민다.</b> <b>별 2,000을 매장 20개로 나누면 매장당 100개</b>고,
-  그게 <b>간판 2단 올리고 가로등 하나 다는 값</b>이다.
-  <b>챕터마다 별이 2,000 나오고, 챕터마다 매장 20개를 새로 꾸며야 한다</b> — 짝이 저절로 맞는다.
-  <b>재고가 안 쌓이니 바닥도 안 보인다.</b></div>
-  <div class="note"><b>스킬과 뽑기는 나머지 975로 간다</b>(도감 800 + 미션·광고 175).
-  그러면 마스터가 <b>138일 ≈ 넉 달 반</b>이고, 5챕터를 다 밀어도 <b>4,875개</b>라
-  <b>마스터의 4분의 1</b>이다 — <b>콘텐츠 끝에서도 살 것이 남는다.</b></div>
+  <h3>브레이크를 냈고 <b>유저가 물렸다</b> — 잘 물렸다</h3>
+  <div class="note warn"><b>내가 낸 걱정:</b> 그대로 두면 스킬 여덟 마스터(19,244)가
+  챕터 6.5개 <b>45일</b>에 끝난다. 낼 때 챕터가 5개니 다 밀면 <b>마스터의 77%</b>가 손에 있고,
+  그러면 <b>콘텐츠 끝에 선 사람이 살 것이 없다.</b>
+  그래서 <b>별 보석은 그 챕터를 꾸미는 데만(간판·가로등) 쓰자</b>고 냈다 — 그러면 마스터가 138일이 된다.</div>
+  <div class="note"><b>유저가 둘 다 물렸다.</b>
+  <i>“<b>45일 만에 끝나도 상관없다.</b> 챕터는 계속 늘릴 거고 이벤트도 계속 돌 거임 …
+  플레이 시간을 늘릴 콘텐츠가 기능은 계속 추가할 수 있음.
+  물론 <b>게임의 끝을 만드는 것도 중요하지만 지금은 아니지</b>.”</i><br>
+  <i>“별 보석은 그 챕터를 꾸미는 데만 쓴다는 <b>나는 반대.</b>
+  그럼 <b>구분해야 할 재화가 너무 많아.</b>
+  재화 종류를 늘리는 건 <b>나중에 콘텐츠가 늘거나 또 다른 기능이 들어갈 때</b> 생각하면 좋을 듯.”</i></div>
+  <div class="note"><b>왜 유저가 맞았나.</b>
+  내가 잰 벽은 <b>지금 있는 것만으로 세운 벽</b>이었다.
+  스킬 여덟은 <b>낼 때 여덟</b>이지 끝이 아니고 챕터도 5개가 끝이 아닌데,
+  <b>“더 안 늘어난다”를 내가 몰래 가정했다.</b> 그 가정은 유저가 세운 적이 없다.
+  게다가 재화를 하나 더 나누는 값은 <b>영원히 치른다</b> —
+  화면마다 어느 보석인지 말해야 하고 유저는 평생 헷갈린다.
+  <b>당장의 벽 하나를 막으려고 영원한 값을 치를 뻔했다.</b></div>
+  <div class="note"><b>그래서 재화는 돈과 보석 둘뿐이고 보석은 어디에 써도 된다.</b>
+  별 보석도 스킬에 쓰고 뽑기에도 쓴다. <b>45일은 문제가 아니다.</b></div>
 
   <h3>2,000개로 뭘 사나 — 지금 표로 재면</h3>
   <p class="sub">유저 물음: <i>“<b>2,000개로 할 수 있는 패턴이 어떤 걸까?</b>
@@ -4386,8 +4381,64 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <b>생산속도 8레벨이 751레벨의 짜증을 푸는 값</b>인데(앞에서 쟀다),
   그걸 <b>첫 챕터에 골고루 사다가 그냥 지나쳐 버린다.</b>
   <b>“조금만 더 하면 풀리겠구나”가 살 자리가 없어진다</b> — 이것도 「나」로 가야 하는 이유다.</div>
-  <div class="note warn"><b>아직 정한 것이 아니다.</b> 「나」는 <b>내 판단</b>이고
-  유저가 <i>“그거 아니야”</i> 하면 물린다. <b>별 1개당 보석 1개</b>는 유저가 낸 것이라 파랑이다.</div>
+  <div class="note"><b>한 챕터 치고 꽤 많이 산다.</b>
+  <b>생산속도 8레벨이 751레벨의 짜증을 푸는 값</b>인데(앞에서 쟀다) 그 근처까지 간다.
+  <b>다만 이건 “골고루 부었을 때”</b>고, 실제로는 <b>뽑기가 같이 빨아들인다</b> —
+  뽑기는 바닥이 없어서 <b>남는 보석이 갈 곳</b>이 된다.
+  <b>스킬과 뽑기가 보석을 어떻게 나눠 가지는지는 아직 안 쟀다.</b></div>
+
+  <h3>“며칠”은 기준이 아니었다 — 재 보니 <b>접속 시간도 아니었다</b></h3>
+  <p class="sub">유저 말: <i>“<b>며칠 기준으로 하지 말자 시간으로 진행하는 게 맞을 거 같음.</b>
+  이유는 <b>유저가 하루 플레이를 몇 분 할지도 모르는데</b> 45일에 끝난다는
+  <b>어느 기준인지 감이 안 잡혀.</b>”</i></p>
+  <div class="note warn"><b>맞는 지적이었고, 나는 그 기준을 숨겨 두고 있었다.</b>
+  모형은 내내 <b>하루 세 번(아침 10분 · 점심 5분 · 밤 10분) 모두 25분</b>을 치고 돌았는데
+  <b>장부에는 “7.3일”만 적혀 있었다.</b> 그래서 도구가 <b>접속 시간을 같이 내도록</b> 고쳤다.</div>
+  <pre>무과금: 흐른 날 <b>7.3일</b> · 손에 잡고 있던 시간 <b>3.1시간</b>   (하루 3번 · 모두 25분)
+유료  : 흐른 날 <b>4.9일</b> · 손에 잡고 있던 시간 <b>2.1시간</b></pre>
+
+  <h3>그런데 접속 시간을 <b>40배</b> 해도 거의 안 움직인다</h3>
+  <div class="tw"><table>
+    <tr><th>하루에 손에 잡고 있는 시간</th><th class="num mono">흐른 날</th><th class="num mono">쌓인 접속</th></tr>
+    <tr><td>5분</td><td class="num mono">7.3일</td><td class="num mono">0.6시간</td></tr>
+    <tr><td><b>25분</b> (기본)</td><td class="num mono">7.3일</td><td class="num mono">3.1시간</td></tr>
+    <tr><td>50분</td><td class="num mono">6.9일</td><td class="num mono">6.1시간</td></tr>
+    <tr><td>200분</td><td class="num mono">6.9일</td><td class="num mono">23.5시간</td></tr>
+  </table></div>
+  <div class="note"><b>40배를 해도 7.3일이 6.9일이다.</b>
+  <b>아이들 게임이라 수입의 대부분이 오프라인에서 나오기 때문</b>이다 —
+  오프라인은 <b>흐른 시간</b>에 매달려 있지 손에 잡고 있던 시간에 안 매달린다.
+  그러니 <b>“몇 시간 하면 끝나나”로 적으면 오히려 거짓말이 된다.</b></div>
+
+  <h3>진짜 레버는 <b>하루에 몇 번 들어오나</b>였다</h3>
+  <div class="tw"><table>
+    <tr><th>하루 접속 횟수 <span style="font-weight:400;color:var(--faint)">(모두 25분은 그대로)</span></th><th class="num mono">흐른 날</th></tr>
+    <tr><td>1번</td><td class="num mono">11.3일</td></tr>
+    <tr><td>2번</td><td class="num mono">8.3일</td></tr>
+    <tr><td><b>3번</b> (기본)</td><td class="num mono"><b>7.3일</b></td></tr>
+    <tr><td>4번</td><td class="num mono">6.3일</td></tr>
+    <tr><td>6번</td><td class="num mono">5.3일</td></tr>
+  </table></div>
+  <div class="note"><b>같은 25분인데 나눠 들어오면 두 배 넘게 빨라진다.</b>
+  <b>오프라인은 걷어 갈 때만 들어오고 상한이 있기 때문</b>이다 —
+  하루 한 번만 들어오면 <b>24시간 중 12시간치를 버린다.</b>
+  <b>그래서 앞으로 장부에는 “며칠”과 함께 “하루 몇 번 · 모두 몇 분”을 같이 적는다.</b></div>
+
+  <h3>덤 — 오프라인 시간 스킬이 규칙 5를 지키는지 그 김에 쟀다</h3>
+  <div class="tw"><table>
+    <tr><th>오프라인 최대 시간</th><th class="num mono">흐른 날</th><th></th></tr>
+    <tr><td>2시간 <span style="color:var(--faint)">(스킬 0레벨)</span></td><td class="num mono">9.5일</td><td>—</td></tr>
+    <tr><td>4시간</td><td class="num mono">7.5일</td><td>−21%</td></tr>
+    <tr><td>6시간</td><td class="num mono">7.3일</td><td>−23%</td></tr>
+    <tr><td>12시간 <span style="color:var(--faint)">(마스터)</span></td><td class="num mono">6.3일</td><td><b>−34%</b></td></tr>
+  </table></div>
+  <div class="note"><b>산 만큼 반드시 이득이다</b>(규칙 5). 마스터하면 챕터가 <b>3분의 1 짧아진다.</b></div>
+  <div class="note warn"><b>어긋난 곳을 하나 찾았다.</b>
+  모형은 오프라인 상한을 <b>날짜로</b> 열고 있었다(2일까지 2시간 → 4일까지 6시간 → 그 뒤 12시간).
+  그런데 장부는 <b>스킬로</b> 연다고 적혀 있다.
+  <b>둘 중 하나가 틀렸고, 지금 잰 7.3일은 “날짜로 저절로 열린다”를 깔고 있다.</b>
+  <b>스킬로만 열린다면 무과금은 9.5일에 가깝다.</b>
+  <span style="color:var(--mid)">(어느 쪽이 맞는지는 유저에게 물어야 한다 — 규칙 7)</span></div>
 
   <h3>숫자 말고 느낌으로 — <code>tools/pace.py --feel</code></h3>
   <p class="sub">유저 말: <i>“밸런스 보는데 <b>확실히 내가 수학은 많이 약하긴 하네.</b>”</i></p>
@@ -4997,7 +5048,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   그래서 <b>도구가 갈래의 픽스 표를 읽어서 여기에 다시 쓴다</b> —
   <b>문서를 늘리지 말고 뽑아 쓴다</b>(규칙 3).</div>
 <!-- AUTO:blue -->
-  <div class="zero done">정해진 것 <b>154</b></div>
+  <div class="zero done">정해진 것 <b>158</b></div>
   <div class="tw"><table>
     <tr><th></th><th>정한 것 · 유저의 말</th></tr>
   <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#story" style="color:var(--faint)">시나리오 기획</a> · 파랑 24</td></tr>
@@ -5129,7 +5180,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <tr><td class="num mono who">10</td><td><b>이벤트는 3~4일마다 돈다.</b> 못 끝낸 것을 다음에 얻으려고 다시 오게<div class="who" style="margin-top:3px">“3~4일 단위로 쿨이 돌았으면 해”</div></td></tr>
   <tr><td class="num mono who">11</td><td><b>테마는 만든 것으로 사이클을 돌리고, 새 테마는 운영하며 늘린다</b><div class="who" style="margin-top:3px">“그 전까지는 만든 걸로 사이클 돌려야지”</div></td></tr>
   <tr><td class="num mono who">12</td><td><b>이벤트에서 얻은 손님이 기본 게임 골목에 등장한다.</b> 돈을 쓰면 빨리 모은다<div class="who" style="margin-top:3px">“기본 게임에 손님으로 등장할 거고”</div></td></tr>
-  <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#balance" style="color:var(--faint)">밸런스 기획</a> · 파랑 19</td></tr>
+  <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#balance" style="color:var(--faint)">밸런스 기획</a> · 파랑 23</td></tr>
   <tr><td class="num mono who">1</td><td><b>과녁: 챕터 하나 = 무과금 7일쯤 · 유료 4일쯤</b><div class="who" style="margin-top:3px">“최소 4일 아닐까 최대 7일 아닐까 … 맞출 수 있는 밸런스 조정 해줘”</div></td></tr>
   <tr><td class="num mono who">2</td><td><b>오프라인 기본 몫은 벌었을 것의 0.5배</b> — 옛 공식 그대로 살렸다<div class="who" style="margin-top:3px">“좋아”</div></td></tr>
   <tr><td class="num mono who">3</td><td><b>주사위 눈은 균등</b> — 1~6이 각각 ⅙. 스킬은 바닥만 올린다<div class="who" style="margin-top:3px">“오케이”</div></td></tr>
@@ -5148,7 +5199,11 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <tr><td class="num mono who">16</td><td><b>이모지는 너구리 위에만 뜬다.</b> 작업대에는 안 띄운다 — 물건이 말하면 이상하다<div class="who" style="margin-top:3px">“작업대가 말하는 꼴이니”</div></td></tr>
   <tr><td class="num mono who">17</td><td><b>일꾼 값으로 레벨을 막지 않는다.</b> 싸게 두고 <b>필요해질 때 사게</b> 한다<div class="who" style="margin-top:3px">“저렴해도 좋다는 건 나도 찬성”</div></td></tr>
   <tr><td class="num mono who">18</td><td><b>짜증은 손님 100명에 10% 미만</b>이 과녁이다<div class="who" style="margin-top:3px">“100명 방문이라면 10% 미만이었으면”</div></td></tr>
-  <tr><td class="num mono who">19</td><td><b>매장 별 하나에 보석 1개</b> — 매장당 100개 · <b>챕터당 2,000개</b><div class="who" style="margin-top:3px">“별 1개당 보석 1개를 준다면”</div></td></tr>
+  <tr><td class="num mono who">19</td><td><b>매장 카드에서 일꾼 자리를 밝게 안 한다.</b> 대신 <b>너구리가 처음 짜증 낼 때 일꾼 채용 가이드</b>가 열린다<div class="who" style="margin-top:3px">“밝게 보여줄 필요는 없어 … 처음 짜증 낼 경우 일꾼 채용 가이드가 열리는 게”</div></td></tr>
+  <tr><td class="num mono who">20</td><td><b>매장 별 하나에 보석 1개</b> — 매장당 100개 · <b>챕터당 2,000개</b><div class="who" style="margin-top:3px">“별 1개당 보석 1개를 준다면”</div></td></tr>
+  <tr><td class="num mono who">21</td><td><b>재화는 돈과 보석 둘뿐이다.</b> 별 보석을 꾸미기 전용으로 나누지 않는다 — 재화를 늘리는 건 콘텐츠가 늘 때 본다<div class="who" style="margin-top:3px">“구분해야 할 재화가 너무 많아”</div></td></tr>
+  <tr><td class="num mono who">22</td><td><b>스킬 마스터가 45일이어도 상관없다.</b> 챕터·이벤트·아이템이 계속 늘어난다 — <b>게임의 끝은 지금 만들 게 아니다</b><div class="who" style="margin-top:3px">“45일 만에 끝나도 상관없다”</div></td></tr>
+  <tr><td class="num mono who">23</td><td><b>“며칠”만 적지 않는다.</b> <b>하루 몇 번 들어와 모두 몇 분</b>인지를 같이 적는다<div class="who" style="margin-top:3px">“며칠 기준으로 하지 말자 … 어느 기준인지 감이 안 잡혀”</div></td></tr>
   <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#biz" style="color:var(--faint)">사업 기획</a> · 파랑 12</td></tr>
   <tr><td class="num mono who">1</td><td><b>광고는 붙일 수 있는 곳에 다 붙인다</b><div class="who" style="margin-top:3px">“붙일 수 있는 곳은 다 붙이고 싶은데”</div></td></tr>
   <tr><td class="num mono who">2</td><td><b>광고 없애기는 현금으로 판다.</b> 보석으로는 못 산다<div class="who" style="margin-top:3px">“무조건 현금”</div></td></tr>
@@ -5217,6 +5272,17 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <h3>물린 노랑 — 하나씩</h3>
   <div class="tw"><table>
     <tr><th>내가 냈던 것</th><th>유저가 물린 말</th><th>왜 유저가 맞았나</th></tr>
+    <tr><td><b>별 보석은 꾸미기 전용으로 나누자</b> — 간판·가로등에만 쓰게 묶으려 했다</td>
+    <td><i>“나는 반대. 그럼 <b>구분해야 할 재화가 너무 많아</b>”</i></td>
+    <td>내가 잰 벽은 <b>지금 있는 것만으로 세운 벽</b>이었다 —
+    스킬 여덟도 챕터 5개도 <b>끝이 아닌데 “더 안 늘어난다”를 몰래 가정했다.</b>
+    게다가 <b>재화를 나누는 값은 영원히 치른다</b>(화면마다 어느 보석인지 말해야 한다).
+    <b>당장의 벽 하나를 막으려고 영원한 값을 치를 뻔했다</b></td></tr>
+    <tr><td><b>매장 카드에서 쓸모 있는 일꾼 자리만 밝게</b> 보여주자</td>
+    <td><i>“밝게 보여줄 필요는 없어. <b>그냥 유저가 플레이하다 보면 늘려야겠다만 하겠지</b>”</i></td>
+    <td>또 <b>가르치려 들었다.</b> 짜증 이모지가 이미 말하고 있는데
+    <b>같은 말을 화면에 한 번 더 얹으려 했다</b>(규칙 3의 화면판).
+    유저가 대신 낸 자리가 더 낫다 — <b>처음 짜증 낼 때 한 번만</b> 열리는 가이드</td></tr>
     <tr><td><b>매장의 색 5단계</b> — 물건 4개마다 색이 오르게 하자고 했다</td>
     <td><i>“어차피 그림이 20개인데 굳이 색까지 오바야”</i></td>
     <td><b>물건 그림 20개가 이미 진도를 말한다.</b> 색을 또 얹으면 같은 것을 두 번 말하고,

@@ -5,6 +5,10 @@
 #   python3 tools/pace2.py                 지금 값으로
 #   python3 tools/pace2.py --solve 7       과녁을 주면 비용 증가율을 찾는다
 #   python3 tools/pace2.py --feel          며칠째에 무슨 일이
+#   python3 tools/pace2.py --mins 50       하루 접속 분을 바꿔서 (기본 25분)
+#
+# "며칠"은 기준이 안 된다 — 하루에 몇 분 하는지에 매달려 있기 때문이다.
+# 그래서 흐른 날과 함께 <b>접속 시간</b>도 같이 낸다.
 
 import random, statistics, sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -22,6 +26,9 @@ C0    = a("--c0",   M["레벨_밑값"])
 G     = a("--g",    M["레벨당_비용증가"])
 TS    = a("--ts",   M["손님_간격_초"])
 SHOP_K, SHOP_M, ZONE_M = M["매장값_배수"], a("--shopm", M["매장1_값배수"]), M["구역값_배수"]
+MINS  = a("--mins", 25.0)          # 하루에 손에 잡고 있는 분
+SESS  = int(a("--sess", 3))        # 하루에 몇 번 들어오나. 오프라인을 몇 번 걷어 가느냐가 진짜 레버다
+CAP   = a("--cap", 0)              # 오프라인 최대 시간을 못 박는다. 0이면 예전처럼 날짜로 늘어난다
 OFF_W = N["오프라인"]["기본_몫"]
 FLOOR, PER = _C["바닥"], _C["레벨마다"]
 
@@ -104,9 +111,15 @@ def run(seed, paid, log=None):
             money -= c
             if kind == "w": W[i] += 1
             else: L[i] = to
-    last, sess = 0.0, [(7.5,10),(12.5,5),(22.5,10)]
+    if SESS == 3:                         # 기본은 아침·점심·밤
+        k = MINS / 25.0
+        sess = [(7.5, 10*k), (12.5, 5*k), (22.5, 10*k)]
+    else:                                 # 그 밖에는 고르게 벌린다
+        sess = [(7.5 + 24.0*i/SESS, MINS/SESS) for i in range(SESS)]
+    last = 0.0
+    online = 0.0                          # 실제로 손에 잡고 있던 분
     for day in range(120):
-        cap = 12 if paid else (2 if day < 2 else 6 if day < 4 else 12)
+        cap = CAP if CAP else (12 if paid else (2 if day < 2 else 6 if day < 4 else 12))
         dice = [rng.randint(1,6) for _ in range(6 if paid else 4)]
         first = True
         for at, mins in sess:
@@ -115,9 +128,10 @@ def run(seed, paid, log=None):
             if first: g *= 1 + sum(dice); first = False
             m = mins * (0.7 + 0.6*rng.random())
             for _ in range(int(m)): g += rate()*60
+            online += m
             last = now + m/60
             money += g; buy()
-            if all(x >= 1000 for x in L): return day + at/24
+            if all(x >= 1000 for x in L): return day + at/24, online
     return None
 
 def feel(seed=1000, paid=False):
@@ -134,15 +148,19 @@ if __name__ == "__main__":
         tgt = float(sys.argv[sys.argv.index("--solve")+1]); lo, hi = 1.020, 1.060
         for _ in range(38):
             G = (lo+hi)/2
-            med = statistics.median([run(1000+s, False) or 999 for s in range(5)])
+            med = statistics.median([(run(1000+s, False) or (999, 0))[0] for s in range(5)])
             if med < tgt: lo = G
             else: hi = G
         G = (lo+hi)/2
-        f = statistics.median([run(1000+s, False) or 999 for s in range(11)])
-        p = statistics.median([run(1000+s, True) or 999 for s in range(11)])
+        f = statistics.median([(run(1000+s, False) or (999, 0))[0] for s in range(11)])
+        p = statistics.median([(run(1000+s, True) or (999, 0))[0] for s in range(11)])
         print(f"과녁 {tgt}일 → 비용 증가율 G = {G:.4f}   무과금 {f:.1f}일 · 유료 {p:.1f}일")
         sys.exit(0)
+    print(f"하루 {SESS}번 들어와 모두 {MINS:.0f}분 기준 (--mins · --sess 로 바꾼다)")
     for paid in (False, True):
-        outs = [run(1000+s, paid) or 999 for s in range(11)]
-        print(f"{'유료 ' if paid else '무과금'}: 가운뎃값 {statistics.median(outs):.1f}일  "
-              f"({', '.join(f'{o:.1f}' for o in sorted(outs))})")
+        got = [run(1000+s, paid) or (999, 0) for s in range(11)]
+        d = statistics.median([g[0] for g in got])
+        h = statistics.median([g[1] for g in got]) / 60
+        print(f"{'유료 ' if paid else '무과금'}: 흐른 날 가운뎃값 {d:.1f}일 · "
+              f"손에 잡고 있던 시간 {h:.1f}시간  "
+              f"({', '.join(f'{g[0]:.1f}' for g in sorted(got))})")
