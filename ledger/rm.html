@@ -3806,6 +3806,91 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <tr><td>🟦</td><td><b>보석은 보라색 계열</b> — 감빛(주황)·풀빛과 안 겹친다</td><td class="who">“보라색계열로 해줘”</td></tr>
   </table></div>
 
+  <h3>초반 30분이 너무 느렸다 — 유저가 잡았다</h3>
+  <p class="sub">유저 말: <i>“<b>1일째 너무 길어.</b> 고작 1구역에 1가게에 1물건 하나 바뀐다고?
+  <b>초반 30분 플레이한다 했을 때 최소 2가게를 열어야 해.</b>
+  1가게를 다 마스터해야 2가게 열리는 게 아냐…”</i></p>
+  <div class="note"><b>먼저 유저가 물은 것에 답한다.</b></div>
+  <div class="tw"><table>
+    <tr><th>물음</th><th>답</th></tr>
+    <tr><td><b>“1일째”가 몇 분 논 것인가</b></td>
+    <td><b>약 25분</b> — 아침 10분 · 점심 5분 · 밤 10분. 거기에 오프라인 보상이 붙는다</td></tr>
+    <tr><td><b>업그레이드 비용을 얼마로 뒀나</b></td>
+    <td><b>1레벨 5원</b>, 레벨마다 <b>+4%</b>. 매장 1채 125원, 둘째 매장 500원</td></tr>
+    <tr><td><b>수입은</b></td>
+    <td>물건 <b>1원</b> · 손님이 <b>10초에 한 명</b> → <b>6원/분</b></td></tr>
+    <tr><td><b>1가게를 마스터해야 2가게가 열리나</b></td>
+    <td><b>아니다.</b> 돈만 있으면 언제든 산다 — 도구도 그렇게 되어 있었다.
+    <b>돈이 안 모이는 게 문제였다</b></td></tr>
+  </table></div>
+  <div class="note warn"><b>재 보니 유저 말이 맞았다.</b>
+  지금 값으로 <b>30분을 쉬지 않고 놀아도 매장 1채 · 별 2개</b>다.
+  <b>별 하나에 10분, 둘째 별에 12분</b> — <b>갈수록 느려진다.</b></div>
+  <div class="note"><b>왜 느려지나 — 수입은 +2.5%인데 비용은 +4%다.</b>
+  <b>50레벨의 ×2 점프가 그걸 되돌려 주는데 그게 너무 멀다.</b>
+  <b>첫 50레벨이 통째로 오르막</b>이었다.</div>
+
+  <h3>손잡이를 하나씩 돌려 봤다</h3>
+  <div class="tw"><table>
+    <tr><th>돌린 것</th><th>30분에</th><th>챕터</th><th></th></tr>
+    <tr><td>그대로</td><td>매장 1채 · 별 2개</td><td class="num mono">6.9일</td><td>초반이 느리다</td></tr>
+    <tr><td>손님 3초로</td><td>별 1개 <b>3분</b> · 둘째 매장 못 염</td><td class="num mono">4.9일</td><td>챕터가 짧아진다</td></tr>
+    <tr><td>손님 3초 + 둘째 매장 200원</td><td><b>매장 2채</b> · 물건 바뀜</td><td class="num mono">4.9일</td><td>초반은 좋은데 챕터가 짧다</td></tr>
+    <tr><td>수입 증가를 비용과 같게(둘 다 +4%)</td><td>—</td><td class="num mono">—</td>
+    <td><b>게임이 터진다</b> — 30분에 만렙, 돈이 10²⁴원</td></tr>
+  </table></div>
+  <div class="note warn"><b>“수입 증가 &lt; 비용 증가”가 반드시 지켜져야 한다.</b>
+  같게만 해도 30분에 챕터가 끝난다. <b>지금 구조(2.5% vs 4%)가 맞았다는 뜻</b>이고,
+  <b>고칠 것은 곡선의 성격이 아니라 시작 속도</b>다.</div>
+
+  <h3>제일 예민한 손잡이를 찾았다 — 비용 증가율</h3>
+  <div class="tw"><table>
+    <tr><th>비용 증가율</th><th>챕터가 며칠</th></tr>
+    <tr><td class="num mono">1.042</td><td class="num mono">6.3일</td></tr>
+    <tr><td class="num mono">1.045</td><td class="num mono">13.3일</td></tr>
+    <tr><td class="num mono">1.048</td><td class="num mono">57.3일</td></tr>
+    <tr><td class="num mono">1.050</td><td class="num mono"><b>안 끝난다</b></td></tr>
+  </table></div>
+  <div class="note warn"><b>0.003이 움직이면 6일이 13일이 된다.</b>
+  <b>이건 눈대중으로 절대 못 맞춘다.</b> 1,000번 곱해지는 수라 작은 차이가 어마어마해진다.
+  <b>이 수만은 언제나 도구로 찾는다</b> — 손으로 적어 넣지 않는다.</div>
+
+  <h3>그래서 도구가 숫자를 찾게 했다 — <code>--solve</code></h3>
+  <pre>python3 tools/pace.py --ts 3 --shopm 10 --solve 7
+  → 과녁 무과금 7일 → 비용 증가율 G = 1.0425
+     무과금 7.3일 · 유료 4.3일</pre>
+  <div class="note"><b>사람은 느낌을 고르고 숫자는 도구가 찾는다.</b>
+  손님 간격을 2초로 하든 4초로 하든 <b>도구가 챕터를 7일에 맞춰 준다.</b>
+  <b>그러면 남는 물음은 하나뿐이다 — “초반 30분이 어떤 느낌이었으면 좋겠나”.</b></div>
+  <div class="tw"><table>
+    <tr><th>손님 간격</th><th>별 1개</th><th>별 2개</th><th>둘째 매장</th><th>첫 물건 바뀜</th><th>30분 뒤</th></tr>
+    <tr><td><b>2초</b> <span style="color:var(--faint)">붐빈다</span></td>
+    <td class="num mono">2분</td><td class="num mono">5분</td><td class="num mono">11분</td><td class="num mono">15분</td><td>레벨 110 · 물건 <b>2번</b> 바뀜</td></tr>
+    <tr><td><b>3초</b> <span style="color:var(--faint)">적당</span></td>
+    <td class="num mono">3분</td><td class="num mono">7분</td><td class="num mono">16분</td><td class="num mono">22분</td><td>레벨 70 · 물건 1번</td></tr>
+    <tr><td><b>4초</b> <span style="color:var(--faint)">한산</span></td>
+    <td class="num mono">4분</td><td class="num mono">9분</td><td class="num mono">22분</td><td class="num mono">29분</td><td>레벨 50 · 물건 1번</td></tr>
+    <tr><td><s>10초</s> <span style="color:var(--faint)">지금</span></td>
+    <td class="num mono">10분</td><td class="num mono">22분</td><td class="num mono">✗</td><td class="num mono">✗</td><td>레벨 20 · <b>매장 1채</b></td></tr>
+  </table></div>
+  <div class="note"><b>셋 다 챕터는 7.3일 · 유료 4.3일로 똑같다.</b> 차이는 <b>초반의 느낌뿐</b>이다.</div>
+  <div class="note warn"><b>손님 간격은 화면에도 걸린다 — 그래서 유저가 골라야 한다.</b>
+  <b>매장마다</b>의 간격이라 <b>2초면 한 구역(4채)에 초당 두 명</b>이 온다.
+  <b>10초는 초반에 화면이 텅 빈다</b> — 일꾼이 놀고, 짜증 이모지도 볼 일이 없다.
+  <b>숫자만이 아니라 “장이 붐비나 한산하나”를 정하는 손잡이</b>다.</div>
+  <div class="note"><span class="tag" style="background:var(--persim-bg);color:var(--persim)">🟨 내 생각은 3초다</span>
+  <b>2초는 초반이 시원한데 30분에 물건이 두 번 바뀌어</b> 도감이 너무 빨리 찬다.
+  <b>4초는 둘째 매장이 22분</b>이라 유저가 말한 “30분에 두 매장”에 아슬아슬하다.
+  <b>3초가 가운데고, 무엇보다 셋 중 어느 것을 골라도 도구가 챕터를 다시 맞춘다.</b></div>
+
+  <h3>아직 안 정한 것 — 이 셋은 같이 봐야 한다</h3>
+  <div class="tw"><table>
+    <tr><th>정할 것</th><th>지금</th><th>제안</th><th>왜</th></tr>
+    <tr><td><b>손님 간격</b></td><td class="num mono">10초</td><td class="num mono">3초</td><td>초반 속도이자 <b>장이 붐비는 정도</b></td></tr>
+    <tr><td><b>매장 1채 값</b></td><td class="num mono">125원</td><td class="num mono">50원</td><td>둘째 매장이 <b>200원</b>이 된다</td></tr>
+    <tr><td><b>비용 증가율</b></td><td class="num mono">1.04</td><td class="num mono">도구가 찾음</td><td><b>앞의 둘을 정하면 저절로 나온다</b></td></tr>
+  </table></div>
+
   <h3>어디서부터 보나 — 매달린 순서가 있다</h3>
   <p class="sub">유저 물음: <i>“밸런스 어디서부터 보는 게 가장 적합할까?
   <b>스킬부터 보면 계산이 꼬일 거 같고 기본을 먼저 세팅하고 맞추는 게 좋을까?</b>”</i>

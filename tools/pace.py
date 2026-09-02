@@ -163,6 +163,29 @@ def feel(seed=1000, paid=False):
 
 if __name__ == "__main__":
     if "--c0" in sys.argv: C0 = float(sys.argv[sys.argv.index("--c0")+1])
+    if "--ts" in sys.argv: TS = float(sys.argv[sys.argv.index("--ts")+1])
+    if "--shopm" in sys.argv: SHOP_M = float(sys.argv[sys.argv.index("--shopm")+1])
+    if "--g" in sys.argv: G = float(sys.argv[sys.argv.index("--g")+1])
+
+    if "--solve" in sys.argv:
+        # 과녁(무과금 며칠)을 주면 비용 증가율 G를 찾아 준다.
+        # 사람이 고르는 건 "느낌"이고 숫자 찾기는 도구가 한다.
+        target = float(sys.argv[sys.argv.index("--solve")+1])
+        lo, hi = 1.030, 1.050
+        for _ in range(40):
+            G = (lo + hi) / 2
+            outs = [run(1000+s, False) for s in range(5)]
+            med = statistics.median([r.get("done", 99) for r in outs])
+            if med < target: lo = G
+            else: hi = G
+        G = (lo + hi) / 2
+        outs = [run(1000+s, False) or {} for s in range(11)]
+        free = statistics.median([r.get("done", 99) for r in outs])
+        outs = [run(1000+s, True) or {} for s in range(11)]
+        paid = statistics.median([r.get("done", 99) for r in outs])
+        print(f"과녁 무과금 {target}일 → 비용 증가율 G = {G:.4f}")
+        print(f"   무과금 {free:.1f}일 · 유료 {paid:.1f}일")
+        sys.exit(0)
     if "--feel" in sys.argv:
         for paid in (False, True):
             print(f"\n══ {'돈을 쓴 사람' if paid else '무과금'} — 며칠째에 무슨 일이 ══")
