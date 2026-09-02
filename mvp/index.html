@@ -35,12 +35,12 @@ body{
 /* 돈 띠 */
 .top{position:sticky; top:0; z-index:5; background:var(--paper);
   padding:12px 0 8px; display:flex; align-items:center; gap:10px}
-.purse{flex:1; display:flex; align-items:baseline; gap:8px;
+.purse{flex:1; display:flex; align-items:center; gap:8px;
   background:var(--coinbg); border:1px solid var(--line); border-radius:11px;
   padding:9px 13px; box-shadow:var(--shadow)}
 .purse b{font-family:"Gowun Batang",serif; font-size:23px; color:var(--coin);
   font-variant-numeric:tabular-nums; letter-spacing:-.01em}
-.purse span{font-size:11px; color:var(--ink3)}
+.purse .coin{font-size:16px; line-height:1}
 .clock{font-size:11.5px; color:var(--ink3); font-variant-numeric:tabular-nums;
   padding:9px 11px; border:1px solid var(--line); border-radius:11px}
 
@@ -70,7 +70,7 @@ body{
 .cust.mad{filter:hue-rotate(-18deg) saturate(1.5)}
 @keyframes walkin{from{transform:translateX(26px); opacity:0}to{transform:none; opacity:1}}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
-.empty{font-size:11.5px; color:var(--ink3)}
+.empty{flex:1; height:2px; border-bottom:1px dashed var(--line); opacity:.7}
 
 .slots{display:flex; gap:4px}
 .slot{width:19px; height:26px; border:1px solid var(--line); border-radius:4px;
@@ -144,7 +144,7 @@ button:focus-visible{outline:2px solid var(--jang); outline-offset:2px}
 
 <div class="wrap">
   <div class="top">
-    <div class="purse"><b id="money">0</b><span>냥</span></div>
+    <div class="purse"><span class="coin">🪙</span><b id="money">0</b></div>
     <div class="clock" id="clock">0:00</div>
   </div>
   <div id="shops"></div>
@@ -154,7 +154,7 @@ button:focus-visible{outline:2px solid var(--jang); outline-offset:2px}
       <div><b id="g-sold">0</b><span>판 것</span></div>
       <div><b id="g-tap">0</b><span>누른 횟수</span></div>
       <div class="bad"><b id="g-mad">0%</b><span>짜증</span></div>
-      <div><b id="g-rate">0</b><span>초당 냥</span></div>
+      <div><b id="g-rate">0</b><span>초당 돈</span></div>
     </div>
   </div>
   <p class="foot">
@@ -190,6 +190,7 @@ const band = i => B.BAND.find(([a,b])=>i>=a&&i<=b)[2];
 const proc = i => B.PROC.find(([a,b])=>i>=a&&i<=b)[2];
 const itemOf = lv => Math.min(20, Math.floor((lv-1)/50)+1);
 const craft = lv => band(itemOf(lv)) * Math.max(B.FLOOR, Math.pow(B.PER,(lv-1)%50));
+const shelf = lv => proc(itemOf(lv))*2;
 const price = lv => B.P0*Math.pow(B.INC,lv-1)*Math.pow(B.STAR,Math.floor((lv-1)/10))*Math.pow(B.JUMP,Math.floor((lv-1)/50));
 const lvCost = lv => B.C0*Math.pow(B.G,lv-1);
 const hireCost = (s,j) => Math.max(20, (SHOPS[j].cost||50)/2) * Math.pow(2, s.w-1);
@@ -267,7 +268,9 @@ function tick(now){
       if(s.q.length < B.QMAX)
         s.q.push({f:FACES[(Math.random()*FACES.length)|0], wait:0, pay:0});
     }
+    const cap = shelf(s.lv);
     for(let k=0;k<act;k++){
+      if(s.stock >= cap){ s.slots[k] = 0; continue; }   // 판매대가 차면 손을 놓는다
       s.slots[k] += dt;
       if(s.slots[k] >= ct){ s.slots[k] -= ct; s.stock++; }
     }
@@ -301,7 +304,7 @@ function build(){
     const d = SHOPS[j];
     if(!s.open) return `<div class="lockrow" id="sh${j}">
       <span class="face">${d.e}</span><h3>${d.n}</h3>
-      <button id="open${j}">자리를 연다 · ${won(d.cost)}냥</button>
+      <button id="open${j}">자리를 연다 · ${won(d.cost)}</button>
     </div>`;
     return `<div class="shop" id="sh${j}">
       <div class="hd">
@@ -373,7 +376,7 @@ function paint(){
       "★".repeat(filled) + "☆".repeat(5-filled) + `<b>Lv.${s.lv}</b>`;
 
     const ln = document.getElementById("ln"+j);
-    if(!s.q.length) ln.innerHTML = `<span class="empty">손님을 기다린다</span>`;
+    if(!s.q.length) ln.innerHTML = `<span class="empty"></span>`;
     else{
       const want = s.q.map((c,i)=>{
         const cls = c.wait > B.MAD*0.6 ? "cust wait mad" : (i===0 && s.stock>0 ? "cust" : "cust wait");
@@ -382,19 +385,20 @@ function paint(){
       if(ln.dataset.k !== want){ ln.dataset.k = want; ln.innerHTML = want; }
     }
 
+    const full = s.stock >= shelf(s.lv);
     let sl = "";
     for(let k=0;k<np;k++){
-      const p = k<act ? Math.min(1, s.slots[k]/ct) : 0;
-      sl += `<span class="slot${k<act?"":" off"}"><i style="height:${(p*100).toFixed(0)}%"></i></span>`;
+      const p = k<act && !full ? Math.min(1, s.slots[k]/ct) : 0;
+      sl += `<span class="slot${k<act&&!full?"":" off"}"><i style="height:${(p*100).toFixed(0)}%"></i></span>`;
     }
     document.getElementById("sl"+j).innerHTML = sl;
-    const show = Math.min(s.stock, 8);
+    const show = Math.min(s.stock, 12);
     document.getElementById("sk"+j).innerHTML = s.stock
-      ? "<i></i>".repeat(show) + (s.stock>8 ? `<em>+${s.stock-8}</em>` : "")
-      : `<span class="none">판매대가 비었다</span>`;
+      ? "<i></i>".repeat(show) + (full ? `<em>가득</em>` : "")
+      : `<span class="none">·</span>`;
 
     const ub = document.getElementById("up"+j), c = lvCost(s.lv);
-    ub.querySelector("b").textContent = won(c)+"냥";
+    ub.querySelector("b").textContent = won(c);
     ub.disabled = S.money < c;
     const hb = document.getElementById("hr"+j);
     if(s.w >= 6){ hb.innerHTML = "🦝 <b>6</b>"; hb.disabled = true; }
