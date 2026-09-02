@@ -195,10 +195,13 @@ const price = lv => B.P0*Math.pow(B.INC,lv-1)*Math.pow(B.STAR,Math.floor((lv-1)/
 const lvCost = lv => B.C0*Math.pow(B.G,lv-1);
 const hireCost = (s,j) => Math.max(20, (SHOPS[j].cost||50)/2) * Math.pow(2, s.w-1);
 
-const won = n => n<10 ? n.toFixed(1)
-  : n<1000 ? Math.floor(n).toLocaleString()
-  : n<1e6 ? (n/1000).toFixed(n<1e4?2:1)+"천"
-  : n<1e8 ? (n/1e6).toFixed(2)+"백만" : (n/1e8).toFixed(2)+"억";
+// 작을 때는 소수점 둘까지 — 초반에는 0.4 차이로 단추가 열리고 닫힌다.
+const won = n =>
+    n < 100  ? n.toFixed(2)
+  : n < 1e6  ? Math.floor(n).toLocaleString()
+  : n < 1e8  ? Math.round(n/1e4).toLocaleString() + "만"
+  : n < 1e12 ? (n/1e8).toFixed(2) + "억"
+  :            (n/1e12).toFixed(2) + "조";
 
 let S = null;
 function fresh(){
