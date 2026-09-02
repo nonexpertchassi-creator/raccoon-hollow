@@ -29,6 +29,9 @@ SHOP_K, SHOP_M, ZONE_M = M["매장값_배수"], a("--shopm", M["매장1_값배�
 MINS  = a("--mins", 25.0)          # 하루에 손에 잡고 있는 분
 SESS  = int(a("--sess", 3))        # 하루에 몇 번 들어오나. 오프라인을 몇 번 걷어 가느냐가 진짜 레버다
 CAP   = a("--cap", 0)              # 오프라인 최대 시간을 못 박는다. 0이면 예전처럼 날짜로 늘어난다
+# 앞 챕터에서 들고 오는 힘. 첫 챕터는 둘 다 1이다.
+BOOST = a("--boost", 1.0)          # 물건 값에 곱해지는 것 — 손님 능력 배수
+FASTER= a("--faster", 1.0)         # 빨라지는 것 — 손님도 제조도 같이 (상한 2.1배)
 OFF_W = N["오프라인"]["기본_몫"]
 OFF_0, OFF_MAX = N["오프라인"]["처음_시간"], N["오프라인"]["최대_시간"]
 FLOOR, PER = _C["바닥"], _C["레벨마다"]
@@ -51,9 +54,9 @@ def price(L):                      # 물건 한 개 값
 def rate_one(L, workers, ts):
     """매장 하나의 초당 수입 = min(손님, 제조) × 값"""
     if L <= 0: return 0.0
-    make = min(workers, proc(item_of(L))) / craft(L)   # 초당 만들 수 있는 개수
-    come = 1.0 / ts                                     # 초당 오는 손님
-    return min(make, come) * price(L)
+    make = min(workers, proc(item_of(L))) / (craft(L) / FASTER)  # 초당 만들 수 있는 개수
+    come = FASTER / ts                                           # 초당 오는 손님
+    return min(make, come) * price(L) * BOOST
 
 def shop_price(j): return C0 * SHOP_M * (SHOP_K ** j)
 def zone_price(z): return shop_price(z*4) * ZONE_M
