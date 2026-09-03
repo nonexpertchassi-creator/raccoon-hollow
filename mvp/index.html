@@ -218,13 +218,13 @@ const B = {
   OFF_SHARE:0.5, OFF_MIN:60, OFF_CAP:2*3600
 };
 const SHOPS = [
-  {n:"떡집", e:"🍡", cost:0,
+  {n:"떡집", e:"🍡",
    it:["보리떡","콩떡","쑥떡","절편","가래떡","인절미","시루떡","백설기","송편","경단","무지개떡","꿀떡","진달래 화전","강정","유과","꿀 다식","정과","곶감","두텁떡","약과"]},
-  {n:"국밥집", e:"🍲", cost:50,
+  {n:"국밥집", e:"🍲",
    it:["주먹밥","보리밥","배춧국","콩나물국밥","국수","장국밥","순대국밥","만둣국","설렁탕","떡국","비빔밥","냉면","파전","잡채","삼계탕","갈비탕","불고기","구절판","신선로","갈비찜"]},
-  {n:"나물집", e:"🥬", cost:200,
+  {n:"나물집", e:"🥬",
    it:["상추","흰 무","배추","콩나물","시금치","오이","미나리","참쑥","고사리","도라지","마늘","고추","참깨","팥","햅쌀","표고버섯","알밤","대추","인삼","송이버섯"]},
-  {n:"생선집", e:"🐟", cost:800,
+  {n:"생선집", e:"🐟",
    it:["멸치","정어리","미역","다시마","구운 김","새우젓","참조기","고등어","갈치","명태","북어","오징어","낙지","문어","생대구","굴비","도미","민어","전복","생굴"]}
 ];
 // 장부의 손님 열 종 그대로 — 조류·파충류는 안 넣는다(유저가 정했다).
@@ -259,10 +259,14 @@ function reach(lv, j, money){
 }
 // 간판을 올릴수록 손님이 자주 온다. 곱하기가 아니라 더하기다(곱하면 폭발한다).
 // 그 매장 여는 값(50 × 4^j)의 두 배. 매장 1은 첫 판에서 공짜로 주지만 값은 50으로 친다.
-const signCost = (s,j) => B.C0 * B.SHOPM * Math.pow(B.SB, j) * B.SIGNMUL;
+const signCost = (s,j) => shopPrice(j) * B.SIGNMUL;
 const gapOf = s => Math.max(B.TSFLOOR,
   B.TS / (1 + B.SIGN.slice(0, s.sg).reduce((a,b)=>a+b, 0)));
-const hireCost = (s,j) => Math.max(20, (SHOPS[j].cost||50)/2) * Math.pow(2, s.w-1);
+// 매장 여는 값. 한 곳에서만 센다 — 카드에도, 일꾼 값에도, 간판 값에도 이걸 쓴다.
+// 매장 1은 게임을 시작할 때 그냥 주지만 값은 50으로 친다.
+const shopPrice = j => B.C0 * B.SHOPM * Math.pow(B.SB, j);
+// 장부 파랑: 일꾼은 "매장 값의 반에서 시작, 마리마다 두 배".
+const hireCost = (s,j) => shopPrice(j) / 2 * Math.pow(2, s.w-1);
 
 // 작을 때는 소수점 둘까지 — 초반에는 0.4 차이로 단추가 열리고 닫힌다.
 const won = n =>
@@ -424,7 +428,7 @@ function build(){
     const d = SHOPS[j];
     if(!s.open) return `<div class="lockrow" id="sh${j}">
       <span class="face">${d.e}</span><h3>${d.n}</h3>
-      <button id="open${j}">자리를 연다 · ${won(d.cost)}</button>
+      <button id="open${j}">자리를 연다 · ${won(shopPrice(j))}</button>
     </div>`;
     return `<div class="shop" id="sh${j}">
       <div class="hd">
@@ -448,8 +452,8 @@ function build(){
   S.shops.forEach((s,j)=>{
     const ob = document.getElementById("open"+j);
     if(ob) ob.onclick = ()=>{
-      if(S.money < SHOPS[j].cost) return;
-      S.money -= SHOPS[j].cost; s.open = true; S.taps++; document.querySelectorAll(".testbar button").forEach(b=>{
+      if(S.money < shopPrice(j)) return;
+      S.money -= shopPrice(j); s.open = true; S.taps++; document.querySelectorAll(".testbar button").forEach(b=>{
   b.onclick = ()=>{
     TEST_BUY = +b.dataset.n;
     document.querySelectorAll(".testbar button").forEach(x=>x.classList.toggle("on", x===b));
@@ -492,7 +496,7 @@ function paint(){
   S.shops.forEach((s,j)=>{
     if(!s.open){
       const ob = document.getElementById("open"+j);
-      if(ob) ob.disabled = S.money < SHOPS[j].cost;
+      if(ob) ob.disabled = S.money < shopPrice(j);
       return;
     }
     const it = itemOf(s.lv), np = proc(it), act = Math.min(s.w, np), ct = craft(s.lv);

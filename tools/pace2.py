@@ -110,7 +110,10 @@ def run(seed, paid, log=None):
                         if d > 0 and (best is None or c/d < best[0]): best = (c/d, "lv", i, to, c)
                     # 일꾼 한 마리 더
                     if W[i] < 4:
-                        c2 = shop_price(i) * (2 ** W[i]) * 0.5
+                        # 장부: "매장 값의 반에서 시작, 마리마다 두 배".
+                        # W가 1부터라 첫 채용은 2**0 이어야 한다. 전에는 한 번 더 곱해
+                        # 첫 일꾼을 두 배로 받고 있었다.
+                        c2 = shop_price(i) * 0.5 * (2 ** (W[i] - 1))
                         if c2 <= money:
                             d = rate_one(L[i], W[i]+1, ts, i) - rate_one(L[i], W[i], ts, i)
                             if d <= 0:
