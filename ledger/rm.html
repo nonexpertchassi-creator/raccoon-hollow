@@ -204,9 +204,9 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <nav>
     <a href="#now"><span>지금 어디</span></a>
     <a href="#keep"><span>남긴 것</span></a>
-    <a href="#open"><span>미결정 모음</span><span class="c done">0</span></a>
+    <a href="#open"><span>미결정 모음</span><span class="c">1</span></a>
     <div class="grp">기획 일곱 갈래 <span style="font-weight:400;text-transform:none;letter-spacing:0">· 숫자는 <b>정해진 것</b></span></div>
-    <a href="#story"><span>시나리오</span><span class="c done">79</span></a>
+    <a href="#story"><span>시나리오</span><span class="c done">83</span></a>
     <a href="#system"><span>시스템</span><span class="c done">25</span></a>
     <a href="#level"><span>레벨</span><span class="c done">22</span></a>
     <a href="#ux"><span>UX · UI</span><span class="c done">40</span></a>
@@ -324,8 +324,13 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <b>손으로 옮겨 적으면 반드시 한쪽이 어긋나기 때문이다</b>(규칙 3).
   고칠 것이 있으면 <b>갈래 쪽 픽스 표를 고친다.</b></div>
 <!-- AUTO:open -->
-  <div class="zero done">아직 승인 안 받은 것 <b>0</b></div>
-  <div class="note"><b>남은 노랑이 없다.</b> 낸 것을 유저가 다 물렸거나 승인했다.</div>
+  <div class="zero">아직 승인 안 받은 것 <b>1</b></div>
+  <p class="sub"><b>전부 내가 판단한 것이다.</b> 유저가 <i>“그거 아니야”</i> 한 마디면 물린다.</p>
+  <div class="tw"><table>
+    <tr><th>어느 갈래</th><th>내가 정한 것</th></tr>
+  <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#story" style="color:var(--faint)">시나리오 기획</a> · 노랑 1</td></tr>
+  <tr><td class="who" style="white-space:nowrap">🟨</td><td><b>지금 그대로 둔다</b> — 걱정한 일이 안 일어나고, 돌아가며 생기고, 없애려면 <b>「물건 경계까지만 산다」를 물려야</b> 하는데 그건 <b>물건을 못 보고 지나가는 걸 막는 장치</b>다<div class="who" style="margin-top:3px">내 판단 — 유저 승인 전</div></td></tr>
+  </table></div>
   <div class="note"><b>아무도 안 정한 것</b>(내가 판단조차 안 한 것)은 갈래마다 <b>「아직 안 정한 것」</b>에 따로 있다 — 그건 성격이 달라서 안 섞는다.</div>
 <!-- /AUTO:open -->
 </section>
@@ -334,7 +339,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <h2>시나리오 기획</h2>
   <p class="sub"><b>진행 구조</b>를 정한다 — 한 챕터가 무엇이고, 언제 끝나고, 전체가 어디로 가는가.
   대사와 컷은 그 위에 얹는 연출이지 본체가 아니다.</p>
-  <div class="zero done">픽스 <b>79</b> · 2026-08-31</div>
+  <div class="zero done">픽스 <b>83</b> · 2026-08-31</div>
   <div class="note"><b>이 갈래는 두 층이다.</b> 위는 <b>픽스</b> — 정해졌고 안 흔든다.
   아래는 <b>로그</b> — 어떻게 여기까지 왔는지, 물린 것은 무엇인지. 접어 뒀다.
   유저 말: <i>“확정된 거는 남기고 나머지는 로그로 남기고 접자.”</i></p></div>
@@ -412,6 +417,10 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <tr><td>🟩</td><td><b>매장1 51렙 · 매장2 31렙에서 <b>단추는 매장2가 이득이다</b></b> — 한 레벨씩이면 매장1이 낫지만(0.001751 대 0.001133), <b>단추 한 번</b>이면 매장2가 낫고(0.004430 대 0.003906) <b>값이 5분의 1</b>이다(3,202원 대 15,133원)</td><td class="who">유저: “2가게 레벨업만 하는 느낌이야”</td></tr>
     <tr><td>🟩</td><td><b>이유는 <b>물건 경계까지의 거리</b>다</b> — 매장2는 <b>20레벨만 사면 ×2 점프</b>를 받는데, 매장1은 <b>방금 ×2를 받아</b> 다음까지 50레벨이 남았다. <b>경계에 가까운 매장이 늘 싸다</b></td><td class="who">단추가 경계까지만 사기 때문이다</td></tr>
     <tr><td>🟩</td><td><b>그래서 <b>돌아가며</b> 오른다</b> — 매장2를 51로 밀면 이번엔 다른 매장이 경계에 가까워진다. 실제 진행이 <b>계단</b>(400·400·350·350·300·250·250·150·150·50·50·1…)인 게 그 증거다. <b>한 매장 몰빵이 안 된다</b></td><td class="who">앞의 측정과 이어진다</td></tr>
+    <tr><td>🟩</td><td><b>낮은 매장이 뒤처지지 않는다 — <b>먼저 끝난다</b></b>. 만렙에 닿는 날이 <b>매장1~5는 5.3일</b>, 매장10~13은 6.3일, <b>매장18~20은 7.3일</b>이다. 유저가 걱정한 “관심 밖으로 밀린다”는 <b>안 일어난다</b></td><td class="who">운 번호 11개 · 가운뎃값 · 매장 20곳</td></tr>
+    <tr><td>🟩</td><td><b>대신 <b>마지막 2일은 뒤쪽 대여섯 매장만</b> 만진다</b> — 챕터 7.3일 중 <b>27%</b>다. 만질 것이 20곳에서 대여섯으로 줄어든다</td><td class="who">같은 측정 · 지켜볼 자리</td></tr>
+    <tr><td>🟩</td><td><b>“어느 매장이 싼가”는 매장 번호가 아니라 <b>경계까지의 거리</b>로 정해진다</b> — 매장1이든 매장20이든 <b>경계에서 막 벗어나면 잠깐 밀리고</b> 50레벨마다 돌아온다. <b>특정 매장이 손해 보지 않는다</b></td><td class="who">유저: “낮은 가게들은 점점 관심도가 떨어질까 봐”</td></tr>
+    <tr><td>🟨</td><td><b>지금 그대로 둔다</b> — 걱정한 일이 안 일어나고, 돌아가며 생기고, 없애려면 <b>「물건 경계까지만 산다」를 물려야</b> 하는데 그건 <b>물건을 못 보고 지나가는 걸 막는 장치</b>다</td><td class="who">내 판단 — 유저 승인 전</td></tr>
     <tr><td>🟩</td><td><b>“몇 개 팔면 한 레벨”은 <b>안 늘어난다. 아주 조금씩 준다</b></b> — 물건 값이 레벨마다 <b>1.0537배</b>, 올리는 값이 <b>1.0529배</b>라 값이 <b>티끌만큼 빠르다</b></td><td class="who">유저: “이게 나중에 점점 늘어나나?”</td></tr>
     <tr><td>🟩</td><td><b>대신 <b>50레벨짜리 톱니</b>가 있다</b> — 한 물건 안에서 <b>5.0 → 10.7개</b>로 무거워지다가 물건이 바뀌면 <b>4.8개</b>로 반토막 난다. 톱니의 높이는 챕터가 갈수록 낮아진다(10.7 → 10.1 → 9.2 → 8.3 → 6.8 → 4.1개)</td><td class="who">레벨 12곳을 쟀다</td></tr>
     <tr><td>🟩</td><td><b>줄의 밀물썰물과 값의 밀물썰물이 <b>같은 50레벨 주기로 겹친다</b></b> — 물건이 막 바뀌면 <b>줄이 길고 레벨업이 싸다</b>(신난다), 물건 끝 무렵이면 <b>줄이 짧고 레벨업이 비싸다</b>(뜸하다). <b>물건이 바뀔 때마다 확 풀린다</b></td><td class="who">두 측정이 같은 주기로 나왔다</td></tr>
