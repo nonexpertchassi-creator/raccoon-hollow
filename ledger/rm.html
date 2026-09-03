@@ -206,7 +206,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <a href="#keep"><span>남긴 것</span></a>
     <a href="#open"><span>미결정 모음</span><span class="c done">0</span></a>
     <div class="grp">기획 일곱 갈래 <span style="font-weight:400;text-transform:none;letter-spacing:0">· 숫자는 <b>정해진 것</b></span></div>
-    <a href="#story"><span>시나리오</span><span class="c done">65</span></a>
+    <a href="#story"><span>시나리오</span><span class="c done">69</span></a>
     <a href="#system"><span>시스템</span><span class="c done">25</span></a>
     <a href="#level"><span>레벨</span><span class="c done">22</span></a>
     <a href="#ux"><span>UX · UI</span><span class="c done">40</span></a>
@@ -334,7 +334,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <h2>시나리오 기획</h2>
   <p class="sub"><b>진행 구조</b>를 정한다 — 한 챕터가 무엇이고, 언제 끝나고, 전체가 어디로 가는가.
   대사와 컷은 그 위에 얹는 연출이지 본체가 아니다.</p>
-  <div class="zero done">픽스 <b>65</b> · 2026-08-31</div>
+  <div class="zero done">픽스 <b>69</b> · 2026-08-31</div>
   <div class="note"><b>이 갈래는 두 층이다.</b> 위는 <b>픽스</b> — 정해졌고 안 흔든다.
   아래는 <b>로그</b> — 어떻게 여기까지 왔는지, 물린 것은 무엇인지. 접어 뒀다.
   유저 말: <i>“확정된 거는 남기고 나머지는 로그로 남기고 접자.”</i></p></div>
@@ -398,6 +398,10 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <tr><td>🟩</td><td><b>재는 도구는 <b>반대로</b> 틀려 있었다</b> — <code>pace2</code>가 <b>첫 일꾼을 두 배로</b> 받고 있었다. 장부는 “매장 값의 <b>반에서 시작</b>”인데 곱셈 지수가 한 칸 밀려 첫 채용이 매장 값 그대로였다</td><td class="who">규칙 2 — 게임과 도구를 같이 봐야 보인다</td></tr>
     <tr><td>🟩</td><td><b>셋 다 고쳐도 챕터가 안 움직인다</b> — <b>7.3일 그대로</b>. 일꾼 값이 매장·레벨 지출에 견주면 작은 몫이라 <b>곡선을 다시 안 푼다</b></td><td class="who">운 번호 11개 · 가운뎃값</td></tr>
     <tr><td>🟩</td><td><b>매장 여는 값을 <b>한 곳에서만</b> 세게 고쳤다</b> — 카드에도, 일꾼 값에도, 간판 값에도 <b>같은 함수 하나</b>를 쓴다. 손으로 적어 둔 목록이 있어서 어긋났다(규칙 3)</td><td class="who">50 · 200 · 800 · 3,200</td></tr>
+    <tr><td>🟩</td><td><b>뒷 매장이 이득이 아니다 — <b>매장 번호가 약분된다</b></b>. 값도 4배, 수입도 4배라 <b>돈 1원당 늘어나는 수입이 매장 1·5·10·20에서 전부 0.00141674</b>로 같다. “2가게만 올리는 게 이득”은 안 생긴다</td><td class="who">유저: “결국 2가게 이득이라 2가게만 업글할 거 같고”</td></tr>
+    <tr><td>🟩</td><td><b>마지막 매장도 <b>1레벨에서 시작한다</b></b> — 매장 1·5·10·15·20이 <b>전부 1렙</b>. 밑값 배수 4를 넣기 전에는 매장20이 620렙으로 뛰었다. <b>“열자마자 만렙”은 이미 막혀 있다</b></td><td class="who">운 번호 11개 · 가운뎃값</td></tr>
+    <tr><td>🟩</td><td><b>실제로는 <b>계단</b>이 된다</b> — 매장20이 열리는 2.9일째의 스무 매장 레벨이 <b>400·400·350·350·300·250·250·150·150·50·50·1·1·…</b>이다. 한 매장에 몰빵이 아니라 앞에서부터 고르게 오른다</td><td class="who">첫 판이 아니라 재는 도구에서 뽑았다</td></tr>
+    <tr><td>🟩</td><td><b>그 계단을 만드는 건 <b>제조 상한</b>이다</b> — 일꾼 1마리로 한 매장만 밀면 501렙에서 이득/값이 <b>0.001417 → 0.001277</b>로 <b>떨어진다</b>(제조가 병목). 일꾼을 4마리 채우면 <b>0.002317</b>로 오른다. <b>“더 올릴까 일꾼을 늘릴까 새 매장을 열까”가 진짜 고민거리</b>다</td><td class="who">레벨 7곳 × 일꾼 4가지</td></tr>
     <tr><td>🟩</td><td><b>“몇 개 팔면 한 레벨”은 <b>안 늘어난다. 아주 조금씩 준다</b></b> — 물건 값이 레벨마다 <b>1.0537배</b>, 올리는 값이 <b>1.0529배</b>라 값이 <b>티끌만큼 빠르다</b></td><td class="who">유저: “이게 나중에 점점 늘어나나?”</td></tr>
     <tr><td>🟩</td><td><b>대신 <b>50레벨짜리 톱니</b>가 있다</b> — 한 물건 안에서 <b>5.0 → 10.7개</b>로 무거워지다가 물건이 바뀌면 <b>4.8개</b>로 반토막 난다. 톱니의 높이는 챕터가 갈수록 낮아진다(10.7 → 10.1 → 9.2 → 8.3 → 6.8 → 4.1개)</td><td class="who">레벨 12곳을 쟀다</td></tr>
     <tr><td>🟩</td><td><b>줄의 밀물썰물과 값의 밀물썰물이 <b>같은 50레벨 주기로 겹친다</b></b> — 물건이 막 바뀌면 <b>줄이 길고 레벨업이 싸다</b>(신난다), 물건 끝 무렵이면 <b>줄이 짧고 레벨업이 비싸다</b>(뜸하다). <b>물건이 바뀔 때마다 확 풀린다</b></td><td class="who">두 측정이 같은 주기로 나왔다</td></tr>
