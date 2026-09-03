@@ -77,7 +77,9 @@ def shop_price(j): return C0 * SHOP_M * (SHOP_K ** j)
 def zone_price(z): return shop_price(z*4) * ZONE_M
 def lvl_cost(L, j=0): return C0 * (SHOPBASE**j) * (G ** (L-1))
 def chunk(L, j=0):
-    to = min(1000, (L//10)*10 + 10)
+    # 한 번에 오르는 끝은 "물건이 바뀌는 자리"다(별 5개 = 50레벨).
+    # 넘게 두면 물건이 여러 번 바뀌어 못 보고 지나가는 것이 생긴다.
+    to = min(1000, (L//50)*50 + 50)
     return to, sum(lvl_cost(x, j) for x in range(L+1, to+1))
 
 def run(seed, paid, log=None):

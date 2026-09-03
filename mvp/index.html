@@ -113,11 +113,7 @@ button:focus-visible{outline:2px solid var(--jang); outline-offset:2px}
 .hire{background:var(--card2); color:var(--ink); border-color:var(--line);
   padding:10px 11px; font-size:12.5px; display:flex; gap:6px; align-items:center;
   font-variant-numeric:tabular-nums}
-.star{background:var(--card2); color:var(--ink2); border-color:var(--line);
-  padding:10px 9px; font-size:12px; display:flex; gap:4px; align-items:center;
-  font-variant-numeric:tabular-nums}
-.star b{font-weight:400; font-size:11.5px}
-.star.ready{background:var(--coinbg); color:var(--coin); border-color:var(--coin)}
+.up.full{box-shadow:0 0 0 2px var(--coin) inset, 0 1px 0 rgba(255,255,255,.18) inset}
 .buy{width:100%; background:var(--clay); color:#FFF6EC; padding:12px;
   font-size:13.5px; border-color:rgba(0,0,0,.12)}
 .buy:disabled{background:transparent; color:var(--ink3); border:1px dashed var(--line)}
@@ -208,10 +204,17 @@ const craft = lv => band(itemOf(lv)) * Math.max(B.FLOOR, Math.pow(B.PER,(lv-1)%5
 // 20번째 매장이 1번 매장과 똑같은 자리에서 시작한다. 안 그러면 620레벨로 뛴다.
 const price  = (lv,j=0) => B.P0*Math.pow(B.SB,j)*Math.pow(B.INC,lv-1)*Math.pow(B.STAR,Math.floor((lv-1)/10))*Math.pow(B.JUMP,Math.floor((lv-1)/50));
 const lvCost = (lv,j=0) => B.C0*Math.pow(B.SB,j)*Math.pow(B.G,lv-1);
-// 다음 별이 차는 레벨. 별은 11 · 21 · 31 … 에서 하나씩 찬다.
-const starGoal = lv => (Math.floor((lv-1)/10)+1)*10 + 1;
-// 거기까지 다 사려면 얼마인가. 못 사면 사는 데까지만 산다.
-const starCost = (lv,j=0) => { let c=0; for(let L=lv; L<starGoal(lv); L++) c += lvCost(L,j); return c; };
+// 한 번에 오를 수 있는 끝. 별은 5개가 꽉 차면 물건이 바뀌고 0으로 돌아간다.
+// 그 자리를 넘지 않아야 물건을 못 보고 지나가는 일이 없다.
+const capGoal = lv => Math.min(1001, (Math.floor((lv-1)/50)+1)*50 + 1);
+// 지금 가진 돈으로 실제로 어디까지 가나 — 단추에 그 레벨과 값을 그대로 적는다.
+function reach(lv, j, money){
+  const goal = capGoal(lv);
+  let L = lv, spent = 0;
+  while(L < goal && spent + lvCost(L,j) <= money){ spent += lvCost(L,j); L++; }
+  if(L === lv) return {to: lv+1, cost: lvCost(lv,j), can: false};   // 한 레벨도 못 산다
+  return {to: L, cost: spent, can: true};
+}
 const hireCost = (s,j) => Math.max(20, (SHOPS[j].cost||50)/2) * Math.pow(2, s.w-1);
 
 // 작을 때는 소수점 둘까지 — 초반에는 0.4 차이로 단추가 열리고 닫힌다.
@@ -347,7 +350,6 @@ function build(){
       </div>
       <div class="acts">
         <button class="up" id="up${j}"><span>올리기</span><b>0</b></button>
-        <button class="star" id="sf${j}">★<b>0</b></button>
         <button class="hire" id="hr${j}">🦝 <b>1</b></button>
       </div>
     </div>`;
@@ -358,21 +360,12 @@ function build(){
       if(S.money < SHOPS[j].cost) return;
       S.money -= SHOPS[j].cost; s.open = true; S.taps++; build(); paint();
     };
+    // 누르면 돈 되는 데까지 오른다. 단, 물건이 바뀌는 자리를 안 넘는다.
     const ub = document.getElementById("up"+j);
-    if(ub) hold(ub, ()=>{
-      const c = lvCost(s.lv, j);
-      if(S.money < c) return false;
-      S.money -= c; s.lv++; S.taps++; return true;
-    });
-    // 장부 파랑: "한 번에 올리는 것은 별 하나까지다".
-    // 돈 되는 데까지 사되 별 하나를 넘지 않는다 — 넘으면 물건이 여러 번 바뀌어
-    // 못 보고 지나가는 물건이 생긴다.
-    const sb = document.getElementById("sf"+j);
-    if(sb) sb.onclick = ()=>{
-      const goal = starGoal(s.lv);
-      let bought = 0;
-      while(s.lv < goal && S.money >= lvCost(s.lv, j)){ S.money -= lvCost(s.lv, j); s.lv++; bought++; }
-      if(bought){ S.taps++; paint(); }
+    if(ub) ub.onclick = ()=>{
+      const r = reach(s.lv, j, S.money);
+      if(!r.can) return;
+      S.money -= r.cost; s.lv = r.to; S.taps++; paint();
     };
     const hb = document.getElementById("hr"+j);
     if(hb) hb.onclick = ()=>{
@@ -384,14 +377,6 @@ function build(){
     };
   });
   built = true;
-}
-function hold(btn, fn){
-  let timer = null, delay = 340;
-  const go = ()=>{ if(fn()===false){ stop(); return; } paint();
-    timer = setTimeout(go, delay); delay = Math.max(70, delay*0.72); };
-  const stop = ()=>{ clearTimeout(timer); timer = null; delay = 340; };
-  btn.addEventListener("pointerdown", e=>{ e.preventDefault(); go(); });
-  ["pointerup","pointerleave","pointercancel"].forEach(k=>btn.addEventListener(k, stop));
 }
 
 function paint(){
@@ -434,13 +419,12 @@ function paint(){
     const el = document.getElementById("sl"+j);
     if(el.dataset.k !== sl){ el.dataset.k = sl; el.innerHTML = sl; }
 
-    const ub = document.getElementById("up"+j), c = lvCost(s.lv, j);
-    ub.querySelector("b").textContent = won(c);
-    ub.disabled = S.money < c;
-    const sb = document.getElementById("sf"+j), sc = starCost(s.lv, j);
-    sb.querySelector("b").textContent = won(sc);
-    sb.disabled = S.money < c;          // 한 레벨도 못 사면 그때만 잠근다
-    sb.classList.toggle("ready", S.money >= sc);
+    const ub = document.getElementById("up"+j), r = reach(s.lv, j, S.money);
+    ub.querySelector("span").textContent = `올리기 → Lv.${r.to}`;
+    ub.querySelector("b").textContent = won(r.cost);
+    ub.disabled = !r.can;
+    // 물건이 바뀌는 자리까지 다 갈 수 있으면 단추가 눈에 띈다
+    ub.classList.toggle("full", r.can && r.to === capGoal(s.lv));
     const hb = document.getElementById("hr"+j);
     if(s.w >= 6){ hb.innerHTML = "🦝 <b>6</b>"; hb.disabled = true; }
     else{
