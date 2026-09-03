@@ -60,29 +60,32 @@ def item_of(L): return min(20, (L-1)//50 + 1)
 def craft(L):                      # 한 개 만드는 데 걸리는 시간
     return band(item_of(L)) * max(FLOOR, PER ** ((L-1) % 50))
 
-def price(L):                      # 물건 한 개 값
-    return P0 * INC**(L-1) * STAR**((L-1)//10) * JUMP**((L-1)//50)
+# 매장 번호 j가 뒤로 갈수록 밑값이 오른다. 이게 없으면 20번째 매장을
+# 열자마자 620레벨로 뛴다 — 1,000레벨 중 62%를 안 하고 건너뛴다.
+SHOPBASE = M["매장당_밑값배수"]
+def price(L, j=0):                 # 물건 한 개 값
+    return P0 * (SHOPBASE**j) * INC**(L-1) * STAR**((L-1)//10) * JUMP**((L-1)//50)
 
-def rate_one(L, workers, ts):
+def rate_one(L, workers, ts, j=0):
     """매장 하나의 초당 수입 = min(손님, 제조) × 값"""
     if L <= 0: return 0.0
     make = min(workers, proc(item_of(L))) / (craft(L) / FASTER)  # 초당 만들 수 있는 개수
     come = FASTER / ts                                           # 초당 오는 손님
-    return min(make, come) * price(L) * BOOST
+    return min(make, come) * price(L, j) * BOOST
 
 def shop_price(j): return C0 * SHOP_M * (SHOP_K ** j)
 def zone_price(z): return shop_price(z*4) * ZONE_M
-def lvl_cost(L):   return C0 * (G ** (L-1))
-def chunk(L):
+def lvl_cost(L, j=0): return C0 * (SHOPBASE**j) * (G ** (L-1))
+def chunk(L, j=0):
     to = min(1000, (L//10)*10 + 10)
-    return to, sum(lvl_cost(x) for x in range(L+1, to+1))
+    return to, sum(lvl_cost(x, j) for x in range(L+1, to+1))
 
 def run(seed, paid, log=None):
     rng = random.Random(seed)
     L = [0]*20; W = [1]*20; zones = 1; money = shop_price(0)
     member  = 2.0 if paid else 1.0
     ts = TS / (1 + (0.30 if paid else 0.0))      # 등장률 스킬(더하기)
-    def rate(): return sum(rate_one(L[i], W[i], ts) for i in range(20)) * member
+    def rate(): return sum(rate_one(L[i], W[i], ts, i) for i in range(20)) * member
     def buy():
         nonlocal money, zones
         while True:
@@ -94,32 +97,32 @@ def run(seed, paid, log=None):
             for i in range(20):
                 if L[i] == 0 and seen_empty: continue
                 if 0 < L[i] < 1000:
-                    to, c = chunk(L[i])
+                    to, c = chunk(L[i], i)
                     if c <= money:
-                        d = rate_one(to, W[i], ts) - rate_one(L[i], W[i], ts)
+                        d = rate_one(to, W[i], ts, i) - rate_one(L[i], W[i], ts, i)
                         if d <= 0:
                             # 물건이 바뀌는 계단 바로 앞에서는 한 별이 잠깐 손해일 수 있다.
                             # 두 별 뒤까지 보고 그래도 이득이면 산다(사람도 그렇게 한다).
                             far = min(1000, to + 10)
-                            d = (rate_one(far, W[i], ts) - rate_one(L[i], W[i], ts)) * 0.5
+                            d = (rate_one(far, W[i], ts, i) - rate_one(L[i], W[i], ts, i)) * 0.5
                         if d > 0 and (best is None or c/d < best[0]): best = (c/d, "lv", i, to, c)
                     # 일꾼 한 마리 더
                     if W[i] < 4:
                         c2 = shop_price(i) * (2 ** W[i]) * 0.5
                         if c2 <= money:
-                            d = rate_one(L[i], W[i]+1, ts) - rate_one(L[i], W[i], ts)
+                            d = rate_one(L[i], W[i]+1, ts, i) - rate_one(L[i], W[i], ts, i)
                             if d <= 0:
                                 # 지금은 안 늘어도 다음 물건에서 뚫어 줄 수 있다.
                                 # 별을 올렸을 때의 값으로 다시 본다.
                                 nxt = min(1000, (L[i]//10)*10 + 10)
-                                d = rate_one(nxt, W[i]+1, ts) - rate_one(nxt, W[i], ts)
+                                d = rate_one(nxt, W[i]+1, ts, i) - rate_one(nxt, W[i], ts, i)
                             if d > 0 and (best is None or c2/d < best[0]): best = (c2/d, "w", i, 0, c2)
                 elif L[i] == 0 and i < zones*4:
                     # 아직 안 산 매장 중 제일 앞의 것만 후보로 본다.
                     # (예전에는 여기서 break 해서 뒤 매장의 레벨·일꾼 후보를 통째로 놓쳤다)
                     c = shop_price(i)
                     if c <= money:
-                        d = rate_one(1, 1, ts)
+                        d = rate_one(1, 1, ts, i)
                         if best is None or c/d < best[0]: best = (c/d, "lv", i, 1, c)
                     seen_empty = True
             if best is None: return

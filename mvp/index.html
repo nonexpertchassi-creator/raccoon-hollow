@@ -175,7 +175,7 @@ button:focus-visible{outline:2px solid var(--jang); outline-offset:2px}
 <script>
 const B = {
   P0:1.0, INC:1.025, STAR:1.15, JUMP:2.0,
-  C0:5.0, G:1.0551, TS:3.0,
+  C0:5.0, G:1.0529, TS:3.0, SB:4.0,
   QMAX:4, WALK:0.5,
   // 시무룩해 보이기 시작하는 시간. 떠나지는 "않는다" — 이 게임에는 실패가 없다.
   FRET:10.0,
@@ -204,12 +204,14 @@ const band = i => B.BAND.find(([a,b])=>i>=a&&i<=b)[2];
 const proc = i => B.PROC.find(([a,b])=>i>=a&&i<=b)[2];
 const itemOf = lv => Math.min(20, Math.floor((lv-1)/50)+1);
 const craft = lv => band(itemOf(lv)) * Math.max(B.FLOOR, Math.pow(B.PER,(lv-1)%50));
-const price = lv => B.P0*Math.pow(B.INC,lv-1)*Math.pow(B.STAR,Math.floor((lv-1)/10))*Math.pow(B.JUMP,Math.floor((lv-1)/50));
-const lvCost = lv => B.C0*Math.pow(B.G,lv-1);
+// 매장 번호 j가 뒤로 갈수록 밑값이 오른다. 물건 값에도 레벨 값에도 똑같이 걸어야
+// 20번째 매장이 1번 매장과 똑같은 자리에서 시작한다. 안 그러면 620레벨로 뛴다.
+const price  = (lv,j=0) => B.P0*Math.pow(B.SB,j)*Math.pow(B.INC,lv-1)*Math.pow(B.STAR,Math.floor((lv-1)/10))*Math.pow(B.JUMP,Math.floor((lv-1)/50));
+const lvCost = (lv,j=0) => B.C0*Math.pow(B.SB,j)*Math.pow(B.G,lv-1);
 // 다음 별이 차는 레벨. 별은 11 · 21 · 31 … 에서 하나씩 찬다.
 const starGoal = lv => (Math.floor((lv-1)/10)+1)*10 + 1;
 // 거기까지 다 사려면 얼마인가. 못 사면 사는 데까지만 산다.
-const starCost = lv => { let c=0; for(let L=lv; L<starGoal(lv); L++) c += lvCost(L); return c; };
+const starCost = (lv,j=0) => { let c=0; for(let L=lv; L<starGoal(lv); L++) c += lvCost(L,j); return c; };
 const hireCost = (s,j) => Math.max(20, (SHOPS[j].cost||50)/2) * Math.pow(2, s.w-1);
 
 // 작을 때는 소수점 둘까지 — 초반에는 0.4 차이로 단추가 열리고 닫힌다.
@@ -239,11 +241,11 @@ if(!S) S = fresh();
 /* ── 자리를 비웠던 만큼 ───────────────────────────── */
 function rateOf(){
   let r = 0;
-  S.shops.forEach(s=>{
+  S.shops.forEach((s,j)=>{
     if(!s.open) return;
     const it = itemOf(s.lv);
     const make = Math.min(s.w, proc(it)) / craft(s.lv);
-    r += Math.min(make, 1/B.TS) * price(s.lv);   // 만드는 속도와 손님 속도 중 느린 쪽
+    r += Math.min(make, 1/B.TS) * price(s.lv, j);   // 만드는 속도와 손님 속도 중 느린 쪽
   });
   return r;
 }
@@ -306,7 +308,7 @@ function tick(now){
     for(let k=0;k<act;k++){
       const c = s.mk[k]; if(!c) continue;
       c.p += dt;
-      if(c.p >= ct){ S.money += price(s.lv); S.sold++; S.served++; s.mk[k] = null; }
+      if(c.p >= ct){ S.money += price(s.lv, j); S.sold++; S.served++; s.mk[k] = null; }
     }
     // ⑤ 걸어오는 손님을 걸린다. 도착하면 그 순간의 줄 맨 뒤에 선다.
     //    손님은 안 떠난다 — 지쳐서 가버리는 일이 없다(장부 파랑). 기다리기만 한다.
@@ -358,7 +360,7 @@ function build(){
     };
     const ub = document.getElementById("up"+j);
     if(ub) hold(ub, ()=>{
-      const c = lvCost(s.lv);
+      const c = lvCost(s.lv, j);
       if(S.money < c) return false;
       S.money -= c; s.lv++; S.taps++; return true;
     });
@@ -369,7 +371,7 @@ function build(){
     if(sb) sb.onclick = ()=>{
       const goal = starGoal(s.lv);
       let bought = 0;
-      while(s.lv < goal && S.money >= lvCost(s.lv)){ S.money -= lvCost(s.lv); s.lv++; bought++; }
+      while(s.lv < goal && S.money >= lvCost(s.lv, j)){ S.money -= lvCost(s.lv, j); s.lv++; bought++; }
       if(bought){ S.taps++; paint(); }
     };
     const hb = document.getElementById("hr"+j);
@@ -407,7 +409,7 @@ function paint(){
     const it = itemOf(s.lv), np = proc(it), act = Math.min(s.w, np), ct = craft(s.lv);
     // 파는 값이 안 보이면 "올리기"가 이득인지 볼 수가 없다(규칙 5).
     document.getElementById("it"+j).innerHTML =
-      `${SHOPS[j].it[it-1]} <span class="tag2">개당</span> <b>${won(price(s.lv))}</b>`
+      `${SHOPS[j].it[it-1]} <span class="tag2">개당</span> <b>${won(price(s.lv, j))}</b>`
       + ` <span class="tag2">· ${ct.toFixed(1)}초</span>`;
     const filled = Math.floor(((s.lv-1)%50)/10);
     document.getElementById("st"+j).innerHTML =
@@ -432,10 +434,10 @@ function paint(){
     const el = document.getElementById("sl"+j);
     if(el.dataset.k !== sl){ el.dataset.k = sl; el.innerHTML = sl; }
 
-    const ub = document.getElementById("up"+j), c = lvCost(s.lv);
+    const ub = document.getElementById("up"+j), c = lvCost(s.lv, j);
     ub.querySelector("b").textContent = won(c);
     ub.disabled = S.money < c;
-    const sb = document.getElementById("sf"+j), sc = starCost(s.lv);
+    const sb = document.getElementById("sf"+j), sc = starCost(s.lv, j);
     sb.querySelector("b").textContent = won(sc);
     sb.disabled = S.money < c;          // 한 레벨도 못 사면 그때만 잠근다
     sb.classList.toggle("ready", S.money >= sc);
