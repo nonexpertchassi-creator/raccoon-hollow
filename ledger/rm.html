@@ -204,9 +204,9 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <nav>
     <a href="#now"><span>지금 어디</span></a>
     <a href="#keep"><span>남긴 것</span></a>
-    <a href="#open"><span>미결정 모음</span><span class="c done">0</span></a>
+    <a href="#open"><span>미결정 모음</span><span class="c">2</span></a>
     <div class="grp">기획 일곱 갈래 <span style="font-weight:400;text-transform:none;letter-spacing:0">· 숫자는 <b>정해진 것</b></span></div>
-    <a href="#story"><span>시나리오</span><span class="c done">69</span></a>
+    <a href="#story"><span>시나리오</span><span class="c done">75</span></a>
     <a href="#system"><span>시스템</span><span class="c done">25</span></a>
     <a href="#level"><span>레벨</span><span class="c done">22</span></a>
     <a href="#ux"><span>UX · UI</span><span class="c done">40</span></a>
@@ -324,8 +324,14 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <b>손으로 옮겨 적으면 반드시 한쪽이 어긋나기 때문이다</b>(규칙 3).
   고칠 것이 있으면 <b>갈래 쪽 픽스 표를 고친다.</b></div>
 <!-- AUTO:open -->
-  <div class="zero done">아직 승인 안 받은 것 <b>0</b></div>
-  <div class="note"><b>남은 노랑이 없다.</b> 낸 것을 유저가 다 물렸거나 승인했다.</div>
+  <div class="zero">아직 승인 안 받은 것 <b>2</b></div>
+  <p class="sub"><b>전부 내가 판단한 것이다.</b> 유저가 <i>“그거 아니야”</i> 한 마디면 물린다.</p>
+  <div class="tw"><table>
+    <tr><th>어느 갈래</th><th>내가 정한 것</th></tr>
+  <tr><td colspan="2" style="background:var(--sunk); font-weight:700; font-size:11.5px; letter-spacing:.06em; color:var(--faint)"><a href="#story" style="color:var(--faint)">시나리오 기획</a> · 노랑 2</td></tr>
+  <tr><td class="who" style="white-space:nowrap">🟨</td><td><b>제조 시간을 <b>「공정 수 × 손님 간격」</b>으로 바꾸자</b> — 3 · <b>6</b> · <b>9</b> · 12 · <b>18</b>초. 물건이 바뀌며 시간이 오르는 자리가 <b>3번 → 4번</b>이 되고, <b>표 하나가 통째로 없어진다</b>(규칙 3) <span style="color:var(--faint)">(유저가 정한 파랑을 물리는 것이다)</span><div class="who" style="margin-top:3px">내 판단 — 유저 승인 전</div></td></tr>
+  <tr><td class="who" style="white-space:nowrap">🟨</td><td><b>일꾼 최대는 6마리</b> — <b>공정이 6개면 일꾼 6마리가 각 공정에 하나씩</b> 선다. 그래야 마지막 물건에서도 손님 속도를 맞춘다<div class="who" style="margin-top:3px">내 판단 — 유저 승인 전</div></td></tr>
+  </table></div>
   <div class="note"><b>아무도 안 정한 것</b>(내가 판단조차 안 한 것)은 갈래마다 <b>「아직 안 정한 것」</b>에 따로 있다 — 그건 성격이 달라서 안 섞는다.</div>
 <!-- /AUTO:open -->
 </section>
@@ -334,7 +340,7 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
   <h2>시나리오 기획</h2>
   <p class="sub"><b>진행 구조</b>를 정한다 — 한 챕터가 무엇이고, 언제 끝나고, 전체가 어디로 가는가.
   대사와 컷은 그 위에 얹는 연출이지 본체가 아니다.</p>
-  <div class="zero done">픽스 <b>69</b> · 2026-08-31</div>
+  <div class="zero done">픽스 <b>75</b> · 2026-08-31</div>
   <div class="note"><b>이 갈래는 두 층이다.</b> 위는 <b>픽스</b> — 정해졌고 안 흔든다.
   아래는 <b>로그</b> — 어떻게 여기까지 왔는지, 물린 것은 무엇인지. 접어 뒀다.
   유저 말: <i>“확정된 거는 남기고 나머지는 로그로 남기고 접자.”</i></p></div>
@@ -402,6 +408,12 @@ footer{border-top:1px solid var(--line); padding-top:18px; font-size:12.5px; col
     <tr><td>🟩</td><td><b>마지막 매장도 <b>1레벨에서 시작한다</b></b> — 매장 1·5·10·15·20이 <b>전부 1렙</b>. 밑값 배수 4를 넣기 전에는 매장20이 620렙으로 뛰었다. <b>“열자마자 만렙”은 이미 막혀 있다</b></td><td class="who">운 번호 11개 · 가운뎃값</td></tr>
     <tr><td>🟩</td><td><b>실제로는 <b>계단</b>이 된다</b> — 매장20이 열리는 2.9일째의 스무 매장 레벨이 <b>400·400·350·350·300·250·250·150·150·50·50·1·1·…</b>이다. 한 매장에 몰빵이 아니라 앞에서부터 고르게 오른다</td><td class="who">첫 판이 아니라 재는 도구에서 뽑았다</td></tr>
     <tr><td>🟩</td><td><b>그 계단을 만드는 건 <b>제조 상한</b>이다</b> — 일꾼 1마리로 한 매장만 밀면 501렙에서 이득/값이 <b>0.001417 → 0.001277</b>로 <b>떨어진다</b>(제조가 병목). 일꾼을 4마리 채우면 <b>0.002317</b>로 오른다. <b>“더 올릴까 일꾼을 늘릴까 새 매장을 열까”가 진짜 고민거리</b>다</td><td class="who">레벨 7곳 × 일꾼 4가지</td></tr>
+    <tr><td>🟩</td><td><b>제조 계단 밑에 <b>규칙 하나가 숨어 있었다</b> — 「공정 수 × 손님 간격」</b>. 물건 1~2가 1×3=3초, 11~15가 4×3=12초로 <b>지금 값이 이미 그 규칙</b>이다. 3~5(2×3=6인데 3) · 6~10(3×3=9인데 6) · 16~20(6×3=18인데 16)만 아래에 있다</td><td class="who">유저: “51에 새 물건이 되면 3초로 초기화되는데 더 올라가야 하지 않나?”</td></tr>
+    <tr><td>🟩</td><td><b>그 규칙대로 두면 <b>일꾼이 노는 구간이 없어진다</b></b> — 일꾼을 공정 수만큼 채웠을 때 노는 몫이 물건 3~5에서 <b>50%</b>, 6~10에서 <b>33%</b>, 16~20에서 <b>11%</b>인데 <b>전부 0%</b>가 된다</td><td class="who">계산 · <code>min(만들기, 손님)</code></td></tr>
+    <tr><td>🟩</td><td><b>바꿔도 챕터가 안 움직인다</b> — <b>7.3일 그대로</b>(챕터 1·10·20이 7.3·7.3·7.5일). <b>밸런스 값이 아니라 느낌 값</b>이라는 뜻이다</td><td class="who">운 번호 11개 · 가운뎃값</td></tr>
+    <tr><td>🟨</td><td><b>제조 시간을 <b>「공정 수 × 손님 간격」</b>으로 바꾸자</b> — 3 · <b>6</b> · <b>9</b> · 12 · <b>18</b>초. 물건이 바뀌며 시간이 오르는 자리가 <b>3번 → 4번</b>이 되고, <b>표 하나가 통째로 없어진다</b>(규칙 3) <span style="color:var(--faint)">(유저가 정한 파랑을 물리는 것이다)</span></td><td class="who">내 판단 — 유저 승인 전</td></tr>
+    <tr><td>🟩</td><td><b>일꾼 최대 수가 <b>세 곳에서 다 다르다</b></b> — 재는 도구 <b>4</b> · 첫 판 <b>6</b> · 장부는 <b>“몇 마리까지인지는 아직”</b>인데 표에는 <b>최대 4</b>. <b>공정 수 최대가 6</b>이니 6이 맞아 보인다</td><td class="who">규칙 2·4 — 안 정한 채로 셋이 갈렸다</td></tr>
+    <tr><td>🟨</td><td><b>일꾼 최대는 6마리</b> — <b>공정이 6개면 일꾼 6마리가 각 공정에 하나씩</b> 선다. 그래야 마지막 물건에서도 손님 속도를 맞춘다</td><td class="who">내 판단 — 유저 승인 전</td></tr>
     <tr><td>🟩</td><td><b>“몇 개 팔면 한 레벨”은 <b>안 늘어난다. 아주 조금씩 준다</b></b> — 물건 값이 레벨마다 <b>1.0537배</b>, 올리는 값이 <b>1.0529배</b>라 값이 <b>티끌만큼 빠르다</b></td><td class="who">유저: “이게 나중에 점점 늘어나나?”</td></tr>
     <tr><td>🟩</td><td><b>대신 <b>50레벨짜리 톱니</b>가 있다</b> — 한 물건 안에서 <b>5.0 → 10.7개</b>로 무거워지다가 물건이 바뀌면 <b>4.8개</b>로 반토막 난다. 톱니의 높이는 챕터가 갈수록 낮아진다(10.7 → 10.1 → 9.2 → 8.3 → 6.8 → 4.1개)</td><td class="who">레벨 12곳을 쟀다</td></tr>
     <tr><td>🟩</td><td><b>줄의 밀물썰물과 값의 밀물썰물이 <b>같은 50레벨 주기로 겹친다</b></b> — 물건이 막 바뀌면 <b>줄이 길고 레벨업이 싸다</b>(신난다), 물건 끝 무렵이면 <b>줄이 짧고 레벨업이 비싸다</b>(뜸하다). <b>물건이 바뀔 때마다 확 풀린다</b></td><td class="who">두 측정이 같은 주기로 나왔다</td></tr>
