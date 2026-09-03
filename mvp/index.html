@@ -53,7 +53,9 @@ body{
 .nm h3{margin:0; font-family:"Gowun Batang",serif; font-size:15.5px; font-weight:700;
   letter-spacing:-.01em}
 .nm p{margin:1px 0 0; font-size:12px; color:var(--clay);
-  font-family:"Gowun Batang",serif}
+  font-family:"Gowun Batang",serif; font-variant-numeric:tabular-nums}
+.nm p b{color:var(--coin); font-weight:700}
+.tag2{color:var(--ink3); font-size:10.5px; font-family:"Gowun Dodum",sans-serif}
 .stars{font-size:11px; letter-spacing:1.5px; color:var(--coin); text-align:right; line-height:1.1}
 .stars b{display:block; font-size:10.5px; color:var(--ink3); letter-spacing:.04em;
   font-family:"Gowun Dodum",sans-serif; font-weight:400;
@@ -189,6 +191,8 @@ const SHOPS = [
 ];
 // 장부의 손님 열 종 그대로 — 조류·파충류는 안 넣는다(유저가 정했다).
 // 너구리는 손님이 아니라 일꾼이라 여기 없다.
+// 여기서 열 종이 다 나오는 건 MVP에 뽑기가 없어서다. 진짜 게임에서는
+// 가진 손님만 나온다 — 시작 명단은 아직 안 정했다(장부의 미결정).
 const FACES = ["🐰","🦊","🐱","🦔","🦦","🐷","🐑","🦌","🐻","🐯"];
 
 const band = i => B.BAND.find(([a,b])=>i>=a&&i<=b)[2];
@@ -381,7 +385,10 @@ function paint(){
       return;
     }
     const it = itemOf(s.lv), np = proc(it), act = Math.min(s.w, np), ct = craft(s.lv);
-    document.getElementById("it"+j).textContent = SHOPS[j].it[it-1];
+    // 파는 값이 안 보이면 "올리기"가 이득인지 볼 수가 없다(규칙 5).
+    document.getElementById("it"+j).innerHTML =
+      `${SHOPS[j].it[it-1]} <span class="tag2">개당</span> <b>${won(price(s.lv))}</b>`
+      + ` <span class="tag2">· ${ct.toFixed(1)}초</span>`;
     const filled = Math.floor(((s.lv-1)%50)/10);
     document.getElementById("st"+j).innerHTML =
       "★".repeat(filled) + "☆".repeat(5-filled) + `<b>Lv.${s.lv}</b>`;
