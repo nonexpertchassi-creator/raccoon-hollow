@@ -98,7 +98,8 @@ body{
   border:1px solid var(--line)}
 
 /* 단추 줄 */
-.acts{margin-top:10px; display:flex; gap:7px}
+.acts{margin-top:10px; display:flex; gap:6px; flex-wrap:wrap}
+.acts .up{flex:1 1 100%}
 button{font:inherit; cursor:pointer; border-radius:10px; border:1px solid transparent;
   transition:transform .06s}
 button:active{transform:translateY(1px)}
@@ -142,6 +143,20 @@ button:focus-visible{outline:2px solid var(--jang); outline-offset:2px}
   font-variant-numeric:tabular-nums; display:block}
 .got span{font-size:11px; color:var(--ink3)}
 .dice{font-size:30px; text-align:center; margin:0 0 10px}
+/* 일꾼 채용 가이드 — 글자 없이 그림으로 */
+.guide{text-align:center; max-width:290px}
+.gline{display:flex; align-items:center; justify-content:center; gap:8px; font-size:24px;
+  line-height:1; padding:8px 0; letter-spacing:2px}
+.gline.gnew{font-size:26px}
+.gq{filter:saturate(.9)}
+.gsad{font-size:19px; opacity:.85}
+.gok{font-size:19px}
+.gw.big{animation:pop .5s ease-out both .15s}
+.gplus{font-size:15px; color:var(--ink3)}
+.garrow{color:var(--ink3); font-size:13px; line-height:1}
+@keyframes pop{from{transform:scale(.4); opacity:0}to{transform:none; opacity:1}}
+.later{width:100%; background:transparent; color:var(--ink3); padding:9px;
+  font-size:14px; border:none; margin-top:4px; letter-spacing:.1em}
 .foot{font-size:11px; color:var(--ink3); text-align:center; padding:4px 0 0; line-height:1.6}
 @media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
 </style>
@@ -173,6 +188,10 @@ const B = {
   P0:1.0, INC:1.025, STAR:1.15, JUMP:2.0,
   C0:5.0, G:1.0529, TS:3.0, SB:4.0,
   QMAX:4, WALK:0.5,
+  // 간판 — 이 매장에 손님이 더 온다. 3단계(맨 처음 것 포함)라 올리는 건 두 번.
+  // 단계마다 +24%. 스킬 만렙 +60%와 더하면 1+0.60+0.48=2.08이고
+  // 3.00 ÷ 2.08 = 1.44초 — 장부의 손님 간격 바닥과 정확히 맞는다.
+  SIGN:[0.24, 0.24], SIGNCOST:[80, 240], TSFLOOR:1.44,
   // 시무룩해 보이기 시작하는 시간. 떠나지는 "않는다" — 이 게임에는 실패가 없다.
   FRET:10.0,
   BAND:[[1,5,3],[6,10,6],[11,15,12],[16,20,16]],
@@ -215,6 +234,10 @@ function reach(lv, j, money){
   if(L === lv) return {to: lv+1, cost: lvCost(lv,j), can: false};   // 한 레벨도 못 산다
   return {to: L, cost: spent, can: true};
 }
+// 간판을 올릴수록 손님이 자주 온다. 곱하기가 아니라 더하기다(곱하면 폭발한다).
+const signCost = (s,j) => B.SIGNCOST[s.sg] * Math.pow(B.SB, j);
+const gapOf = s => Math.max(B.TSFLOOR,
+  B.TS / (1 + B.SIGN.slice(0, s.sg).reduce((a,b)=>a+b, 0)));
 const hireCost = (s,j) => Math.max(20, (SHOPS[j].cost||50)/2) * Math.pow(2, s.w-1);
 
 // 작을 때는 소수점 둘까지 — 초반에는 0.4 차이로 단추가 열리고 닫힌다.
@@ -229,9 +252,9 @@ const won = n =>
 let S = null;
 function fresh(){
   return {
-    money:0, played:0, sold:0, taps:0, served:0, mad:0,
+    money:0, played:0, sold:0, taps:0, served:0, mad:0, guided:false,
     shops: SHOPS.map((d,j)=>({
-      open:j===0, lv:1, w:1, acc:0, q:[], mk:[null,null,null,null,null,null]
+      open:j===0, lv:1, w:1, sg:0, acc:0, q:[], mk:[null,null,null,null,null,null]
     }))
   };
 }
@@ -240,6 +263,8 @@ try{
   if(raw){ const p = JSON.parse(raw); S = p.s; S.leftAt = p.at; }
 }catch(e){}
 if(!S) S = fresh();
+S.shops.forEach(s=>{ if(s.sg === undefined) s.sg = 0; });
+if(S.guided === undefined) S.guided = false;
 
 /* ── 자리를 비웠던 만큼 ───────────────────────────── */
 function rateOf(){
@@ -248,7 +273,7 @@ function rateOf(){
     if(!s.open) return;
     const it = itemOf(s.lv);
     const make = Math.min(s.w, proc(it)) / craft(s.lv);
-    r += Math.min(make, 1/B.TS) * price(s.lv, j);   // 만드는 속도와 손님 속도 중 느린 쪽
+    r += Math.min(make, 1/gapOf(s)) * price(s.lv, j);   // 만드는 속도와 손님 속도 중 느린 쪽
   });
   return r;
 }
@@ -264,6 +289,31 @@ if(S.leftAt){
   }
   delete S.leftAt;
 }
+// 줄이 밀린다 → 너구리를 하나 더 → 줄이 풀린다. 글자 없이 그림으로만 말한다.
+// 유일한 글자는 값이고, 그건 숫자라 번역할 게 없다.
+function guideSheet(j){
+  const s = S.shops[j], c = hireCost(s, j);
+  const can = S.money >= c && s.w < 6;
+  document.getElementById("modal").innerHTML =
+    `<div class="veil"><div class="sheet guide">
+      <div class="gline"><span class="gq">🐰🦊🐱🐷</span><span class="gsad">😓</span></div>
+      <div class="garrow">↓</div>
+      <div class="gline gnew"><span class="gw">🦝</span><span class="gplus">＋</span><span class="gw big">🦝</span></div>
+      <div class="garrow">↓</div>
+      <div class="gline"><span class="gq">🐰🦊</span><span class="gok">🪙</span></div>
+      <button class="buy" id="gbuy" ${can?"":"disabled"}>🦝 ＋1 · ${won(c)}</button>
+      <button class="later" id="glater" aria-label="닫기">✕</button>
+    </div></div>`;
+  document.getElementById("gbuy").onclick = ()=>{
+    if(S.money < c || s.w >= 6) return;
+    S.money -= c; s.w++; S.taps++;
+    document.getElementById("modal").innerHTML = ""; paint();
+  };
+  document.getElementById("glater").onclick = ()=>{
+    document.getElementById("modal").innerHTML = "";
+  };
+}
+
 function offSheet(sec, base, eye, got){
   const m = Math.round(sec/60), h = Math.floor(m/60);
   const pips = "⚀⚁⚂⚃⚄⚅"[eye-1];
@@ -292,11 +342,17 @@ function tick(now){
     //    줄이 꽉 차 있으면 아예 안 생긴다(떠나는 게 아니다 — 장부 파랑).
     //    걸어오는 손님도 4자리에 센다. 안 세면 지도에 손님이 무한정 쌓인다.
     s.acc += dt;
-    while(s.acc >= B.TS){
-      s.acc -= B.TS;
+    const gap = gapOf(s);
+    while(s.acc >= gap){
+      s.acc -= gap;
       if(s.q.length < B.QMAX)
         s.q.push({f:FACES[(Math.random()*FACES.length)|0], wait:0, walk:B.WALK});
-      else { S.mad++; S.served++; }   // 못 들어온 손님 — 짜증 이모지가 뜰 자리
+      else {
+        S.mad++; S.served++;                    // 못 들어온 손님 — 짜증 이모지가 뜰 자리
+        // 장부 파랑: "너구리가 처음 짜증 낼 때 일꾼 채용 가이드가 한 번 열린다".
+        // 한 번만. 다그치지 않는다 — 이 게임에는 실패가 없다.
+        if(!S.guided){ S.guided = true; setTimeout(()=>guideSheet(j), 40); }
+      }
     }
     // ② 계산대가 비면 줄 맨 앞이 가서 주문한다
     for(let k=0;k<act;k++){
@@ -351,6 +407,7 @@ function build(){
       <div class="acts">
         <button class="up" id="up${j}"><span>올리기</span><b>0</b></button>
         <button class="hire" id="hr${j}">🦝 <b>1</b></button>
+        <button class="hire" id="sg${j}">🪧 <b></b></button>
       </div>
     </div>`;
   }).join("");
@@ -366,6 +423,13 @@ function build(){
       const r = reach(s.lv, j, S.money);
       if(!r.can) return;
       S.money -= r.cost; s.lv = r.to; S.taps++; paint();
+    };
+    const gb = document.getElementById("sg"+j);
+    if(gb) gb.onclick = ()=>{
+      if(s.sg >= B.SIGN.length) return;
+      const c = signCost(s, j);
+      if(S.money < c) return;
+      S.money -= c; s.sg++; S.taps++; paint();
     };
     const hb = document.getElementById("hr"+j);
     if(hb) hb.onclick = ()=>{
@@ -425,6 +489,20 @@ function paint(){
     ub.disabled = !r.can;
     // 물건이 바뀌는 자리까지 다 갈 수 있으면 단추가 눈에 띈다
     ub.classList.toggle("full", r.can && r.to === capGoal(s.lv));
+    const gb = document.getElementById("sg"+j);
+    if(gb) gb.onclick = ()=>{
+      if(s.sg >= B.SIGN.length) return;
+      const c = signCost(s, j);
+      if(S.money < c) return;
+      S.money -= c; s.sg++; S.taps++; paint();
+    };
+    const gbp = document.getElementById("sg"+j);
+    if(s.sg >= B.SIGN.length){ gbp.innerHTML = `🪧 <b>${gapOf(s).toFixed(2)}초</b>`; gbp.disabled = true; }
+    else{
+      const gc = signCost(s, j);
+      gbp.innerHTML = `🪧 <b>${gapOf(s).toFixed(2)}초</b> · ${won(gc)}`;
+      gbp.disabled = S.money < gc;
+    }
     const hb = document.getElementById("hr"+j);
     if(s.w >= 6){ hb.innerHTML = "🦝 <b>6</b>"; hb.disabled = true; }
     else{
