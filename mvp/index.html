@@ -74,6 +74,18 @@ body{
 @keyframes comein{from{transform:translateX(30px) scale(.85)}to{transform:none}}
 @keyframes walkin{from{transform:translateX(26px); opacity:0}to{transform:none; opacity:1}}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+.cnt{position:absolute; right:-5px; top:-4px; font-size:9.5px; font-style:normal;
+  background:var(--jang); color:#FFF6EC; border-radius:7px; min-width:13px; height:13px;
+  line-height:13px; text-align:center; padding:0 2px; font-variant-numeric:tabular-nums}
+.cnt.on{background:var(--clay)}
+.cust{position:relative}
+.slot{position:relative}
+.testbar{display:flex; align-items:center; gap:6px; justify-content:center;
+  margin-top:8px; padding-top:8px; border-top:1px dashed var(--line);
+  font-size:10.5px; color:var(--ink3)}
+.testbar button{background:var(--card2); border:1px solid var(--line); color:var(--ink2);
+  border-radius:8px; padding:4px 10px; font-size:11.5px}
+.testbar button.on{background:var(--jang); color:#FFF6EC; border-color:transparent}
 .empty{flex:1; height:2px; border-bottom:1px dashed var(--line); opacity:.7}
 
 .slots{display:flex; gap:5px; flex:1}
@@ -175,6 +187,10 @@ button:focus-visible{outline:2px solid var(--jang); outline-offset:2px}
       <div class="bad"><b id="g-mad">0%</b><span>짜증</span></div>
       <div><b id="g-rate">0</b><span>초당 돈</span></div>
     </div>
+    <div class="testbar"><span>시험용 · 손님이 사는 개수</span>
+      <button data-n="1" class="on">1</button>
+      <button data-n="2">2</button>
+      <button data-n="3">3</button></div>
   </div>
   <p class="foot">
     조선 저잣거리 · 1구역 네 곳<br>
@@ -216,6 +232,11 @@ const SHOPS = [
 // 여기서 열 종이 다 나오는 건 MVP에 뽑기가 없어서다. 진짜 게임에서는
 // 가진 손님만 나온다 — 시작 명단은 아직 안 정했다(장부의 미결정).
 const FACES = ["🐰","🦊","🐱","🦔","🦦","🐷","🐑","🦌","🐻","🐯"];
+
+// ── 시험용 ── 게임 설계가 아니다. 여러 개 사기를 눈으로 보려고 단 손잡이다.
+// 진짜 게임에서 이 숫자는 손님 능력과 등장률 초과분이 정한다.
+let TEST_BUY = 1;
+const buyCount = () => TEST_BUY;
 
 const band = i => B.BAND.find(([a,b])=>i>=a&&i<=b)[2];
 const proc = i => B.PROC.find(([a,b])=>i>=a&&i<=b)[2];
@@ -349,7 +370,12 @@ function tick(now){
     while(s.acc >= gap){
       s.acc -= gap;
       if(s.q.length < B.QMAX)
-        s.q.push({f:FACES[(Math.random()*FACES.length)|0], wait:0, walk:B.WALK});
+        {
+          // 몇 개를 사는지. 1이면 지금까지와 똑같다.
+          // 진짜 게임에서는 손님 능력(📦)이나 "간격이 바닥에 닿아 넘친 몫"이 정한다.
+          const n = buyCount();
+          s.q.push({f:FACES[(Math.random()*FACES.length)|0], wait:0, walk:B.WALK, n:n, left:n});
+        }
       else {
         S.mad++; S.served++;                    // 못 들어온 손님 — 짜증 이모지가 뜰 자리
         // 장부 파랑: "너구리가 처음 짜증 낼 때 일꾼 채용 가이드가 한 번 열린다".
@@ -370,7 +396,12 @@ function tick(now){
     for(let k=0;k<act;k++){
       const c = s.mk[k]; if(!c) continue;
       c.p += dt;
-      if(c.p >= ct){ S.money += price(s.lv, j); S.sold++; S.served++; s.mk[k] = null; }
+      // 한 개 다 만들면 한 개 판다. 남은 게 있으면 그 자리에서 다음 개를 만든다.
+      // 그래서 2개를 사면 두 배가 걸린다 — 수입이 안 튀고 화면만 정리된다.
+      if(c.p >= ct){
+        S.money += price(s.lv, j); S.sold++; c.left--; c.p = 0;
+        if(c.left <= 0){ S.served++; s.mk[k] = null; }
+      }
     }
     // ⑤ 걸어오는 손님을 걸린다. 도착하면 그 순간의 줄 맨 뒤에 선다.
     //    손님은 안 떠난다 — 지쳐서 가버리는 일이 없다(장부 파랑). 기다리기만 한다.
@@ -418,7 +449,13 @@ function build(){
     const ob = document.getElementById("open"+j);
     if(ob) ob.onclick = ()=>{
       if(S.money < SHOPS[j].cost) return;
-      S.money -= SHOPS[j].cost; s.open = true; S.taps++; build(); paint();
+      S.money -= SHOPS[j].cost; s.open = true; S.taps++; document.querySelectorAll(".testbar button").forEach(b=>{
+  b.onclick = ()=>{
+    TEST_BUY = +b.dataset.n;
+    document.querySelectorAll(".testbar button").forEach(x=>x.classList.toggle("on", x===b));
+  };
+});
+build(); paint();
     };
     // 누르면 돈 되는 데까지 오른다. 단, 물건이 바뀌는 자리를 안 넘는다.
     const ub = document.getElementById("up"+j);
@@ -470,17 +507,22 @@ function paint(){
     const ln = document.getElementById("ln"+j);
     if(!s.q.length) ln.innerHTML = `<span class="empty"></span>`;
     else{
-      const want = s.q.map(c=> c.walk > 0
-        ? `<span class="cust far">${c.f}</span>`
-        : `<span class="cust wait${c.wait > B.FRET ? " mad" : ""}">${c.f}</span>`).join("");
+      const want = s.q.map(c=>{
+        const tag = c.n > 1 ? `<i class="cnt">${c.n}</i>` : "";
+        return c.walk > 0
+          ? `<span class="cust far">${c.f}${tag}</span>`
+          : `<span class="cust wait${c.wait > B.FRET ? " mad" : ""}">${c.f}${tag}</span>`;
+      }).join("");
       if(ln.dataset.k !== want){ ln.dataset.k = want; ln.innerHTML = want; }
     }
 
     let sl = "";
     for(let k=0;k<act;k++){
       const c = s.mk[k];
+      // 계산대에는 "남은 개수 / 산 개수"를 붙인다. 막대는 지금 만드는 한 개만 채운다.
       sl += c
-        ? `<span class="slot"><i style="height:${(Math.min(1,c.p/ct)*100).toFixed(0)}%"></i><u>${c.f}</u></span>`
+        ? `<span class="slot"><i style="height:${(Math.min(1,c.p/ct)*100).toFixed(0)}%"></i><u>${c.f}</u>`
+          + (c.n > 1 ? `<i class="cnt on">${c.left}</i>` : "") + `</span>`
         : `<span class="slot idle"></span>`;
     }
     const el = document.getElementById("sl"+j);
@@ -529,6 +571,12 @@ addEventListener("visibilitychange", ()=>{ if(document.hidden) save(); });
 addEventListener("pagehide", save);
 setInterval(save, 5000);
 
+document.querySelectorAll(".testbar button").forEach(b=>{
+  b.onclick = ()=>{
+    TEST_BUY = +b.dataset.n;
+    document.querySelectorAll(".testbar button").forEach(x=>x.classList.toggle("on", x===b));
+  };
+});
 build(); paint();
 requestAnimationFrame(tick);
 </script>
